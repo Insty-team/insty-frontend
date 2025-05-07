@@ -1,26 +1,72 @@
 @import "tailwindcss";
 
+@theme {
+	--color-black-100: #6b6b6b;
+	--color-black-200: #525252;
+	--color-black-300: #373737;
+	--color-black-400: #1f1f1f;
+	--color-black-500: #040404;
+	--color-gray-scale-50: #ffffff;
+	--color-gray-scale-100: #dedede;
+	--color-gray-scale-200: #c4c4c4;
+	--color-gray-scale-300: #ababab;
+	--color-gray-scale-400: #999999;
+	--color-gray-scale-500: #808080;
+	--color-primary-blue-100: #6edce9;
+	--color-primary-blue-200: #86c9dc;
+	--color-primary-blue-300: #5fa4cc;
+	--color-primary-blue-400: #1b92ff;
+	--color-primary-blue-500: #4886b5;
+	--color-primary-blue-600: #3c4a7e;
+	--color-primary-blue-700: #262e52;
+	--color-secondary-yellow-100: #fed344;
+	--color-secondary-red-100: #ff9c9e;
+	--color-secondary-red-200: #d6757d;
+	--color-secondary-red-300: #ff4f64;
+	--color-primary-green-50: #fbfaee;
+	--color-primary-green-100: #97ca9b;
+	--color-primary-green-200: #6db69d;
+	--color-primary-green-300: #47a6a0;
+	--color-primary-green-400: #4aa5a2;
+  --color-orange: #ff8c00;
+  --color-orange-hover: #E67A00;
+}
+
+@theme {
+	--shadow-line-100: 0 1px 0 0 #f2f2f2;
+	--shadow-line-200: 0 1px 0 0 #e6e6e6;
+}
+
+@theme {
+  --text-sm: 12px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 28px;
+  --text-emphasize: 32px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+	--background: #ffffff;
+	--foreground: #171717;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+	:root {
+		--background: #0a0a0a;
+		--foreground: #ededed;
+	}
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+	background: var(--background);
+	color: var(--foreground);
+	font-family: Arial, Helvetica, sans-serif;
 }
