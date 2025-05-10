@@ -3,39 +3,29 @@
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { emailReg, passwordReg } from "@/app/utils/regex";
+import { LoginForm } from "@/app/types";
 
 export default function Login() {
 	const params = useParams();
 	const type = params.userType === "creator" ? "크리에이터" : "러너";
 	const [showPassword, setShowPassword] = useState(false);
-	const [email, setEmail] = useState("");
-	const [isEmailValid, setIsEmailValid] = useState(false);
-	const [password, setPassword] = useState("");
-	const [isPasswordValid, setIsPasswordValid] = useState(false);
 
 	const onChangeShowPassword = () => {
 		setShowPassword(!showPassword);
 	};
 
-	const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-		setEmail(value);
-		if (emailReg.test(value)) {
-			setIsEmailValid(true);
-		} else {
-			setIsEmailValid(false);
-		}
-	};
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<LoginForm>({
+		mode: "onChange",
+	});
 
-	const onChangePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-		setPassword(value);
-		if (passwordReg.test(value)) {
-			setIsPasswordValid(true);
-		} else {
-			setIsPasswordValid(false);
-		}
+	const onSubmit = (data: LoginForm) => {
+		console.log(data);
 	};
 
 	return (
@@ -46,35 +36,45 @@ export default function Login() {
 					<p className="mt-12 text-3xl font-semibold"> {type}로 로그인하기</p>
 				</div>
 			</div>
-			<div className="flex items-center justify-center bg-white">
-				<div className="w-full max-w-md p-4 flex flex-col items-center space-y-6">
+			<div className="flex items-center justify-center">
+				<form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md p-4 flex flex-col items-center space-y-6">
 					<div className="w-full">
-						<label className="block text-sm font-medium mb-1">이메일</label>
+						<label className="block text-lg font-medium mb-1 text-black-300">이메일</label>
 						<input
 							type="email"
 							placeholder="이메일을 입력해주세요."
 							className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none"
-							value={email}
-							onChange={onChangeEmail}
+							{...register("email", {
+								required: "",
+								pattern: {
+									value: emailReg,
+									message: "이메일 형식이 잘못되었습니다",
+								},
+							})}
 						/>
-						<p className="mt-1 ml-2 text-secondary-red-300">
-							{email.length && !isEmailValid
-								? "이메일 형식이 잘못되었습니다."
-								: ""}
-						</p>
+						{errors.email && (
+							<p className="mt-1 ml-2 text-secondary-red-300">
+								{errors.email.message}
+							</p>
+						)}
 					</div>
 
 					<div className="w-full relative">
-						<label className="block text-sm font-medium mb-1">비밀번호</label>
+						<label className="block text-lg font-medium mb-1 text-black-300">비밀번호</label>
 						<input
 							type={showPassword ? "text" : "password"}
 							placeholder="비밀번호를 입력해주세요."
 							className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none"
-							value={password}
-							onChange={onChangePassword}
+							{...register("password", {
+								required: "",
+								pattern: {
+									value: passwordReg,
+									message: "비밀번호 형식이 잘못되었습니다.",
+								},
+							})}
 						/>
 						<button
-							className="absolute right-3 top-8.5 text-gray-400 cursor-pointer"
+							className="absolute right-3 top-10.5 cursor-pointer"
 							onClick={onChangeShowPassword}
 						>
 							<Image
@@ -84,16 +84,21 @@ export default function Login() {
 								height={24}
 							/>
 						</button>
-						<p className="mt-1 ml-2 text-secondary-red-300">
-							{!isPasswordValid ? "비밀번호 형식이 잘못되었습니다." : ""}
-						</p>
+						{errors.password && (
+							<p className="mt-1 ml-2 text-secondary-red-300">
+								{errors.password?.message}
+							</p>
+						)}
 					</div>
 
-					<button className="w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white font-semibold">
+					<button
+						type="submit"
+						className="w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white font-semibold"
+					>
 						로그인
 					</button>
 
-					<div className="text-sm text-gray-600">
+					<div className="text-md text-black-100">
 						계정이 없으신가요?{" "}
 						<a
 							href="/signup"
@@ -103,7 +108,7 @@ export default function Login() {
 						</a>
 					</div>
 
-					<div className="text-sm text-gray-500">
+					<div className="text-lg text-black-100 font-semibold">
 						소셜 로그인으로 간편하게 시작하기
 					</div>
 
@@ -113,25 +118,25 @@ export default function Login() {
 							src="/kakao.svg"
 							alt="kakao"
 							className="rounded-2xl cursor-pointer"
-							width={32}
-							height={32}
+							width={36}
+							height={36}
 						/>
 						<Image
 							src="/google.svg"
 							alt="google"
 							className="rounded-2xl cursor-pointer"
-							width={32}
-							height={32}
+							width={36}
+							height={36}
 						/>
 						<Image
 							src="/naver.svg"
 							alt="naver"
 							className="rounded-2xl cursor-pointer"
-							width={32}
-							height={32}
+							width={36}
+							height={36}
 						/>
 					</div>
-				</div>
+				</form>
 			</div>
 		</>
 	);
