@@ -7,7 +7,7 @@ import { SignupForm } from "@/app/types";
 import Link from "next/link";
 import TextInput from "@/app/_components/validation/TextInput";
 import PasswordInput from "@/app/_components/validation/PasswordInput";
-import SocailLogin from "@/app/_components/social/SocailLogin";
+import SocialLogin from "@/app/_components/social/SocialLogin";
 import PasswordConfirmInput from "../_components/validation/ConfirmPasswordInput";
 
 export default function Signup() {
@@ -141,7 +141,7 @@ export default function Signup() {
 						</Link>
 					</div>
 
-					<SocailLogin />
+					<SocialLogin />
 				</form>
 			</div>
 		</>

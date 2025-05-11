@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React from "react";
 
-function SocailLogin() {
+function SocialLogin() {
 	return (
 		<>
 			<div className="text-lg text-black-100 font-semibold">
@@ -35,4 +35,4 @@ function SocailLogin() {
 	);
 }
 
-export default SocailLogin;
+export default SocialLogin;

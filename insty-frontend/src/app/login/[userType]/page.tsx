@@ -8,7 +8,7 @@ import { LoginForm } from "@/app/types";
 import Link from "next/link";
 import TextInput from "@/app/_components/validation/TextInput";
 import PasswordInput from "@/app/_components/validation/PasswordInput";
-import SocailLogin from "@/app/_components/social/SocailLogin";
+import SocialLogin from "@/app/_components/social/SocialLogin";
 
 export default function Login() {
 	const params = useParams();
@@ -87,7 +87,7 @@ export default function Login() {
 						</Link>
 					</div>
 
-					<SocailLogin />
+					<SocialLogin />
 
 
 				</form>
