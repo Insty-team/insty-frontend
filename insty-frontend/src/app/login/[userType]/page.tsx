@@ -69,7 +69,6 @@ export default function Login() {
 						}}
 						error={errors.password}
 					/>
-
 					<button
 						type="submit"
 						className="w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white font-semibold"

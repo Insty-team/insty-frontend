@@ -8,7 +8,7 @@ function LoginLayout({
 	return (
 		<>
 			<LoginHeader />
-            <main>{children}</main>
+			<main>{children}</main>
 		</>
 	);
 }
