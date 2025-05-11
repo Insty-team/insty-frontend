@@ -1,6 +1,6 @@
 import LoginHeader from "./_components/LoginHeader";
 
-export default function LoginLayout({
+function LoginLayout({
 	children,
 }: {
 	children: React.ReactNode;
@@ -12,3 +12,5 @@ export default function LoginLayout({
 		</>
 	);
 }
+
+export default LoginLayout;
