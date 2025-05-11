@@ -37,9 +37,14 @@ export default function Login() {
 				</div>
 			</div>
 			<div className="flex items-center justify-center">
-				<form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md p-4 flex flex-col items-center space-y-6">
+				<form
+					onSubmit={handleSubmit(onSubmit)}
+					className="w-full max-w-md p-4 flex flex-col items-center space-y-6"
+				>
 					<div className="w-full">
-						<label className="block text-lg font-medium mb-1 text-black-300">이메일</label>
+						<label className="block text-lg font-medium mb-1 text-black-300">
+							이메일
+						</label>
 						<input
 							type="email"
 							placeholder="이메일을 입력해주세요."
@@ -60,7 +65,9 @@ export default function Login() {
 					</div>
 
 					<div className="w-full relative">
-						<label className="block text-lg font-medium mb-1 text-black-300">비밀번호</label>
+						<label className="block text-lg font-medium mb-1 text-black-300">
+							비밀번호
+						</label>
 						<input
 							type={showPassword ? "text" : "password"}
 							placeholder="비밀번호를 입력해주세요."

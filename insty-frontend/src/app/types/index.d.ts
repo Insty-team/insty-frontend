@@ -2,6 +2,6 @@
 
 //1. 로그인 타입
 export type LoginForm = {
-    email: string;
-    password: string;
-}
+	email: string;
+	password: string;
+};
