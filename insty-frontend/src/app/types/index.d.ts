@@ -38,7 +38,7 @@ export type PasswordInputProps<TFieldValues> = {
 }
 
 //5. 비밀번호 확인 폼
-type PasswordConfirmInputProps<TFieldValues> = {
+export type PasswordConfirmInputProps<TFieldValues> = {
     label: string;
     name: Path<TFieldValues>;
     placeholder?: string;
@@ -47,3 +47,19 @@ type PasswordConfirmInputProps<TFieldValues> = {
     validation?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
     error?: FieldError;
 };
+
+//6. 차트 라벨, 툴팁, 값 입력
+export type ChartData = {
+    name: string;
+    fullLabel?: string;
+    value: number;
+}
+
+//7 차트 값 타입
+export type CommonLineChartProps = {
+    data: ChartData[];
+    yAxisLabel?: string;
+    tooltipLabel?: string;
+    tooltipUnit?: string;
+    height?: number;
+}

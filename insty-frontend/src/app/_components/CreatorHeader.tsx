@@ -1,7 +1,11 @@
+"use client";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { creatorMenuList } from "@/app/constants/constants";
 
 function CreatorHeader() {
-	const menuList = ["대시보드", "영상 관리", "마이페이지", "커뮤니티"];
+	const pathname = usePathname();
 
 	return (
 		<div className="flex justify-between items-center">
@@ -15,8 +19,18 @@ function CreatorHeader() {
 						height={63}
 					/>
 					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
-						{menuList.map((menu) => (
-							<span key={menu}>{menu}</span>
+						{creatorMenuList.map((menu) => (
+							<Link href={`${menu.path}`} key={menu.id}>
+								<span
+									className={
+										pathname === menu.path
+											? "text-primary-blue-600"
+											: ""
+									}
+								>
+									{menu.title}
+								</span>
+							</Link>
 						))}
 					</div>
 				</div>

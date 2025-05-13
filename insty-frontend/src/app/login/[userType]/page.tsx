@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { emailReg, passwordReg } from "@/app/utils/regex";
 import { LoginForm } from "@/app/types";
@@ -12,6 +12,7 @@ import SocialLogin from "@/app/_components/social/SocialLogin";
 
 export default function Login() {
 	const params = useParams();
+	const router = useRouter();
 	const type = params.userType === "creator" ? "크리에이터" : "러너";
 
 	const {
@@ -22,8 +23,19 @@ export default function Login() {
 		mode: "onChange",
 	});
 
-	const onSubmit = (data: LoginForm) => {
-		console.log(data);
+	const onSubmit = async (data: LoginForm) => {
+		try {
+			console.log(data);
+			if (params.userType === "creator") {
+				router.push("/creator/dashboard");
+			}
+			else {
+				//아직 개발 안함
+				router.push("/learner/recommend");
+			}
+		} catch (error) {
+			console.error("로그인 실패:", error);
+		}
 	};
 
 	return (
@@ -87,8 +99,6 @@ export default function Login() {
 					</div>
 
 					<SocialLogin />
-
-
 				</form>
 			</div>
 		</>

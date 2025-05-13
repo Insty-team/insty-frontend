@@ -4,8 +4,8 @@ function RunnerHeader() {
 	const menuList = ["맞춤 콘텐츠 추천", "마이페이지", "커뮤니티"];
 
 	return (
-		<div className="flex justify-between items-center">
-			<div className="w-[1400px] h-[88px] flex justify-between">
+		<div className="flex justify-between items-center w-full px-4">
+			<div className="w-full max-w-[1400px] h-[88px] flex justify-between mx-auto">
 				<div className="flex gap-20">
 					<Image
 						className="object-contain"
