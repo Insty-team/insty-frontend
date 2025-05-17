@@ -7,17 +7,26 @@ import { CREATOR_MENU_LIST } from "@/app/constants/constants";
 function CreatorHeader() {
 	const pathname = usePathname();
 
+	const dashboard = CREATOR_MENU_LIST[0];
+	const mypage = CREATOR_MENU_LIST[2];
+
 	return (
 		<div className="flex justify-between items-center">
 			<div className="w-[1400px] h-[88px] flex justify-between">
 				<div className="flex gap-20">
-					<Image
-						className="object-contain"
-						src="/insty.png"
-						alt="logo"
-						width={72}
-						height={63}
-					/>
+					<Link
+						href={dashboard.path}
+						key={dashboard.id}
+						className="flex justify-center items-center"
+					>
+						<Image
+							className="object-contain"
+							src="/insty.png"
+							alt="logo"
+							width={72}
+							height={63}
+						/>
+					</Link>
 					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
 						{CREATOR_MENU_LIST.map((menu) => (
 							<Link href={`${menu.path}`} key={menu.id}>
@@ -40,10 +49,7 @@ function CreatorHeader() {
 						width={36}
 						height={36}
 					/>
-					<Link
-						href={`${CREATOR_MENU_LIST[2].path}`}
-						key={CREATOR_MENU_LIST[2].id}
-					>
+					<Link href={mypage.path} key={mypage.id}>
 						<Image
 							className="cursor-pointer"
 							src="/profile.svg"
