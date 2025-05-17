@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { creatorMenuList } from "@/app/constants/constants";
+import { CREATOR_MENU_LIST } from "@/app/constants/constants";
 
 function CreatorHeader() {
 	const pathname = usePathname();
@@ -19,13 +19,11 @@ function CreatorHeader() {
 						height={63}
 					/>
 					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
-						{creatorMenuList.map((menu) => (
+						{CREATOR_MENU_LIST.map((menu) => (
 							<Link href={`${menu.path}`} key={menu.id}>
 								<span
 									className={
-										pathname === menu.path
-											? "text-primary-blue-600"
-											: ""
+										pathname === menu.path ? "text-primary-blue-600" : ""
 									}
 								>
 									{menu.title}

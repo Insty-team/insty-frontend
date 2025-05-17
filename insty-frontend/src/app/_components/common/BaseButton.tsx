@@ -10,16 +10,16 @@ type BaseButtonProps = {
 
 function BaseButton({
 	title,
-	onClick,
 	type = "button",
 	disabled = false,
+	onClick,
 }: BaseButtonProps) {
 	return (
 		<button
 			type={type}
 			onClick={onClick}
 			disabled={disabled}
-			className="w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white font-semibold"
+			className={`w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white`}
 		>
 			{title}
 		</button>

@@ -65,3 +65,11 @@ export type CommonLineChartProps = {
 	tooltipUnit?: string;
 	height?: number;
 };
+
+// 프로필 변경 타입
+export type ChangeProfileForm = {
+	nickname: string
+	email: string
+	password: string
+	changedPassword: string
+}
