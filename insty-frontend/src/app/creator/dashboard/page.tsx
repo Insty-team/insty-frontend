@@ -32,7 +32,7 @@ function CreatorDashboard() {
 	}));
 
 	return (
-		<div className="flex w-full max-w-[1400px] mx-auto mt-8 gap-8">
+		<div className="flex w-full max-w-[1400px] mx-auto mt-16 gap-8">
 			<aside className="flex-[4] min-w-0 flex flex-col gap-8">
 				<div>
 					<h2 className="text-3xl font-bold mb-12">대시보드</h2>
