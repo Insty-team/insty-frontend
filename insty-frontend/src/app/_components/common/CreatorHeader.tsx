@@ -40,13 +40,19 @@ function CreatorHeader() {
 						width={36}
 						height={36}
 					/>
-					<Image
-						className="cursor-pointer"
-						src="/profile.svg"
-						alt="profile"
-						width={36}
-						height={36}
-					/>
+					<Link
+						href={`${CREATOR_MENU_LIST[2].path}`}
+						key={CREATOR_MENU_LIST[2].id}
+					>
+						<Image
+							className="cursor-pointer"
+							src="/profile.svg"
+							alt="profile"
+							width={36}
+							height={36}
+						/>
+					</Link>
+
 					<span className="--text-2lg font-medium">김가나</span>
 				</div>
 			</div>

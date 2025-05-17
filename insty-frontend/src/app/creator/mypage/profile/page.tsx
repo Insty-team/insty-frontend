@@ -176,7 +176,7 @@ function Profile() {
 							{ label: "이메일", value: MOCK_USER_INFO.email },
 							{ label: "소개글", value: MOCK_USER_INFO.description },
 						].map((item) => (
-							<div key={item.label} className="flex flex-col">
+							<div key={item.label} className="flex flex-col gap-2">
 								<span className="text-xl font-semibold">{item.label}</span>
 								<span className="text-2xl">{item.value}</span>
 							</div>
