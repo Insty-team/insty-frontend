@@ -1,12 +1,32 @@
 "use client";
+import Image from "next/image";
+import { BaseButton } from "@/app/_components/common";
 
 function Profile() {
+	const mockUserInfo = {
+		id: "test",
+		name: "김가나",
+		email: "kim-gana@example.com",
+		description: "안녕하세요. 김가나 입니다.",
+	};
+
 	return (
-		<div className="flex flex-col gap-8">
-			<h1 className="text-3xl font-bold">나의 정보 관리</h1>
-			<div className="bg-white p-8 rounded-lg shadow">
-				{/* 프로필 관리 컨텐츠 */}
-				<p>프로필 관리 페이지 컨텐츠</p>
+		<div className="flex flex-col gap-12 justify-center items-center">
+			<Image src="/profile.svg" width={128} height={128} alt="프로필 사진" />
+			<div className="flex flex-col gap-10">
+				{[
+					{ label: "닉네임", value: mockUserInfo.name },
+					{ label: "이메일", value: mockUserInfo.email },
+					{ label: "소개글", value: mockUserInfo.description },
+				].map((item) => (
+					<div key={item.label} className="flex flex-col">
+						<span className="text-xl font-semibold">{item.label}</span>
+						<span className="text-2xl">{item.value}</span>
+					</div>
+				))}
+			</div>
+			<div className="w-90">
+				<BaseButton title="프로필 수정하기" />
 			</div>
 		</div>
 	);

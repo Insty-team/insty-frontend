@@ -9,11 +9,11 @@ type MyPageLayoutProps = {
 function MyPageLayout({ children }: MyPageLayoutProps) {
 	return (
 		<>
-			<div className="flex gap-40">
-				<aside>
+			<div className="flex w-full mt-16">
+				<aside className="w-1/4">
 					<MyPageCreatorSide />
 				</aside>
-				<main>{children}</main>
+				<section className="flex justify-center w-3/4">{children}</section>
 			</div>
 		</>
 	);

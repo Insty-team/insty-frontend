@@ -6,6 +6,7 @@ import { creatorMyPageMenuList } from "@/app/constants/constants";
 function MyPageCreatorSide() {
 	const pathname = usePathname();
 
+
 	return (
 		<>
 			<div className="flex flex-col gap-10">
