@@ -1,3 +1,7 @@
+/**
+ * 전역으로 사용하는 상수(데이터, 문자 등)를 정의하는 파일입니다.
+ */
+
 export const creatorMenuList = [
     {id: 1, title: "대시보드", path: "/creator/dashboard"},
     {id: 2, title: "영상 관리", path: "/creator/videos"},

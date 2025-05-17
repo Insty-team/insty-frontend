@@ -10,7 +10,7 @@ import PasswordInput from "@/app/_components/validation/PasswordInput";
 import SocialLogin from "@/app/_components/social/SocialLogin";
 import PasswordConfirmInput from "../_components/validation/ConfirmPasswordInput";
 
-export default function Signup() {
+function Signup() {
 	const {
 		register,
 		handleSubmit,
@@ -26,15 +26,15 @@ export default function Signup() {
 		console.log(submitData);
 	};
 
-    const handleNicknameCheck = () => {
-        //닉네임 중복 체크
-        console.log("닉네임 중복 체크를 눌렀어요.");
-    }
+	const handleNicknameCheck = () => {
+		//닉네임 중복 체크
+		console.log("닉네임 중복 체크를 눌렀어요.");
+	};
 
-    const handleEmailCheck = () => {
-        //이메일 중복 체크
-        console.log("이메일 중복 체크를 눌렀어요.");
-    }
+	const handleEmailCheck = () => {
+		//이메일 중복 체크
+		console.log("이메일 중복 체크를 눌렀어요.");
+	};
 
 	return (
 		<>
@@ -87,7 +87,7 @@ export default function Signup() {
 							},
 						}}
 						error={errors.email}
-                        checkDuplication={
+						checkDuplication={
 							<button
 								type="button"
 								onClick={handleEmailCheck}
@@ -147,3 +147,5 @@ export default function Signup() {
 		</>
 	);
 }
+
+export default Signup;

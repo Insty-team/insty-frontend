@@ -20,7 +20,7 @@ function CreatorDashboard() {
 		value: Math.floor(Math.random() * 100000),
 	}));
 
-  const viewData = labels.map((label, idx) => ({
+	const viewData = labels.map((label, idx) => ({
 		name: label,
 		fullLabel:
 			period === "1년"
@@ -89,17 +89,28 @@ function CreatorDashboard() {
 						<div className="text-2xl font-bold mb-2">수익</div>
 						<div className="flex w-full gap-8 items-start">
 							<div className="flex-1 min-w-0">
-								<CommonLineChart data={revenueData} yAxisLabel="" tooltipLabel="수익" tooltipUnit="원"/>
+								<CommonLineChart
+									data={revenueData}
+									yAxisLabel=""
+									tooltipLabel="수익"
+									tooltipUnit="원"
+								/>
 							</div>
 						</div>
 					</div>
 					<div className="w-48 flex-shrink-0 flex flex-col gap-2 justify-center">
 						<div className="text-lg text-black-400">총 수익</div>
-						<div className="font-bold text-primary-blue-600 text-lg">₩ 999,999</div>
+						<div className="font-bold text-primary-blue-600 text-lg">
+							₩ 999,999
+						</div>
 						<div className="text-lg text-black-400">이번 달 수익</div>
-						<div className="font-bold text-primary-blue-600 text-lg">₩ 999,999</div>
+						<div className="font-bold text-primary-blue-600 text-lg">
+							₩ 999,999
+						</div>
 						<div className="text-lg text-black-400">이번 주 수익</div>
-						<div className="font-bold text-primary-blue-600 text-lg">₩ 999,999</div>
+						<div className="font-bold text-primary-blue-600 text-lg">
+							₩ 999,999
+						</div>
 					</div>
 				</div>
 				<div className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row gap-8">
@@ -107,7 +118,12 @@ function CreatorDashboard() {
 						<div className="text-2xl font-bold mb-2">조회수</div>
 						<div className="flex w-full gap-8 items-start">
 							<div className="flex-1 min-w-0">
-								<CommonLineChart data={viewData} yAxisLabel="" tooltipLabel="총 조회수" tooltipUnit="회"/>
+								<CommonLineChart
+									data={viewData}
+									yAxisLabel=""
+									tooltipLabel="총 조회수"
+									tooltipUnit="회"
+								/>
 							</div>
 						</div>
 					</div>

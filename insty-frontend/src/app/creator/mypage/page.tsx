@@ -1,6 +1,6 @@
 function MyPage() {
   return (
-    <div>page</div>
+    <div>pagefsdfsdf</div>
   )
 }
 
