@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-function RunnerHeader() {
+function LearnerHeader() {
 	const menuList = ["맞춤 콘텐츠 추천", "마이페이지", "커뮤니티"];
 
 	return (
@@ -42,4 +42,4 @@ function RunnerHeader() {
 	);
 }
 
-export default RunnerHeader;
+export default LearnerHeader;
