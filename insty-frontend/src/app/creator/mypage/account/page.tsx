@@ -3,8 +3,6 @@
 import { IconButton } from "@/app/_components/common";
 
 function Account() {
-
-	
 	return (
 		<div className="w-full flex flex-col gap-10">
 			<h3 className="text-2xl">내 계좌 관리</h3>

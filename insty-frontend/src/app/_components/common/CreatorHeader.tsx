@@ -32,7 +32,7 @@ function CreatorHeader() {
 							<Link href={`${menu.path}`} key={menu.id}>
 								<span
 									className={
-										pathname === menu.path ? "text-primary-blue-600" : ""
+										pathname.includes(menu.path) ? "text-primary-blue-600" : ""
 									}
 								>
 									{menu.title}
