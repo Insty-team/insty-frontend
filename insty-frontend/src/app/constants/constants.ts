@@ -23,3 +23,83 @@ export const LEARNER_MENU_LIST = [
 	{ id: 2, title: "마이페이지", path: "/learner/mypage" },
 	{ id: 3, title: "커뮤니티", path: "/learner/community" },
 ];
+
+//영상 관리 헤더에 사용
+export const VIDEOS_HEADER_LIST = [
+    { id: "manage", title: "영상 관리" },
+    { id: "upload", title: "영상 업로드" },
+    { id: "revenue", title: "수익 확인하기" },
+];
+
+//더미 데이터
+export const VIDEOS_DUMMY_LIST = [
+	{
+		id: 1,
+		title:
+			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목",
+		thumbnail: "/dog.png",
+		tags: [
+			"RTX 3060",
+			"우분투",
+			"리눅스",
+			"windows",
+			"macOS",
+			"RTX 3060",
+			"우분투",
+			"리눅스",
+			"windows",
+			"macOS",
+		],
+		views: "999,999,999회",
+		uploadDate: "2025년 04월 09일",
+		price: "999,999,999원",
+		detailUrl: "#",
+		editUrl: "#",
+	},
+	{
+		id: 2,
+		title:
+			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목",
+		thumbnail: "/dog.png",
+		tags: [
+			"RTX 3060",
+			"우분투",
+			"리눅스",
+			"windows",
+			"macOS",
+			"RTX 3060",
+			"우분투",
+			"리눅스",
+			"windows",
+			"macOS",
+		],
+		views: "999,999,999회",
+		uploadDate: "2025년 04월 09일",
+		price: "999,999,999원",
+		detailUrl: "#",
+		editUrl: "#",
+	},
+	{
+		id: 3,
+		title:
+			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목",
+		thumbnail: "/dog.png",
+		tags: [
+			"RTX 3060",
+			"우분투",
+			"리눅스",
+			"windows",
+			"macOS",
+			"RTX 3060",
+			"우분투",
+			"리눅스",
+			"windows",
+			"macOS",
+		],
+		views: "999,999,999회",
+		uploadDate: "2025년 04월 09일",
+		price: "999,999,999원",
+		detailUrl: "#",
+		editUrl: "#",
+	},
+];
