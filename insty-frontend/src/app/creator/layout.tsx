@@ -1,4 +1,4 @@
-import { CreatorHeader } from "../_components";
+import { CreatorHeader } from "@/app/_components/common";
 
 function CreatorLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -9,9 +9,7 @@ function CreatorLayout({ children }: { children: React.ReactNode }) {
 				</div>
 			</header>
 			<main className="flex-1 flex justify-center">
-				<div className="w-full max-w-[1400px]">
-					{children}
-				</div>
+				<div className="w-full max-w-[1400px]">{children}</div>
 			</main>
 		</div>
 	);

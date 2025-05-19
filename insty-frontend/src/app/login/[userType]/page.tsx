@@ -10,7 +10,7 @@ import TextInput from "@/app/_components/validation/TextInput";
 import PasswordInput from "@/app/_components/validation/PasswordInput";
 import SocialLogin from "@/app/_components/social/SocialLogin";
 
-export default function Login() {
+function Login() {
 	const params = useParams();
 	const router = useRouter();
 	const type = params.userType === "creator" ? "크리에이터" : "러너";
@@ -28,8 +28,7 @@ export default function Login() {
 			console.log(data);
 			if (params.userType === "creator") {
 				router.push("/creator/dashboard");
-			}
-			else {
+			} else {
 				//아직 개발 안함
 				router.push("/learner/recommend");
 			}
@@ -104,3 +103,5 @@ export default function Login() {
 		</>
 	);
 }
+
+export default Login;

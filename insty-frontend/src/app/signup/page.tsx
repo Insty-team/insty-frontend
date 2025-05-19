@@ -1,16 +1,17 @@
 "use client";
-
+import Link from "next/link";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";
 import { SignupForm } from "@/app/types";
-import Link from "next/link";
-import TextInput from "@/app/_components/validation/TextInput";
-import PasswordInput from "@/app/_components/validation/PasswordInput";
 import SocialLogin from "@/app/_components/social/SocialLogin";
-import PasswordConfirmInput from "../_components/validation/ConfirmPasswordInput";
+import {
+	TextInput,
+	PasswordInput,
+	PasswordConfirmInput,
+} from "@/app/_components/validation";
 
-export default function Signup() {
+function Signup() {
 	const {
 		register,
 		handleSubmit,
@@ -35,6 +36,8 @@ export default function Signup() {
 		//이메일 중복 체크
 		console.log("이메일 중복 체크를 눌렀어요.");
 	};
+
+	const sizeClass = "text-base";
 
 	return (
 		<>
@@ -126,7 +129,7 @@ export default function Signup() {
 
 					<button
 						type="submit"
-						className="w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white font-semibold"
+						className={`w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white font-semibold ${sizeClass}`}
 					>
 						회원가입
 					</button>
@@ -147,3 +150,5 @@ export default function Signup() {
 		</>
 	);
 }
+
+export default Signup;

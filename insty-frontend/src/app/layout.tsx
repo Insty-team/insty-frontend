@@ -1,5 +1,6 @@
 "use client";
 
+import Providers from "./Providers";
 import "./globals.css";
 
 function RootLayout({
@@ -8,9 +9,11 @@ function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="ko">
 			<body className="font-sans flex-1">
-				<main>{children}</main>
+				<main>
+					<Providers>{children}</Providers>
+				</main>
 			</body>
 		</html>
 	);
