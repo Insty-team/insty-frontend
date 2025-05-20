@@ -36,7 +36,7 @@ export const VIDEOS_DUMMY_LIST = [
 	{
 		id: 1,
 		title:
-			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목",
+			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목1",
 		thumbnail: "/dog.png",
 		tags: [
 			"RTX 3060",
@@ -59,7 +59,7 @@ export const VIDEOS_DUMMY_LIST = [
 	{
 		id: 2,
 		title:
-			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목",
+			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목2",
 		thumbnail: "/dog.png",
 		tags: [
 			"RTX 3060",
@@ -82,7 +82,7 @@ export const VIDEOS_DUMMY_LIST = [
 	{
 		id: 3,
 		title:
-			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목",
+			"영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목 영상 제목3",
 		thumbnail: "/dog.png",
 		tags: [
 			"RTX 3060",
