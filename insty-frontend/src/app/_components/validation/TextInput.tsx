@@ -12,7 +12,7 @@ function TextInput<TFieldValues>({
 }: TextInputProps<TFieldValues>) {
 	return (
 		<div className="w-full relative">
-			<label className="block text-lg font-medium mb-1 text-black-300">
+			<label className="block text-xl font-medium mb-1 text-black-300">
 				{label}
 			</label>
 			<input
@@ -22,7 +22,7 @@ function TextInput<TFieldValues>({
 				{...register(name, validation)}
 			/>
 			{checkDuplication && (
-				<div className="absolute right-3 top-10">{checkDuplication}</div>
+				<div className="absolute right-3 top-10.5">{checkDuplication}</div>
 			)}
 			{error && (
 				<p className="mt-1 ml-2 text-secondary-red-300">{error.message}</p>
