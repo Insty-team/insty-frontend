@@ -73,3 +73,30 @@ export type ChangeProfileForm = {
 	password: string
 	changedPassword: string
 }
+
+export type UploadformData = {
+	link: string;
+	title: string;
+	description: string;
+	price: number;
+	tags: string[];
+	environments: Environment[];
+	coreContents: string[];
+}
+
+export type VideoFormProps ={
+	subject: string;
+	initialData?: {
+		link?: string;
+		thumbnail?: string;
+        title?: string;
+		description?: string;
+        price?: number;
+		tags?: string[];
+		environments?: Environment[];
+		coreContents?: string[];
+	};
+	onSubmit: (formData: UploadformData) => void;
+	submitText?: string;
+	onBack: () => void;
+}
