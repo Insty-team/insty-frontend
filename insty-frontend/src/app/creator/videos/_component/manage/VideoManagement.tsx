@@ -1,10 +1,24 @@
+"use client";
 import Image from "next/image";
 import { VIDEOS_DUMMY_LIST } from "@/app/constants/constants";
+import { useState } from "react";
+import VideoEdit from "./VideoEdit";
+import VideoDetail from "./VideoDetail";
 
 export default function VideoManagement() {
+	const [mode, setMode] = useState<"list" | "edit" | "detail">("list");
+	const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
+
+	if (mode === 'edit' && selectedVideoId) {
+		return <VideoEdit videoId={selectedVideoId} onBack={() => setMode('list')} />;
+	}
+	if (mode === 'detail' && selectedVideoId) {
+		return <VideoDetail videoId={selectedVideoId} onBack={() => setMode('list')} />;
+	}
+
 	return (
 		<>
-			<h2 className="text-2xl font-semibold mt-6 mb-4">업로드한 영상 리스트</h2>
+			<h2 className="text-3xl font-semibold mt-6 mb-4">업로드한 영상 리스트</h2>
 			{VIDEOS_DUMMY_LIST.map((video) => (
 				<div key={video.id} className="flex bg-white p-4 items-center gap-6">
 					<div className="overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -69,13 +83,13 @@ export default function VideoManagement() {
 						</div>
 						<div className="flex gap-2 mt-2">
 							<button
+								onClick={() => { setSelectedVideoId(video.id); setMode('edit'); }}
 								className={`
                 group
                 px-4 py-2 rounded border border-primary-blue-600
                 bg-white hover:bg-primary-blue-400 active:bg-primary-blue-600
                 text-primary-blue-600 hover:text-white hover:border-primary-blue-400 active:text-white active:border-primary-blue-600
-                flex items-center gap-1
-              `}
+                flex items-center gap-1`}
 							>
 								수정
 								<svg
@@ -97,6 +111,7 @@ export default function VideoManagement() {
 								</svg>
 							</button>
 							<button
+								onClick={() => { setSelectedVideoId(video.id); setMode('detail'); }}
 								className={`
                 group
                 px-4 py-2 rounded border border-primary-blue-600

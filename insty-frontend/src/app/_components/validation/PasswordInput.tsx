@@ -17,7 +17,7 @@ function PasswordInput<TFieldValues>({
 	};
 	return (
 		<div className="w-full relative">
-			<label className="block text-lg font-medium mb-1 text-black-300">
+			<label className="block text-xl font-medium mb-1 text-black-300">
 				{label}
 			</label>
 			<input
@@ -28,7 +28,7 @@ function PasswordInput<TFieldValues>({
 			/>
 			<button
 				type="button"
-				className="absolute right-3 top-10.5 cursor-pointer"
+				className="absolute right-3 top-11 cursor-pointer"
 				onClick={onChangeShowPassword}
 			>
 				<Image

@@ -14,7 +14,7 @@ function VideosHeader({ activeTab, setActiveTab }: VideosHeaderProps) {
                         key={header.id} 
                         className={`text-lg transition-colors duration-200 ${
                             activeTab === header.id 
-                                ? "text-primary-blue-400 border-0 border-b-2 !border-primary-blue-400" 
+                                ? "text-primary-blue-400 border-0 border-b-2 border-primary-blue-400" 
                                 : "text-gray-scale-400 cursor-pointer hover:text-black"
                         }`} 
                         onClick={() => setActiveTab(header.id)}
@@ -26,4 +26,5 @@ function VideosHeader({ activeTab, setActiveTab }: VideosHeaderProps) {
 		</>
 	);
 }
-export default VideosHeader;
+
+export default VideosHeader; 

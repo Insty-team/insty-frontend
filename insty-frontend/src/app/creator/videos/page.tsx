@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
 import VideosHeader from "./_component/VideosHeader";
-import VideoManagement from "./_component/VideoManagement";
+import VideoManagement from "./_component/manage/VideoManagement";
+import VideoUpload from "./_component/upload/VideoUpload";
+import ConfirmRevenue from "./_component/revenue/ConfirmRevenue";
 
 function Videos() {
 	const [activeTab, setActiveTab] = useState("manage");
@@ -11,8 +13,8 @@ function Videos() {
 			<VideosHeader activeTab={activeTab} setActiveTab={setActiveTab} />
 			<div className="w-full p-4 flex flex-col">
 				{activeTab === "manage" && <VideoManagement />}
-				{activeTab === "upload" && <div>업로드 탭 내용</div>}
-				{activeTab === "revenue" && <div>수익 탭 내용</div>}
+				{activeTab === "upload" && <VideoUpload />}
+				{activeTab === "revenue" && <ConfirmRevenue />}
 			</div>
 		</>
 	);
