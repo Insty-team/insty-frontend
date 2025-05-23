@@ -17,6 +17,7 @@ const VideoForm: React.FC<VideoFormProps> = ({
 }) => {
 	const [link, setLink] = useState(initialData?.link || "");
     const [title, setTitle] = useState(initialData?.title || "");
+	const [recipient, setRecipient] = useState(initialData?.recipient || "");
     const [price, setPrice] = useState(initialData?.price || 0);
 	const [description, setDescription] = useState(
 		initialData?.description || ""
@@ -92,16 +93,18 @@ const VideoForm: React.FC<VideoFormProps> = ({
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		onSubmit({
+		const formData = {
 			link,
 			title,
+			recipient,
 			description,
 			price,
 			tags,
 			environments,
 			coreContents,
-		});
-        console.log("제출");
+		};
+		console.log('폼 데이터:', formData);
+		onSubmit(formData);
 	};
 
 	return (
@@ -175,8 +178,8 @@ const VideoForm: React.FC<VideoFormProps> = ({
 							<input
 								className="w-full bg-gray-scale-100 rounded-2xl p-2 text-black-100"
 								placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
-								value={description}
-								onChange={(e) => setDescription(e.target.value)}
+								value={recipient}
+								onChange={(e) => setRecipient(e.target.value)}
 							/>
 						</div>
 						<div className="flex-1">

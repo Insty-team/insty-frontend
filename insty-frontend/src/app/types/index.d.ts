@@ -77,6 +77,7 @@ export type ChangeProfileForm = {
 export type UploadformData = {
 	link: string;
 	title: string;
+	recipient: string;
 	description: string;
 	price: number;
 	tags: string[];
@@ -90,6 +91,7 @@ export type VideoFormProps ={
 		link?: string;
 		thumbnail?: string;
         title?: string;
+		recipient?: string;
 		description?: string;
         price?: number;
 		tags?: string[];
