@@ -30,6 +30,19 @@
 	--color-primary-green-400: #4aa5a2;
 	--color-orange: #ff8c00;
 	--color-orange-hover: #e67a00;
+	--color-primary-green-50: #fbfaee;
+	--color-primary-green-100: #e5f9e0;
+	--color-primary-green-200: #ceefca;
+	--color-primary-green-300: #97ca9b;
+	--color-primary-green-400: #72c380;
+	--color-primary-green-500: #63ad79;
+	--color-primary-green-600: #479b5d;
+	--color-primary-green-700: #307548;
+	--color-primary-green-800: #15452a;
+	--color-primary-green-900: #0a2215;
+	--color-secondary-green-sheen: #6db69d;
+	--color-scondary-keppel: #47a6a0;
+	--color-secondary-verdigris: #4aa5a2;
 }
 
 @theme {
