@@ -1,7 +1,10 @@
+"use client";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { LEARNER_MENU_LIST } from "@/app/constants/constants";
 
 function LearnerHeader() {
-	const menuList = ["맞춤 콘텐츠 추천", "마이페이지", "커뮤니티"];
+	const pathname = usePathname();
 
 	return (
 		<div className="flex justify-between items-center w-full px-4">
@@ -15,8 +18,8 @@ function LearnerHeader() {
 						height={63}
 					/>
 					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
-						{menuList.map((menu) => (
-							<span key={menu}>{menu}</span>
+						{LEARNER_MENU_LIST.map((menu) => (
+							<span key={menu.id} className={`${pathname === menu.path ? "text-primary-green-600" : "text-black-400"}`}>{menu.title}</span>
 						))}
 					</div>
 				</div>
