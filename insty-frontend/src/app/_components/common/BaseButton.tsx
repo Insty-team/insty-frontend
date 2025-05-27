@@ -6,6 +6,7 @@ type BaseButtonProps = {
 	type?: "button" | "submit" | "reset";
 	disabled?: boolean;
 	onClick?: () => void;
+	className?: string;
 };
 
 function BaseButton({
@@ -13,13 +14,14 @@ function BaseButton({
 	type = "button",
 	disabled = false,
 	onClick,
+	className,
 }: BaseButtonProps) {
 	return (
 		<button
 			type={type}
 			onClick={onClick}
 			disabled={disabled}
-			className={`w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white`}
+			className={`w-full py-3 rounded-xl bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 cursor-pointer text-white ${className}`}
 		>
 			{title}
 		</button>
