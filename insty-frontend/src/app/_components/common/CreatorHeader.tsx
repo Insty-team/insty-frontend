@@ -16,7 +16,6 @@ function CreatorHeader() {
 				<div className="flex gap-20">
 					<Link
 						href={dashboard.path}
-						key={dashboard.id}
 						className="flex justify-center items-center"
 					>
 						<Image
@@ -29,10 +28,10 @@ function CreatorHeader() {
 					</Link>
 					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
 						{CREATOR_MENU_LIST.map((menu) => (
-							<Link href={`${menu.path}`} key={menu.id}>
+							<Link href={`${menu.path}`} key={menu.id} className="cursor-pointer hover:text-primary-green-500">
 								<span
 									className={
-										pathname.includes(menu.path) ? "text-primary-blue-600" : ""
+										pathname.includes(menu.path) ? "text-primary-green-600" : ""
 									}
 								>
 									{menu.title}

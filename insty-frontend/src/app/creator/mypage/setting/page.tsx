@@ -27,7 +27,7 @@ function Setting() {
 					onChange={onChange}
 					sx={{
 						".chakra-switch__track": {
-							backgroundColor: isReceiveEmail ? "#3C4A7E" : "#DEDEDE",
+							backgroundColor: isReceiveEmail ? "#307548" : "#DEDEDE",
 						},
 						".chakra-switch__thumb": {
 							backgroundColor: "#ffffff",

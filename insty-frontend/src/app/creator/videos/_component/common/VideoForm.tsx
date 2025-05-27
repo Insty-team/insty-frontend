@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import { VideoFormProps } from "@/app/types";
+import { BaseButton, IconButton } from "@/app/_components/common";
 
 interface Environment {
 	value: string;
@@ -12,13 +12,11 @@ const VideoForm: React.FC<VideoFormProps> = ({
 	subject,
 	initialData,
 	onSubmit,
-	submitText = "완료",
-	onBack,
 }) => {
 	const [link, setLink] = useState(initialData?.link || "");
-    const [title, setTitle] = useState(initialData?.title || "");
+	const [title, setTitle] = useState(initialData?.title || "");
 	const [recipient, setRecipient] = useState(initialData?.recipient || "");
-    const [price, setPrice] = useState(initialData?.price || 0);
+	const [price, setPrice] = useState(initialData?.price || 0);
 	const [description, setDescription] = useState(
 		initialData?.description || ""
 	);
@@ -103,13 +101,32 @@ const VideoForm: React.FC<VideoFormProps> = ({
 			environments,
 			coreContents,
 		};
-		console.log('폼 데이터:', formData);
-		onSubmit(formData);
+		console.log("폼 데이터:", formData);
+		if(link === "" || title === "" || recipient === "" || price === 0 || description === "" || environments.length === 0 || coreContents.length === 0 || tags.length === 0) {
+			alert("모든 항목을 입력해주세요.");
+			return;
+		}
+		else {
+			onSubmit(formData);
+		}
+		
 	};
 
 	return (
 		<form onSubmit={handleSubmit}>
-			<h2 className="font-bold text-3xl mb-12">{subject}</h2>
+			<div className="flex items-center justify-between">
+				<div className="font-bold text-3xl mb-12">{subject}</div>
+				{subject === "영상 업로드" ? (
+					<IconButton
+						icon="/airecommend.svg"
+						title="AI로 초안 작성하기"
+						className="flex items-center px-4 py-2 rounded-lg border !border-primary-green-600 text-primary-green-600 hover:bg-primary-green-500 hover:text-white active:bg-primary-green-600 active:text-white"
+						textSize="text-xl"
+					/>
+				) : (
+					""
+				)}
+			</div>
 			<div className="flex w-full gap-9">
 				<div className="flex flex-col w-2/5 min-w-[220px] max-w-[350px]">
 					<label className="block text-xl font-semibold mb-1">영상 링크</label>
@@ -131,18 +148,8 @@ const VideoForm: React.FC<VideoFormProps> = ({
 						</button>
 					</div>
 					<div className="flex flex-col gap-3 mb-2 justify-center align-middle text-center">
-						<button
-							type="button"
-							className="flex-1 py-2 bg-primary-blue-600 text-white rounded cursor-pointer"
-						>
-							썸네일 선택
-						</button>
-						<button
-							type="button"
-							className="flex-1 py-2 border !border-primary-blue-600 text-primary-blue-600 rounded cursor-pointer"
-						>
-							실습 자료 파일 선택
-						</button>
+						<BaseButton title="썸네일 선택" />
+						<BaseButton title="실습 자료 파일 선택" fill={false} />
 						<button
 							type="button"
 							className="text-secondary-red-300 text-lg cursor-pointer"
@@ -163,12 +170,6 @@ const VideoForm: React.FC<VideoFormProps> = ({
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
 							/>
-							<button
-								type="button"
-								className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-2xl text-md cursor-pointer"
-							>
-								AI추천 문장입력
-							</button>
 						</div>
 					</div>
 
@@ -203,12 +204,6 @@ const VideoForm: React.FC<VideoFormProps> = ({
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 							/>
-							<button
-								type="button"
-								className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-2xl text-md cursor-pointer"
-							>
-								AI추천 요약입력
-							</button>
 						</div>
 					</div>
 
@@ -312,37 +307,16 @@ const VideoForm: React.FC<VideoFormProps> = ({
 							{tags.map((tag, idx) => (
 								<span
 									key={tag}
-									className="px-4 py-2 rounded-full flex items-center text-lg border border-primary-blue-600"
+									className="px-4 py-2 rounded-full flex items-center text-lg border !border-primary-green-600"
 								>
-									{tag}
-									<button type="button" onClick={() => handleRemoveTag(idx)}>
-										<Image
-											src="/cancel.svg"
-											alt="취소"
-											width={16}
-											height={16}
-											className="ml-2"
-										/>
-									</button>
+									<IconButton align="right" icon="/cancel.svg" title={tag} textSize="text-xl" className="flex items-center ml-2 cursor-pointer" onClick={() => handleRemoveTag(idx)}/>
 								</span>
 							))}
 						</div>
 					</div>
 
-					<div className="flex justify-end mt-4">
-						<button
-							type="submit"
-							className="px-8 py-2 bg-primary-blue-600 text-white rounded text-lg"
-						>
-							{submitText}
-						</button>
-						<button
-							type="button"
-							className="ml-2 px-8 py-2 bg-gray-200 text-black-400 rounded text-lg"
-							onClick={onBack}
-						>
-							뒤로가기
-						</button>
+					<div className="w-[30%] flex items-end ml-auto mt-4">
+						<BaseButton title="업로드" type="submit" onClick={() => handleSubmit} />
 					</div>
 				</div>
 			</div>

@@ -31,7 +31,6 @@ function CommonLineChart({
 							textAnchor: "middle",
 							fontSize: 12,
 							fontWeight: "bold",
-							fill: "#2A3B6F",
 						},
 					}}
 				/>
@@ -47,18 +46,18 @@ function CommonLineChart({
 				<Line
 					type="monotone"
 					dataKey="value"
-					stroke="#2A3B6F"
+					stroke="#307548"
 					strokeWidth={3}
 					dot={{
 						r: 6,
-						stroke: "#2A3B6F",
+						stroke: "#307548",
 						strokeWidth: 2,
 						fill: "#fff",
 					}}
 					activeDot={{
 						r: 8,
 						fill: "#fff",
-						stroke: "#2A3B6F",
+						stroke: "#307548",
 						strokeWidth: 3,
 					}}
 				/>
