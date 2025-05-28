@@ -4,16 +4,21 @@ import { VIDEOS_DUMMY_LIST } from "@/app/constants/constants";
 import { useState } from "react";
 import VideoEdit from "./VideoEdit";
 import VideoDetail from "./VideoDetail";
+import { IconButton } from "@/app/_components/common";
 
 export default function VideoManagement() {
 	const [mode, setMode] = useState<"list" | "edit" | "detail">("list");
 	const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
 
-	if (mode === 'edit' && selectedVideoId) {
-		return <VideoEdit videoId={selectedVideoId} onBack={() => setMode('list')} />;
+	if (mode === "edit" && selectedVideoId) {
+		return (
+			<VideoEdit videoId={selectedVideoId} onBack={() => setMode("list")} />
+		);
 	}
-	if (mode === 'detail' && selectedVideoId) {
-		return <VideoDetail videoId={selectedVideoId} onBack={() => setMode('list')} />;
+	if (mode === "detail" && selectedVideoId) {
+		return (
+			<VideoDetail videoId={selectedVideoId} onBack={() => setMode("list")} />
+		);
 	}
 
 	return (
@@ -55,7 +60,7 @@ export default function VideoManagement() {
 									height={36}
 								/>
 								조회수{" "}
-								<span className="text-primary-blue-600 ml-1">
+								<span className="text-primary-green-600 ml-1">
 									{video.views}
 								</span>
 							</span>
@@ -68,7 +73,7 @@ export default function VideoManagement() {
 									height={36}
 								/>
 								업로드 날짜{" "}
-								<span className="text-primary-blue-600 ml-1">
+								<span className="text-primary-green-600 ml-1">
 									{video.uploadDate}
 								</span>
 							</span>
@@ -76,49 +81,29 @@ export default function VideoManagement() {
 							<span className="flex items-center gap-1 text-gray-500">
 								<Image src="/money.svg" alt="가격" width={36} height={36} />
 								가격{" "}
-								<span className="text-primary-blue-600 ml-1">
+								<span className="text-primary-green-600 ml-1">
 									{video.price}
 								</span>
 							</span>
 						</div>
-						<div className="flex gap-2 mt-2">
+						<div className="flex gap-2 mt-2 w-full">
+							<IconButton
+								align="right"
+								title="수정"
+								icon="/edit.svg"
+								textSize="text-2lg"
+								className="w-[20%] flex items-center justify-center px-4 py-2 rounded-lg bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 text-white"
+								onClick={() => {
+									setSelectedVideoId(video.id);
+									setMode("edit");
+								}}
+							/>
 							<button
-								onClick={() => { setSelectedVideoId(video.id); setMode('edit'); }}
-								className={`
-                group
-                px-4 py-2 rounded border border-primary-blue-600
-                bg-white hover:bg-primary-blue-400 active:bg-primary-blue-600
-                text-primary-blue-600 hover:text-white hover:border-primary-blue-400 active:text-white active:border-primary-blue-600
-                flex items-center gap-1`}
-							>
-								수정
-								<svg
-									width="20"
-									height="21"
-									viewBox="0 0 20 21"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-									className="w-5 h-5 ml-1"
-								>
-									<path
-										d="M2.5 14.8397V17.9647H5.625L14.8417 8.74805L11.7167 5.62305L2.5 14.8397Z"
-										fill="currentColor"
-									/>
-									<path
-										d="M17.2574 6.33115C17.412 6.1747 17.4987 5.96361 17.4987 5.74365C17.4987 5.5237 17.412 5.31261 17.2574 5.15615L15.3074 3.20615C15.151 3.05155 14.9399 2.96484 14.7199 2.96484C14.5 2.96484 14.2889 3.05155 14.1324 3.20615L12.6074 4.73115L15.7324 7.85615L17.2574 6.33115Z"
-										fill="currentColor"
-									/>
-								</svg>
-							</button>
-							<button
-								onClick={() => { setSelectedVideoId(video.id); setMode('detail'); }}
-								className={`
-                group
-                px-4 py-2 rounded border border-primary-blue-600
-                bg-white hover:bg-primary-blue-400 active:bg-primary-blue-600
-                text-primary-blue-600 hover:text-white hover:border-primary-blue-400 active:text-white active:border-primary-blue-600
-                flex items-center gap-1
-              `}
+								onClick={() => {
+									setSelectedVideoId(video.id);
+									setMode("detail");
+								}}
+								className={`w-[20%] flex items-center justify-center px-4 py-2 rounded-lg border border-primary-green-600 hover:bg-primary-green-500 active:bg-primary-green-600 text-primary-green-600 hover:text-white active:text-white`}
 							>
 								상세 보기
 								<svg

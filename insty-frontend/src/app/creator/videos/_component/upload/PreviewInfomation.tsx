@@ -1,6 +1,7 @@
 import React from "react";
 import { UploadformData } from "@/app/types";
 import Image from "next/image";
+import { BaseButton } from "@/app/_components/common";
 
 interface PreviewInfomationProps {
 	data: UploadformData;
@@ -51,15 +52,8 @@ function PreviewInfomation({ data, onEdit }: PreviewInfomationProps) {
 						</div>
 					</div>
 					<div className="flex gap-4 mt-auto pt-8">
-						<button
-							className="flex-1 border !border-primary-blue-600 text-primary-blue-600 px-6 py-3 rounded-lg"
-							onClick={onEdit}
-						>
-							수정하기
-						</button>
-						<button className="flex-1 bg-primary-blue-600 text-white px-6 py-3 rounded-lg">
-							업로드 진행하기
-						</button>
+						<BaseButton title="수정하기" fill={false} onClick={onEdit}/>
+						<BaseButton title="업로드 진행하기" onClick={() => {}}/>
 					</div>
 				</div>
 			</div>

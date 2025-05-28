@@ -2,6 +2,7 @@ import React from "react";
 import CommonLineChart from "@/app/creator/_component/CommonLineChart";
 import dayjs from "dayjs";
 import Image from "next/image";
+import { BaseButton } from "@/app/_components/common";
 
 function ConfirmRevenue() {
 	const months = Array.from({ length: 6 }, (_, i) =>
@@ -38,13 +39,15 @@ function ConfirmRevenue() {
 							</div>
 							<span className="text-black-400 text-2xl">누적 수익</span>
 						</div>
-						<div className="text-4xl font-bold text-primary-blue-600 mb-2">
+						<div className="text-4xl font-bold text-primary-green-600 mb-2">
 							{totalRevenue.toLocaleString()} 원
 						</div>
 					</div>
 
 					<div className="mb-8">
-						<div className="font-semibold text-2xl mt-16 mb-6">월 수익 그래프</div>
+						<div className="font-semibold text-2xl mt-16 mb-6">
+							월 수익 그래프
+						</div>
 						<div className="bg-white rounded-xl border border-gray-100 p-2 flex items-center">
 							<CommonLineChart
 								data={chartData}
@@ -58,14 +61,21 @@ function ConfirmRevenue() {
 
 					<div className="flex items-center gap-4 mt-10">
 						<div>
-							<div className="text-black-400 text-2xl mb-10">출금 가능 금액</div>
+							<div className="text-black-400 text-2xl mb-10">
+								출금 가능 금액
+							</div>
 							<div className="flex items-center gap-4">
-								<div className="text-2xl font-bold text-primary-blue-600">
+								<div className="text-2xl font-bold text-primary-green-600">
 									{withdrawable.toLocaleString()} 원
 								</div>
-								<button className="px-8 py-2 bg-primary-blue-600 text-white rounded text-lg font-semibold">
-									출금 신청
-								</button>
+								<div>
+									<BaseButton
+										title="출금 신청"
+										onClick={() => {}}
+										textSize="text-xl"
+										className="px-8 py-2"
+									/>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -80,7 +90,7 @@ function ConfirmRevenue() {
 								className="border border-gray-100 rounded-lg px-4 py-2 flex flex-col text-xl"
 							>
 								<span className="truncate mb-1">{item.title}</span>
-								<span className="text-primary-blue-600 font-semibold text-xl">
+								<span className="text-primary-green-600 font-semibold text-xl">
 									{item.info}
 								</span>
 							</div>

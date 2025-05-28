@@ -16,7 +16,7 @@ function Account() {
 						icon="/pencil.svg"
 						align="right"
 						title="수정"
-						className="bg-primary-blue-600 rounded-lg w-[168px] flex justify-center items-center gap-2 text-gray-scale-50 cursor-pointer"
+						className="bg-primary-green-600 rounded-lg w-[168px] flex justify-center items-center gap-2 text-gray-scale-50 cursor-pointer"
 					/>
 					<IconButton
 						icon="/basket.svg"

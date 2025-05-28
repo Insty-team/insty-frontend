@@ -7,7 +7,8 @@ type IconButtonProps = {
 	icon: string;
 	iconWidth?: number;
 	iconHeight?: number;
-	align: "left" | "right";
+	textSize?: string;
+	align?: "left" | "right";
 	title: string;
 	type?: "button" | "submit" | "reset";
 	className?: string;
@@ -20,6 +21,7 @@ function IconButton({
 	align = "left",
 	iconWidth = 20,
 	iconHeight = 20,
+	textSize = "text-2xl",
 	title,
 	type = "button",
 	className = "",
@@ -37,7 +39,7 @@ function IconButton({
 				className={className}
 			>
 				<Image src={icon} width={iconWidth} height={iconHeight} alt="button" />
-				<span>{title}</span>
+				<span className={`${textSize} ml-2`}>{title}</span>
 			</button>
 		</>
 	) : (
@@ -48,8 +50,8 @@ function IconButton({
 				onClick={onClick}
 				className={className}
 			>
-				<span>{title}</span>
-				<Image src={icon} width={20} height={20} alt="button" />
+				<span className={`${textSize} mr-2`}>{title}</span>
+				<Image src={icon} width={iconWidth} height={iconHeight} alt="button" />
 			</button>
 		</>
 	);

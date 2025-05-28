@@ -6,6 +6,9 @@ type BaseButtonProps = {
 	type?: "button" | "submit" | "reset";
 	disabled?: boolean;
 	onClick?: () => void;
+	fill?: boolean;
+	textSize?: string;
+	className?: string;
 };
 
 function BaseButton({
@@ -13,13 +16,20 @@ function BaseButton({
 	type = "button",
 	disabled = false,
 	onClick,
+	fill = true,
+	textSize = "text-2xl",
+	className,
 }: BaseButtonProps) {
 	return (
 		<button
 			type={type}
 			onClick={onClick}
 			disabled={disabled}
-			className={`w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white`}
+			className={
+				fill
+					? `w-full py-3 rounded-xl bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 cursor-pointer text-white ${textSize} ${className}`
+					: `w-full py-3 rounded-xl border border-primary-green-400 text-primary-green-400 hover:bg-primary-green-500 hover:text-white active:bg-primary-green-600 active:text-white cursor-pointer ${textSize} ${className}`
+			}
 		>
 			{title}
 		</button>

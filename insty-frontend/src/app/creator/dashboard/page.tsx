@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import dayjs from "dayjs";
 import CommonLineChart from "../_component/CommonLineChart";
+import { BaseButton, IconButton } from "@/app/_components/common";
 
 function CreatorDashboard() {
 	const [period, setPeriod] = useState("1개월");
@@ -66,19 +67,14 @@ function CreatorDashboard() {
 							<li>주제 3 주제 3 주제 3</li>
 						</ol>
 					</div>
-					<div className="mt-6">
-						<button className="w-[60%] bg-primary-blue-600 text-white hover:bg-primary-blue-700 py-2 rounded mb-2 cursor-pointer font-semibold flex items-center justify-center gap-2">
-							영상 업로드 하러 가기{" "}
-							<Image
-								src="/fileUpload.svg"
-								alt="파일 업로드"
-								width={20}
-								height={20}
-							/>
-						</button>
-						<button className="w-[60%] border border-primary-blue-600 text-primary-blue-600 hover:bg-primary-blue-600 hover:text-white py-2 rounded cursor-pointer font-semibold">
-							커뮤니티 바로 가기
-						</button>
+					<div className="mt-6 w-[80%]">
+						<IconButton
+							icon="/fileUpload.svg"
+							align="right"
+							title="영상 업로드 하러 가기"
+							className="flex items-center justify-center w-full py-3 rounded-xl bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 cursor-pointer text-white mb-1"
+						/>
+						<BaseButton title="커뮤니티 바로가기" fill={false} />
 					</div>
 				</div>
 			</aside>
@@ -88,7 +84,7 @@ function CreatorDashboard() {
 					<div className="flex-1">
 						<div className="text-2xl font-bold mb-2">수익</div>
 						<div className="flex w-full gap-8 items-start">
-							<div className="flex-1 min-w-0">
+							<div className="flex-1 mt-6">
 								<CommonLineChart
 									data={revenueData}
 									yAxisLabel=""
@@ -100,15 +96,15 @@ function CreatorDashboard() {
 					</div>
 					<div className="w-48 flex-shrink-0 flex flex-col gap-2 justify-center">
 						<div className="text-lg text-black-400">총 수익</div>
-						<div className="font-bold text-primary-blue-600 text-lg">
+						<div className="font-bold text-primary-green-600 text-lg">
 							₩ 999,999
 						</div>
 						<div className="text-lg text-black-400">이번 달 수익</div>
-						<div className="font-bold text-primary-blue-600 text-lg">
+						<div className="font-bold text-primary-green-600 text-lg">
 							₩ 999,999
 						</div>
 						<div className="text-lg text-black-400">이번 주 수익</div>
-						<div className="font-bold text-primary-blue-600 text-lg">
+						<div className="font-bold text-primary-green-600 text-lg">
 							₩ 999,999
 						</div>
 					</div>
@@ -117,7 +113,7 @@ function CreatorDashboard() {
 					<div className="flex-1">
 						<div className="text-2xl font-bold mb-2">조회수</div>
 						<div className="flex w-full gap-8 items-start">
-							<div className="flex-1 min-w-0">
+							<div className="flex-1 mt-6">
 								<CommonLineChart
 									data={viewData}
 									yAxisLabel=""
@@ -129,7 +125,7 @@ function CreatorDashboard() {
 					</div>
 					<div className="w-48 flex-shrink-0 flex flex-col gap-2 justify-center">
 						<div className="text-lg text-black-400">총 조회수</div>
-						<div className="font-bold text-primary-blue-600 text-lg flex items-center gap-2">
+						<div className="font-bold text-primary-green-600 text-lg flex items-center gap-2">
 							<Image
 								src="/userGraph.svg"
 								alt="사용자 그래프"
@@ -139,7 +135,7 @@ function CreatorDashboard() {
 							999,999
 						</div>
 						<div className="text-lg text-black-400">이번 달 조회수</div>
-						<div className="font-bold text-primary-blue-600 text-lg flex items-center gap-2">
+						<div className="font-bold text-primary-green-600 text-lg flex items-center gap-2">
 							<Image
 								src="/userGraph.svg"
 								alt="사용자 그래프"
@@ -149,7 +145,7 @@ function CreatorDashboard() {
 							999,999
 						</div>
 						<div className="text-lg text-black-400">이번 주 조회수</div>
-						<div className="font-bold text-primary-blue-600 text-lg flex items-center gap-2">
+						<div className="font-bold text-primary-green-600 text-lg flex items-center gap-2">
 							<Image
 								src="/userGraph.svg"
 								alt="사용자 그래프"

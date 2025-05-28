@@ -16,7 +16,7 @@ function Select() {
 						</p>
 					</div>
 					<div className="flex justify-between mt-12 gap-20">
-						<div className="flex flex-col justify-between items-center p-16 border border-primary-blue-400 rounded-2xl h-[400px]">
+						<div className="flex flex-col justify-between items-center p-16 border !border-primary-blue-400 rounded-2xl h-[400px]">
 							<p className="mb-4 text-3xl text-black-400 font-semibold">러너</p>
 							<div className="text-center text-black-200 text-2xl">
 								<div>
@@ -39,7 +39,7 @@ function Select() {
 								/>
 							</Link>
 						</div>
-						<div className="flex flex-col justify-between items-center p-16 border border-orange rounded-2xl h-[400px]">
+						<div className="flex flex-col justify-between items-center p-16 border !border-orange rounded-2xl h-[400px]">
 							<p className="mb-4 text-3xl text-black-400 font-semibold">
 								크리에이터
 							</p>
