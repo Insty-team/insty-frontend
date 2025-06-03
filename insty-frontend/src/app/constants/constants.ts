@@ -26,9 +26,9 @@ export const LEARNER_MENU_LIST = [
 
 //영상 관리 헤더에 사용
 export const VIDEOS_HEADER_LIST = [
-    { id: "manage", title: "영상 관리" },
-    { id: "upload", title: "영상 업로드" },
-    { id: "revenue", title: "수익 확인하기" },
+	{ id: "manage", title: "영상 관리" },
+	{ id: "upload", title: "영상 업로드" },
+	{ id: "revenue", title: "수익 확인하기" },
 ];
 
 //더미 데이터
@@ -101,5 +101,21 @@ export const VIDEOS_DUMMY_LIST = [
 		price: "999,999,999원",
 		detailUrl: "#",
 		editUrl: "#",
+	},
+];
+
+//환불 규정 안내
+export const REFUND_POLICY = [
+	{
+		line: 1,
+		text: "본 콘텐츠는 디지털 영상 콘텐츠로, 구매 즉시 시청이 가능하여 환불이 제한될 수 있습니다.",
+	},
+	{
+		line: 2,
+		text: "단, 결제 후 7일 이내 영상 재생 또는 실습 자료 다운로드 이력이 없는 경우에 한해 환불이 가능합니다.",
+	},
+	{
+		line: 3,
+		text: "일부 시청 또는 실습 자료 다운로드 후에는 환불이 불가능 합니다.",
 	},
 ];
