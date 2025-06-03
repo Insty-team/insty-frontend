@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
@@ -71,13 +72,14 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 
 					<div className="flex gap-3 mt-auto overflow-x-auto">
 						{recommendations.map((rec, idx) => (
-							<div
+							<Link
 								key={idx}
-								className="flex flex-col max-w-[400px] bg-white rounded-xl shadow p-4 text-lg text-black-100 border border-gray-scale-100 flex-shrink-0 mb-2"
+								href={`/learner/recommend/course/${idx}`}
+								className="flex flex-col max-w-[400px] bg-white rounded-xl shadow p-4 text-lg text-black-100 border border-gray-scale-100 flex-shrink-0 mb-2 cursor-pointer"
 							>
                                 <div className="w-full h-[200px] bg-gray-scale-100 rounded-xl mb-4"></div>
 								<span className="line-clamp-1">{rec}</span>
-							</div>
+							</Link>
 						))}
 					</div>
 				</div>
