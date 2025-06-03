@@ -22,7 +22,7 @@ function VideoUpload() {
   return (
     <>
       {step === 'upload' && <VideoForm subject="영상 업로드" onSubmit={handleUpload} onBack={() => {}} />}
-      {step === 'preview' && data && <PreviewInfomation data={data} onEdit={() => handleEdit()} />}
+      {step === 'preview' && data && <PreviewInfomation data={data} onEdit={() => handleEdit()} mode="creator" />}
       {step === 'edit' && data && <VideoForm subject="영상 수정" initialData={data} onSubmit={handleUpload} onBack={() => setStep('preview')} />}
     </>
   )
