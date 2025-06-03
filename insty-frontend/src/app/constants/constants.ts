@@ -25,19 +25,19 @@ export const LEARNER_MENU_LIST = [
 ];
 
 export const LEARNER_MYPAGE_MENU_LIST = [
-	{ id: 1, title: '나의 정보 관리', path: '/learner/mypage/profile'},
-	{ id: 2, title: '내 활동', path: '/learner/mypage/activity'},
-	{ id: 3, title: 'AI 챗봇 질문 이력', path: '/learner/mypage/ai'},
-	{ id: 4, title: '구매 내역', path: '/learner/mypage/buy'},
-	{ id: 5, title: '찜한 영상', path: '/learner/mypage/like'},
-	{ id: 6, title: '설정', path: '/learner/mypage/setting'},
-]
+	{ id: 1, title: "나의 정보 관리", path: "/learner/mypage/profile" },
+	{ id: 2, title: "내 활동", path: "/learner/mypage/activity" },
+	{ id: 3, title: "AI 챗봇 질문 이력", path: "/learner/mypage/ai" },
+	{ id: 4, title: "구매 내역", path: "/learner/mypage/buy" },
+	{ id: 5, title: "찜한 영상", path: "/learner/mypage/like" },
+	{ id: 6, title: "설정", path: "/learner/mypage/setting" },
+];
 
 //영상 관리 헤더에 사용
 export const VIDEOS_HEADER_LIST = [
-    { id: "manage", title: "영상 관리" },
-    { id: "upload", title: "영상 업로드" },
-    { id: "revenue", title: "수익 확인하기" },
+	{ id: "manage", title: "영상 관리" },
+	{ id: "upload", title: "영상 업로드" },
+	{ id: "revenue", title: "수익 확인하기" },
 ];
 
 //더미 데이터

@@ -1,5 +1,4 @@
 "use client";
-
 import { IconButton } from "@/app/_components/common";
 
 function Account() {
