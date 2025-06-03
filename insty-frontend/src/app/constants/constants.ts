@@ -12,9 +12,9 @@ export const CREATOR_MENU_LIST = [
 ];
 
 export const CREATOR_MYPAGE_MENU_LIST = [
-	{ id: 1, title: "나의 정보 관리", path: "/creator/mypage/profile" },
-	{ id: 2, title: "내 계좌 정보", path: "/creator/mypage/account" },
-	{ id: 3, title: "설정", path: "/creator/mypage/setting" },
+	{ id: 1, title: "나의 정보 관리" },
+	{ id: 2, title: "내 계좌 정보" },
+	{ id: 3, title: "설정" },
 ];
 
 // Learner 러너 관련
@@ -25,12 +25,18 @@ export const LEARNER_MENU_LIST = [
 ];
 
 export const LEARNER_MYPAGE_MENU_LIST = [
-	{ id: 1, title: "나의 정보 관리", path: "/learner/mypage/profile" },
-	{ id: 2, title: "내 활동", path: "/learner/mypage/activity" },
-	{ id: 3, title: "AI 챗봇 질문 이력", path: "/learner/mypage/ai" },
-	{ id: 4, title: "구매 내역", path: "/learner/mypage/buy" },
-	{ id: 5, title: "찜한 영상", path: "/learner/mypage/like" },
-	{ id: 6, title: "설정", path: "/learner/mypage/setting" },
+	{ id: 1, title: "나의 정보 관리" },
+	{ id: 2, title: "내 활동" },
+	{ id: 3, title: "AI 챗봇 질문 이력" },
+	{ id: 4, title: "구매 내역" },
+	{ id: 5, title: "찜한 영상" },
+	{ id: 6, title: "설정" },
+];
+
+export const LEARNER_MYPAGE_ACTIVITY_SUB_MENU = [
+	{ id: 1, title: "내가 쓴 글" },
+	{ id: 2, title: "내가 댓글을 작성한 게시글" },
+	{ id: 3, title: "내가 북마크한 게시글" },
 ];
 
 //영상 관리 헤더에 사용

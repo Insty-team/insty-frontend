@@ -19,7 +19,7 @@ function MyPageCreatorSide({
 						<button
 							key={menu.id}
 							onClick={() => setActiveMenu(menu.title)}
-							className="flex justify-start"
+							className="flex justify-start cursor-pointer"
 						>
 							<span
 								className={activeMenu === menu.title ? "font-semibold" : ""}
