@@ -42,7 +42,7 @@ const mockData = [
 	},
 ];
 
-function MyPageActivity() {
+function MyPageActivityWriting() {
 	const [value, setValue] = useState("");
 	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setValue(e.target.value);
@@ -69,4 +69,4 @@ function MyPageActivity() {
 	);
 }
 
-export default MyPageActivity;
+export default MyPageActivityWriting;
