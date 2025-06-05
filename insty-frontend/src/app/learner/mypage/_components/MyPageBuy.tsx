@@ -8,7 +8,6 @@ function MyPageBuy() {
 	const [value, setValue] = useState("");
 	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setValue(e.target.value);
-		console.log("value", value);
 	};
 
 	const MOCK_BUY_ITEMS: BuyItemProps[] = [
