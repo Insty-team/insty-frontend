@@ -41,8 +41,8 @@ function ChatbotModal({ open } : ChatbotModalProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed bottom-24 right-8 z-[2600] w-[40%] h-[80%] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-200">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 rounded-t-2xl bg-gray-50">
+    <div className="fixed bottom-24 right-8 z-[2600] w-[40%] h-[80%] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-scale-100">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-scale-100 rounded-t-2xl bg-gray-scale-50">
         <div className="flex items-center gap-2">
           <Image src="/insty.png" alt="logo" width={64} height={64} />
           <div className="ml-2">
@@ -73,7 +73,7 @@ function ChatbotModal({ open } : ChatbotModalProps) {
       </div>
 
       <form
-        className="flex items-center gap-2 px-4 py-3 border-t border-gray-100 bg-white rounded-b-2xl"
+        className="flex items-center gap-2 px-4 py-3 border-t border-gray-scale-100 bg-white rounded-b-2xl"
         onSubmit={e => {
           e.preventDefault();
           if (!input.trim()) return;
@@ -82,12 +82,12 @@ function ChatbotModal({ open } : ChatbotModalProps) {
         }}
       >
         <input
-          className="flex-1 px-3 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-blue-200 text-sm"
+          className="flex-1 px-3 py-2 rounded-full border border-gray-scale-200 focus:outline-none focus:ring-2 focus:ring-primary-green-400 text-sm"
           placeholder="입력해주세요 ..."
           value={input}
           onChange={e => setInput(e.target.value)}
         />
-        <button type="submit" className="text-primary-blue-600 hover:text-primary-blue-800">
+        <button type="submit" className="text-primary-green-600 hover:text-primary-green-800">
           <IoSend size={22} className="text-primary-green-600"/>
         </button>
       </form>
