@@ -25,7 +25,9 @@ type DateFormatType =
 	| "YYYY/MM/DD HH:mm"
 	| "YYYY. MM. DD"
 	| "YYYY/MM/DD"
-	| "HH:mm";
+	| "HH:mm"
+	| "YYYY년 MM월 DD일";
+
 const getFormattedDate = (
 	date: string,
 	type: DateFormatType = "YYYY. MM. DD"
