@@ -4,6 +4,7 @@ import MyPageLearnerSide from "./_components/MyPageLearnerSide";
 import MyPageAIChat from "./_components/MyPageAIChat";
 import MyPageActivityWriting from "./_components/MyPageActivityWriting";
 import MyPageActivityReply from "./_components/MyPageActivityReply";
+import MyPageActivityBookmark from "./_components/MyPageActivityBookmark";
 import MyPageBuy from "./_components/MyPageBuy";
 import MyPageSetting from "./_components/MyPageSetting";
 import MyPageLike from "./_components/MyPageLike";
@@ -32,7 +33,9 @@ function LearnerMyPage() {
 						<MyPageActivityReply />
 					)}
 				{activeMenu === "내 활동" &&
-					activeSubMenu === "내가 북마크한 게시글" && <MyPageActivityReply />}
+					activeSubMenu === "내가 북마크한 게시글" && (
+						<MyPageActivityBookmark />
+					)}
 				{activeMenu === "AI 챗봇 질문 이력" && <MyPageAIChat />}
 				{activeMenu === "구매 내역" && <MyPageBuy />}
 				{activeMenu === "찜한 영상" && <MyPageLike />}

@@ -13,7 +13,7 @@ export type ActivityReplyItemProps = {
 
 function ActivityReplyItem({ item }: { item: ActivityReplyItemProps }) {
 	return (
-		<div className="flex flex-col w-[230px] gap-2">
+		<div className="flex flex-col w-[230px] gap-2 mb-10">
 			<div className="flex flex-col gap-1">
 				<div className="text-xl line-clamp-1">{item.title}</div>
 				<div className="text-lg line-clamp-2">{item.content}</div>

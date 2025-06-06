@@ -5,7 +5,7 @@ import { FaTrash } from "react-icons/fa";
 import { FaMessage } from "react-icons/fa6";
 import { getFormattedDate } from "@/app/utils/date";
 
-export type ActivityWritingItemProps = {
+export type ActivityWritingBookmarkItemProps = {
 	title: string;
 	content: string;
 	// category: string 피그마 내에서 삼우님이 삭제한다고 기재되어 있지만 임시 주석 처리
@@ -14,7 +14,13 @@ export type ActivityWritingItemProps = {
 	isNew: boolean;
 };
 
-function ActivityWritingItem({ item }: { item: ActivityWritingItemProps }) {
+function ActivityWritingBookmarkItem({
+	item,
+	type = "writing",
+}: {
+	item: ActivityWritingBookmarkItemProps;
+	type?: "writing" | "bookmark";
+}) {
 	return (
 		<div className="flex flex-col w-[230px] mb-10 gap-2">
 			<div className="flex flex-col gap-1">
@@ -27,18 +33,20 @@ function ActivityWritingItem({ item }: { item: ActivityWritingItemProps }) {
 				<span>답변 {item.replies}개</span>
 				{item.isNew && <span className="text-red-300">NEW</span>}
 			</div>
-			<div className="flex h-9 gap-4 mt-4">
-				<button className="flex w-full justify-center items-center gap-1 bg-primary-green-500 rounded-lg">
-					<span className="text-gray-50">수정</span>
-					<HiPencil className="text-gray-50" />
-				</button>
-				<button className="flex w-full justify-center items-center gap-1 bg-gray-100 rounded-lg">
-					<span className="text-red-300">삭제</span>
-					<FaTrash className="text-red-300" />
-				</button>
-			</div>
+			{type === "writing" && (
+				<div className="flex h-9 gap-4 mt-4">
+					<button className="flex w-full justify-center items-center gap-1 bg-primary-green-500 rounded-lg">
+						<span className="text-gray-50">수정</span>
+						<HiPencil className="text-gray-50" />
+					</button>
+					<button className="flex w-full justify-center items-center gap-1 bg-gray-100 rounded-lg">
+						<span className="text-red-300">삭제</span>
+						<FaTrash className="text-red-300" />
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
 
-export default ActivityWritingItem;
+export default ActivityWritingBookmarkItem;

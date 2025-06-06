@@ -1,6 +1,7 @@
 "use client";
-import { BaseSearchBar } from "@/app/_components/common";
+
 import { ChangeEvent, useState } from "react";
+import { BaseSearchBar } from "@/app/_components/common";
 import ActivityWritingBookmarkItem from "./ActivityWritingBookmarkItem";
 
 const mockData = [
@@ -42,15 +43,16 @@ const mockData = [
 	},
 ];
 
-function MyPageActivityWriting() {
+function MyPageActivityBookmark() {
 	const [value, setValue] = useState("");
 	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setValue(e.target.value);
 	};
+
 	return (
 		<div className="flex flex-col w-full gap-10">
 			<div className="flex justify-between items-start">
-				<h3 className="text-2xl">내가 쓴 글</h3>
+				<h3 className="text-2xl">내가 북마크한 게시글</h3>
 				<div className="w-[600px]">
 					<BaseSearchBar
 						value={value}
@@ -62,11 +64,15 @@ function MyPageActivityWriting() {
 			</div>
 			<div className="flex flex-wrap gap-10 w-full">
 				{mockData.map((item) => (
-					<ActivityWritingBookmarkItem key={item.title} item={item} />
+					<ActivityWritingBookmarkItem
+						key={item.title}
+						item={item}
+						type="bookmark"
+					/>
 				))}
 			</div>
 		</div>
 	);
 }
 
-export default MyPageActivityWriting;
+export default MyPageActivityBookmark;
