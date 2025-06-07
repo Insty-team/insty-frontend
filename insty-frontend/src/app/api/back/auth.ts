@@ -3,9 +3,9 @@ import axios from "axios";
 
 export const postLogin = async (data: LoginForm) => {
 	const res = await axios.post(
-		`${process.env.NEXT_PUBLIC_BACK_API_URL}/auth/login`,
+		`${process.env.NEXT_PUBLIC_BACK_BASE_URL}/auth/login`,
 		data
 	);
-  
+
 	return res.data.data;
 };
