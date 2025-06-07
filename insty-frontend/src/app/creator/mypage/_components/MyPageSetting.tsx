@@ -27,7 +27,7 @@ function MyPageSetting() {
 					onChange={onChange}
 					sx={{
 						".chakra-switch__track": {
-							backgroundColor: isReceiveEmail ? "#307548" : "#DEDEDE",
+							backgroundColor: isReceiveEmail ? "#3C4A7E" : "#DEDEDE",
 						},
 						".chakra-switch__thumb": {
 							backgroundColor: "#ffffff",
