@@ -1,7 +1,8 @@
 "use client";
 
-import Providers from "./Providers";
 import "./globals.css";
+
+import Providers from "./Providers";
 
 function RootLayout({
 	children,

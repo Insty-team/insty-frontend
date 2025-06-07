@@ -1,7 +1,9 @@
 "use client";
 
 import { ChangeEvent, useState } from "react";
+
 import { BaseSearchBar } from "@/app/_components/common";
+
 import ActivityReplyItem from "./ActivityReplyItem";
 
 const mockData = [

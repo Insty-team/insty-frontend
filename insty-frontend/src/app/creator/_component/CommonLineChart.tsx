@@ -1,7 +1,8 @@
-import { CommonLineChartProps } from "@/app/types";
 import { Line, Tooltip, XAxis, YAxis } from "recharts";
 import { LineChart } from "recharts";
 import { ResponsiveContainer } from "recharts";
+
+import { CommonLineChartProps } from "@/app/types";
 
 function CommonLineChart({
 	data,
@@ -17,12 +18,12 @@ function CommonLineChart({
 					dataKey="name"
 					tickMargin={5}
 					tickLine={false}
-					padding={{ left: 30, right: 30}}
+					padding={{ left: 30, right: 30 }}
 				/>
 				<YAxis
 					tickMargin={5}
 					tickLine={false}
-                    padding={{top: 10, bottom: 10}}
+					padding={{ top: 10, bottom: 10 }}
 					label={{
 						value: yAxisLabel,
 						position: "outsideLeft",

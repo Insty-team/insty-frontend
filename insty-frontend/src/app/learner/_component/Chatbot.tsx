@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 
 function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	const messages = [
@@ -32,14 +31,17 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 						/>
 					</div>
 					<div className="flex flex-col ml-8">
-						<div className="font-bold text-[49px]">
-							INSTY
-						</div>
+						<div className="font-bold text-[49px]">INSTY</div>
 						<div className="text-[36px] font-semibold">
 							어떤 도움이 필요하세요?
 						</div>
 					</div>
-                    <button className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2" onClick={changeDirectSearch}>직접 찾기</button>
+					<button
+						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2"
+						onClick={changeDirectSearch}
+					>
+						직접 찾기
+					</button>
 				</div>
 
 				<div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4">
@@ -48,7 +50,9 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							key={idx}
 							className={`flex items-end ${msg.type === "user" ? "flex-row-reverse" : "justify-start flex-row"}`}
 						>
-							<div className={`w-[60px] h-[60px] flex items-center justify-center overflow-hidden ${msg.type === "user" ? "ml-3" : "mr-3 rounded-full bg-white"}`}>
+							<div
+								className={`w-[60px] h-[60px] flex items-center justify-center overflow-hidden ${msg.type === "user" ? "ml-3" : "mr-3 rounded-full bg-white"}`}
+							>
 								<Image
 									src={msg.type === "user" ? "/profile.svg" : "/insty.png"}
 									alt={msg.type === "user" ? "user" : "insty"}
@@ -59,9 +63,10 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							</div>
 							<div
 								className={`text-[#1a355b] rounded-2xl px-4 py-3 text-2xl max-w-[600px] shadow-sm border border-gray-scale-200
-								${msg.type === "user"
-									? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
-									: "bg-white rounded-tr-2xl rounded-tl-md"
+								${
+									msg.type === "user"
+										? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
+										: "bg-white rounded-tr-2xl rounded-tl-md"
 								}
 							`}
 							>
@@ -77,7 +82,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 								href={`/learner/recommend/course/${idx}`}
 								className="flex flex-col max-w-[400px] bg-white rounded-xl shadow p-4 text-lg text-black-100 border border-gray-scale-100 flex-shrink-0 mb-2 cursor-pointer"
 							>
-                                <div className="w-full h-[200px] bg-gray-scale-100 rounded-xl mb-4"></div>
+								<div className="w-full h-[200px] bg-gray-scale-100 rounded-xl mb-4"></div>
 								<span className="line-clamp-1">{rec}</span>
 							</Link>
 						))}
@@ -85,7 +90,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 				</div>
 
 				<div className="p-4 border-t border-[#e0e7ef] bg-[#f4f8fc] flex items-center gap-2">
-                    <Image src="/profile.svg" alt="profile" width={50} height={50} />
+					<Image src="/profile.svg" alt="profile" width={50} height={50} />
 					<input
 						type="text"
 						placeholder="입력해주세요 ..."

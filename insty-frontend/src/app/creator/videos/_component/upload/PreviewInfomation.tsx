@@ -1,14 +1,16 @@
 "use client";
-import { UploadformData } from "@/app/types";
+
 import Image from "next/image";
-import { BaseButton } from "@/app/_components/common";
-import { REFUND_POLICY } from "@/app/constants/constants";
-import Modal from "@/app/_components/common/Modal";
 import { useState } from "react";
 import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
-import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
-import ChatbotModal from "@/app/learner/_component/ChatbotModal";
 import { IoChatbubbleEllipses } from "react-icons/io5";
+
+import { BaseButton } from "@/app/_components/common";
+import Modal from "@/app/_components/common/Modal";
+import { REFUND_POLICY } from "@/app/constants";
+import ChatbotModal from "@/app/learner/_component/ChatbotModal";
+import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
+import { UploadformData } from "@/app/types";
 
 interface PreviewInfomationProps {
 	data: UploadformData;
@@ -34,11 +36,7 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 				<IoChatbubbleEllipses className="w-7 h-7 ml-2" />
 			</button>
 
-			{openChatbot && (
-				<ChatbotModal
-					open={openChatbot}
-				/>
-			)}
+			{openChatbot && <ChatbotModal open={openChatbot} />}
 
 			<div className="flex gap-4 w-full">
 				<div className="w-[730px] h-[468px] bg-gray-200 rounded-2xl flex items-center justify-center">

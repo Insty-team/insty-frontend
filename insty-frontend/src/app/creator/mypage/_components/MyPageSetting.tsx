@@ -1,14 +1,14 @@
 "use client";
 
+import { Switch } from "@chakra-ui/react";
 import { ChangeEvent } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { Switch } from "@chakra-ui/react";
 
 function MyPageSetting() {
 	// FIXME:
 	const [isReceiveEmail, setIsReceiveEmail] = useLocalStorage(
 		"@insty-app.receive.email",
-		false
+		false,
 	);
 
 	const onChange = (e: ChangeEvent<HTMLInputElement>) => {

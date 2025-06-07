@@ -1,9 +1,11 @@
 "use client";
-import MyPageCreatorSide from "./_components/MyPageCreatorSide";
+
+import { useState } from "react";
+
 import MyPageAccount from "./_components/MyPageAccount";
+import MyPageCreatorSide from "./_components/MyPageCreatorSide";
 import MyPageProfile from "./_components/MyPageProfile";
 import MyPageSetting from "./_components/MyPageSetting";
-import { useState } from "react";
 
 function CreatorMyPage() {
 	const [activeMenu, setActiveMenu] = useState("나의 정보 관리");

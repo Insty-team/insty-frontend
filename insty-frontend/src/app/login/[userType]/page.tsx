@@ -1,17 +1,18 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { emailReg, passwordReg } from "@/app/utils/regex";
-import { LoginForm } from "@/app/types";
-import Link from "next/link";
-import TextInput from "@/app/_components/validation/TextInput";
-import PasswordInput from "@/app/_components/validation/PasswordInput";
+
 import SocialLogin from "@/app/_components/social/SocialLogin";
+import PasswordInput from "@/app/_components/validation/PasswordInput";
+import TextInput from "@/app/_components/validation/TextInput";
 import { postLogin } from "@/app/api/back/auth";
 import { useAuthStore } from "@/app/stores/auth/authStore";
 import { useUserStore } from "@/app/stores/user/userStore";
+import { LoginForm } from "@/app/types";
+import { emailReg, passwordReg } from "@/app/utils/regex";
 
 function Login() {
 	const params = useParams();
@@ -100,11 +101,19 @@ function Login() {
 					<button
 						type="submit"
 						className={`w-full py-3 rounded-xl text-white font-semibold ${
-							!!errors.email || !!errors.password || !getValues("email") || !getValues("password")
+							!!errors.email ||
+							!!errors.password ||
+							!getValues("email") ||
+							!getValues("password")
 								? "bg-gray-scale-300 cursor-not-allowed"
 								: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
 						}`}
-						disabled={!!errors.email || !!errors.password || !getValues("email") || !getValues("password")}
+						disabled={
+							!!errors.email ||
+							!!errors.password ||
+							!getValues("email") ||
+							!getValues("password")
+						}
 					>
 						로그인
 					</button>

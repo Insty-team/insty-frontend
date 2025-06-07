@@ -1,12 +1,14 @@
 "use client";
+
 import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+
 import { BaseButton } from "@/app/_components/common";
 import {
-	TextInput,
-	PasswordInput,
 	PasswordConfirmInput,
+	PasswordInput,
+	TextInput,
 } from "@/app/_components/validation";
 import { ChangeProfileForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";

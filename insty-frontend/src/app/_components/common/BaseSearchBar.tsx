@@ -1,7 +1,7 @@
 "use client";
 
-import { ChangeEvent, KeyboardEvent, FocusEvent, ReactNode } from "react";
 import Image from "next/image";
+import { ChangeEvent, FocusEvent, KeyboardEvent, ReactNode } from "react";
 
 type BaseSearchBarProps = {
 	placeholder?: string;

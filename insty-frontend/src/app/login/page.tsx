@@ -28,7 +28,10 @@ function Select() {
 									<p>따라하기 쉬운 가이드 제공</p>
 								</div>
 							</div>
-							<Link href="/login/learner" className="mt-12 h-12 bg-primary-blue-300 hover:bg-primary-blue-500 cursor-pointer text-white border px-10 py-2 rounded-2xl flex items-center text-xl">
+							<Link
+								href="/login/learner"
+								className="mt-12 h-12 bg-primary-blue-300 hover:bg-primary-blue-500 cursor-pointer text-white border px-10 py-2 rounded-2xl flex items-center text-xl"
+							>
 								시작하기{" "}
 								<Image
 									className="ml-4"
@@ -53,7 +56,10 @@ function Select() {
 									<p>수익을 창출할 수 있어요.</p>
 								</div>
 							</div>
-							<Link href="/login/creator" className="mt-12 h-12 bg-orange hover:bg-orange-hover cursor-pointer text-white border px-10 py-2 rounded-2xl flex items-center text-xl">
+							<Link
+								href="/login/creator"
+								className="mt-12 h-12 bg-orange hover:bg-orange-hover cursor-pointer text-white border px-10 py-2 rounded-2xl flex items-center text-xl"
+							>
 								시작하기{" "}
 								<Image
 									className="ml-4"

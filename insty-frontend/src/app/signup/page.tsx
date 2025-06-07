@@ -1,19 +1,22 @@
 "use client";
-import Link from "next/link";
+
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";
-import { SignupForm } from "@/app/types";
+import Swal from "sweetalert2";
+
 import SocialLogin from "@/app/_components/social/SocialLogin";
 import {
-	TextInput,
-	PasswordInput,
 	PasswordConfirmInput,
+	PasswordInput,
+	TextInput,
 } from "@/app/_components/validation";
+import { SignupForm } from "@/app/types";
+import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";
+
 import { getEmailCheck, getNicknameCheck, postSignup } from "../api/back/user";
-import { useState } from "react";
-import Swal from "sweetalert2";
-import { useRouter } from "next/navigation";
 
 function Signup() {
 	const [isNicknameAvailable, setIsNicknameAvailable] = useState<
@@ -21,7 +24,7 @@ function Signup() {
 	>(null);
 	const [nicknameCheckStatus, setNicknameCheckStatus] = useState<string>("");
 	const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(
-		null
+		null,
 	);
 	const [emailCheckStatus, setEmailCheckStatus] = useState<string>("");
 	const {
@@ -38,7 +41,7 @@ function Signup() {
 	const nickname = watch("nickname");
 	const email = watch("email");
 
-	const onSubmit = async(data: SignupForm) => {
+	const onSubmit = async (data: SignupForm) => {
 		const submitData = { ...data };
 		delete submitData.confirmPassword;
 
@@ -214,11 +217,19 @@ function Signup() {
 					<button
 						type="submit"
 						className={`w-full py-3 rounded-xl text-white font-semibold ${
-							!isNicknameAvailable || !isEmailAvailable || !getValues("password") || !getValues("confirmPassword")
+							!isNicknameAvailable ||
+							!isEmailAvailable ||
+							!getValues("password") ||
+							!getValues("confirmPassword")
 								? "bg-gray-scale-300 cursor-not-allowed"
 								: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
 						}`}
-						disabled={!isNicknameAvailable || !isEmailAvailable || !getValues("password") || !getValues("confirmPassword")}
+						disabled={
+							!isNicknameAvailable ||
+							!isEmailAvailable ||
+							!getValues("password") ||
+							!getValues("confirmPassword")
+						}
 					>
 						회원가입
 					</button>

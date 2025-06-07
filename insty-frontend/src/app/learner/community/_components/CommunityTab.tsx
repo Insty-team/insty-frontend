@@ -1,12 +1,13 @@
 "use client";
 
+import { ChangeEvent, useState } from "react";
+
 import {
 	BaseButton,
 	BaseSearchBar,
 	CommunityVideo,
 } from "@/app/_components/common";
 import CommunityQuestion from "@/app/_components/common/CommunityQuestion";
-import { ChangeEvent, useState } from "react";
 
 function CommunityTab() {
 	const [value, setValue] = useState("");

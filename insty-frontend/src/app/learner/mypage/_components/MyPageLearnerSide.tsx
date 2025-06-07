@@ -1,8 +1,9 @@
 "use client";
+
 import {
-	LEARNER_MYPAGE_MENU_LIST,
 	LEARNER_MYPAGE_ACTIVITY_SUB_MENU,
-} from "@/app/constants/constants";
+	LEARNER_MYPAGE_MENU_LIST,
+} from "@/app/constants";
 
 type MyPageLearnerSideProps = {
 	activeMenu: string;

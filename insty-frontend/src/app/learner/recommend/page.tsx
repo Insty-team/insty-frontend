@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from "react";
-import { FiSearch, FiHeart } from "react-icons/fi";
+
+import { useState } from "react";
+import { FiHeart, FiSearch } from "react-icons/fi";
 import { TbCircleX } from "react-icons/tb";
+
 import Chatbot from "../_component/Chatbot";
 
 function Recommend() {
@@ -9,8 +11,8 @@ function Recommend() {
 	const [searchText, setSearchText] = useState("");
 	const [mode, setMode] = useState<"chatbot" | "directSearch">("chatbot");
 
-	if(mode === "chatbot") {
-		return (<Chatbot changeDirectSearch={() => setMode("directSearch")} />);
+	if (mode === "chatbot") {
+		return <Chatbot changeDirectSearch={() => setMode("directSearch")} />;
 	}
 
 	return (
@@ -18,7 +20,12 @@ function Recommend() {
 			<div className="max-w-[1400px] mx-auto px-6">
 				<div className="flex justify-between items-center">
 					<h2 className="text-3xl font-bold mt-12 mb-12">맞춤 콘텐츠 추천</h2>
-					<button className="bg-primary-green-500 text-white px-4 py-2 rounded-2xl" onClick={() => setMode("chatbot")}>챗봇 이용하기</button>
+					<button
+						className="bg-primary-green-500 text-white px-4 py-2 rounded-2xl"
+						onClick={() => setMode("chatbot")}
+					>
+						챗봇 이용하기
+					</button>
 				</div>
 				<div className="flex items-center  bg-gray-scale-100 rounded-full px-9 py-4 mb-9">
 					<FiSearch className="text-black-100 mr-6 text-2xl" />

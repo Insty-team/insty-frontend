@@ -1,8 +1,9 @@
 "use client";
 
-import { HiPencil } from "react-icons/hi2";
 import { FaTrash } from "react-icons/fa";
 import { FaMessage } from "react-icons/fa6";
+import { HiPencil } from "react-icons/hi2";
+
 import { getFormattedDate } from "@/app/utils/date";
 
 export type ActivityWritingBookmarkItemProps = {

@@ -1,14 +1,16 @@
 "use client";
+
 import { useState } from "react";
-import MyPageLearnerSide from "./_components/MyPageLearnerSide";
-import MyPageAIChat from "./_components/MyPageAIChat";
-import MyPageActivityWriting from "./_components/MyPageActivityWriting";
-import MyPageActivityReply from "./_components/MyPageActivityReply";
+
 import MyPageActivityBookmark from "./_components/MyPageActivityBookmark";
+import MyPageActivityReply from "./_components/MyPageActivityReply";
+import MyPageActivityWriting from "./_components/MyPageActivityWriting";
+import MyPageAIChat from "./_components/MyPageAIChat";
 import MyPageBuy from "./_components/MyPageBuy";
-import MyPageSetting from "./_components/MyPageSetting";
+import MyPageLearnerSide from "./_components/MyPageLearnerSide";
 import MyPageLike from "./_components/MyPageLike";
 import MyPageProfile from "./_components/MyPageProfile";
+import MyPageSetting from "./_components/MyPageSetting";
 
 function LearnerMyPage() {
 	const [activeMenu, setActiveMenu] = useState("나의 정보 관리");

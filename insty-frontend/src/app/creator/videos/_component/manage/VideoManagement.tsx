@@ -1,10 +1,13 @@
 "use client";
+
 import Image from "next/image";
-import { VIDEOS_DUMMY_LIST } from "@/app/constants/constants";
 import { useState } from "react";
-import VideoEdit from "./VideoEdit";
-import VideoDetail from "./VideoDetail";
+
 import { IconButton } from "@/app/_components/common";
+import { VIDEOS_DUMMY_LIST } from "@/app/constants";
+
+import VideoDetail from "./VideoDetail";
+import VideoEdit from "./VideoEdit";
 
 export default function VideoManagement() {
 	const [mode, setMode] = useState<"list" | "edit" | "detail">("list");

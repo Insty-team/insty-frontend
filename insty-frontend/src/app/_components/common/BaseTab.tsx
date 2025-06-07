@@ -1,13 +1,13 @@
 "use client";
 
 import {
-	Tabs,
-	TabList,
 	Tab,
-	TabPanels,
+	TabList,
 	TabPanel,
-	TabsProps,
+	TabPanels,
 	TabProps,
+	Tabs,
+	TabsProps,
 } from "@chakra-ui/react";
 
 type BaseTabItem = {

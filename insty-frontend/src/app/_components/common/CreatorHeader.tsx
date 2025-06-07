@@ -1,8 +1,10 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CREATOR_MENU_LIST } from "@/app/constants/constants";
+
+import { CREATOR_MENU_LIST } from "@/app/constants";
 
 function CreatorHeader() {
 	const pathname = usePathname();
@@ -28,7 +30,11 @@ function CreatorHeader() {
 					</Link>
 					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
 						{CREATOR_MENU_LIST.map((menu) => (
-							<Link href={`${menu.path}`} key={menu.id} className="cursor-pointer hover:text-primary-green-500">
+							<Link
+								href={`${menu.path}`}
+								key={menu.id}
+								className="cursor-pointer hover:text-primary-green-500"
+							>
 								<span
 									className={
 										pathname.includes(menu.path) ? "text-primary-green-600" : ""

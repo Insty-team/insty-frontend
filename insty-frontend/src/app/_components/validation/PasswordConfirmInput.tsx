@@ -1,6 +1,7 @@
-import { PasswordConfirmInputProps } from "@/app/types";
 import Image from "next/image";
 import { useState } from "react";
+
+import { PasswordConfirmInputProps } from "@/app/types";
 
 export default function PasswordConfirmInput<TFieldValues>({
 	label,

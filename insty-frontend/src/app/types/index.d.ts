@@ -1,14 +1,31 @@
-/**
- * 전역 타입을 정의하는 파일입니다.
- */
+// 전역 타입을 정의하는 파일입니다.
 
-//1. 로그인 타입
+/**
+ * 1. 사용자 정보
+ */
+export type UserType = "LEARNER" | "CREATOR";
+
+export type UserInfo = {
+	nickname: string;
+	userType?: string;
+	description?: string;
+};
+
+export type ChangeProfileForm = {
+	nickname: string;
+	email: string;
+	password: string;
+	changedPassword: string;
+};
+
+/**
+ * 2. 로그인/회원가입
+ */
 export type LoginForm = {
 	email: string;
 	password: string;
 };
 
-//2. 회원가입 타입
 export type SignupForm = {
 	nickname: string;
 	email: string;
@@ -16,7 +33,7 @@ export type SignupForm = {
 	confirmPassword?: string;
 };
 
-//3. 닉네임 or 이메일 폼
+// 닉네임 or 이메일 입력
 export type TextInputProps<TFieldValues> = {
 	label: string;
 	name: Path<TFieldValues>;
@@ -28,7 +45,7 @@ export type TextInputProps<TFieldValues> = {
 	checkDuplication?: React.ReactNode;
 };
 
-//4. 비밀번호 폼
+// 비밀번호 입력
 export type PasswordInputProps<TFieldValues> = {
 	label: string;
 	name: Path<TFieldValues>;
@@ -38,7 +55,7 @@ export type PasswordInputProps<TFieldValues> = {
 	error?: FieldError;
 };
 
-//5. 비밀번호 확인 폼
+// 비밀번호 확인 폼
 export type PasswordConfirmInputProps<TFieldValues> = {
 	label: string;
 	name: Path<TFieldValues>;
@@ -49,14 +66,15 @@ export type PasswordConfirmInputProps<TFieldValues> = {
 	error?: FieldError;
 };
 
-//6. 차트 라벨, 툴팁, 값 입력
+/**
+ * 3. 차트
+ */
 export type ChartData = {
 	name: string;
 	fullLabel?: string;
 	value: number;
 };
 
-//7 차트 값 타입
 export type CommonLineChartProps = {
 	data: ChartData[];
 	yAxisLabel?: string;
@@ -65,14 +83,9 @@ export type CommonLineChartProps = {
 	height?: number;
 };
 
-//8. 프로필 변경 타입
-export type ChangeProfileForm = {
-	nickname: string
-	email: string
-	password: string
-	changedPassword: string
-}
-
+/**
+ * 4. 강의/영상
+ */
 export type UploadformData = {
 	link: string;
 	title: string;
@@ -82,17 +95,17 @@ export type UploadformData = {
 	tags: string[];
 	environments: Environment[];
 	coreContents: string[];
-}
+};
 
-export type VideoFormProps ={
+export type VideoFormProps = {
 	subject: string;
 	initialData?: {
 		link?: string;
 		thumbnail?: string;
-        title?: string;
+		title?: string;
 		recipient?: string;
 		description?: string;
-        price?: number;
+		price?: number;
 		tags?: string[];
 		environments?: Environment[];
 		coreContents?: string[];
@@ -100,11 +113,4 @@ export type VideoFormProps ={
 	onSubmit: (formData: UploadformData) => void;
 	submitText?: string;
 	onBack: () => void;
-}
-
-//유저 정보 저장용
-export type UserInfo = {
-	nickname: string;
-	userType?: string;
-	description?: string;
-}
+};

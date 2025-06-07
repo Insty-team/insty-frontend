@@ -1,11 +1,15 @@
 "use client";
-import { getLabels } from "@/app/utils/date";
+
+import dayjs from "dayjs";
 import Image from "next/image";
 import { useState } from "react";
-import dayjs from "dayjs";
-import CommonLineChart from "../_component/CommonLineChart";
+
 import { BaseButton, IconButton } from "@/app/_components/common";
 import { useUserStore } from "@/app/stores/user/userStore";
+import { getLabels } from "@/app/utils/date";
+
+import CommonLineChart from "../_component/CommonLineChart";
+
 function CreatorDashboard() {
 	const [period, setPeriod] = useState("1개월");
 	const labels = getLabels(period as "1개월" | "6개월" | "1년");

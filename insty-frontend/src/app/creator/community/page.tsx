@@ -1,7 +1,5 @@
-function Community() {
-  return (
-    <div>Community</div>
-  )
+function CreatorCommunity() {
+	return <div>Community</div>;
 }
 
-export default Community;
+export default CreatorCommunity;
