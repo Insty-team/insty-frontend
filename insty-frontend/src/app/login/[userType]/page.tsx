@@ -9,27 +9,44 @@ import Link from "next/link";
 import TextInput from "@/app/_components/validation/TextInput";
 import PasswordInput from "@/app/_components/validation/PasswordInput";
 import SocialLogin from "@/app/_components/social/SocialLogin";
+import { postLogin } from "@/app/api/back/auth";
+import { useAuthStore } from "@/app/stores/auth/authStore";
+import { useUserStore } from "@/app/stores/user/userStore";
 
 function Login() {
 	const params = useParams();
 	const router = useRouter();
 	const type = params.userType === "creator" ? "크리에이터" : "러너";
-
+	const { setAccessToken } = useAuthStore();
+	const { setUser, setUserType } = useUserStore();
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
+		getValues,
 	} = useForm<LoginForm>({
 		mode: "onChange",
 	});
 
 	const onSubmit = async (data: LoginForm) => {
 		try {
-			console.log(data);
+			const submitData = { ...data };
+			const res = await postLogin(submitData);
+			setAccessToken(res.token.accessToken);
+			console.log(res.token.accessToken);
+
+			//액세스 토큰으로 나중에 사용자 정보를 조회한다. 이후 값 저장
+			setUser({
+				nickname: res.nickname,
+				userType: res.userType,
+				description: "",
+			});
+
 			if (params.userType === "creator") {
+				setUserType("creator");
 				router.push("/creator/dashboard");
 			} else {
-				//아직 개발 안함
+				setUserType("learner");
 				router.push("/learner/recommend");
 			}
 		} catch (error) {
@@ -82,7 +99,12 @@ function Login() {
 					/>
 					<button
 						type="submit"
-						className="w-full py-3 rounded-xl bg-primary-blue-400 hover:bg-primary-blue-500 cursor-pointer text-white font-semibold"
+						className={`w-full py-3 rounded-xl text-white font-semibold ${
+							!!errors.email || !!errors.password || !getValues("email") || !getValues("password")
+								? "bg-gray-scale-300 cursor-not-allowed"
+								: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
+						}`}
+						disabled={!!errors.email || !!errors.password || !getValues("email") || !getValues("password")}
 					>
 						로그인
 					</button>

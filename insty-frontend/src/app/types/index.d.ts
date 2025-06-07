@@ -6,7 +6,6 @@
 export type LoginForm = {
 	email: string;
 	password: string;
-	userType: string;
 };
 
 //2. 회원가입 타입
@@ -66,7 +65,7 @@ export type CommonLineChartProps = {
 	height?: number;
 };
 
-// 프로필 변경 타입
+//8. 프로필 변경 타입
 export type ChangeProfileForm = {
 	nickname: string
 	email: string
@@ -101,4 +100,11 @@ export type VideoFormProps ={
 	onSubmit: (formData: UploadformData) => void;
 	submitText?: string;
 	onBack: () => void;
+}
+
+//유저 정보 저장용
+export type UserInfo = {
+	nickname: string;
+	userType?: string;
+	description?: string;
 }
