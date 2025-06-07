@@ -11,7 +11,7 @@ import {
 import { ChangeProfileForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";
 
-function Profile() {
+function MyPageProfile() {
 	const [isEditing, setIsEditing] = useState(false);
 
 	// FIXME: 실제 유저 데이터로 변경 필요
@@ -194,4 +194,4 @@ function Profile() {
 	);
 }
 
-export default Profile;
+export default MyPageProfile;

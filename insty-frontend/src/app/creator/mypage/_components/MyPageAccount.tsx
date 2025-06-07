@@ -1,7 +1,7 @@
 "use client";
 import { IconButton } from "@/app/_components/common";
 
-function Account() {
+function MyPageAccount() {
 	return (
 		<div className="w-full flex flex-col gap-10">
 			<h3 className="text-2xl">내 계좌 관리</h3>
@@ -29,4 +29,4 @@ function Account() {
 	);
 }
 
-export default Account;
+export default MyPageAccount;

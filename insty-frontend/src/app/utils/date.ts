@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-function getLabels(type: "1개월" | "6개월" | "1년") {
+const getLabels = (type: "1개월" | "6개월" | "1년") => {
 	const labels = [];
 	const now = dayjs();
 
@@ -19,6 +19,20 @@ function getLabels(type: "1개월" | "6개월" | "1년") {
 	}
 
 	return labels;
-}
+};
 
-export { getLabels };
+type DateFormatType =
+	| "YYYY/MM/DD HH:mm"
+	| "YYYY. MM. DD"
+	| "YYYY/MM/DD"
+	| "HH:mm"
+	| "YYYY년 MM월 DD일";
+
+const getFormattedDate = (
+	date: string,
+	type: DateFormatType = "YYYY. MM. DD"
+) => {
+	return dayjs(date).format(type);
+};
+
+export { getLabels, getFormattedDate };

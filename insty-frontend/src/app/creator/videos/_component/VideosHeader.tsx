@@ -8,19 +8,22 @@ type VideosHeaderProps = {
 function VideosHeader({ activeTab, setActiveTab }: VideosHeaderProps) {
 	return (
 		<>
-			<div className="w-full flex space-x-8 p-4 font-semibold" aria-label="videos-header">
+			<div
+				className="w-full flex space-x-8 p-4 font-semibold"
+				aria-label="videos-header"
+			>
 				{VIDEOS_HEADER_LIST.map((header) => (
-					<button 
-                        key={header.id} 
-                        className={`text-lg transition-colors duration-200 ${
-                            activeTab === header.id 
-                                ? "text-primary-green-600 border-0 border-b-2 !border-primary-green-600" 
-                                : "text-gray-scale-400 cursor-pointer hover:text-primary-green-500"
-                        }`} 
-                        onClick={() => setActiveTab(header.id)}
-                    >   
-                        {header.title}
-                    </button>
+					<button
+						key={header.id}
+						className={`text-lg transition-colors duration-200 ${
+							activeTab === header.id
+								? "text-primary-green-600 border-0 border-b-2 !border-primary-green-600"
+								: "text-gray-scale-400 cursor-pointer hover:text-primary-green-500"
+						}`}
+						onClick={() => setActiveTab(header.id)}
+					>
+						{header.title}
+					</button>
 				))}
 			</div>
 		</>

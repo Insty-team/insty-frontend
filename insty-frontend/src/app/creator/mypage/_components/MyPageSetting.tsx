@@ -4,7 +4,7 @@ import { ChangeEvent } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { Switch } from "@chakra-ui/react";
 
-function Setting() {
+function MyPageSetting() {
 	// FIXME:
 	const [isReceiveEmail, setIsReceiveEmail] = useLocalStorage(
 		"@insty-app.receive.email",
@@ -39,4 +39,4 @@ function Setting() {
 	);
 }
 
-export default Setting;
+export default MyPageSetting;

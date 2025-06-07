@@ -1,9 +1,9 @@
 "use client";
 
-import { LikeItemProps } from "../_components/LikeItem";
-import LikeItem from "../_components/LikeItem";
+import { LikeItemProps } from "./LikeItem";
+import LikeItem from "./LikeItem";
 
-function Like() {
+function MyPageLike() {
 	const MOCK_LIKE_ITEMS: LikeItemProps[] = [
 		{
 			title: "자기 전 10분 스트레칭",
@@ -118,4 +118,4 @@ function Like() {
 	);
 }
 
-export default Like;
+export default MyPageLike;
