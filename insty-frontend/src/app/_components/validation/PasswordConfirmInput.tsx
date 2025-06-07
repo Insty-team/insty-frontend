@@ -25,7 +25,9 @@ export default function PasswordConfirmInput<TFieldValues>({
 			<input
 				type={confirmPassword ? "text" : "password"}
 				placeholder={placeholder}
-				className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none"
+				className={`w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none ${
+					error ? "border-2 !border-secondary-red-300" : ""
+				}`}
 				{...register(name, {
 					...validation,
 					validate: (value: string) => {

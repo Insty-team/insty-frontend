@@ -6,6 +6,9 @@ import { REFUND_POLICY } from "@/app/constants/constants";
 import Modal from "@/app/_components/common/Modal";
 import { useState } from "react";
 import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
+import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
+import ChatbotModal from "@/app/learner/_component/ChatbotModal";
+import { IoChatbubbleEllipses } from "react-icons/io5";
 
 interface PreviewInfomationProps {
 	data: UploadformData;
@@ -15,12 +18,27 @@ interface PreviewInfomationProps {
 
 function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 	const [open, setOpen] = useState(false);
+	const [openChatbot, setOpenChatbot] = useState(false);
 	const [checked, setChecked] = useState(false);
 
 	if (!data) return <div>데이터가 없습니다.</div>;
 	return (
-		<div className="flex flex-col gap-8 items-stretch">
+		<div className="flex flex-col gap-8 items-stretch relative">
 			<div className="font-bold text-2xl mt-10">{data.title}</div>
+			<CommunitySidebar />
+			<button
+				className="fixed bottom-8 right-8 z-50 flex items-center bg-primary-green-400 hover:bg-primary-green-500 text-white font-semibold px-6 py-2 rounded-full shadow-none"
+				onClick={() => setOpenChatbot(!openChatbot)}
+			>
+				<span className="text-base">AI 챗봇에게 질문하기</span>
+				<IoChatbubbleEllipses className="w-7 h-7 ml-2" />
+			</button>
+
+			{openChatbot && (
+				<ChatbotModal
+					open={openChatbot}
+				/>
+			)}
 
 			<div className="flex gap-4 w-full">
 				<div className="w-[730px] h-[468px] bg-gray-200 rounded-2xl flex items-center justify-center">
