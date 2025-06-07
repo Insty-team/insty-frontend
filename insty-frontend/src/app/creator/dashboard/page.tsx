@@ -5,10 +5,12 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import CommonLineChart from "../_component/CommonLineChart";
 import { BaseButton, IconButton } from "@/app/_components/common";
-
+import { useUserStore } from "@/app/stores/user/userStore";
 function CreatorDashboard() {
 	const [period, setPeriod] = useState("1개월");
 	const labels = getLabels(period as "1개월" | "6개월" | "1년");
+	const { user } = useUserStore();
+	console.log(user);
 
 	const revenueData = labels.map((label, idx) => ({
 		name: label,
