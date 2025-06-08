@@ -11,7 +11,7 @@ import {
 	TextInput,
 } from "@/app/_components/validation";
 import { ChangeProfileForm } from "@/app/types";
-import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";
+import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
 	const [isEditing, setIsEditing] = useState(false);

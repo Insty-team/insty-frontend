@@ -10,7 +10,7 @@ import { PasswordInput, TextInput } from "@/app/_components/validation";
 import { postLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { LoginForm } from "@/app/types";
-import { emailReg, passwordReg } from "@/app/utils/regex";
+import { emailReg, passwordReg } from "@/app/utils";
 
 function Login() {
 	const params = useParams();

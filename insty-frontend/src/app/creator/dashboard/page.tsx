@@ -8,7 +8,7 @@ import { MdDriveFolderUpload } from "react-icons/md";
 
 import { BaseButton } from "@/app/_components/common";
 import { useUserStore } from "@/app/stores/user";
-import { getLabels } from "@/app/utils/date";
+import { getLabels } from "@/app/utils";
 
 import CommonLineChart from "../_component/CommonLineChart";
 

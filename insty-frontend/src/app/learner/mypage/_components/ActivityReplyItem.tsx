@@ -2,7 +2,7 @@
 
 import { FaMessage } from "react-icons/fa6";
 
-import { getFormattedDate } from "@/app/utils/date";
+import { getFormattedDate } from "@/app/utils";
 
 export type ActivityReplyItemProps = {
 	title: string;

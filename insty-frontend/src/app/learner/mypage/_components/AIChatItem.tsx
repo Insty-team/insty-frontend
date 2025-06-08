@@ -1,6 +1,6 @@
 "use client";
 
-import { getFormattedDate } from "@/app/utils/date";
+import { getFormattedDate } from "@/app/utils";
 
 type AIChatItemProps = {
 	date: string;
