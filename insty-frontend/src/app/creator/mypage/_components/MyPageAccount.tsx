@@ -3,7 +3,7 @@
 import { FaTrash } from "react-icons/fa";
 import { HiPencil } from "react-icons/hi2";
 
-import { BaseButton, IconButton } from "@/app/_components/common";
+import { BaseButton } from "@/app/_components/common";
 
 function MyPageAccount() {
 	return (

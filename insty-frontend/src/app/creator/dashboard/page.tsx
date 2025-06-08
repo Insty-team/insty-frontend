@@ -3,8 +3,9 @@
 import dayjs from "dayjs";
 import Image from "next/image";
 import { useState } from "react";
+import { MdDriveFolderUpload } from "react-icons/md";
 
-import { BaseButton, IconButton } from "@/app/_components/common";
+import { BaseButton } from "@/app/_components/common";
 import { useUserStore } from "@/app/stores/user/userStore";
 import { getLabels } from "@/app/utils/date";
 
@@ -74,13 +75,18 @@ function CreatorDashboard() {
 						</ol>
 					</div>
 					<div className="mt-6 w-[80%]">
-						<IconButton
-							icon="/fileUpload.svg"
-							align="right"
+						<BaseButton
 							title="영상 업로드 하러 가기"
-							className="flex items-center justify-center w-full py-3 rounded-xl bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 cursor-pointer text-white mb-1"
+							icon={<MdDriveFolderUpload />}
+							userType="CREATOR"
+							className="!rounded-lg mb-1"
 						/>
-						<BaseButton title="커뮤니티 바로가기" fill={false} />
+						<BaseButton
+							title="커뮤니티 바로가기"
+							fill={false}
+							userType="CREATOR"
+							className="!rounded-lg"
+						/>
 					</div>
 				</div>
 			</aside>
