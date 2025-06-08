@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { useState } from "react";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 
 import { PasswordConfirmInputProps } from "@/app/types";
 
@@ -43,12 +43,13 @@ export default function PasswordConfirmInput<TFieldValues>({
 				className="absolute right-3 top-11 cursor-pointer"
 				onClick={onChangeConfirmPassword}
 			>
-				<Image
-					src={confirmPassword ? "/unshow.svg" : "/show.svg"}
-					alt="비밀번호 표시 토글"
-					width={24}
-					height={24}
-				/>
+				<div className="text-gray-400 flex items-center">
+					{confirmPassword ? (
+						<GoEyeClosed className="size-5" />
+					) : (
+						<GoEye className="size-5" />
+					)}
+				</div>
 			</button>
 			{error && (
 				<p className="mt-1 ml-2 text-secondary-red-300">{error.message}</p>
