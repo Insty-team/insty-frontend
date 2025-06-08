@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { GoHeart, GoHeartFill } from "react-icons/go";
 
 import { BaseButton } from "@/app/_components/common";
 
@@ -31,11 +31,11 @@ function LikeItem({ item }: { item: LikeItemProps }) {
 				<span className="absolute bottom-3 right-3 text-white text-sm px-2 py-0.5">
 					{item.duration}
 				</span>
-				<button className="absolute top-3 right-3 text-xl cursor-pointer">
+				<button className="absolute top-3 right-4 text-xl cursor-pointer">
 					{item.isLike ? (
-						<Image src="/heart-fill.svg" alt="like" width={28} height={28} />
+						<GoHeartFill className="text-primary-green-500" />
 					) : (
-						<Image src="/heart.svg" alt="like" width={28} height={28} />
+						<GoHeart />
 					)}
 				</button>
 			</div>
