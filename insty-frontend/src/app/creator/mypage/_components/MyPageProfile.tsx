@@ -1,12 +1,14 @@
 "use client";
+
 import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+
 import { BaseButton } from "@/app/_components/common";
 import {
-	TextInput,
-	PasswordInput,
 	PasswordConfirmInput,
+	PasswordInput,
+	TextInput,
 } from "@/app/_components/validation";
 import { ChangeProfileForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";
@@ -57,13 +59,11 @@ function MyPageProfile() {
 									height={128}
 									alt="프로필 사진"
 								/>
-								<button
-									type="button"
-									onClick={() => console.log("profile check")}
-									className="px-3 py-1 rounded-lg bg-primary-blue-300 hover:bg-primary-blue-500 cursor-pointer text-white text-sm"
-								>
-									프로필 사진 수정
-								</button>
+								<BaseButton
+									title="프로필 사진 수정"
+									userType="CREATOR"
+									className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+								/>
 							</div>
 							<div className="h-full w-full">
 								<div className="flex flex-col gap-1 h-full">
@@ -98,13 +98,11 @@ function MyPageProfile() {
 									}}
 									error={errors.nickname}
 									checkDuplication={
-										<button
-											type="button"
-											onClick={() => console.log("nickname check")}
-											className="px-3 py-1 rounded-lg bg-primary-blue-300 hover:bg-primary-blue-500 cursor-pointer text-white text-sm"
-										>
-											닉네임 중복 확인
-										</button>
+										<BaseButton
+											title="닉네임 중복 확인"
+											userType="CREATOR"
+											className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+										/>
 									}
 								/>
 								<TextInput
@@ -122,13 +120,11 @@ function MyPageProfile() {
 									}}
 									error={errors.email}
 									checkDuplication={
-										<button
-											type="button"
-											onClick={() => console.log("email check")}
-											className="px-3 py-1 rounded-lg bg-primary-blue-300 hover:bg-primary-blue-500 cursor-pointer text-white text-sm"
-										>
-											닉네임 중복 확인
-										</button>
+										<BaseButton
+											title="이메일 중복 확인"
+											userType="CREATOR"
+											className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+										/>
 									}
 								/>
 								<PasswordInput
@@ -156,7 +152,11 @@ function MyPageProfile() {
 									error={errors.changedPassword}
 								/>
 								<div className="mt-10 w-full">
-									<BaseButton title="저장하기" onClick={onSaveProfileInfo} />
+									<BaseButton
+										title="저장하기"
+										onClick={onSaveProfileInfo}
+										userType="CREATOR"
+									/>
 								</div>
 							</form>
 						</div>
@@ -185,6 +185,7 @@ function MyPageProfile() {
 					<div className="w-90">
 						<BaseButton
 							title="프로필 수정하기"
+							userType="CREATOR"
 							onClick={onClickProfileEditButton}
 						/>
 					</div>

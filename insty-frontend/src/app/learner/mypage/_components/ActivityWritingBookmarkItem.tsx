@@ -1,8 +1,10 @@
 "use client";
 
-import { HiPencil } from "react-icons/hi2";
 import { FaTrash } from "react-icons/fa";
 import { FaMessage } from "react-icons/fa6";
+import { HiPencil } from "react-icons/hi2";
+
+import { BaseButton } from "@/app/_components/common";
 import { getFormattedDate } from "@/app/utils/date";
 
 export type ActivityWritingBookmarkItemProps = {
@@ -35,14 +37,16 @@ function ActivityWritingBookmarkItem({
 			</div>
 			{type === "writing" && (
 				<div className="flex h-9 gap-4 mt-4">
-					<button className="flex w-full justify-center items-center gap-1 bg-primary-green-500 rounded-lg">
-						<span className="text-gray-50">수정</span>
-						<HiPencil className="text-gray-50" />
-					</button>
-					<button className="flex w-full justify-center items-center gap-1 bg-gray-100 rounded-lg">
-						<span className="text-red-300">삭제</span>
-						<FaTrash className="text-red-300" />
-					</button>
+					<BaseButton
+						title="수정"
+						icon={<HiPencil className="text-gray-50" />}
+						className="!rounded-lg"
+					/>
+					<BaseButton
+						title="삭제"
+						icon={<FaTrash className="text-red-300" />}
+						className={"!bg-gray-100 !text-red-300 !rounded-lg"}
+					/>
 				</div>
 			)}
 		</div>

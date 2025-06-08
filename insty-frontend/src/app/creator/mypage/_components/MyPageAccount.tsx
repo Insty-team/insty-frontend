@@ -1,5 +1,9 @@
 "use client";
-import { IconButton } from "@/app/_components/common";
+
+import { FaTrash } from "react-icons/fa";
+import { HiPencil } from "react-icons/hi2";
+
+import { BaseButton } from "@/app/_components/common";
 
 function MyPageAccount() {
 	return (
@@ -11,17 +15,17 @@ function MyPageAccount() {
 					<span>계좌번호: 110-123-456789</span>
 				</div>
 				<div className="flex gap-4 w-100 h-[54px]">
-					<IconButton
-						icon="/pencil.svg"
-						align="right"
+					<BaseButton
 						title="수정"
-						className="bg-primary-green-600 rounded-lg w-[168px] flex justify-center items-center gap-2 text-gray-scale-50 cursor-pointer"
+						userType="CREATOR"
+						icon={<HiPencil />}
+						className="!w-[168px] !rounded-lg"
 					/>
-					<IconButton
-						icon="/basket.svg"
-						align="right"
+					<BaseButton
 						title="삭제"
-						className="bg-gray-100 rounded-lg w-[168px] flex justify-center items-center gap-2 text-secondary-red-200 cursor-pointer"
+						userType="CREATOR"
+						icon={<FaTrash />}
+						className="!bg-gray-100 !w-[168px] !rounded-lg !text-secondary-red-200"
 					/>
 				</div>
 			</div>

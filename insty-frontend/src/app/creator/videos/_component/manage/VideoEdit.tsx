@@ -1,6 +1,6 @@
-import React from "react";
-import VideoForm from "../common/VideoForm";
 import { UploadformData } from "@/app/types";
+
+import VideoForm from "../common/VideoForm";
 
 function VideoEdit({
 	videoId,

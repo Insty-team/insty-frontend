@@ -1,6 +1,7 @@
-import { PasswordInputProps } from "@/app/types";
 import Image from "next/image";
 import { useState } from "react";
+
+import { PasswordInputProps } from "@/app/types";
 
 function PasswordInput<TFieldValues>({
 	label,

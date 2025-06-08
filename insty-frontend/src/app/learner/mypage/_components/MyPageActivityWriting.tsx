@@ -1,6 +1,9 @@
 "use client";
-import { BaseSearchBar } from "@/app/_components/common";
+
 import { ChangeEvent, useState } from "react";
+
+import { BaseSearchBar } from "@/app/_components/common";
+
 import ActivityWritingBookmarkItem from "./ActivityWritingBookmarkItem";
 
 const mockData = [

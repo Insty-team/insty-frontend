@@ -1,16 +1,30 @@
+import { FlatCompat } from "@eslint/eslintrc";
+import eslintPluginPrettier from "eslint-plugin-prettier";
+import eslintPluginSimpleImportSort from "eslint-plugin-simple-import-sort";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
-  baseDirectory: __dirname,
+	baseDirectory: __dirname,
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
+	...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
+	{
+		plugins: {
+			prettier: eslintPluginPrettier,
+			"simple-import-sort": eslintPluginSimpleImportSort,
+		},
+		rules: {
+			"prettier/prettier": "warn",
+			"simple-import-sort/imports": "warn",
+			"simple-import-sort/exports": "warn",
+			"import/order": "off",
+		},
+	},
 ];
 
 export default eslintConfig;

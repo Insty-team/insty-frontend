@@ -1,8 +1,9 @@
 "use client";
+
 import PreviewInfomation from "@/app/creator/videos/_component/upload/PreviewInfomation";
 
 function CourseDetail() {
-    //더미데이터...
+	//더미데이터...
 	const dummyVideoData = {
 		link: "https://example.com/video/1",
 		title: "설치 가이드 주제 설치 가이드",
@@ -10,7 +11,14 @@ function CourseDetail() {
 		description:
 			"파이썬 개발 환경과 RTX 3060 드라이버 설치를 다루는 영상입니다.",
 		price: 199990,
-		tags: ["열글자열글자열글자1", "열글자열글자열글자2", "열글자열글자열글자3", "열글자열글자열글자4", "열글자열글자열글자5", "열글자열글자열글자6"],
+		tags: [
+			"열글자열글자열글자1",
+			"열글자열글자열글자2",
+			"열글자열글자열글자3",
+			"열글자열글자열글자4",
+			"열글자열글자열글자5",
+			"열글자열글자열글자6",
+		],
 		environments: [
 			{ value: "Windows 10 / 11 환경", support: "지원" },
 			{ value: "RTX 3060 이상 GPU", support: "지원" },

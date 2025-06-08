@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { IoChatboxEllipsesOutline, IoChatboxEllipses } from "react-icons/io5";
+import { IoChatboxEllipses, IoChatboxEllipsesOutline } from "react-icons/io5";
 
 export default function CommunitySidebar() {
 	const [isHovered, setIsHovered] = useState(false);
@@ -49,4 +49,4 @@ export default function CommunitySidebar() {
 			</div>
 		</>
 	);
-} 
+}

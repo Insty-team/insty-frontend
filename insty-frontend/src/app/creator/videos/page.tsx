@@ -1,9 +1,11 @@
 "use client";
+
 import { useState } from "react";
-import VideosHeader from "./_component/VideosHeader";
+
 import VideoManagement from "./_component/manage/VideoManagement";
-import VideoUpload from "./_component/upload/VideoUpload";
 import ConfirmRevenue from "./_component/revenue/ConfirmRevenue";
+import VideoUpload from "./_component/upload/VideoUpload";
+import VideosHeader from "./_component/VideosHeader";
 
 function Videos() {
 	const [activeTab, setActiveTab] = useState("manage");

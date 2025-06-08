@@ -1,5 +1,6 @@
 "use client";
-import { CREATOR_MYPAGE_MENU_LIST } from "@/app/constants/constants";
+
+import { CREATOR_MYPAGE_MENU_LIST } from "@/app/constants";
 
 type MyPageCreatorSideProps = {
 	activeMenu: string;

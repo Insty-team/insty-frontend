@@ -1,17 +1,17 @@
 import BaseButton from "./BaseButton";
-import LearnerHeader from "./LearnerHeader";
-import CreatorHeader from "./CreatorHeader";
-import IconButton from "./IconButton";
 import BaseSearchBar from "./BaseSearchBar";
 import BaseTab from "./BaseTab";
 import CommunityVideo from "./CommunityVideo";
+import CreatorHeader from "./CreatorHeader";
+import IconButton from "./IconButton";
+import LearnerHeader from "./LearnerHeader";
 
 export {
 	BaseButton,
-	LearnerHeader,
-	CreatorHeader,
-	IconButton,
 	BaseSearchBar,
 	BaseTab,
 	CommunityVideo,
+	CreatorHeader,
+	IconButton,
+	LearnerHeader,
 };

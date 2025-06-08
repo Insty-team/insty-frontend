@@ -1,4 +1,4 @@
-import { VIDEOS_HEADER_LIST } from "@/app/constants/constants";
+import { VIDEOS_HEADER_LIST } from "@/app/constants";
 
 type VideosHeaderProps = {
 	activeTab: string;

@@ -1,7 +1,9 @@
 "use client";
-import React, { useState } from "react";
+
 import dayjs from "dayjs";
 import Image from "next/image";
+import { useState } from "react";
+
 import CommonLineChart from "@/app/creator/_component/CommonLineChart";
 
 function VideoDetail({
@@ -22,7 +24,7 @@ function VideoDetail({
 		return {
 			name: `${Math.floor(start / 60)}:${String(start % 60).padStart(
 				2,
-				"0"
+				"0",
 			)}~${Math.floor(end / 60)}:${String(end % 60).padStart(2, "0")}`,
 			value: Math.floor(Math.random() * 100),
 		};

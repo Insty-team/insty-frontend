@@ -1,14 +1,14 @@
-import React from "react";
-import CommonLineChart from "@/app/creator/_component/CommonLineChart";
 import dayjs from "dayjs";
 import Image from "next/image";
+
 import { BaseButton } from "@/app/_components/common";
+import CommonLineChart from "@/app/creator/_component/CommonLineChart";
 
 function ConfirmRevenue() {
 	const months = Array.from({ length: 6 }, (_, i) =>
 		dayjs()
 			.subtract(5 - i, "month")
-			.format("YYYY.MM")
+			.format("YYYY.MM"),
 	);
 	const chartData = months.map((month) => ({
 		name: month,

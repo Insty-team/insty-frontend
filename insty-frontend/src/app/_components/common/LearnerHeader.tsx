@@ -1,8 +1,10 @@
 "use client";
+
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { LEARNER_MENU_LIST } from "@/app/constants/constants";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { LEARNER_MENU_LIST } from "@/app/constants";
 
 function LearnerHeader() {
 	const pathname = usePathname();
@@ -12,7 +14,10 @@ function LearnerHeader() {
 		<div className="flex justify-between items-center w-full px-4">
 			<div className="w-full max-w-[1400px] h-[88px] flex justify-between mx-auto">
 				<div className="flex gap-20">
-					<Link href={recommend.path} className="flex justify-center items-center">
+					<Link
+						href={recommend.path}
+						className="flex justify-center items-center"
+					>
 						<Image
 							className="object-contain"
 							src="/insty.png"

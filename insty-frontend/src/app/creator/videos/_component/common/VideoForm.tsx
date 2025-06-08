@@ -1,7 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { VideoFormProps } from "@/app/types";
+
+import { useEffect, useState } from "react";
+
 import { BaseButton, IconButton } from "@/app/_components/common";
+import { VideoFormProps } from "@/app/types";
 
 interface Environment {
 	value: string;
@@ -18,17 +20,17 @@ const VideoForm: React.FC<VideoFormProps> = ({
 	const [recipient, setRecipient] = useState(initialData?.recipient || "");
 	const [price, setPrice] = useState(initialData?.price || 0);
 	const [description, setDescription] = useState(
-		initialData?.description || ""
+		initialData?.description || "",
 	);
 	const [tags, setTags] = useState<string[]>(initialData?.tags || []);
 	const [tagInput, setTagInput] = useState("");
 	const [environments, setEnvironments] = useState<Environment[]>(
 		initialData?.environments || [
 			{ value: "Windows 10 / 11 환경", support: "지원" },
-		]
+		],
 	);
 	const [coreContents, setCoreContents] = useState<string[]>(
-		initialData?.coreContents || ["파이썬 개발 환경 설치 (Windows 기준)"]
+		initialData?.coreContents || ["파이썬 개발 환경 설치 (Windows 기준)"],
 	);
 
 	useEffect(() => {
@@ -39,10 +41,10 @@ const VideoForm: React.FC<VideoFormProps> = ({
 			setEnvironments(
 				initialData.environments || [
 					{ value: "Windows 10 / 11 환경", support: "지원" },
-				]
+				],
 			);
 			setCoreContents(
-				initialData.coreContents || ["파이썬 개발 환경 설치 (Windows 기준)"]
+				initialData.coreContents || ["파이썬 개발 환경 설치 (Windows 기준)"],
 			);
 		}
 	}, [initialData]);
@@ -61,7 +63,7 @@ const VideoForm: React.FC<VideoFormProps> = ({
 	const handleEnvChange = (
 		idx: number,
 		key: "value" | "support",
-		value: string
+		value: string,
 	) => {
 		const arr = [...environments];
 		arr[idx][key] = value;
@@ -102,14 +104,21 @@ const VideoForm: React.FC<VideoFormProps> = ({
 			coreContents,
 		};
 		console.log("폼 데이터:", formData);
-		if(link === "" || title === "" || recipient === "" || price === 0 || description === "" || environments.length === 0 || coreContents.length === 0 || tags.length === 0) {
+		if (
+			link === "" ||
+			title === "" ||
+			recipient === "" ||
+			price === 0 ||
+			description === "" ||
+			environments.length === 0 ||
+			coreContents.length === 0 ||
+			tags.length === 0
+		) {
 			alert("모든 항목을 입력해주세요.");
 			return;
-		}
-		else {
+		} else {
 			onSubmit(formData);
 		}
-		
 	};
 
 	return (
@@ -309,14 +318,25 @@ const VideoForm: React.FC<VideoFormProps> = ({
 									key={tag}
 									className="px-4 py-2 rounded-full flex items-center text-lg border !border-primary-green-600"
 								>
-									<IconButton align="right" icon="/cancel.svg" title={tag} textSize="text-xl" className="flex items-center ml-2 cursor-pointer" onClick={() => handleRemoveTag(idx)}/>
+									<IconButton
+										align="right"
+										icon="/cancel.svg"
+										title={tag}
+										textSize="text-xl"
+										className="flex items-center ml-2 cursor-pointer"
+										onClick={() => handleRemoveTag(idx)}
+									/>
 								</span>
 							))}
 						</div>
 					</div>
 
 					<div className="w-[30%] flex items-end ml-auto mt-4">
-						<BaseButton title="업로드" type="submit" onClick={() => handleSubmit} />
+						<BaseButton
+							title="업로드"
+							buttonType="submit"
+							onClick={() => handleSubmit}
+						/>
 					</div>
 				</div>
 			</div>
