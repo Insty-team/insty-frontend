@@ -10,19 +10,14 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
+import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
 	const [isEditing, setIsEditing] = useState(false);
 
-	// FIXME: 실제 유저 데이터로 변경 필요
-	const MOCK_USER_INFO = {
-		id: "test",
-		name: "김가나",
-		email: "kim-gana@example.com",
-		description: "안녕하세요. 김가나 입니다.",
-	};
+	const { data: userInfo } = useGetUserProfileInfoQuery();
 
 	const onClickProfileEditButton = () => setIsEditing(true);
 
@@ -73,7 +68,7 @@ function MyPageProfile() {
 										소개글
 									</label>
 									<textarea
-										placeholder={MOCK_USER_INFO.description}
+										placeholder={userInfo?.introduce ?? "소개글을 입력하세요."}
 										className="w-full h-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none resize-none"
 									/>
 								</div>
@@ -89,7 +84,7 @@ function MyPageProfile() {
 									label="닉네임"
 									name="nickname"
 									type="text"
-									placeholder={MOCK_USER_INFO.name}
+									placeholder={userInfo?.nickname}
 									register={register}
 									validation={{
 										required: "",
@@ -113,7 +108,7 @@ function MyPageProfile() {
 									label="이메일"
 									name="email"
 									type="email"
-									placeholder={MOCK_USER_INFO.email}
+									placeholder={userInfo?.email}
 									register={register}
 									validation={{
 										required: "",
@@ -174,9 +169,9 @@ function MyPageProfile() {
 					/>
 					<div className="flex flex-col gap-10">
 						{[
-							{ label: "닉네임", value: MOCK_USER_INFO.name },
-							{ label: "이메일", value: MOCK_USER_INFO.email },
-							{ label: "소개글", value: MOCK_USER_INFO.description },
+							{ label: "닉네임", value: userInfo?.nickname },
+							{ label: "이메일", value: userInfo?.email },
+							{ label: "소개글", value: userInfo?.introduce ?? "-" },
 						].map((item) => (
 							<div key={item.label} className="flex flex-col gap-2">
 								<span className="text-xl font-semibold">{item.label}</span>

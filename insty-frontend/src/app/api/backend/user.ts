@@ -1,6 +1,8 @@
 import axios from "axios";
 
-import { SignupForm } from "@/app/types/index.d";
+import { SignupForm, UserProfileInfoResponse } from "@/app/types/index.d";
+
+import axiosInstance from "../interceptor";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
@@ -34,7 +36,8 @@ export const postSignup = async (data: SignupForm) => {
 };
 
 // 사용자 프로필 정보
-export const getUserProfileInfo = async () => {
-	const res = await axios.get(`${BASE_URL}/user/profile`);
-	console.log("getUserInfo", res);
-};
+export const getUserProfileInfo =
+	async (): Promise<UserProfileInfoResponse> => {
+		const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
+		return res.data.data;
+	};

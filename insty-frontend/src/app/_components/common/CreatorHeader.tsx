@@ -7,12 +7,15 @@ import { FaCircleUser } from "react-icons/fa6";
 import { GoBellFill } from "react-icons/go";
 
 import { CREATOR_MENU_LIST } from "@/app/constants";
+import { useGetUserProfileInfoQuery } from "@/app/queries";
 
 function CreatorHeader() {
 	const pathname = usePathname();
 
 	const dashboard = CREATOR_MENU_LIST[0];
 	const mypage = CREATOR_MENU_LIST[2];
+
+	const { data: userInfo } = useGetUserProfileInfoQuery();
 
 	return (
 		<div className="flex justify-between items-center">
@@ -53,7 +56,7 @@ function CreatorHeader() {
 					<Link href={mypage.path} key={mypage.id}>
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					</Link>
-					<span className="--text-2lg font-medium">김가나</span>
+					<span className="--text-2lg font-medium">{userInfo?.nickname}</span>
 				</div>
 			</div>
 		</div>
