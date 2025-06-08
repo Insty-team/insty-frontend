@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { GoGraph } from "react-icons/go";
 
 import { IconButton } from "@/app/_components/common";
 import { VIDEOS_DUMMY_LIST } from "@/app/constants";
@@ -56,13 +57,8 @@ export default function VideoManagement() {
 						</div>
 						<div className="flex items-center gap-2 text-xl mt-1">
 							<span className="flex items-center gap-1 text-gray-500">
-								<Image
-									src="/userGraph.svg"
-									alt="조회수"
-									width={36}
-									height={36}
-								/>
-								조회수{" "}
+								<GoGraph className="size-8" />
+								조회수
 								<span className="text-primary-green-600 ml-1">
 									{video.views}
 								</span>

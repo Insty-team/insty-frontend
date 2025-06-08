@@ -1,8 +1,9 @@
 "use client";
 
 import dayjs from "dayjs";
-import Image from "next/image";
 import { useState } from "react";
+import { GoGraph } from "react-icons/go";
+import { LiaWonSignSolid } from "react-icons/lia";
 import { MdDriveFolderUpload } from "react-icons/md";
 
 import { BaseButton } from "@/app/_components/common";
@@ -108,16 +109,19 @@ function CreatorDashboard() {
 					</div>
 					<div className="w-48 flex-shrink-0 flex flex-col gap-2 justify-center">
 						<div className="text-lg text-black-400">총 수익</div>
-						<div className="font-bold text-primary-green-600 text-lg">
-							₩ 999,999
+						<div className="font-bold text-primary-green-600 text-lg flex justify-start items-center gap-2">
+							<LiaWonSignSolid />
+							99,999
 						</div>
 						<div className="text-lg text-black-400">이번 달 수익</div>
-						<div className="font-bold text-primary-green-600 text-lg">
-							₩ 999,999
+						<div className="font-bold text-primary-green-600 text-lg flex justify-start items-center gap-2">
+							<LiaWonSignSolid />
+							99,999
 						</div>
 						<div className="text-lg text-black-400">이번 주 수익</div>
-						<div className="font-bold text-primary-green-600 text-lg">
-							₩ 999,999
+						<div className="font-bold text-primary-green-600 text-lg flex justify-start items-center gap-2">
+							<LiaWonSignSolid />
+							99,999
 						</div>
 					</div>
 				</div>
@@ -138,32 +142,17 @@ function CreatorDashboard() {
 					<div className="w-48 flex-shrink-0 flex flex-col gap-2 justify-center">
 						<div className="text-lg text-black-400">총 조회수</div>
 						<div className="font-bold text-primary-green-600 text-lg flex items-center gap-2">
-							<Image
-								src="/userGraph.svg"
-								alt="사용자 그래프"
-								width={20}
-								height={20}
-							/>{" "}
+							<GoGraph />
 							999,999
 						</div>
 						<div className="text-lg text-black-400">이번 달 조회수</div>
 						<div className="font-bold text-primary-green-600 text-lg flex items-center gap-2">
-							<Image
-								src="/userGraph.svg"
-								alt="사용자 그래프"
-								width={20}
-								height={20}
-							/>{" "}
+							<GoGraph />
 							999,999
 						</div>
 						<div className="text-lg text-black-400">이번 주 조회수</div>
 						<div className="font-bold text-primary-green-600 text-lg flex items-center gap-2">
-							<Image
-								src="/userGraph.svg"
-								alt="사용자 그래프"
-								width={20}
-								height={20}
-							/>{" "}
+							<GoGraph />
 							999,999
 						</div>
 					</div>

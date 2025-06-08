@@ -3,6 +3,8 @@
 import dayjs from "dayjs";
 import Image from "next/image";
 import { useState } from "react";
+import { GoGraph, GoStopwatch } from "react-icons/go";
+import { HiOutlinePercentBadge } from "react-icons/hi2";
 
 import CommonLineChart from "@/app/creator/_component/CommonLineChart";
 
@@ -157,12 +159,7 @@ function VideoDetail({
 						<div className="flex flex-col gap-3">
 							<div className="flex flex-col justify-between items-center gap-2 p-3 border !border-primary-blue-600 rounded-lg w-[278px] h-[143px]">
 								<div className="flex items-center gap-2">
-									<Image
-										src="/userGraph.svg"
-										alt="조회수"
-										width={50}
-										height={50}
-									/>
+									<GoGraph className="size-9" />
 									<span className="text-2xl font-medium">조회수</span>
 								</div>
 								<span className="text-primary-blue-600 text-2xl font-semibold">
@@ -171,12 +168,8 @@ function VideoDetail({
 							</div>
 							<div className="flex flex-col justify-between items-center gap-2 p-3 border !border-primary-blue-600 rounded-lg w-[278px] h-[143px]">
 								<div className="flex items-center gap-2">
-									<div className="relative w-[50px] h-[50px]">
-										<Image src="/circle.svg" alt="퍼센트 서클" fill />
-										<span className="absolute inset-0 flex items-center justify-center text-2xl text-primary-blue-600 font-bold">
-											%
-										</span>
-									</div>
+									{/* <Image src="/circle.svg" alt="퍼센트 서클" fill /> */}
+									<HiOutlinePercentBadge className="size-9" />
 									<span className="text-2xl font-medium">구매율</span>
 								</div>
 								<span className="text-primary-blue-600 text-2xl font-semibold">
@@ -185,12 +178,13 @@ function VideoDetail({
 							</div>
 							<div className="flex flex-col justify-between items-center gap-2 p-3 border !border-primary-blue-600 rounded-lg w-[278px] h-[143px]">
 								<div className="flex items-center gap-2">
-									<Image
+									<GoStopwatch className="size-9" />
+									{/* <Image
 										src="/time.svg"
 										alt="시청 시간"
 										width={50}
 										height={50}
-									/>
+									/> */}
 									<span className="text-2xl font-medium">평균 시청 시간</span>
 								</div>
 								<span className="text-primary-blue-600 text-2xl font-semibold">
