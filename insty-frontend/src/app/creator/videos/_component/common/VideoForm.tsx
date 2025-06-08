@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BsStars } from "react-icons/bs";
 
 import { BaseButton, IconButton } from "@/app/_components/common";
 import { VideoFormProps } from "@/app/types";
@@ -126,11 +127,12 @@ const VideoForm: React.FC<VideoFormProps> = ({
 			<div className="flex items-center justify-between">
 				<div className="font-bold text-3xl mb-12">{subject}</div>
 				{subject === "영상 업로드" ? (
-					<IconButton
-						icon="/airecommend.svg"
+					<BaseButton
 						title="AI로 초안 작성하기"
-						className="flex items-center px-4 py-2 rounded-lg border !border-primary-green-600 text-primary-green-600 hover:bg-primary-green-500 hover:text-white active:bg-primary-green-600 active:text-white"
-						textSize="text-xl"
+						alignIcon="left"
+						icon={<BsStars />}
+						fill={false}
+						className="!px-4 !py-2 !rounded-lg !border-primary-green-600 !w-[210px]"
 					/>
 				) : (
 					""
