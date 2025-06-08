@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { BsStars } from "react-icons/bs";
+import { TiDelete } from "react-icons/ti";
 
-import { BaseButton, IconButton } from "@/app/_components/common";
+import { BaseButton } from "@/app/_components/common";
 import { VideoFormProps } from "@/app/types";
 
 interface Environment {
@@ -320,14 +321,13 @@ const VideoForm: React.FC<VideoFormProps> = ({
 									key={tag}
 									className="px-4 py-2 rounded-full flex items-center text-lg border !border-primary-green-600"
 								>
-									<IconButton
-										align="right"
-										icon="/cancel.svg"
-										title={tag}
-										textSize="text-xl"
-										className="flex items-center ml-2 cursor-pointer"
+									{tag}
+									<button
+										className="flex items-center cursor-pointer"
 										onClick={() => handleRemoveTag(idx)}
-									/>
+									>
+										<TiDelete className="size-6" />
+									</button>
 								</span>
 							))}
 						</div>
