@@ -169,7 +169,6 @@ function VideoDetail({
 							</div>
 							<div className="flex flex-col justify-between items-center gap-2 p-3 border !border-primary-blue-600 rounded-lg w-[278px] h-[143px]">
 								<div className="flex items-center gap-2">
-									{/* <Image src="/circle.svg" alt="퍼센트 서클" fill /> */}
 									<HiOutlinePercentBadge className="size-9" />
 									<span className="text-2xl font-medium">구매율</span>
 								</div>

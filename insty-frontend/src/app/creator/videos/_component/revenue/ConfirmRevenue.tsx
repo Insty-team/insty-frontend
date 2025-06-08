@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import Image from "next/image";
+import { LiaWonSignSolid } from "react-icons/lia";
 
 import { BaseButton } from "@/app/_components/common";
 import CommonLineChart from "@/app/creator/_component/CommonLineChart";
@@ -31,12 +31,7 @@ function ConfirmRevenue() {
 				<div className="flex-1">
 					<div className="mb-8">
 						<div className="flex items-center gap-2 mb-2">
-							<div className="relative w-[40px] h-[40px]">
-								<Image src="/circle.svg" alt="퍼센트 서클" fill />
-								<span className="absolute inset-0 flex items-center justify-center text-xl text-primary-blue-600">
-									₩
-								</span>
-							</div>
+							<LiaWonSignSolid className="size-9" />
 							<span className="text-black-400 text-2xl">누적 수익</span>
 						</div>
 						<div className="text-4xl font-bold text-primary-green-600 mb-2">
