@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { useVideoUploadStore } from "@/app/stores/videos/videoUploadStore";
+import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { UploadformData } from "@/app/types";
 
 import VideoForm from "../common/VideoForm";

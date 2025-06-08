@@ -7,7 +7,7 @@ import { LiaWonSignSolid } from "react-icons/lia";
 import { MdDriveFolderUpload } from "react-icons/md";
 
 import { BaseButton } from "@/app/_components/common";
-import { useUserStore } from "@/app/stores/user/userStore";
+import { useUserStore } from "@/app/stores/user";
 import { getLabels } from "@/app/utils/date";
 
 import CommonLineChart from "../_component/CommonLineChart";
