@@ -1,7 +1,5 @@
-"use client";
-
-import Image from "next/image";
 import { ChangeEvent, FocusEvent, KeyboardEvent, ReactNode } from "react";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 
 type BaseSearchBarProps = {
 	placeholder?: string;
@@ -31,12 +29,7 @@ function BaseSearchBar({
 		<div
 			className={`flex items-center px-4 rounded-[50px] bg-gray-100 gap-3 w-full ${heightClass} ${className}`}
 		>
-			<Image
-				src="/magnifyingglass.svg"
-				alt="magnifyingglass"
-				width={20}
-				height={20}
-			/>
+			<HiMagnifyingGlass className="size-5" />
 			<input
 				type="text"
 				value={value}
