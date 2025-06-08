@@ -3,7 +3,7 @@
 import dayjs from "dayjs";
 import Image from "next/image";
 import { useState } from "react";
-import { GoGraph, GoStopwatch } from "react-icons/go";
+import { GoCalendar, GoGraph, GoStopwatch } from "react-icons/go";
 import { HiOutlinePercentBadge } from "react-icons/hi2";
 
 import CommonLineChart from "@/app/creator/_component/CommonLineChart";
@@ -60,8 +60,8 @@ function VideoDetail({
 					</div>
 					<div className="flex gap-4 text-gray-500 text-xl mb-2">
 						<span className="flex items-center gap-2">
-							<Image src="/date.svg" alt="calendar" width={36} height={36} />{" "}
-							업로드 날짜:{" "}
+							<GoCalendar className="size-8" />
+							업로드 날짜 업로드 날짜:{" "}
 							<span className=" text-primary-blue-600">
 								{dayjs().format("YYYY년 MM월 DD일")}
 							</span>
