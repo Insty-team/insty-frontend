@@ -13,14 +13,9 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
+import { getEmailCheck, getNicknameCheck, postSignup } from "@/app/api/backend";
 import { SignupForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
-
-import {
-	getEmailCheck,
-	getNicknameCheck,
-	postSignup,
-} from "../api/backend/user";
 
 function Signup() {
 	const [isNicknameAvailable, setIsNicknameAvailable] = useState<

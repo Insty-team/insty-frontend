@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getUserProfileInfo } from "../api/backend";
+import { getUserProfileInfo } from "@/app/api/backend";
 
 // 사용자 프로필 정보
 export const useGetUserProfile = () => {
