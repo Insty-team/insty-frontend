@@ -1,5 +1,6 @@
-import { LoginForm } from "@/app/types/index.d";
 import axios from "axios";
+
+import { LoginForm } from "@/app/types/index.d";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 

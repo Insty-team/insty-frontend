@@ -16,7 +16,7 @@ import {
 import { SignupForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils/regex";
 
-import { getEmailCheck, getNicknameCheck, postSignup } from "../api/back/user";
+import { getEmailCheck, getNicknameCheck, postSignup } from "../api/backend/user";
 
 function Signup() {
 	const [isNicknameAvailable, setIsNicknameAvailable] = useState<

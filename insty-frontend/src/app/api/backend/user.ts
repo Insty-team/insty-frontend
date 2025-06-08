@@ -1,5 +1,6 @@
-import { SignupForm } from "@/app/types/index.d";
 import axios from "axios";
+
+import { SignupForm } from "@/app/types/index.d";
 
 //닉네임 중복 체크
 export const getNicknameCheck = async (nickname: string) => {
@@ -9,7 +10,7 @@ export const getNicknameCheck = async (nickname: string) => {
 			params: {
 				nickname,
 			},
-		}
+		},
 	);
 
 	return res.data.data;
@@ -23,7 +24,7 @@ export const getEmailCheck = async (email: string) => {
 			params: {
 				email,
 			},
-		}
+		},
 	);
 
 	return res.data.data;
@@ -33,7 +34,7 @@ export const getEmailCheck = async (email: string) => {
 export const postSignup = async (data: SignupForm) => {
 	const res = await axios.post(
 		`${process.env.NEXT_PUBLIC_BACK_BASE_URL}/users`,
-		data
+		data,
 	);
 
 	return res.data.data;

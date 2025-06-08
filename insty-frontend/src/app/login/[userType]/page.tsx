@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import SocialLogin from "@/app/_components/social/SocialLogin";
 import PasswordInput from "@/app/_components/validation/PasswordInput";
 import TextInput from "@/app/_components/validation/TextInput";
-import { postLogin } from "@/app/api/back/auth";
+import { postLogin } from "@/app/api/backend/auth";
 import { useAuthStore } from "@/app/stores/auth/authStore";
 import { useUserStore } from "@/app/stores/user/userStore";
 import { LoginForm } from "@/app/types";
