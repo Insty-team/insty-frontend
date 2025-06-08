@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { useState } from "react";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 
 import { PasswordInputProps } from "@/app/types";
 
@@ -34,12 +34,13 @@ function PasswordInput<TFieldValues>({
 				className="absolute right-3 top-11 cursor-pointer"
 				onClick={onChangeShowPassword}
 			>
-				<Image
-					src={showPassword ? "/unshow.svg" : "/show.svg"}
-					alt="비밀번호 표시 토글"
-					width={24}
-					height={24}
-				/>
+				<div className="text-gray-400 flex items-center">
+					{showPassword ? (
+						<GoEyeClosed className="size-5" />
+					) : (
+						<GoEye className="size-5" />
+					)}
+				</div>
 			</button>
 			{error && (
 				<p className="mt-1 ml-2 text-secondary-red-300">{error.message}</p>

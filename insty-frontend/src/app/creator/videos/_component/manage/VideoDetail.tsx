@@ -3,6 +3,9 @@
 import dayjs from "dayjs";
 import Image from "next/image";
 import { useState } from "react";
+import { GoCalendar, GoGraph, GoStopwatch } from "react-icons/go";
+import { HiOutlinePercentBadge } from "react-icons/hi2";
+import { LiaWonSignSolid } from "react-icons/lia";
 
 import CommonLineChart from "@/app/creator/_component/CommonLineChart";
 
@@ -58,14 +61,14 @@ function VideoDetail({
 					</div>
 					<div className="flex gap-4 text-gray-500 text-xl mb-2">
 						<span className="flex items-center gap-2">
-							<Image src="/date.svg" alt="calendar" width={36} height={36} />{" "}
-							업로드 날짜:{" "}
+							<GoCalendar className="size-8" />
+							업로드 날짜 업로드 날짜:{" "}
 							<span className=" text-primary-blue-600">
 								{dayjs().format("YYYY년 MM월 DD일")}
 							</span>
 						</span>
 						<span className="flex items-center gap-2">
-							<Image src="/money.svg" alt="price" width={36} height={36} />{" "}
+							<LiaWonSignSolid className="size-8" />
 							가격: <span className=" text-primary-blue-600">199,999원</span>
 						</span>
 					</div>
@@ -157,12 +160,7 @@ function VideoDetail({
 						<div className="flex flex-col gap-3">
 							<div className="flex flex-col justify-between items-center gap-2 p-3 border !border-primary-blue-600 rounded-lg w-[278px] h-[143px]">
 								<div className="flex items-center gap-2">
-									<Image
-										src="/userGraph.svg"
-										alt="조회수"
-										width={50}
-										height={50}
-									/>
+									<GoGraph className="size-9" />
 									<span className="text-2xl font-medium">조회수</span>
 								</div>
 								<span className="text-primary-blue-600 text-2xl font-semibold">
@@ -171,12 +169,7 @@ function VideoDetail({
 							</div>
 							<div className="flex flex-col justify-between items-center gap-2 p-3 border !border-primary-blue-600 rounded-lg w-[278px] h-[143px]">
 								<div className="flex items-center gap-2">
-									<div className="relative w-[50px] h-[50px]">
-										<Image src="/circle.svg" alt="퍼센트 서클" fill />
-										<span className="absolute inset-0 flex items-center justify-center text-2xl text-primary-blue-600 font-bold">
-											%
-										</span>
-									</div>
+									<HiOutlinePercentBadge className="size-9" />
 									<span className="text-2xl font-medium">구매율</span>
 								</div>
 								<span className="text-primary-blue-600 text-2xl font-semibold">
@@ -185,12 +178,7 @@ function VideoDetail({
 							</div>
 							<div className="flex flex-col justify-between items-center gap-2 p-3 border !border-primary-blue-600 rounded-lg w-[278px] h-[143px]">
 								<div className="flex items-center gap-2">
-									<Image
-										src="/time.svg"
-										alt="시청 시간"
-										width={50}
-										height={50}
-									/>
+									<GoStopwatch className="size-9" />
 									<span className="text-2xl font-medium">평균 시청 시간</span>
 								</div>
 								<span className="text-primary-blue-600 text-2xl font-semibold">

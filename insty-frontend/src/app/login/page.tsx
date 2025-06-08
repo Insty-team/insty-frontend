@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { IoChevronForward } from "react-icons/io5";
 
 function Select() {
 	return (
@@ -30,16 +31,10 @@ function Select() {
 							</div>
 							<Link
 								href="/login/learner"
-								className="mt-12 h-12 bg-primary-blue-300 hover:bg-primary-blue-500 cursor-pointer text-white border px-10 py-2 rounded-2xl flex items-center text-xl"
+								className="mt-12 h-12 bg-primary-blue-300 hover:bg-primary-blue-500 cursor-pointer text-white border px-10 py-2 rounded-2xl items-center text-xl flex gap-2"
 							>
-								시작하기{" "}
-								<Image
-									className="ml-4"
-									src="/next.png"
-									alt="next"
-									width={8}
-									height={16}
-								/>
+								<span>시작하기</span>
+								<IoChevronForward className="size-5" />
 							</Link>
 						</div>
 						<div className="flex flex-col justify-between items-center p-16 border !border-orange rounded-2xl h-[400px]">
@@ -58,16 +53,10 @@ function Select() {
 							</div>
 							<Link
 								href="/login/creator"
-								className="mt-12 h-12 bg-orange hover:bg-orange-hover cursor-pointer text-white border px-10 py-2 rounded-2xl flex items-center text-xl"
+								className="mt-12 h-12 bg-orange hover:bg-orange-hover cursor-pointer text-white border px-10 py-2 rounded-2xl flex items-center text-xl gap-2"
 							>
-								시작하기{" "}
-								<Image
-									className="ml-4"
-									src="/next.png"
-									alt="next"
-									width={8}
-									height={16}
-								/>
+								<span>시작하기</span>
+								<IoChevronForward className="size-5" />
 							</Link>
 						</div>
 					</div>

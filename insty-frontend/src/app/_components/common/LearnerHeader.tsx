@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FaCircleUser } from "react-icons/fa6";
+import { GoBellFill } from "react-icons/go";
 
 import { LEARNER_MENU_LIST } from "@/app/constants";
 
@@ -43,20 +45,8 @@ function LearnerHeader() {
 					</div>
 				</div>
 				<div className="flex gap-8 justify-center items-center">
-					<Image
-						className="cursor-pointer"
-						src="/alram.svg"
-						alt="alram"
-						width={36}
-						height={36}
-					/>
-					<Image
-						className="cursor-pointer"
-						src="/profile.svg"
-						alt="profile"
-						width={36}
-						height={36}
-					/>
+					<GoBellFill className="cursor-pointer size-8 text-gray-300" />
+					<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					<span className="--text-2lg font-medium">김가나</span>
 				</div>
 			</div>
