@@ -8,8 +8,9 @@ import { GoBellFill } from "react-icons/go";
 
 import { CREATOR_MENU_LIST } from "@/app/constants";
 import { postLogout } from "@/app/api/back/auth";
-import { useUserStore } from "@/app/stores/user/userStore";
+import { useUserStore } from "@/app/stores/user";
 import Swal from "sweetalert2";
+import { useGetUserProfileInfoQuery } from "@/app/queries";
 
 function CreatorHeader() {
 	const pathname = usePathname();
@@ -41,6 +42,8 @@ function CreatorHeader() {
 			}
 		});
 	};
+
+	const { data: userInfo } = useGetUserProfileInfoQuery();
 
 	return (
 		<div className="flex justify-between items-center">
@@ -84,6 +87,7 @@ function CreatorHeader() {
 					<span className="--text-2lg font-medium">김가나</span>
 					{/* 로그아웃 테스트 용입니다. */}
 					<button onClick={() => handleLogout()}>로그아웃</button>
+					<span className="--text-2lg font-medium">{userInfo?.nickname}</span>
 				</div>
 			</div>
 		</div>

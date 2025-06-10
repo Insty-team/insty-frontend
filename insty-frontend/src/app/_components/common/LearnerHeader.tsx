@@ -7,10 +7,13 @@ import { FaCircleUser } from "react-icons/fa6";
 import { GoBellFill } from "react-icons/go";
 
 import { LEARNER_MENU_LIST } from "@/app/constants";
+import { useGetUserProfileInfoQuery } from "@/app/queries";
 
 function LearnerHeader() {
 	const pathname = usePathname();
 	const recommend = LEARNER_MENU_LIST[0];
+
+	const { data: userInfo } = useGetUserProfileInfoQuery();
 
 	return (
 		<div className="flex justify-between items-center w-full px-4">
@@ -46,9 +49,19 @@ function LearnerHeader() {
 				</div>
 				<div className="flex gap-8 justify-center items-center">
 					<GoBellFill className="cursor-pointer size-8 text-gray-300" />
-					<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
-					<span className="--text-2lg font-medium">김가나</span>
-					{/* 로그아웃 테스트 용입니다. */}
+					{userInfo?.thumbnailUrl ? (
+						<Image
+							src={userInfo.thumbnailUrl}
+							alt="사용자 프로필 사진"
+							width={30}
+							height={30}
+						/>
+					) : (
+						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
+					)}
+					<span className="--text-2lg font-medium">
+						{userInfo?.nickname ?? "손님"}
+					</span>
 				</div>
 			</div>
 		</div>

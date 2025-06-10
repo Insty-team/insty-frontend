@@ -1,12 +1,24 @@
 // 전역 타입을 정의하는 파일입니다.
+// Response가 붙은 타입은 서버 API 응답 값
 
 //1. 사용자 정보
 export type UserType = "LEARNER" | "CREATOR";
 
 export type UserInfo = {
 	nickname: string;
-	userType?: string;
-	description?: string;
+	userType: string;
+	introduce?: string;
+};
+
+export type UserProfileInfoResponse = {
+	id: number;
+	email: string;
+	nickname: string;
+	isEmailAgreed: boolean;
+	thumbnailUrl: string;
+	introduce: string;
+	userType: string;
+	createdAt?: string;
 };
 
 export type ChangeProfileForm = {
@@ -21,6 +33,21 @@ export type LoginForm = {
 	email: string;
 	password: string;
 	userType: string;
+};
+
+export type LoginResponse = {
+	id: number;
+	nickname: string;
+	userType: UserType;
+	token: Token;
+};
+
+export type Token = {
+	accessToken: string;
+	refreshToken: string;
+	accessTokenExpiresAt: string;
+	refreshTokenExpiresAt: string;
+	tokenType: string;
 };
 
 export type SignupForm = {

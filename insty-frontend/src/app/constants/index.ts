@@ -3,6 +3,11 @@
  * 모든 상수는 `UpperCase`로 작성하고 `underscore(_)`로 구분합니다.
  */
 
+// localStorage key 관련
+export const INSTY_ACCESS_TOKEN_KEY = "@insty-app.accessToken";
+export const INSTY_REFRESH_TOKEN_KEY = "@insty-app.refreshToken";
+export const INSTY_RECEIVE_EMAIL_KEY = "@insty-app.receive.email";
+
 // Creator 크리에이터 관련
 export const CREATOR_MENU_LIST = [
 	{ id: 1, title: "대시보드", path: "/creator/dashboard" },
