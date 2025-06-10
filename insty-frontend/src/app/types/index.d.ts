@@ -1,8 +1,6 @@
 // 전역 타입을 정의하는 파일입니다.
 
-/**
- * 1. 사용자 정보
- */
+//1. 사용자 정보
 export type UserType = "LEARNER" | "CREATOR";
 
 export type UserInfo = {
@@ -18,12 +16,11 @@ export type ChangeProfileForm = {
 	changedPassword: string;
 };
 
-/**
- * 2. 로그인/회원가입
- */
+//2. 로그인/회원가입
 export type LoginForm = {
 	email: string;
 	password: string;
+	userType: string;
 };
 
 export type SignupForm = {
