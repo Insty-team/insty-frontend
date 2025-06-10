@@ -29,7 +29,7 @@ function Login() {
 
 	const onSubmit = async (data: LoginForm) => {
 		try {
-			const submitData = { ...data };
+			const submitData = { ...data, userType: params.userType === "creator" ? "CREATOR" : "LEARNER" };
 			const res = await postLogin(submitData);
 			setAccessToken(res.token.accessToken);
 			setRefreshToken(res.token.refreshToken);
@@ -42,10 +42,10 @@ function Login() {
 			});
 
 			if (params.userType === "creator") {
-				setUserType("creator");
+				setUserType("CREATOR");
 				router.push("/creator/dashboard");
 			} else {
-				setUserType("learner");
+				setUserType("LEARNER");
 				router.push("/learner/recommend");
 			}
 		} catch (error) {
