@@ -2,17 +2,45 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FaCircleUser } from "react-icons/fa6";
 import { GoBellFill } from "react-icons/go";
 
 import { CREATOR_MENU_LIST } from "@/app/constants";
+import { postLogout } from "@/app/api/back/auth";
+import { useUserStore } from "@/app/stores/user/userStore";
+import Swal from "sweetalert2";
 
 function CreatorHeader() {
 	const pathname = usePathname();
 
 	const dashboard = CREATOR_MENU_LIST[0];
 	const mypage = CREATOR_MENU_LIST[2];
+	const router = useRouter();
+	const { resetUser } = useUserStore();
+
+	const handleLogout = async () => {
+		Swal.fire({
+			title: "로그아웃 하시겠어요?",
+			icon: "question",
+			showCancelButton: true,
+			confirmButtonText: "로그아웃",
+			cancelButtonText: "취소",
+			confirmButtonColor: "#6ead79",
+			cancelButtonColor: "#ff4f64",
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				try {
+					await postLogout();
+					resetUser();
+					localStorage.removeItem("accessToken");
+					router.push("/login");
+				} catch (error) {
+					console.error("Logout error:", error);
+				}
+			}
+		});
+	};
 
 	return (
 		<div className="flex justify-between items-center">
@@ -54,6 +82,8 @@ function CreatorHeader() {
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					</Link>
 					<span className="--text-2lg font-medium">김가나</span>
+					{/* 로그아웃 테스트 용입니다. */}
+					<button onClick={() => handleLogout()}>로그아웃</button>
 				</div>
 			</div>
 		</div>

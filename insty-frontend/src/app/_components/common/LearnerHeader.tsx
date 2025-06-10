@@ -48,6 +48,7 @@ function LearnerHeader() {
 					<GoBellFill className="cursor-pointer size-8 text-gray-300" />
 					<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					<span className="--text-2lg font-medium">김가나</span>
+					{/* 로그아웃 테스트 용입니다. */}
 				</div>
 			</div>
 		</div>
