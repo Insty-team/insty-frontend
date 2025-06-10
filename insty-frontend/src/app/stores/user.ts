@@ -13,10 +13,13 @@ interface UserStore {
 export const useUserStore = create<UserStore>((set) => ({
 	user: {
 		nickname: "",
+		introduce: "",
 		userType: "",
-		description: "",
 	},
+
+	// 유저 정보 저장
 	setUser: (user) => set({ user }),
+
 	// 유저 타입만 설정
 	setUserType: (userType: string) =>
 		set((state) => ({
@@ -25,6 +28,7 @@ export const useUserStore = create<UserStore>((set) => ({
 				userType,
 			},
 		})),
+
 	//유저 소개만 설정(크리에이터만 가능)
 	setUserDescription: (description: string) =>
 		set((state) => ({
@@ -33,12 +37,14 @@ export const useUserStore = create<UserStore>((set) => ({
 				description,
 			},
 		})),
+
+	// 유저 정보 삭제
 	resetUser: () =>
 		set({
 			user: {
 				nickname: "",
+				introduce: "",
 				userType: "",
-				description: "",
 			},
 		}),
 }));

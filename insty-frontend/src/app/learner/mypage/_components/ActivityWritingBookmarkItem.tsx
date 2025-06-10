@@ -5,7 +5,7 @@ import { FaMessage } from "react-icons/fa6";
 import { HiPencil } from "react-icons/hi2";
 
 import { BaseButton } from "@/app/_components/common";
-import { getFormattedDate } from "@/app/utils/date";
+import { getFormattedDate } from "@/app/utils";
 
 export type ActivityWritingBookmarkItemProps = {
 	title: string;

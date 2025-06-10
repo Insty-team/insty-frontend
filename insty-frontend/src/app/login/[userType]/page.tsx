@@ -5,20 +5,18 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
-import SocialLogin from "@/app/_components/social/SocialLogin";
-import PasswordInput from "@/app/_components/validation/PasswordInput";
-import TextInput from "@/app/_components/validation/TextInput";
-import { postLogin } from "@/app/api/back/auth";
-import { useAuthStore } from "@/app/stores/auth/authStore";
-import { useUserStore } from "@/app/stores/user/userStore";
+import { SocialLogin } from "@/app/_components/social";
+import { PasswordInput, TextInput } from "@/app/_components/validation";
+import { postLogin } from "@/app/api/backend";
+import { useAuthStore, useUserStore } from "@/app/stores";
 import { LoginForm } from "@/app/types";
-import { emailReg, passwordReg } from "@/app/utils/regex";
+import { emailReg, passwordReg } from "@/app/utils";
 
 function Login() {
 	const params = useParams();
 	const router = useRouter();
 	const type = params.userType === "creator" ? "크리에이터" : "러너";
-	const { setAccessToken } = useAuthStore();
+	const { setAccessToken, setRefreshToken } = useAuthStore();
 	const { setUser, setUserType } = useUserStore();
 	const {
 		register,
@@ -34,13 +32,13 @@ function Login() {
 			const submitData = { ...data };
 			const res = await postLogin(submitData);
 			setAccessToken(res.token.accessToken);
+			setRefreshToken(res.token.refreshToken);
 			console.log(res.token.accessToken);
 
 			//액세스 토큰으로 나중에 사용자 정보를 조회한다. 이후 값 저장
 			setUser({
 				nickname: res.nickname,
 				userType: res.userType,
-				description: "",
 			});
 
 			if (params.userType === "creator") {
