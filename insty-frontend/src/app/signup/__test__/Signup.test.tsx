@@ -2,13 +2,13 @@ import {
 	getEmailCheck,
 	getNicknameCheck,
 	postSignup,
-} from "@/app/api/back/user";
+} from "@/app/api/backend/user";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import Signup from "./page";
+import Signup from "../page";
 
 // API 모킹
-vi.mock("@/app/api/back/user", () => ({
+vi.mock("@/app/api/backend/user", () => ({
 	getEmailCheck: vi.fn(),
 	getNicknameCheck: vi.fn(),
 	postSignup: vi.fn(),
