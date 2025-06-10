@@ -23,6 +23,15 @@ const eslintConfig = [
 			"simple-import-sort/imports": "warn",
 			"simple-import-sort/exports": "warn",
 			"import/order": "off",
+			extends: [
+				"prettier",
+				"eslint:recommended",
+				"plugin:prettier/recommended",
+			],
+			plugins: ["prettier"],
+			rules: {
+				"prettier/prettier": ["error", { useTabs: false, endOfLine: "auto" }],
+			},
 		},
 	},
 ];
