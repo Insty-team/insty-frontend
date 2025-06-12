@@ -52,9 +52,11 @@ function LearnerHeader() {
 					{userInfo?.thumbnailUrl ? (
 						<Image
 							src={userInfo.thumbnailUrl}
-							alt="사용자 프로필 사진"
-							width={30}
-							height={30}
+							width={128}
+							height={128}
+							alt="프로필 사진"
+							style={{ objectFit: "cover", width: "32px", height: "32px" }}
+							className="rounded-full"
 						/>
 					) : (
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
