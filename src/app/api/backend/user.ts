@@ -49,3 +49,11 @@ export const putUserProfileInfoEdit = async (data: FormData): Promise<UserProfil
 	});
 	return res.data.data;
 }
+
+// 사용자 이메일 수신 동의 상태값 변경
+export const patchUserEmailAgree = async (isEmailAgree: boolean) => {
+	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/email-agree`, {
+		isEmailAgree
+	});
+		return res.data.data;
+}

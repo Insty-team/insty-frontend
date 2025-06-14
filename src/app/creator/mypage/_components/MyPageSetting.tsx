@@ -2,20 +2,17 @@
 
 import { Switch } from "@chakra-ui/react";
 import { ChangeEvent } from "react";
-import { useLocalStorage } from "usehooks-ts";
-
-import { INSTY_RECEIVE_EMAIL_KEY } from "@/app/constants";
+import { useAgreeEmail } from "@/app/utils";
+import { usePatchUserEmailAgreeMutation } from "@/app/queries";
 
 function MyPageSetting() {
-	// FIXME:
-	const [isReceiveEmail, setIsReceiveEmail] = useLocalStorage(
-		INSTY_RECEIVE_EMAIL_KEY,
-		false,
-	);
-
-	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-		setIsReceiveEmail(e.target.checked);
-	};
+	const [isAgreeEmail, _] = useAgreeEmail()
+		
+		const { mutate: patchUserEmail, isSuccess } = usePatchUserEmailAgreeMutation();
+	
+		const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+			patchUserEmail(e.target.checked)
+		};
 
 	return (
 		<div className="w-full flex flex-col gap-10">
@@ -25,11 +22,11 @@ function MyPageSetting() {
 					앞으로 업데이트 소식이나 유용한 자료들을 이메일로 받아보시겠어요?
 				</span>
 				<Switch
-					isChecked={isReceiveEmail}
+					isChecked={isAgreeEmail}
 					onChange={onChange}
 					sx={{
 						".chakra-switch__track": {
-							backgroundColor: isReceiveEmail ? "#3C4A7E" : "#DEDEDE",
+							backgroundColor: isAgreeEmail ? "#3C4A7E" : "#DEDEDE",
 						},
 						".chakra-switch__thumb": {
 							backgroundColor: "#ffffff",
