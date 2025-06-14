@@ -84,10 +84,9 @@ function CreatorHeader() {
 					<Link href={mypage.path} key={mypage.id}>
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					</Link>
-					<span className="--text-2lg font-medium">김가나</span>
-					{/* 로그아웃 테스트 용입니다. */}
-					<button onClick={() => handleLogout()}>로그아웃</button>
 					<span className="--text-2lg font-medium">{userInfo?.nickname}</span>
+					<button onClick={() => handleLogout()}>로그아웃</button>
+					
 				</div>
 			</div>
 		</div>
