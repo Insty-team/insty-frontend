@@ -11,6 +11,7 @@ import { postLogout } from "@/app/api/backend/auth";
 import { useUserStore } from "@/app/stores/user";
 import Swal from "sweetalert2";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
+import BaseDropdown from "./BaseDropdown";
 
 function CreatorHeader() {
 	const pathname = usePathname();
@@ -84,9 +85,17 @@ function CreatorHeader() {
 					<Link href={mypage.path} key={mypage.id}>
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					</Link>
-					<span className="--text-2lg font-medium">{userInfo?.nickname}</span>
-					<button onClick={() => handleLogout()}>로그아웃</button>
-					
+					<BaseDropdown
+						trigger={
+							<button className="--text-2lg font-medium cursor-pointer">
+								{userInfo?.nickname}
+							</button>
+						}
+						items={[
+							{ label: "사용자 타입 변경", onClick: () => console.log("마이페이지") },
+							{ label: "로그아웃", onClick: () => handleLogout(), danger: true },
+						]}
+					/>
 				</div>
 			</div>
 		</div>
