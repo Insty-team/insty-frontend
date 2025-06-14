@@ -7,7 +7,7 @@ import { FaCircleUser } from "react-icons/fa6";
 import { GoBellFill } from "react-icons/go";
 
 import { LEARNER_MENU_LIST } from "@/app/constants";
-import { useGetUserProfileInfoQuery } from "@/app/queries";
+import { useGetUserProfileInfoQuery, usePatchUserTypeMutation } from "@/app/queries";
 import BaseDropdown from "./BaseDropdown";
 import Swal from "sweetalert2";
 import { postLogout } from "@/app/api/backend";
@@ -17,10 +17,24 @@ function LearnerHeader() {
 	const pathname = usePathname();
 	const router = useRouter();
 
-	const recommend = LEARNER_MENU_LIST[0];
+	const { user, setUserType, resetUser } = useUserStore();
 
 	const { data: userInfo } = useGetUserProfileInfoQuery();
-	const { resetUser } = useUserStore();
+	const { mutate: patchUserType } = usePatchUserTypeMutation()
+
+	const recommend = LEARNER_MENU_LIST[0];
+
+	const changeUserType = () => {
+		const typeToChange = user.userType === "LEARNER" ? "CREATOR" : "LEARNER";
+		patchUserType(typeToChange, {
+			onSuccess: (res) => {
+				setUserType(res.userType);
+				res.userType === "LEARNER" 
+					? router.replace('/learner/recommend') 
+					: router.replace('/creator/dashboard')
+			}
+		});
+	}
 
 	const handleLogout = async () => {
 			Swal.fire({
@@ -93,12 +107,12 @@ function LearnerHeader() {
 					)}
 					<BaseDropdown
 						trigger={
-							<span className="--text-2lg font-medium cursor-pointer">
+							<button className="--text-2lg font-medium cursor-pointer">
 								{userInfo?.nickname}
-							</span>
+							</button>
 						}
 						items={[
-							{ label: "사용자 타입 변경", onClick: () => console.log("마이페이지") },
+							{ label: "사용자 타입 변경", onClick: () => changeUserType() },
 							{ label: "로그아웃", onClick: () => handleLogout(), danger: true },
 						]}
 					/>

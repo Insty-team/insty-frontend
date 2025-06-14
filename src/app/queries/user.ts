@@ -1,10 +1,11 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-import { getUserProfileInfo, patchUserEmailAgree, putUserProfileInfoEdit } from "@/app/api/backend";
-import { UserProfileInfoResponse } from "@/app/types";
+import { getUserProfileInfo, patchUserEmailAgree, patchUserType, putUserProfileInfoEdit } from "@/app/api/backend";
+import { UserProfileInfoResponse, UserType } from "@/app/types";
 import { useAgreeEmail } from "@/app/utils";
 
 import { queryClient } from "./queryClient";
+import { useUserStore } from "../stores";
 
 // 사용자 프로필 정보
 export const useGetUserProfileInfoQuery = () => {
@@ -34,3 +35,11 @@ export const usePatchUserEmailAgreeMutation = () => {
 		queryClient.invalidateQueries({ queryKey: ["userProfile"] });
 	}
 })}
+
+// 사용자 타입 변경
+export const usePatchUserTypeMutation = () => {
+	return useMutation<UserProfileInfoResponse, Error, UserType>({
+		mutationKey: ["userProfile"],
+		mutationFn: (userType) => patchUserType(userType),
+	})
+}
