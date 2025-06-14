@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 import { BaseButton } from "@/app/_components/common";
@@ -10,36 +11,77 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
-import { useGetUserProfileInfoQuery } from "@/app/queries";
+import {
+	useGetUserProfileInfoQuery,
+	useEditUserProfileInfoMutation,
+} from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
 	const [isEditing, setIsEditing] = useState(false);
-
-	const { data: userInfo } = useGetUserProfileInfoQuery();
-
+	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 	const onClickProfileEditButton = () => setIsEditing(true);
 
-	// 프로필 수정 관련
+	const queryClient = useQueryClient();
+	const { data: userInfo } = useGetUserProfileInfoQuery();
+	const { mutate: editProfile } = useEditUserProfileInfoMutation();
+
+	// 초기값
 	const {
 		register,
 		handleSubmit,
+		reset,
 		getValues,
-		formState: { errors },
+		formState: { isValid, errors },
 	} = useForm<ChangeProfileForm>({
+		defaultValues: {
+			nickname: "",
+			email: "",
+			password: "",
+			introduce: "",
+		},
 		mode: "onChange",
 	});
 
-	const onSaveProfileInfo = () => {
-		handleSubmit(onSubmit);
-		setIsEditing(false);
-	};
+	useEffect(() => {
+		if (!userInfo) return;
+		reset({
+			nickname: userInfo.nickname,
+			email: userInfo.email,
+			password: "",
+			introduce: userInfo.introduce,
+		});
+	}, [userInfo, reset]);
 
-	const onSubmit = (data: ChangeProfileForm) => {
-		const submitData = { ...data };
-		console.log(submitData);
-	};
+	const onSaveProfileInfo = handleSubmit((data: ChangeProfileForm) => {
+		const body = {
+			email: data.email,
+			password: data.password,
+			nickname: data.nickname,
+			introduce: data.introduce,
+		};
+
+		const formData = new FormData();
+		formData.append(
+			"userUpdateReq",
+			new Blob([JSON.stringify(body)], { type: "application/json" }),
+		);
+
+		if (profileImageFile) {
+			formData.append("profileImage", profileImageFile);
+		}
+
+		editProfile(formData, {
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+				setIsEditing(false);
+			},
+			onError: () => {
+				alert("수정에 실패했습니다.");
+			},
+		});
+	});
 
 	return (
 		<div className="flex flex-col gap-12 justify-center items-center w-full">
@@ -47,37 +89,45 @@ function MyPageProfile() {
 				<>
 					<div className="flex flex-col w-[700px] gap-10">
 						<div className="flex gap-10">
-							<div className="flex flex-col gap-2 justify-center items-center w-[160px]">
+							<div className="flex flex-col gap-2 justify-center items-center w-full">
 								<Image
-									src="/profile.svg"
+									src={
+										profileImageFile
+											? URL.createObjectURL(profileImageFile)
+											: userInfo?.thumbnailUrl || "/profile.svg"
+									}
 									width={128}
 									height={128}
 									alt="프로필 사진"
+									style={{
+										objectFit: "cover",
+										width: "128px",
+										height: "128px",
+									}}
+									className="rounded-full"
 								/>
-								<button
-									type="button"
-									onClick={() => console.log("profile check")}
+								<input
+									type="file"
+									accept="image/*"
+									onChange={(e) => {
+										const file = e.target.files?.[0];
+										if (file) setProfileImageFile(file);
+									}}
+									className="hidden"
+									id="profileImageInput"
+								/>
+								<label
+									htmlFor="profileImageInput"
 									className="px-3 py-1 rounded-lg bg-primary-green-400 active:bg-primary-green-500 cursor-pointer text-white text-sm"
 								>
 									프로필 사진 수정
-								</button>
-							</div>
-							<div className="h-full w-full">
-								<div className="flex flex-col gap-1 h-full">
-									<label className="block text-lg font-medium mb-1 text-black-300">
-										소개글
-									</label>
-									<textarea
-										placeholder={userInfo?.introduce ?? "소개글을 입력하세요."}
-										className="w-full h-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none resize-none"
-									/>
-								</div>
+								</label>
 							</div>
 						</div>
 						{/* Form */}
 						<div className="flex items-center justify-center">
 							<form
-								onSubmit={handleSubmit(onSubmit)}
+								onSubmit={onSaveProfileInfo}
 								className="w-full p-4 flex flex-col items-center space-y-6"
 							>
 								<TextInput
@@ -149,11 +199,19 @@ function MyPageProfile() {
 									register={register}
 									validation={{
 										required: "",
+										pattern: {
+											value: passwordReg,
+											message: "비밀번호 형식이 잘못되었습니다.",
+										},
 									}}
-									error={errors.changedPassword}
+									error={errors.password}
 								/>
 								<div className="mt-10 w-full">
-									<BaseButton title="저장하기" onClick={onSaveProfileInfo} />
+									<BaseButton
+										title="수정하기"
+										onClick={onSaveProfileInfo}
+										disabled={!isValid}
+									/>
 								</div>
 							</form>
 						</div>
@@ -162,16 +220,19 @@ function MyPageProfile() {
 			) : (
 				<>
 					<Image
-						src="/profile.svg"
+						src={
+							userInfo?.thumbnailUrl ? userInfo.thumbnailUrl : "/profile.svg"
+						}
 						width={128}
 						height={128}
 						alt="프로필 사진"
+						style={{ objectFit: "cover", width: "128px", height: "128px" }}
+						className="rounded-full"
 					/>
 					<div className="flex flex-col gap-10">
 						{[
 							{ label: "닉네임", value: userInfo?.nickname },
 							{ label: "이메일", value: userInfo?.email },
-							{ label: "소개글", value: userInfo?.introduce ?? "-" },
 						].map((item) => (
 							<div key={item.label} className="flex flex-col gap-2">
 								<span className="text-xl font-semibold">{item.label}</span>

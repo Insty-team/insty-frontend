@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { SignupForm, UserProfileInfoResponse } from "@/app/types/index.d";
+import { ChangeProfileForm, SignupForm, UserProfileInfoResponse } from "@/app/types/index.d";
 
 import axiosInstance from "../interceptor";
 
@@ -41,3 +41,11 @@ export const getUserProfileInfo =
 		const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
 		return res.data.data;
 	};
+
+// 사용자 프로필 정보 수정
+export const putUserProfileInfoEdit = async (data: FormData): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.put(`${BASE_URL}/users/profile/me`, data, {
+		headers: { 'Content-Type': 'multipart/form-data' }
+	});
+	return res.data.data;
+}

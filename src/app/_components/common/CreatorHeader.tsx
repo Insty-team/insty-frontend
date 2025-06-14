@@ -7,7 +7,7 @@ import { FaCircleUser } from "react-icons/fa6";
 import { GoBellFill } from "react-icons/go";
 
 import { CREATOR_MENU_LIST } from "@/app/constants";
-import { postLogout } from "@/app/api/back/auth";
+import { postLogout } from "@/app/api/backend/auth";
 import { useUserStore } from "@/app/stores/user";
 import Swal from "sweetalert2";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
