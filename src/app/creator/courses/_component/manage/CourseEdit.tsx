@@ -1,12 +1,12 @@
 import { UploadformData } from "@/app/types";
 
-import VideoForm from "../common/VideoForm";
+import CourseForm from "../common/CourseForm";
 
-function VideoEdit({
-	videoId,
+function CourseEdit({
+	courseId,
 	onBack,
 }: {
-	videoId: number;
+	courseId: number;
 	onBack: () => void;
 }) {
 	const dummyInitialData = {
@@ -28,14 +28,14 @@ function VideoEdit({
 			"설치 확인 및 테스트",
 		],
 	};
-	console.log(videoId);
+	console.log(courseId);
 
 	const handleSubmit = (formData: UploadformData) => {
 		console.log(formData);
 	};
 
 	return (
-		<VideoForm
+		<CourseForm
 			subject="콘텐츠 수정"
 			initialData={dummyInitialData}
 			onSubmit={handleSubmit}
@@ -45,4 +45,4 @@ function VideoEdit({
 	);
 }
 
-export default VideoEdit;
+export default CourseEdit;

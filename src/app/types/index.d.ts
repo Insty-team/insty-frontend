@@ -121,7 +121,7 @@ export type UploadformData = {
 	coreContents: string[];
 };
 
-export type VideoFormProps = {
+export type CourseFormProps = {
 	subject: string;
 	initialData?: {
 		link?: string;

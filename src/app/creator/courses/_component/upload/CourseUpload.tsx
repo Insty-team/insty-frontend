@@ -5,10 +5,10 @@ import { useState } from "react";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { UploadformData } from "@/app/types";
 
-import VideoForm from "../common/VideoForm";
+import CourseForm from "../common/CourseForm";
 import PreviewInfomation from "./PreviewInfomation";
 
-function VideoUpload() {
+function CourseUpload() {
 	const [step, setStep] = useState<"upload" | "preview" | "edit">("upload");
 	const { data, setData } = useVideoUploadStore();
 
@@ -25,7 +25,7 @@ function VideoUpload() {
 	return (
 		<>
 			{step === "upload" && (
-				<VideoForm
+				<CourseForm
 					subject="영상 업로드"
 					onSubmit={handleUpload}
 					onBack={() => {}}
@@ -39,7 +39,7 @@ function VideoUpload() {
 				/>
 			)}
 			{step === "edit" && data && (
-				<VideoForm
+				<CourseForm
 					subject="영상 수정"
 					initialData={data}
 					onSubmit={handleUpload}
@@ -50,4 +50,4 @@ function VideoUpload() {
 	);
 }
 
-export default VideoUpload;
+export default CourseUpload;

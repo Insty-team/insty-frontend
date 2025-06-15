@@ -5,14 +5,14 @@ import { BsStars } from "react-icons/bs";
 import { TiDelete } from "react-icons/ti";
 
 import { BaseButton } from "@/app/_components/common";
-import { VideoFormProps } from "@/app/types";
+import { CourseFormProps } from "@/app/types";
 
 interface Environment {
 	value: string;
 	support: string;
 }
 
-const VideoForm: React.FC<VideoFormProps> = ({
+const CourseForm: React.FC<CourseFormProps> = ({
 	subject,
 	initialData,
 	onSubmit,
@@ -346,4 +346,4 @@ const VideoForm: React.FC<VideoFormProps> = ({
 	);
 };
 
-export default VideoForm;
+export default CourseForm;

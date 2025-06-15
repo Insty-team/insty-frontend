@@ -8,8 +8,9 @@ import { GoCalendar } from "react-icons/go";
 import { GoGraph } from "react-icons/go";
 import { IoPencil } from "react-icons/io5";
 import { LiaWonSignSolid } from "react-icons/lia";
+import dayjs from "dayjs";
 
-function VideoList({
+function CourseList({
 	myCoursesItems,
 	onEdit,
 	onDetail,
@@ -25,20 +26,14 @@ function VideoList({
 					key={course.courseId}
 					className="flex bg-white p-4 items-center gap-6"
 				>
-					<div className="overflow-hidden flex-shrink-0 flex items-center justify-center">
-						{course.thumbnailUrl ? (
-							<Image
-								src={
-									course.thumbnailUrl.length > 0
-										? course.thumbnailUrl
-										: "/dog.png"
-								}
-								alt="썸네일"
-								width={300}
-								height={150}
-								className="object-cover w-full h-full"
-							/>
-						) : null}
+					<div className="overflow-hidden flex-shrink-0 flex items-center justify-center w-[390px] h-[220px]">
+						<Image
+							src={course.thumbnailUrl || "/dog.png"}
+							alt="썸네일"
+							width={390}
+							height={220}
+							className="object-contain w-full h-full border border-black-300"
+						/>
 					</div>
 					<div className="flex-1 flex flex-col gap-3">
 						<div className="font-semibold text-2xl text-ellipsis whitespace-nowrap overflow-hidden">
@@ -67,7 +62,7 @@ function VideoList({
 								<GoCalendar className="size-8" />
 								업로드 날짜
 								<span className="text-primary-green-600 ml-1">
-									{course.createdAt}
+									{dayjs(course.createdAt).format("YYYY년 MM월 DD일")}
 								</span>
 							</span>
 							<span className="mx-2 text-gray-300">·</span>
@@ -79,7 +74,7 @@ function VideoList({
 								</span>
 							</span>
 						</div>
-						<div className="flex gap-2 mt-2 w-full">
+						<div className="flex gap-2 mt-2 w-[60%]">
 							<BaseButton
 								title="수정"
 								textSize="text-21g"
@@ -103,4 +98,4 @@ function VideoList({
 	);
 }
 
-export default VideoList;
+export default CourseList;
