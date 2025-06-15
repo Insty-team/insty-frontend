@@ -2,18 +2,62 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FaCircleUser } from "react-icons/fa6";
 import { GoBellFill } from "react-icons/go";
 
 import { LEARNER_MENU_LIST } from "@/app/constants";
-import { useGetUserProfileInfoQuery } from "@/app/queries";
+import { useGetUserProfileInfoQuery, usePatchUserTypeMutation } from "@/app/queries";
+import BaseDropdown from "./BaseDropdown";
+import Swal from "sweetalert2";
+import { postLogout } from "@/app/api/backend";
+import { useUserStore } from "@/app/stores";
 
 function LearnerHeader() {
 	const pathname = usePathname();
-	const recommend = LEARNER_MENU_LIST[0];
+	const router = useRouter();
+
+	const { user, setUserType, resetUser } = useUserStore();
 
 	const { data: userInfo } = useGetUserProfileInfoQuery();
+	const { mutate: patchUserType } = usePatchUserTypeMutation()
+
+	const recommend = LEARNER_MENU_LIST[0];
+
+	const changeUserType = () => {
+		const typeToChange = user.userType === "LEARNER" ? "CREATOR" : "LEARNER";
+		patchUserType(typeToChange, {
+			onSuccess: (res) => {
+				setUserType(res.userType);
+				res.userType === "LEARNER" 
+					? router.replace('/learner/recommend') 
+					: router.replace('/creator/dashboard')
+			}
+		});
+	}
+
+	const handleLogout = async () => {
+			Swal.fire({
+				title: "로그아웃 하시겠어요?",
+				icon: "question",
+				showCancelButton: true,
+				confirmButtonText: "로그아웃",
+				cancelButtonText: "취소",
+				confirmButtonColor: "#6ead79",
+				cancelButtonColor: "#ff4f64",
+			}).then(async (result) => {
+				if (result.isConfirmed) {
+					try {
+						await postLogout();
+						resetUser();
+						localStorage.removeItem("accessToken");
+						router.push("/login");
+					} catch (error) {
+						console.error("Logout error:", error);
+					}
+				}
+			});
+		};
 
 	return (
 		<div className="flex justify-between items-center w-full px-4">
@@ -61,9 +105,17 @@ function LearnerHeader() {
 					) : (
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					)}
-					<span className="--text-2lg font-medium">
-						{userInfo?.nickname ?? "손님"}
-					</span>
+					<BaseDropdown
+						trigger={
+							<button className="--text-2lg font-medium cursor-pointer">
+								{userInfo?.nickname}
+							</button>
+						}
+						items={[
+							{ label: "사용자 타입 변경", onClick: () => changeUserType() },
+							{ label: "로그아웃", onClick: () => handleLogout(), danger: true },
+						]}
+					/>
 				</div>
 			</div>
 		</div>

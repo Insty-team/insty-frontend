@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { ChangeProfileForm, SignupForm, UserProfileInfoResponse } from "@/app/types/index.d";
+import { ChangeProfileForm, SignupForm, UserProfileInfoResponse, UserType } from "@/app/types/index.d";
 
 import axiosInstance from "../interceptor";
 
@@ -48,4 +48,20 @@ export const putUserProfileInfoEdit = async (data: FormData): Promise<UserProfil
 		headers: { 'Content-Type': 'multipart/form-data' }
 	});
 	return res.data.data;
+}
+
+// 사용자 이메일 수신 동의 상태값 변경
+export const patchUserEmailAgree = async (isEmailAgree: boolean): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/email-agree`, {
+		isEmailAgree
+	});
+		return res.data.data;
+}
+
+// 사용자 타입 변경
+export const patchUserType = async (userType: UserType): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/userType`, {
+		userType
+	})
+	return res.data.data
 }
