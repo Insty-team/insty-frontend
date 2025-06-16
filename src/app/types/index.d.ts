@@ -120,21 +120,3 @@ export type UploadformData = {
 	environments: Environment[];
 	coreContents: string[];
 };
-
-export type CourseFormProps = {
-	subject: string;
-	initialData?: {
-		link?: string;
-		thumbnail?: string;
-		title?: string;
-		recipient?: string;
-		description?: string;
-		price?: number;
-		tags?: string[];
-		environments?: Environment[];
-		coreContents?: string[];
-	};
-	onSubmit: (formData: UploadformData) => void;
-	submitText?: string;
-	onBack: () => void;
-};
