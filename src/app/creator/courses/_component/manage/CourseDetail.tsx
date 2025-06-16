@@ -9,11 +9,11 @@ import { LiaWonSignSolid } from "react-icons/lia";
 
 import CommonLineChart from "@/app/creator/_component/CommonLineChart";
 
-function VideoDetail({
-	videoId,
+function CourseDetail({
+	courseId,
 	onBack,
 }: {
-	videoId: number;
+	courseId: number;
 	onBack: () => void;
 }) {
 	const totalSeconds = 13 * 60 + 24;
@@ -36,7 +36,7 @@ function VideoDetail({
 	const dummyTags = ["RTX 3060", "무료", "추천", "리눅스"];
 	const dummyPoints = ["썸네일", "설명란", "가격"];
 	const [isExpanded, setIsExpanded] = useState(false);
-	console.log(videoId);
+	console.log(courseId);
 	return (
 		<div>
 			<h2 className="font-bold text-3xl mb-4">콘텐츠 분석</h2>
@@ -201,4 +201,4 @@ function VideoDetail({
 	);
 }
 
-export default VideoDetail;
+export default CourseDetail;

@@ -11,6 +11,7 @@ import { postLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { LoginForm } from "@/app/types";
 import { emailReg, passwordReg } from "@/app/utils";
+import Swal from "sweetalert2";
 
 function Login() {
 	const params = useParams();
@@ -29,16 +30,29 @@ function Login() {
 
 	const onSubmit = async (data: LoginForm) => {
 		try {
-			const submitData = { ...data, userType: params.userType === "creator" ? "CREATOR" : "LEARNER" };
+			const submitData = {
+				...data,
+				userType: params.userType === "creator" ? "CREATOR" : "LEARNER",
+			};
 			const res = await postLogin(submitData);
-			setAccessToken(res.token.accessToken);
-			setRefreshToken(res.token.refreshToken);
-			console.log(res.token.accessToken);
+
+			if (!res.success) {
+				Swal.fire({
+					title: "로그인 실패",
+					text: res.error.message,
+					icon: "error",
+				});
+				console.log(res.error);
+				return;
+			}
+
+			setAccessToken(res.data.token.accessToken);
+			setRefreshToken(res.data.token.refreshToken);
 
 			//액세스 토큰으로 나중에 사용자 정보를 조회한다. 이후 값 저장
 			setUser({
-				nickname: res.nickname,
-				userType: res.userType,
+				nickname: res.data.nickname,
+				userType: res.data.userType,
 			});
 
 			if (params.userType === "creator") {

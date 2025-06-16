@@ -40,6 +40,10 @@ function BaseTab({ items, defaultIndex = 0, tabProps, ...rest }: BaseTabProps) {
 							fontWeight: "bold",
 							borderBottomColor: "#479B5D",
 						}}
+						_hover={{
+							color: "#72C380",
+							fontWeight: "semibold",
+						}}
 					>
 						{item.label}
 					</Tab>

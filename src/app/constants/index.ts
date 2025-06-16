@@ -11,7 +11,7 @@ export const INSTY_RECEIVE_EMAIL_KEY = "@insty-app.receive.email";
 // Creator 크리에이터 관련
 export const CREATOR_MENU_LIST = [
 	{ id: 1, title: "대시보드", path: "/creator/dashboard" },
-	{ id: 2, title: "영상 관리", path: "/creator/videos" },
+	{ id: 2, title: "강의 관리", path: "/creator/courses" },
 	{ id: 3, title: "마이페이지", path: "/creator/mypage" },
 	{ id: 4, title: "커뮤니티", path: "/creator/community" },
 ];
@@ -42,13 +42,6 @@ export const LEARNER_MYPAGE_ACTIVITY_SUB_MENU = [
 	{ id: 1, title: "내가 쓴 글" },
 	{ id: 2, title: "내가 댓글을 작성한 게시글" },
 	{ id: 3, title: "내가 북마크한 게시글" },
-];
-
-//영상 관리 헤더에 사용
-export const VIDEOS_HEADER_LIST = [
-	{ id: "manage", title: "영상 관리" },
-	{ id: "upload", title: "영상 업로드" },
-	{ id: "revenue", title: "수익 확인하기" },
 ];
 
 //더미 데이터

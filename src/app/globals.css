@@ -23,11 +23,6 @@
 	--color-secondary-red-100: #ff9c9e;
 	--color-secondary-red-200: #d6757d;
 	--color-secondary-red-300: #ff4f64;
-	--color-primary-green-50: #fbfaee;
-	--color-primary-green-100: #97ca9b;
-	--color-primary-green-200: #6db69d;
-	--color-primary-green-300: #47a6a0;
-	--color-primary-green-400: #4aa5a2;
 	--color-orange: #ff8c00;
 	--color-orange-hover: #e67a00;
 	--color-primary-green-50: #fbfaee;
@@ -58,15 +53,15 @@
 	--text-2lg: 18px;
 	--text-xl: 20px;
 	--text-2xl: 24px;
-	--text-3xl: 32px;
+	--text-3xl: 28px;
 }
 
 :root {
 	--background: #ffffff;
 	--foreground: #171717;
-	--font-family: 'Pretendard', sans-serif;
-  --font-feature-settings: 'ss05';
-  font-feature-settings: 'ss05';
+	--font-family: "Pretendard", sans-serif;
+	--font-feature-settings: "ss05";
+	font-feature-settings: "ss05";
 }
 
 @theme inline {

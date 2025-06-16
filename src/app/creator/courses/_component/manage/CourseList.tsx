@@ -1,54 +1,46 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
-import { GoCalendar, GoGraph } from "react-icons/go";
-import { IoClipboardOutline, IoPencil } from "react-icons/io5";
-import { LiaWonSignSolid } from "react-icons/lia";
-
 import { BaseButton } from "@/app/_components/common";
-import { VIDEOS_DUMMY_LIST } from "@/app/constants";
+import { IoClipboardOutline } from "react-icons/io5";
+import { MyCoursesItems } from "@/app/types/course";
+import Image from "next/image";
+import { GoCalendar } from "react-icons/go";
+import { GoGraph } from "react-icons/go";
+import { IoPencil } from "react-icons/io5";
+import { LiaWonSignSolid } from "react-icons/lia";
+import dayjs from "dayjs";
 
-import VideoDetail from "./VideoDetail";
-import VideoEdit from "./VideoEdit";
-
-export default function VideoManagement() {
-	const [mode, setMode] = useState<"list" | "edit" | "detail">("list");
-	const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
-
-	if (mode === "edit" && selectedVideoId) {
-		return (
-			<VideoEdit videoId={selectedVideoId} onBack={() => setMode("list")} />
-		);
-	}
-	if (mode === "detail" && selectedVideoId) {
-		return (
-			<VideoDetail videoId={selectedVideoId} onBack={() => setMode("list")} />
-		);
-	}
-
+function CourseList({
+	myCoursesItems,
+	onEdit,
+	onDetail,
+}: {
+	myCoursesItems: MyCoursesItems[];
+	onEdit: (courseId: number) => void;
+	onDetail: (courseId: number) => void;
+}) {
 	return (
 		<>
-			<h2 className="text-3xl font-semibold mt-6 mb-4">업로드한 영상 리스트</h2>
-			{VIDEOS_DUMMY_LIST.map((video) => (
-				<div key={video.id} className="flex bg-white p-4 items-center gap-6">
-					<div className="overflow-hidden flex-shrink-0 flex items-center justify-center">
-						{video.thumbnail ? (
-							<Image
-								src={video.thumbnail}
-								alt="썸네일"
-								width={300}
-								height={150}
-								className="object-cover w-full h-full"
-							/>
-						) : null}
+			{myCoursesItems?.map((course: MyCoursesItems) => (
+				<div
+					key={course.courseId}
+					className="flex bg-white p-4 items-center gap-6"
+				>
+					<div className="overflow-hidden flex-shrink-0 flex items-center justify-center w-[390px] h-[220px]">
+						<Image
+							src={course.thumbnailUrl || "/dog.png"}
+							alt="썸네일"
+							width={390}
+							height={220}
+							className="object-contain w-full h-full border border-black-300"
+						/>
 					</div>
 					<div className="flex-1 flex flex-col gap-3">
 						<div className="font-semibold text-2xl text-ellipsis whitespace-nowrap overflow-hidden">
-							{video.title}
+							{course.title}
 						</div>
 						<div className="flex flex-wrap gap-1">
-							{video.tags.map((tag, idx) => (
+							{course.tags.map((tag, idx) => (
 								<span
 									key={idx}
 									className="text-black-100 text-2lg bg-gray-100 border border-gray-200 rounded-full px-2 py-0.5"
@@ -62,7 +54,7 @@ export default function VideoManagement() {
 								<GoGraph className="size-8" />
 								조회수
 								<span className="text-primary-green-600 ml-1">
-									{video.views}
+									{course.viewCount}
 								</span>
 							</span>
 							<span className="mx-2 text-gray-300">·</span>
@@ -70,7 +62,7 @@ export default function VideoManagement() {
 								<GoCalendar className="size-8" />
 								업로드 날짜
 								<span className="text-primary-green-600 ml-1">
-									{video.uploadDate}
+									{dayjs(course.createdAt).format("YYYY년 MM월 DD일")}
 								</span>
 							</span>
 							<span className="mx-2 text-gray-300">·</span>
@@ -78,20 +70,17 @@ export default function VideoManagement() {
 								<LiaWonSignSolid className="size-8" />
 								가격
 								<span className="text-primary-green-600 ml-1">
-									{video.price}
+									{course.price.toLocaleString()}원
 								</span>
 							</span>
 						</div>
-						<div className="flex gap-2 mt-2 w-full">
+						<div className="flex gap-2 mt-2 w-[60%]">
 							<BaseButton
 								title="수정"
 								textSize="text-21g"
 								icon={<IoPencil />}
 								className="!rounded-lg"
-								onClick={() => {
-									setSelectedVideoId(video.id);
-									setMode("edit");
-								}}
+								onClick={() => onEdit(course.courseId)}
 							/>
 							<BaseButton
 								title="상세보기"
@@ -99,10 +88,7 @@ export default function VideoManagement() {
 								textSize="text-21g"
 								icon={<IoClipboardOutline />}
 								className="!rounded-lg"
-								onClick={() => {
-									setSelectedVideoId(video.id);
-									setMode("detail");
-								}}
+								onClick={() => onDetail(course.courseId)}
 							/>
 						</div>
 					</div>
@@ -111,3 +97,5 @@ export default function VideoManagement() {
 		</>
 	);
 }
+
+export default CourseList;

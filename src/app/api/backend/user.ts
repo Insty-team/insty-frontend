@@ -7,7 +7,7 @@ import axiosInstance from "../interceptor";
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
 // 닉네임 중복 체크
-export const getNicknameCheck = async (nickname: string) => {
+const getNicknameCheck = async (nickname: string) => {
 	const res = await axios.get(`${BASE_URL}/users/nickname/check`, {
 		params: {
 			nickname,
@@ -18,7 +18,7 @@ export const getNicknameCheck = async (nickname: string) => {
 };
 
 // 이메일 중복 체크
-export const getEmailCheck = async (email: string) => {
+const getEmailCheck = async (email: string) => {
 	const res = await axios.get(`${BASE_URL}/users/email/check`, {
 		params: {
 			email,
@@ -29,13 +29,13 @@ export const getEmailCheck = async (email: string) => {
 };
 
 // 회원 가입
-export const postSignup = async (data: SignupForm) => {
+const postSignup = async (data: SignupForm) => {
 	const res = await axios.post(`${BASE_URL}/users`, data);
 
 	return res.data.data;
 };
 
-// 사용자 프로필 정보
+//사용자 프로필 조회
 export const getUserProfileInfo =
 	async (): Promise<UserProfileInfoResponse> => {
 		const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
@@ -65,3 +65,5 @@ export const patchUserType = async (userType: UserType): Promise<UserProfileInfo
 	})
 	return res.data.data
 }
+
+export { getNicknameCheck, getEmailCheck, postSignup, getUserProfileInfo, putUserProfileInfoEdit, patchUserEmailAgree, patchUserType };

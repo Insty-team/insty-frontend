@@ -1,6 +1,6 @@
 "use client";
 
-import PreviewInfomation from "@/app/creator/videos/_component/upload/PreviewInfomation";
+import PreviewInfomation from "@/app/creator/courses/_component/upload/PreviewInfomation";
 
 function CourseDetail() {
 	//더미데이터...
