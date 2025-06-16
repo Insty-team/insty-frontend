@@ -40,7 +40,7 @@ function BaseButton({
 			type={buttonType}
 			onClick={onClick}
 			disabled={disabled}
-			className={`flex justify-center items-center gap-2 w-full py-3 cursor-pointer rounded-4xl ${bgColorClass} ${textSize} ${className}`}
+			className={`flex justify-center items-center gap-2 w-full py-3 cursor-pointer rounded-4xl disabled:cursor-not-allowed disabled:bg-gray-300 ${bgColorClass} ${textSize} ${className}`}
 		>
 			{icon && alignIcon === "left" && icon}
 			{title && <span>{title}</span>}

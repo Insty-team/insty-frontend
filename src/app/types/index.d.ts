@@ -22,13 +22,13 @@ export type UserProfileInfoResponse = {
 };
 
 export type ChangeProfileForm = {
-	nickname: string;
 	email: string;
 	password: string;
-	changedPassword: string;
+	nickname: string;
+	introduce: string;
 };
 
-//2. 로그인/회원가입
+//2. 로그인/회원가입/토큰/로그아웃
 export type LoginForm = {
 	email: string;
 	password: string;
