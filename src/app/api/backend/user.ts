@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { SignupForm, UserProfileInfoResponse } from "@/app/types/index.d";
+import { ChangeProfileForm, SignupForm, UserProfileInfoResponse, UserType } from "@/app/types/index.d";
 
 import axiosInstance from "../interceptor";
 
@@ -35,10 +35,35 @@ const postSignup = async (data: SignupForm) => {
 	return res.data.data;
 };
 
-// 사용자 프로필 정보
-const getUserProfileInfo = async (): Promise<UserProfileInfoResponse> => {
-	const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
-	return res.data.data;
-};
+//사용자 프로필 조회
+export const getUserProfileInfo =
+	async (): Promise<UserProfileInfoResponse> => {
+		const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
+		return res.data.data;
+	};
 
-export { getNicknameCheck, getEmailCheck, postSignup, getUserProfileInfo };
+// 사용자 프로필 정보 수정
+export const putUserProfileInfoEdit = async (data: FormData): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.put(`${BASE_URL}/users/profile/me`, data, {
+		headers: { 'Content-Type': 'multipart/form-data' }
+	});
+	return res.data.data;
+}
+
+// 사용자 이메일 수신 동의 상태값 변경
+export const patchUserEmailAgree = async (isEmailAgree: boolean): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/email-agree`, {
+		isEmailAgree
+	});
+		return res.data.data;
+}
+
+// 사용자 타입 변경
+export const patchUserType = async (userType: UserType): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/userType`, {
+		userType
+	})
+	return res.data.data
+}
+
+export { getNicknameCheck, getEmailCheck, postSignup, getUserProfileInfo, putUserProfileInfoEdit, patchUserEmailAgree, patchUserType };

@@ -10,15 +10,33 @@ import { CREATOR_MENU_LIST } from "@/app/constants";
 import { postLogout } from "@/app/api/backend/auth";
 import { useUserStore } from "@/app/stores/user";
 import Swal from "sweetalert2";
-import { useGetUserProfileInfoQuery } from "@/app/queries";
+import { useGetUserProfileInfoQuery, usePatchUserTypeMutation } from "@/app/queries";
+import BaseDropdown from "./BaseDropdown";
+import { UserType } from "@/app/types";
 
 function CreatorHeader() {
 	const pathname = usePathname();
+	const router = useRouter();
+
+	const { user, setUserType, resetUser } = useUserStore();
+
+	const { data: userInfo } = useGetUserProfileInfoQuery();
+	const { mutate: patchUserType } = usePatchUserTypeMutation()
 
 	const dashboard = CREATOR_MENU_LIST[0];
 	const mypage = CREATOR_MENU_LIST[2];
-	const router = useRouter();
-	const { resetUser } = useUserStore();
+
+	const changeUserType = () => {
+		const typeToChange = user.userType === "LEARNER" ? "CREATOR" : "LEARNER";
+		patchUserType(typeToChange, {
+			onSuccess: (res) => {
+				setUserType(res.userType);
+				res.userType === "LEARNER" 
+					? router.replace('/learner/recommend') 
+					: router.replace('/creator/dashboard')
+			}
+		});
+	}
 
 	const handleLogout = async () => {
 		Swal.fire({
@@ -42,8 +60,6 @@ function CreatorHeader() {
 			}
 		});
 	};
-
-	const { data: userInfo } = useGetUserProfileInfoQuery();
 
 	return (
 		<div className="flex justify-between items-center">
@@ -84,10 +100,17 @@ function CreatorHeader() {
 					<Link href={mypage.path} key={mypage.id}>
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					</Link>
-					<span className="--text-2lg font-medium">김가나</span>
-					{/* 로그아웃 테스트 용입니다. */}
-					<button onClick={() => handleLogout()}>로그아웃</button>
-					<span className="--text-2lg font-medium">{userInfo?.nickname}</span>
+					<BaseDropdown
+						trigger={
+							<button className="--text-2lg font-medium cursor-pointer">
+								{userInfo?.nickname}
+							</button>
+						}
+						items={[
+							{ label: "사용자 타입 변경", onClick: () => changeUserType() },
+							{ label: "로그아웃", onClick: () => handleLogout(), danger: true },
+						]}
+					/>
 				</div>
 			</div>
 		</div>

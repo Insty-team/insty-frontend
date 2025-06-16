@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+	images: {
+    domains: ["dev.insty.ai.kr"],
+  },
 	optimizePackageImports: ["@chakra-ui/react"],
 	webpack: (config) => {
 		config.resolve.alias = {
