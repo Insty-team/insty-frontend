@@ -41,7 +41,7 @@ function CourseUpload() {
 			{step === "edit" && data && (
 				<CourseForm
 					subject="영상 수정"
-					initialData={data}
+					//initialData={data}
 					onSubmit={handleUpload}
 					onBack={() => setStep("preview")}
 				/>
