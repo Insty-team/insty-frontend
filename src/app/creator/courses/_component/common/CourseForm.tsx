@@ -1,53 +1,93 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BsStars } from "react-icons/bs";
 import { TiDelete } from "react-icons/ti";
 
 import { BaseButton } from "@/app/_components/common";
-import { CourseFormProps } from "@/app/types";
-
-interface Environment {
-	value: string;
-	support: string;
-}
+import { CourseFormProps, AllowedFileType } from "@/app/types/course";
+import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
+import { FaRegFile } from "react-icons/fa6";
+import { putCourse } from "@/app/api/backend";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CourseForm: React.FC<CourseFormProps> = ({
 	subject,
 	initialData,
 	onSubmit,
 }) => {
-	const [link, setLink] = useState(initialData?.link || "");
+	const router = useRouter();
+	const queryClient = useQueryClient();
 	const [title, setTitle] = useState(initialData?.title || "");
-	const [recipient, setRecipient] = useState(initialData?.recipient || "");
-	const [price, setPrice] = useState(initialData?.price || 0);
 	const [description, setDescription] = useState(
 		initialData?.description || "",
 	);
+	const [targetAudience, setTargetAudience] = useState(
+		initialData?.targetAudience || "",
+	);
+	const [price, setPrice] = useState(initialData?.price || 0);
+	const [installEnvChecklist, setInstallEnvChecklist] = useState<
+		{
+			content: string;
+			isSupported: boolean;
+		}[]
+	>(initialData?.installEnvChecklist || []);
+	const [keyPoints, setKeyPoints] = useState<string[]>(
+		initialData?.keyPoints || [],
+	);
 	const [tags, setTags] = useState<string[]>(initialData?.tags || []);
 	const [tagInput, setTagInput] = useState("");
-	const [environments, setEnvironments] = useState<Environment[]>(
-		initialData?.environments || [
-			{ value: "Windows 10 / 11 환경", support: "지원" },
-		],
+	const [thumbnailUrl, setThumbnailUrl] = useState(
+		initialData?.thumbnailUrl || "",
 	);
-	const [coreContents, setCoreContents] = useState<string[]>(
-		initialData?.coreContents || ["파이썬 개발 환경 설치 (Windows 기준)"],
-	);
+	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+	const [practiceFiles, setPracticeFiles] = useState<File[]>([]);
+	const [deletePracticeFiles, setDeletePracticeFiles] = useState<number[]>([]);
+	const [existingPracticeFiles, setExistingPracticeFiles] = useState<
+		{
+			id: number;
+			name: string;
+			contentType: string;
+			size: number;
+			url: string;
+		}[]
+	>([]);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const practiceFileInputRef = useRef<HTMLInputElement>(null);
+
+	const ALLOWED_FILE_TYPES: AllowedFileType = {
+		document: {
+			accept: ".pdf,.hwp,.doc,.docx,.zip,.jpg,.jpeg,.png,.gif",
+			types: [
+				"application/pdf",
+				"application/x-hwp",
+				"application/msword",
+				"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+				"application/zip",
+				"image/jpeg",
+				"image/jpg",
+				"image/png",
+				"image/gif",
+			],
+		},
+	};
 
 	useEffect(() => {
 		if (initialData) {
-			setLink(initialData.link || "");
 			setDescription(initialData.description || "");
 			setTags(initialData.tags || []);
-			setEnvironments(
-				initialData.environments || [
-					{ value: "Windows 10 / 11 환경", support: "지원" },
+			setInstallEnvChecklist(
+				initialData.installEnvChecklist || [
+					{ content: "Windows 10 / 11 환경", isSupported: true },
 				],
 			);
-			setCoreContents(
-				initialData.coreContents || ["파이썬 개발 환경 설치 (Windows 기준)"],
-			);
+			setKeyPoints(initialData.keyPoints || []);
+
+			if (initialData.practiceFile && initialData.practiceFile.length > 0) {
+				setExistingPracticeFiles(initialData.practiceFile);
+			}
 		}
 	}, [initialData]);
 
@@ -62,64 +102,167 @@ const CourseForm: React.FC<CourseFormProps> = ({
 		setTags(tags.filter((_, i) => i !== idx));
 	};
 
+	const handleAddEnv = () => {
+		setInstallEnvChecklist([
+			...installEnvChecklist,
+			{ content: "", isSupported: true },
+		]);
+	};
+
 	const handleEnvChange = (
 		idx: number,
-		key: "value" | "support",
+		field: "content" | "support",
 		value: string,
 	) => {
-		const arr = [...environments];
-		arr[idx][key] = value;
-		setEnvironments(arr);
-	};
-	const handleAddEnv = () => {
-		setEnvironments([...environments, { value: "", support: "지원" }]);
+		const newChecklist = [...installEnvChecklist];
+		if (field === "content") {
+			newChecklist[idx] = { ...newChecklist[idx], content: value };
+		} else {
+			newChecklist[idx] = {
+				...newChecklist[idx],
+				isSupported: value === "지원",
+			};
+		}
+		setInstallEnvChecklist(newChecklist);
 	};
 
 	const handleRemoveEnv = (idx: number) => {
-		setEnvironments(environments.filter((_, i) => i !== idx));
+		setInstallEnvChecklist(installEnvChecklist.filter((_, i) => i !== idx));
 	};
 
 	const handleCoreChange = (idx: number, value: string) => {
-		const arr = [...coreContents];
+		const arr = [...keyPoints];
 		arr[idx] = value;
-		setCoreContents(arr);
+		setKeyPoints(arr);
 	};
 
 	const handleAddCore = () => {
-		setCoreContents([...coreContents, ""]);
+		setKeyPoints([...keyPoints, ""]);
 	};
 
 	const handleRemoveCore = (idx: number) => {
-		setCoreContents(coreContents.filter((_, i) => i !== idx));
+		setKeyPoints(keyPoints.filter((_, i) => i !== idx));
 	};
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		const formData = {
-			link,
-			title,
-			recipient,
-			description,
-			price,
-			tags,
-			environments,
-			coreContents,
-		};
-		console.log("폼 데이터:", formData);
+	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				setThumbnailUrl(e.target?.result as string);
+				setThumbnailFile(file);
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+
+	const handleRemoveThumbnail = () => {
+		setThumbnailUrl("");
+		setThumbnailFile(null);
+	};
+
+	const handleThumbnailClick = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handlePracticeFileClick = () => {
+		practiceFileInputRef.current?.click();
+	};
+
+	const handleUploadPracticeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = Array.from(e.target.files || []);
+		const validFiles = files.filter((file) =>
+			ALLOWED_FILE_TYPES.document.types.includes(file.type),
+		);
+
+		if (validFiles.length !== files.length) {
+			alert(
+				"PDF, HWP, DOC, DOCX, ZIP, JPG, JPEG, PNG, GIF 파일만 업로드 가능합니다.",
+			);
+			return;
+		}
+
 		if (
-			link === "" ||
+			existingPracticeFiles.length + practiceFiles.length + validFiles.length >
+			2
+		) {
+			alert("최대 2개의 파일만 업로드 가능합니다.");
+			return;
+		}
+
+		setPracticeFiles((prev) => [...prev, ...validFiles]);
+	};
+
+	const handleRemovePracticeFile = (index: number, isExisting: boolean) => {
+		if (isExisting) {
+			const file = existingPracticeFiles[index];
+			setDeletePracticeFiles((prev) => [...prev, file.id]);
+			setExistingPracticeFiles((prev) => prev.filter((_, i) => i !== index));
+		} else {
+			setPracticeFiles((prev) => prev.filter((_, i) => i !== index));
+		}
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (
 			title === "" ||
-			recipient === "" ||
 			price === 0 ||
 			description === "" ||
-			environments.length === 0 ||
-			coreContents.length === 0 ||
+			installEnvChecklist.length === 0 ||
+			keyPoints.length === 0 ||
 			tags.length === 0
 		) {
 			alert("모든 항목을 입력해주세요.");
 			return;
 		} else {
-			onSubmit(formData);
+			if (subject === "강의 업로드") {
+				console.log("강의 업로드");
+			} else {
+				const formData = {
+					title,
+					description,
+					targetAudience,
+					price,
+					tags,
+					keyPoints,
+					installEnvChecklist,
+					deletePracticeField: deletePracticeFiles,
+					updateVideoUuid: null,
+				};
+				const thumbnailData = thumbnailFile;
+				const practiceFileData = practiceFiles;
+				console.log("폼 데이터:", formData);
+				console.log("썸네일 데이터:", thumbnailData);
+				console.log("실습 파일 데이터:", practiceFileData);
+
+				try {
+					if (typeof initialData?.courseId !== "number") {
+						alert("코스아이디가 존재하지 않습니다. 다시 확인해주세요.");
+						router.push("/creator/courses");
+						return;
+					}
+					const res = await putCourse(
+						initialData?.courseId,
+						formData,
+						thumbnailData,
+						practiceFileData,
+					);
+					Swal.fire({
+						title: "강의가 수정 되었습니다.",
+						icon: "success",
+						confirmButtonText: "확인",
+						confirmButtonColor: "#6ead79",
+					}).then(async () => {
+						await queryClient.invalidateQueries({
+							queryKey: ["courseDetail", initialData?.courseId],
+						});
+						router.push("/creator/courses");
+					});
+				} catch (error) {
+					console.log(error);
+				}
+			}
 		}
 	};
 
@@ -140,35 +283,111 @@ const CourseForm: React.FC<CourseFormProps> = ({
 				)}
 			</div>
 			<div className="flex w-full gap-9">
-				<div className="flex flex-col w-2/5 min-w-[220px] max-w-[350px]">
-					<label className="block text-xl font-semibold mb-1">영상 링크</label>
-					<div className="mb-4">
-						<textarea
-							className="w-full h-36 bg-gray-scale-100 rounded-2xl p-2 text-lg resize-none flex flex-shrink-0"
-							placeholder="업로드 하실 영상의 링크를 붙여넣기 해주세요."
-							rows={3}
-							value={link}
-							onChange={(e) => setLink(e.target.value)}
+				<div className="flex flex-col w-3/5 max-w-[350px]">
+					<label className="block text-xl font-semibold mb-1">
+						강의 썸네일
+					</label>
+					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
+						{initialData?.thumbnailUrl ? (
+							<img
+								src={initialData?.thumbnailUrl}
+								alt="썸네일"
+								className="w-full h-full object-contain rounded-2xl"
+							/>
+						) : (
+							<span className="text-gray-400">썸네일을 선택해주세요</span>
+						)}
+						{thumbnailUrl && (
+							<button
+								type="button"
+								className="absolute top-1 right-2 text-black-500"
+								onClick={handleRemoveThumbnail}
+							>
+								✕
+							</button>
+						)}
+					</div>
+					<div className="flex flex-col gap-3 mt-3 justify-center align-middle text-center">
+						<input
+							ref={fileInputRef}
+							type="file"
+							accept="image/*"
+							className="hidden"
+							onChange={handleUploadThumbnail}
 						/>
-					</div>
-					<div className="mb-2 w-full h-36 bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
-						<button
-							type="button"
-							className="absolute top-1 right-2 text-black-500"
-						>
-							✕
-						</button>
-					</div>
-					<div className="flex flex-col gap-3 mb-2 justify-center align-middle text-center">
-						<BaseButton title="썸네일 선택" />
-						<BaseButton title="실습 자료 파일 선택" fill={false} />
-						<button
-							type="button"
-							className="text-secondary-red-300 text-lg cursor-pointer"
-						>
-							<span>업로드 영상 삭제</span>
-							<span className="text-lg">🗑️</span>
-						</button>
+						<BaseButton
+							title="썸네일 선택"
+							icon={<RiFolderUploadLine />}
+							onClick={handleThumbnailClick}
+						/>
+						{subject === "강의 업로드" ? (
+							<BaseButton title="영상 선택" icon={<RiFolderUploadLine />} />
+						) : (
+							""
+						)}
+						<div className="flex flex-col gap-2">
+							<input
+								ref={practiceFileInputRef}
+								type="file"
+								accept=".pdf,.hwp,.doc,.docx"
+								multiple
+								className="hidden"
+								onChange={handleUploadPracticeFile}
+							/>
+							<BaseButton
+								title="실습 자료 파일 선택"
+								fill={false}
+								onClick={handlePracticeFileClick}
+							/>
+							{(practiceFiles.length > 0 ||
+								existingPracticeFiles.length > 0) && (
+								<div className="flex flex-col gap-2 mt-2">
+									{existingPracticeFiles.map((file, index) => (
+										<div
+											key={`existing-${index}`}
+											className="flex items-center justify-between bg-gray-100 p-2 rounded"
+										>
+											<div className="text-md truncate flex items-center">
+												<FaRegFile className="mr-2" />
+												{file.name}
+											</div>
+											<button
+												type="button"
+												onClick={() => handleRemovePracticeFile(index, true)}
+												className="text-secondary-red-300"
+											>
+												✕
+											</button>
+										</div>
+									))}
+									{practiceFiles.map((file, index) => (
+										<div
+											key={`new-${index}`}
+											className="flex items-center justify-between bg-gray-100 p-2 rounded"
+										>
+											<div className="text-md truncate flex items-center">
+												<FaRegFile className="mr-2" />
+												{file.name}
+											</div>
+											<button
+												type="button"
+												onClick={() => handleRemovePracticeFile(index, false)}
+												className="text-secondary-red-300"
+											>
+												✕
+											</button>
+										</div>
+									))}
+								</div>
+							)}
+							<button
+								type="button"
+								className="mt-4 text-2lg text-secondary-red-300 flex justify-center items-center cursor-pointer"
+							>
+								<span className="mr-2">업로드 강의 삭제</span>
+								<RiDeleteBinFill />
+							</button>
+						</div>
 					</div>
 				</div>
 
@@ -191,8 +410,8 @@ const CourseForm: React.FC<CourseFormProps> = ({
 							<input
 								className="w-full bg-gray-scale-100 rounded-2xl p-2 text-black-100"
 								placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
-								value={recipient}
-								onChange={(e) => setRecipient(e.target.value)}
+								value={targetAudience}
+								onChange={(e) => setTargetAudience(e.target.value)}
 							/>
 						</div>
 						<div className="flex-1">
@@ -224,19 +443,19 @@ const CourseForm: React.FC<CourseFormProps> = ({
 							설치 환경 체크리스트
 						</label>
 						<div className="flex flex-col gap-2">
-							{environments.map((env, idx) => (
+							{installEnvChecklist.map((env, idx) => (
 								<div key={idx} className="flex gap-2 items-center">
 									<input
 										className="flex-1 bg-gray-scale-100 rounded-2xl p-2 text-black-100"
-										value={env.value}
+										value={env.content}
 										onChange={(e) =>
-											handleEnvChange(idx, "value", e.target.value)
+											handleEnvChange(idx, "content", e.target.value)
 										}
 										placeholder="환경 입력"
 									/>
 									<select
 										className="border border-gray-scale-300 rounded p-2 text-lg"
-										value={env.support}
+										value={env.isSupported ? "지원" : "미지원"}
 										onChange={(e) =>
 											handleEnvChange(idx, "support", e.target.value)
 										}
@@ -268,7 +487,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 							핵심 전달이 되는 핵심 내용
 						</label>
 						<div className="flex flex-col gap-2">
-							{coreContents.map((content, idx) => (
+							{keyPoints.map((content, idx) => (
 								<div key={idx} className="flex gap-2 items-center">
 									<input
 										className="flex-1 bg-gray-scale-100 rounded-2xl p-2 text-black-100"
@@ -333,9 +552,9 @@ const CourseForm: React.FC<CourseFormProps> = ({
 						</div>
 					</div>
 
-					<div className="w-[30%] flex items-end ml-auto mt-4">
+					<div className="w-[20%] flex items-end ml-auto mt-4">
 						<BaseButton
-							title="업로드"
+							title={initialData ? "수정" : "업로드"}
 							buttonType="submit"
 							onClick={() => handleSubmit}
 						/>

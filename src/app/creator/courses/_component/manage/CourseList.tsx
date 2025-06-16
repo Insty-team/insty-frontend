@@ -70,7 +70,7 @@ function CourseList({
 								<LiaWonSignSolid className="size-8" />
 								가격
 								<span className="text-primary-green-600 ml-1">
-									{course.price}
+									{course.price.toLocaleString()}원
 								</span>
 							</span>
 						</div>
