@@ -3,8 +3,8 @@ import path from "path";
 
 const nextConfig: NextConfig = {
 	images: {
-    domains: ["dev.insty.ai.kr"],
-  },
+		domains: ["dev.insty.ai.kr"],
+	},
 	optimizePackageImports: ["@chakra-ui/react"],
 	webpack: (config) => {
 		config.resolve.alias = {
@@ -12,9 +12,6 @@ const nextConfig: NextConfig = {
 			"@": path.resolve(__dirname, "./src"),
 		};
 		return config;
-	},
-	images: {
-		domains: ["dev.insty.ai.kr"],
 	},
 };
 
