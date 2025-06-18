@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
-import { UploadformData } from "@/app/types";
+import { UploadformData } from "@/app/types/course";
 
 import CourseForm from "../common/CourseForm";
 import PreviewInfomation from "./PreviewInfomation";
@@ -26,7 +26,7 @@ function CourseUpload() {
 		<>
 			{step === "upload" && (
 				<CourseForm
-					subject="영상 업로드"
+					subject="강의 업로드"
 					onSubmit={handleUpload}
 					onBack={() => {}}
 				/>
@@ -40,7 +40,7 @@ function CourseUpload() {
 			)}
 			{step === "edit" && data && (
 				<CourseForm
-					subject="영상 수정"
+					subject="업로드 전 강의 수정"
 					//initialData={data}
 					onSubmit={handleUpload}
 					onBack={() => setStep("preview")}

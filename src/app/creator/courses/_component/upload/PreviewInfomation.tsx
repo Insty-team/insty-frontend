@@ -10,7 +10,7 @@ import Modal from "@/app/_components/common/Modal";
 import { REFUND_POLICY } from "@/app/constants";
 import ChatbotModal from "@/app/learner/_component/ChatbotModal";
 import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
-import { UploadformData } from "@/app/types";
+import { UploadformData } from "@/app/types/course";
 
 interface PreviewInfomationProps {
 	data: UploadformData;
@@ -55,7 +55,7 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 						))}
 					</div>
 					<div className="flex flex-col gap-4">
-						<div className="flex gap-2 items-center">
+						<div className="flex gap-2 items-center aspect-auto">
 							<Image src="/profile.svg" alt="user" width={48} height={48} />
 							<span className="text-black-100 text-2xl">크리에이터 이름</span>
 						</div>
@@ -74,7 +74,9 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 						)}
 						<div className="flex gap-2 items-center">
 							<Image src="/user.svg" alt="user" width={36} height={36} />
-							<span className="text-black-300 text-2xl">{data.recipient}</span>
+							<span className="text-black-300 text-2xl">
+								{data.targetAudience}
+							</span>
 						</div>
 
 						<div className="flex gap-2 items-center">
@@ -156,7 +158,7 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 						이 영상이 다루는 핵심 내용
 					</div>
 					<ul className="list-disc pl-5 space-y-4 mt-8 text-2xl">
-						{data.coreContents.map((content, idx) => (
+						{data.keyPoints.map((content, idx) => (
 							<li key={idx}>{content}</li>
 						))}
 					</ul>
@@ -164,9 +166,9 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 				<div className="flex-1">
 					<div className="font-semibold text-3xl">설치 환경 체크리스트</div>
 					<ul className="space-y-1 mt-8 text-2xl">
-						{data.environments.map((env, idx) => (
+						{data.installEnvChecklist.map((env, idx) => (
 							<li key={idx} className="flex items-center gap-2">
-								{env.support === "지원" ? (
+								{env.isSupported ? (
 									<Image
 										src="/ableEnvironment.svg"
 										alt="ableEnvironment"
@@ -181,7 +183,7 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 										height={48}
 									/>
 								)}
-								<span className="ml-4">{env.value}</span>
+								<span className="ml-4">{env.content}</span>
 							</li>
 						))}
 					</ul>

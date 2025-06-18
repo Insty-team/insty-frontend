@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { UploadformData } from "@/app/types";
+import { UploadformData } from "@/app/types/course";
 
 interface VideoUploadState {
 	data: UploadformData | null;

@@ -1,4 +1,4 @@
-import { UploadformData } from "@/app/types";
+import { UploadformData } from "@/app/types/course";
 
 import CourseForm from "../common/CourseForm";
 import { useGetCourseDetailQuery } from "@/app/queries/course";

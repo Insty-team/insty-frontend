@@ -19,6 +19,7 @@ function CourseList({
 	onEdit: (courseId: number) => void;
 	onDetail: (courseId: number) => void;
 }) {
+	console.log(myCoursesItems);
 	return (
 		<>
 			{myCoursesItems?.map((course: MyCoursesItems) => (
@@ -27,13 +28,27 @@ function CourseList({
 					className="flex bg-white p-4 items-center gap-6"
 				>
 					<div className="overflow-hidden flex-shrink-0 flex items-center justify-center w-[390px] h-[220px]">
-						<Image
-							src={course.thumbnailUrl || "/dog.png"}
-							alt="썸네일"
-							width={390}
-							height={220}
-							className="object-contain w-full h-full border border-black-300"
-						/>
+						{course?.thumbnailUrl ? (
+							<Image
+								src={course.thumbnailUrl}
+								alt="썸네일"
+								width={390}
+								height={220}
+								className="object-contain w-full h-full border border-black-300"
+								onError={(e) => {
+									console.error("이미지 로딩 실패:", course.thumbnailUrl);
+									e.currentTarget.src = "/dog.png";
+								}}
+							/>
+						) : (
+							<Image
+								src="/dog.png"
+								alt="기본 썸네일"
+								width={390}
+								height={220}
+								className="object-contain w-full h-full border border-black-300"
+							/>
+						)}
 					</div>
 					<div className="flex-1 flex flex-col gap-3">
 						<div className="font-semibold text-2xl text-ellipsis whitespace-nowrap overflow-hidden">

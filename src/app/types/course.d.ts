@@ -19,7 +19,6 @@ type CourseDetail = {
 	installEnvChecklist: { content: string; isSupported: boolean }[];
 	keyPoints: string[];
 	tags: string[];
-	videoType: string;
 	thumbnailUrl: string | null;
 	practiceFile: {
 		id: number;
@@ -29,6 +28,10 @@ type CourseDetail = {
 		url: string;
 	}[];
 	createdAt: string;
+	videoInfo: {
+		videoType: string;
+		videoUuid: string;
+	};
 };
 
 type CourseFormProps = {
@@ -41,6 +44,10 @@ type CourseFormProps = {
 
 type AllowedFileType = {
 	document: {
+		accept: string;
+		types: string[];
+	};
+	video: {
 		accept: string;
 		types: string[];
 	};
@@ -58,10 +65,23 @@ type CourseUpdateReq = {
 	updateVideoUuid: string | null;
 };
 
+type UploadformData = {
+	keyPoints: string[];
+	isShow: boolean;
+	price: number;
+	installEnvChecklist: { content: string; isSupported: boolean }[];
+	targetAudience: string;
+	videoUuid: string | null;
+	title: string;
+	description: string;
+	tags: string[];
+};
+
 export type {
 	MyCoursesItems,
 	CourseDetail,
 	CourseFormProps,
 	AllowedFileType,
 	CourseUpdateReq,
+	UploadformData,
 };
