@@ -106,17 +106,3 @@ export type CommonLineChartProps = {
 	tooltipUnit?: string;
 	height?: number;
 };
-
-/**
- * 4. 강의/영상
- */
-export type UploadformData = {
-	link: string;
-	title: string;
-	recipient: string;
-	description: string;
-	price: number;
-	tags: string[];
-	environments: Environment[];
-	coreContents: string[];
-};
