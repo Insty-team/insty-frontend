@@ -12,6 +12,7 @@ import { putCourse } from "@/app/api/backend";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
 
 const CourseForm: React.FC<CourseFormProps> = ({
 	subject,
@@ -284,15 +285,16 @@ const CourseForm: React.FC<CourseFormProps> = ({
 			</div>
 			<div className="flex w-full gap-9">
 				<div className="flex flex-col w-3/5 max-w-[350px]">
-					<label className="block text-xl font-semibold mb-1">
+					<label className="block text-2xl font-semibold mb-1">
 						강의 썸네일
 					</label>
 					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
 						{initialData?.thumbnailUrl ? (
-							<img
+							<Image
 								src={initialData?.thumbnailUrl}
 								alt="썸네일"
 								className="w-full h-full object-contain rounded-2xl"
+								fill
 							/>
 						) : (
 							<span className="text-gray-400">썸네일을 선택해주세요</span>
@@ -320,11 +322,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 							icon={<RiFolderUploadLine />}
 							onClick={handleThumbnailClick}
 						/>
-						{subject === "강의 업로드" ? (
-							<BaseButton title="영상 선택" icon={<RiFolderUploadLine />} />
-						) : (
-							""
-						)}
+						<BaseButton title="영상 선택" icon={<RiFolderUploadLine />} />
 						<div className="flex flex-col gap-2">
 							<input
 								ref={practiceFileInputRef}
@@ -393,31 +391,41 @@ const CourseForm: React.FC<CourseFormProps> = ({
 
 				<div className="flex-1 flex flex-col gap-4">
 					<div>
-						<label className="block text-xl font-semibold mb-1">제목</label>
-						<div className="flex gap-2">
+						<label className="block text-2xl font-semibold mb-1">제목</label>
+						<div className="flex gap-2 relative">
 							<input
-								className="flex-1 bg-gray-scale-100 rounded-2xl p-2 text-black-100"
+								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
 								placeholder="설치 가이드 주제 입력"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
 							/>
+							{subject === "콘텐츠 수정" && (
+								<button
+									type="button"
+									className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
+								>
+									AI에게 추천받기
+								</button>
+							)}
 						</div>
 					</div>
 
 					<div className="flex gap-4 mt-4">
 						<div className="flex-1">
-							<label className="block text-xl font-semibold mb-1">대상자</label>
+							<label className="block text-2xl font-semibold mb-1">
+								대상자
+							</label>
 							<input
-								className="w-full bg-gray-scale-100 rounded-2xl p-2 text-black-100"
+								className="w-full bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
 								placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
 								value={targetAudience}
 								onChange={(e) => setTargetAudience(e.target.value)}
 							/>
 						</div>
 						<div className="flex-1">
-							<label className="block text-xl font-semibold mb-1">가격</label>
+							<label className="block text-2xl font-semibold mb-1">가격</label>
 							<input
-								className="w-full bg-gray-scale-100 rounded-2xl p-2 text-black-100"
+								className="w-full bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
 								placeholder="예: 199,990"
 								value={price}
 								onChange={(e) => setPrice(Number(e.target.value))}
@@ -426,27 +434,35 @@ const CourseForm: React.FC<CourseFormProps> = ({
 					</div>
 
 					<div className="mt-4">
-						<label className="block text-xl font-semibold mb-1">설명</label>
-						<div className="flex gap-2">
+						<label className="block text-2xl font-semibold mb-1">설명</label>
+						<div className="flex flex-col gap-2">
 							<textarea
-								className="flex-1 bg-gray-scale-100 rounded-2xl p-2 text-black-100 resize-none"
+								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg resize-none"
 								rows={6}
 								placeholder="설명 내용 입력"
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 							/>
+							{subject === "콘텐츠 수정" && (
+								<button
+									type="button"
+									className="flex-none top-1 right-4 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
+								>
+									AI에게 추천받기
+								</button>
+							)}
 						</div>
 					</div>
 
 					<div className="mt-4">
-						<label className="block text-xl font-semibold mb-1">
+						<label className="block text-2xl font-semibold mb-1">
 							설치 환경 체크리스트
 						</label>
 						<div className="flex flex-col gap-2">
 							{installEnvChecklist.map((env, idx) => (
 								<div key={idx} className="flex gap-2 items-center">
 									<input
-										className="flex-1 bg-gray-scale-100 rounded-2xl p-2 text-black-100"
+										className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
 										value={env.content}
 										onChange={(e) =>
 											handleEnvChange(idx, "content", e.target.value)
@@ -454,7 +470,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 										placeholder="환경 입력"
 									/>
 									<select
-										className="border border-gray-scale-300 rounded p-2 text-lg"
+										className="border border-gray-scale-300 rounded-3xl px-4 py-4 text-black-100 text-2lg"
 										value={env.isSupported ? "지원" : "미지원"}
 										onChange={(e) =>
 											handleEnvChange(idx, "support", e.target.value)
@@ -515,10 +531,10 @@ const CourseForm: React.FC<CourseFormProps> = ({
 					</div>
 
 					<div className="mt-4">
-						<label className="block text-xl font-semibold mb-1">태그</label>
+						<label className="block text-2xl font-semibold mb-1">태그</label>
 						<div className="flex gap-2">
 							<input
-								className="flex-1 bg-gray-scale-100 rounded-2xl p-2 text-black-100"
+								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
 								value={tagInput}
 								onChange={(e) => setTagInput(e.target.value)}
 								onKeyDown={(e) =>
@@ -528,7 +544,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 							/>
 							<button
 								type="button"
-								className="px-3 py-1 border border-gray-scale-300 rounded text-lg cursor-pointer"
+								className="px-3 py-1 border border-gray-scale-300 rounded-3xl text-lg cursor-pointer"
 								onClick={handleAddTag}
 							>
 								추가

@@ -19,7 +19,6 @@ type CourseDetail = {
 	installEnvChecklist: { content: string; isSupported: boolean }[];
 	keyPoints: string[];
 	tags: string[];
-	videoType: string;
 	thumbnailUrl: string | null;
 	practiceFile: {
 		id: number;
@@ -29,6 +28,10 @@ type CourseDetail = {
 		url: string;
 	}[];
 	createdAt: string;
+	videoInfo: {
+		videoType: string;
+		videoUuid: string;
+	};
 };
 
 type CourseFormProps = {
