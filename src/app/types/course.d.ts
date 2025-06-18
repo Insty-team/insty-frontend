@@ -47,6 +47,10 @@ type AllowedFileType = {
 		accept: string;
 		types: string[];
 	};
+	video: {
+		accept: string;
+		types: string[];
+	};
 };
 
 type CourseUpdateReq = {
@@ -61,10 +65,23 @@ type CourseUpdateReq = {
 	updateVideoUuid: string | null;
 };
 
+type UploadformData = {
+	keyPoints: string[];
+	isShow: boolean;
+	price: number;
+	installEnvChecklist: { content: string; isSupported: boolean }[];
+	targetAudience: string;
+	videoUuid: string | null;
+	title: string;
+	description: string;
+	tags: string[];
+};
+
 export type {
 	MyCoursesItems,
 	CourseDetail,
 	CourseFormProps,
 	AllowedFileType,
 	CourseUpdateReq,
+	UploadformData,
 };
