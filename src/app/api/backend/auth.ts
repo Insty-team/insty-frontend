@@ -3,11 +3,12 @@ import axios from "axios";
 import axiosInstance from "../interceptor";
 import { ApiResponse } from "@/app/types/api";
 
-
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
 const postLogin = async (data: LoginForm) => {
 	try {
+		//테스트 코드 추가
+		console.log(BASE_URL);
 		const res = await axios.post<ApiResponse<LoginResponse>>(
 			`${BASE_URL}/auth/login`,
 			data,
