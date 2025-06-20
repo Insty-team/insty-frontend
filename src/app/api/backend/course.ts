@@ -1,5 +1,6 @@
-import { CourseUpdateReq } from "@/app/types/course";
+import { CourseUpdateReq, UploadformData } from "@/app/types/course";
 import axiosInstance from "../interceptor";
+import axios from "axios";
 
 // 강의 관련 API
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
@@ -56,4 +57,35 @@ const putCourse = async (
 	return res.data.data;
 };
 
-export { getMyCourses, getCourseDetail, putCourse };
+const postCourse = async (
+	courseData: UploadformData,
+	thumbnailFile: File | null,
+	practiceFile: File[] | null,
+) => {
+	try {
+		const formData = new FormData();
+
+		formData.append("coursePostReq", JSON.stringify(courseData));
+
+		if (thumbnailFile) {
+			formData.append("thumbnail", thumbnailFile);
+		}
+
+		if (practiceFile) {
+			practiceFile.forEach((file) => {
+				formData.append("practiceFile", file);
+			});
+		}
+		const res = await axiosInstance.post(`${BASE_URL}/courses`, formData, {
+			headers: { "Content-Type": "multipart/form-data" },
+		});
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+
+	throw new Error("서버와 통신 불가");
+};
+
+export { getMyCourses, getCourseDetail, putCourse, postCourse };

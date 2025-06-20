@@ -72,6 +72,9 @@ type UploadformData = {
 	installEnvChecklist: { content: string; isSupported: boolean }[];
 	targetAudience: string;
 	videoUuid: string | null;
+	videoFile?: File | null;
+	thumbnailFile?: File | null;
+	practiceFiles?: File[];
 	title: string;
 	description: string;
 	tags: string[];
