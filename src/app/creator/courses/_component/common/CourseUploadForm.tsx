@@ -5,152 +5,108 @@ import { BsStars } from "react-icons/bs";
 import { TiDelete } from "react-icons/ti";
 
 import { BaseButton } from "@/app/_components/common";
-import { CourseFormProps, AllowedFileType } from "@/app/types/course";
+import { AllowedFileType, UploadformData } from "@/app/types/course";
 import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
 import { FaRegFile } from "react-icons/fa6";
-import { postCourseVideo, putCourse } from "@/app/api/backend";
+import { postCourseVideo } from "@/app/api/backend";
 import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
-import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { postSuggestMetadata } from "@/app/api/ai";
+import { useCourseForm } from "../../../../hooks/useCourseForm";
+import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 
-const CourseForm: React.FC<CourseFormProps> = ({
+interface CourseUploadFormProps {
+	subject: string;
+	initialData?: UploadformData;
+	onSubmit: (formData: UploadformData) => void;
+	onBack: () => void;
+}
+
+const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	subject,
 	initialData,
 	onSubmit,
+	onBack,
 }) => {
 	const router = useRouter();
-	const queryClient = useQueryClient();
-	const [title, setTitle] = useState(initialData?.title || "");
-	const [description, setDescription] = useState(
-		initialData?.description || "",
-	);
-	const [targetAudience, setTargetAudience] = useState(
-		initialData?.targetAudience || "",
-	);
-	const [price, setPrice] = useState(initialData?.price || 0);
-	const [installEnvChecklist, setInstallEnvChecklist] = useState<
-		{
-			content: string;
-			isSupported: boolean;
-		}[]
-	>(initialData?.installEnvChecklist || []);
-	const [keyPoints, setKeyPoints] = useState<string[]>(
-		initialData?.keyPoints || [],
-	);
-	const [tags, setTags] = useState<string[]>(initialData?.tags || []);
-	const [tagInput, setTagInput] = useState("");
-	const [thumbnailUrl, setThumbnailUrl] = useState(
-		initialData?.thumbnailUrl || "",
-	);
+	const { data, setData } = useVideoUploadStore();
+
+	// store에 데이터가 있으면 그것을 우선 사용, 없으면 initialData 사용
+	const effectiveInitialData = data || initialData;
+
+	const {
+		title,
+		setTitle,
+		description,
+		setDescription,
+		targetAudience,
+		setTargetAudience,
+		price,
+		setPrice,
+		installEnvChecklist,
+		setInstallEnvChecklist,
+		keyPoints,
+		setKeyPoints,
+		tags,
+		setTags,
+		tagInput,
+		setTagInput,
+		handleAddTag,
+		handleRemoveTag,
+		handleAddEnv,
+		handleEnvChange,
+		handleRemoveEnv,
+		handleCoreChange,
+		handleAddCore,
+		handleRemoveCore,
+	} = useCourseForm(effectiveInitialData);
+
+	const [thumbnailUrl, setThumbnailUrl] = useState("");
 	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-	const [videoFile, setVideoFile] = useState<File | null>(null);
+	const [videoFile, setVideoFile] = useState<File | null>(
+		effectiveInitialData?.videoFile || null,
+	);
 	const [practiceFiles, setPracticeFiles] = useState<File[]>([]);
-	const [deletePracticeFiles, setDeletePracticeFiles] = useState<number[]>([]);
-	const [existingPracticeFiles, setExistingPracticeFiles] = useState<
-		{
-			id: number;
-			name: string;
-			contentType: string;
-			size: number;
-			url: string;
-		}[]
-	>([]);
-	const [videoUuid, setVideoUuid] = useState<string>("");
+	const [videoUuid, setVideoUuid] = useState<string>(
+		effectiveInitialData?.videoUuid || "",
+	);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
 	const videoInputRef = useRef<HTMLInputElement>(null);
 
-	const ALLOWED_FILE_TYPES: AllowedFileType = {
-		document: {
-			accept: ".pdf,.hwp,.doc,.docx,.zip,.jpg,.jpeg,.png,.gif",
-			types: [
-				"application/hwp",
-				"application/pdf",
-				"application/x-hwp",
-				"application/msword",
-				"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-				"application/zip",
-				"image/jpeg",
-				"image/jpg",
-				"image/png",
-				"image/gif",
-			],
-		},
-		video: {
-			accept: ".mp4,.mov,.avi",
-			types: ["video/mp4", "video/quicktime", "video/x-msvideo"],
-		},
-	};
-
-	const { setData } = useVideoUploadStore();
-
 	useEffect(() => {
-		if (initialData) {
-			setDescription(initialData.description);
-			setTags(initialData.tags);
-			setInstallEnvChecklist(initialData.installEnvChecklist);
-			setKeyPoints(initialData.keyPoints);
-			if (initialData.practiceFile && initialData.practiceFile.length > 0) {
-				setExistingPracticeFiles(initialData.practiceFile);
+		const dataToUse = data || initialData;
+		if (dataToUse) {
+			setTitle(dataToUse.title || "");
+			setDescription(dataToUse.description || "");
+			setTargetAudience(dataToUse.targetAudience || "");
+			setPrice(dataToUse.price || 0);
+			setTags(dataToUse.tags || []);
+			setInstallEnvChecklist(
+				dataToUse.installEnvChecklist?.length
+					? dataToUse.installEnvChecklist
+					: [{ content: "", isSupported: true }],
+			);
+			setKeyPoints(dataToUse.keyPoints?.length ? dataToUse.keyPoints : [""]);
+			if (dataToUse.videoFile) {
+				setVideoFile(dataToUse.videoFile);
+			}
+			if (dataToUse.videoUuid) {
+				setVideoUuid(dataToUse.videoUuid);
 			}
 		}
-	}, [initialData]);
-
-	const handleAddTag = () => {
-		const val = tagInput.trim();
-		if (val && !tags.includes(val)) {
-			setTags([...tags, val]);
-			setTagInput("");
-		}
-	};
-	const handleRemoveTag = (idx: number) => {
-		setTags(tags.filter((_, i) => i !== idx));
-	};
-
-	const handleAddEnv = () => {
-		setInstallEnvChecklist([
-			...installEnvChecklist,
-			{ content: "", isSupported: true },
-		]);
-	};
-
-	const handleEnvChange = (
-		idx: number,
-		field: "content" | "support",
-		value: string,
-	) => {
-		const newChecklist = [...installEnvChecklist];
-		if (field === "content") {
-			newChecklist[idx] = { ...newChecklist[idx], content: value };
-		} else {
-			newChecklist[idx] = {
-				...newChecklist[idx],
-				isSupported: value === "지원",
-			};
-		}
-		setInstallEnvChecklist(newChecklist);
-	};
-
-	const handleRemoveEnv = (idx: number) => {
-		setInstallEnvChecklist(installEnvChecklist.filter((_, i) => i !== idx));
-	};
-
-	const handleCoreChange = (idx: number, value: string) => {
-		const arr = [...keyPoints];
-		arr[idx] = value;
-		setKeyPoints(arr);
-	};
-
-	const handleAddCore = () => {
-		setKeyPoints([...keyPoints, ""]);
-	};
-
-	const handleRemoveCore = (idx: number) => {
-		setKeyPoints(keyPoints.filter((_, i) => i !== idx));
-	};
+	}, [
+		data,
+		initialData,
+		setDescription,
+		setInstallEnvChecklist,
+		setKeyPoints,
+		setPrice,
+		setTags,
+		setTitle,
+		setTargetAudience,
+	]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -190,10 +146,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 			return;
 		}
 
-		if (
-			existingPracticeFiles.length + practiceFiles.length + validFiles.length >
-			2
-		) {
+		if (practiceFiles.length + validFiles.length > 2) {
 			alert("최대 2개의 파일만 업로드 가능합니다.");
 			return;
 		}
@@ -201,14 +154,8 @@ const CourseForm: React.FC<CourseFormProps> = ({
 		setPracticeFiles((prev) => [...prev, ...validFiles]);
 	};
 
-	const handleRemovePracticeFile = (index: number, isExisting: boolean) => {
-		if (isExisting) {
-			const file = existingPracticeFiles[index];
-			setDeletePracticeFiles((prev) => [...prev, file.id]);
-			setExistingPracticeFiles((prev) => prev.filter((_, i) => i !== index));
-		} else {
-			setPracticeFiles((prev) => prev.filter((_, i) => i !== index));
-		}
+	const handleRemovePracticeFile = (index: number) => {
+		setPracticeFiles((prev) => prev.filter((_, i) => i !== index));
 	};
 
 	const handleUploadVideo = () => {
@@ -228,7 +175,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
 			return;
 		}
 
-		// 파일 크기 체크 (예: 2GB 제한)
 		if (file.size > 2 * 1024 * 1024 * 1024) {
 			alert("파일 크기가 너무 큽니다. 2GB 이하의 파일만 업로드 가능합니다.");
 			return;
@@ -243,7 +189,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
 				contentType: file.type,
 			};
 			const res = await postCourseVideo(videoInfo);
-
 			console.log(res.data.uuid);
 			setVideoUuid(res.data.uuid);
 		} catch (error) {
@@ -253,6 +198,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 
 	const handleRemoveVideoFile = () => {
 		setVideoFile(null);
+		setVideoUuid("");
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -266,71 +212,32 @@ const CourseForm: React.FC<CourseFormProps> = ({
 		) {
 			alert("모든 항목을 입력해주세요.");
 			return;
-		} else {
-			if (subject === "강의 업로드") {
-				const formData = {
-					title,
-					description,
-					targetAudience,
-					price,
-					tags,
-					keyPoints,
-					isShow: true,
-					installEnvChecklist,
-					videoUuid: null,
-				};
-				setData(formData);
-				onSubmit(formData);
-			} else {
-				const formData = {
-					title,
-					description,
-					targetAudience,
-					price,
-					tags,
-					keyPoints,
-					installEnvChecklist,
-					deletePracticeField: deletePracticeFiles,
-					updateVideoUuid: null,
-				};
-				const thumbnailData = thumbnailFile;
-				const practiceFileData = practiceFiles;
-				console.log("폼 데이터:", formData);
-				console.log("썸네일 데이터:", thumbnailData);
-				console.log("실습 파일 데이터:", practiceFileData);
-
-				try {
-					if (typeof initialData?.courseId !== "number") {
-						alert("코스 아이디가 존재하지 않습니다. 다시 확인해주세요.");
-						router.push("/creator/courses");
-						return;
-					}
-					const res = await putCourse(
-						initialData?.courseId,
-						formData,
-						thumbnailData,
-						practiceFileData,
-					);
-					Swal.fire({
-						title: "강의가 수정 되었습니다.",
-						icon: "success",
-						confirmButtonText: "확인",
-						confirmButtonColor: "#6ead79",
-					}).then(async () => {
-						await queryClient.invalidateQueries({
-							queryKey: ["courseDetail", initialData?.courseId],
-						});
-						router.push("/creator/courses");
-					});
-				} catch (error) {
-					console.log(error);
-				}
-			}
 		}
+
+		const formData: UploadformData = {
+			title,
+			description,
+			targetAudience,
+			price,
+			tags,
+			keyPoints,
+			isShow: true,
+			installEnvChecklist,
+			videoUuid: videoUuid,
+			videoFile: videoFile,
+			thumbnailFile: thumbnailFile ? thumbnailFile : null,
+			practiceFiles: practiceFiles.length > 0 ? practiceFiles : [],
+		};
+
+		setData(formData);
+		onSubmit(formData);
 	};
 
-	//미완성, 추후 수정필요
-	const handleSuggestMetadata = async (videoUuid: string) => {
+	const handleSuggestMetadata = async () => {
+		if (!videoUuid) {
+			alert("먼저 비디오를 업로드해주세요.");
+			return;
+		}
 		try {
 			const res = await postSuggestMetadata(videoUuid);
 			console.log(res.data);
@@ -343,17 +250,15 @@ const CourseForm: React.FC<CourseFormProps> = ({
 		<form onSubmit={handleSubmit}>
 			<div className="flex items-center justify-between">
 				<div className="font-bold text-3xl mb-12">{subject}</div>
-				{subject === "강의 업로드" ? (
+				{subject === "강의 업로드" && (
 					<BaseButton
 						title="AI로 초안 작성하기"
 						alignIcon="left"
 						icon={<BsStars />}
 						fill={false}
 						className="!px-4 !py-2 !rounded-lg !border-primary-green-600 !w-[210px]"
-						onClick={() => {}}
+						onClick={handleSuggestMetadata}
 					/>
-				) : (
-					""
 				)}
 			</div>
 			<div className="flex w-full gap-9">
@@ -362,9 +267,9 @@ const CourseForm: React.FC<CourseFormProps> = ({
 						강의 썸네일
 					</label>
 					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
-						{initialData?.thumbnailUrl ? (
+						{thumbnailUrl ? (
 							<Image
-								src={initialData?.thumbnailUrl}
+								src={thumbnailUrl}
 								alt="썸네일"
 								className="w-full h-full object-contain rounded-2xl"
 								fill
@@ -433,30 +338,11 @@ const CourseForm: React.FC<CourseFormProps> = ({
 								fill={false}
 								onClick={handlePracticeFileClick}
 							/>
-							{(practiceFiles.length > 0 ||
-								existingPracticeFiles.length > 0) && (
+							{practiceFiles.length > 0 && (
 								<div className="flex flex-col gap-2 mt-2">
-									{existingPracticeFiles.map((file, index) => (
-										<div
-											key={`existing-${index}`}
-											className="flex items-center justify-between bg-gray-100 p-2 rounded"
-										>
-											<div className="text-md truncate flex items-center">
-												<FaRegFile className="mr-2" />
-												{file.name}
-											</div>
-											<button
-												type="button"
-												onClick={() => handleRemovePracticeFile(index, true)}
-												className="text-secondary-red-300"
-											>
-												✕
-											</button>
-										</div>
-									))}
 									{practiceFiles.map((file, index) => (
 										<div
-											key={`new-${index}`}
+											key={index}
 											className="flex items-center justify-between bg-gray-100 p-2 rounded"
 										>
 											<div className="text-md truncate flex items-center">
@@ -465,7 +351,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 											</div>
 											<button
 												type="button"
-												onClick={() => handleRemovePracticeFile(index, false)}
+												onClick={() => handleRemovePracticeFile(index)}
 												className="text-secondary-red-300"
 											>
 												✕
@@ -488,21 +374,13 @@ const CourseForm: React.FC<CourseFormProps> = ({
 				<div className="flex-1 flex flex-col gap-4">
 					<div>
 						<label className="block text-2xl font-semibold mb-1">제목</label>
-						<div className="flex gap-2 relative">
+						<div className="flex">
 							<input
 								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
 								placeholder="설치 가이드 주제 입력"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
 							/>
-							{subject === "콘텐츠 수정" && (
-								<button
-									type="button"
-									className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
-								>
-									AI에게 추천받기
-								</button>
-							)}
 						</div>
 					</div>
 
@@ -531,7 +409,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
 
 					<div className="mt-4">
 						<label className="block text-2xl font-semibold mb-1">설명</label>
-						<div className="flex flex-col gap-2">
+						<div className="flex">
 							<textarea
 								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg resize-none"
 								rows={6}
@@ -539,14 +417,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 							/>
-							{subject === "콘텐츠 수정" && (
-								<button
-									type="button"
-									className="flex-none top-1 right-4 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
-								>
-									AI에게 추천받기
-								</button>
-							)}
 						</div>
 					</div>
 
@@ -664,11 +534,12 @@ const CourseForm: React.FC<CourseFormProps> = ({
 						</div>
 					</div>
 
-					<div className="w-[20%] flex items-end ml-auto mt-4">
+					<div className="w-[20%] flex items-end ml-auto">
 						<BaseButton
-							title={initialData ? "수정" : "업로드"}
+							title={
+								subject === "업로드 전 강의 수정" ? "수정 완료" : "미리 보기"
+							}
 							buttonType="submit"
-							onClick={() => handleSubmit}
 						/>
 					</div>
 				</div>
@@ -677,4 +548,4 @@ const CourseForm: React.FC<CourseFormProps> = ({
 	);
 };
 
-export default CourseForm;
+export default CourseUploadForm;

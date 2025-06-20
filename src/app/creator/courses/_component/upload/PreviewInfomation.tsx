@@ -7,26 +7,86 @@ import { IoChatbubbleEllipses } from "react-icons/io5";
 
 import { BaseButton } from "@/app/_components/common";
 import Modal from "@/app/_components/common/Modal";
+import VideoPlayer from "@/app/_components/common/VideoPlayer";
 import { REFUND_POLICY } from "@/app/constants";
 import ChatbotModal from "@/app/learner/_component/ChatbotModal";
 import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { UploadformData } from "@/app/types/course";
+import { formatTime } from "@/app/utils/date";
+import { postCourse } from "@/app/api/backend";
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 
 interface PreviewInfomationProps {
 	data: UploadformData;
 	onEdit: () => void;
+	onBack?: () => void;
 	mode: "creator" | "learner";
 }
 
-function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
+function PreviewInfomation({
+	data,
+	onEdit,
+	onBack,
+	mode,
+}: PreviewInfomationProps) {
 	const [open, setOpen] = useState(false);
 	const [openChatbot, setOpenChatbot] = useState(false);
 	const [checked, setChecked] = useState(false);
+	const [videoDuration, setVideoDuration] = useState(0);
+
+	console.log(data);
+	const router = useRouter();
+
+	const handleSubmitCourseForm = async () => {
+		try {
+			const { thumbnailFile, practiceFiles, ...rest } = data;
+			const formData = new FormData();
+
+			if (thumbnailFile) {
+				formData.append("thumbnail", thumbnailFile);
+			}
+
+			if (practiceFiles) {
+				practiceFiles.forEach((file) => {
+					formData.append("practiceFile", file);
+				});
+			}
+
+			const courseData = { ...rest };
+			delete courseData.videoFile;
+			formData.append("courseData", JSON.stringify(courseData));
+
+			console.log("썸네일 파일:", thumbnailFile);
+			console.log("실습 파일들:", practiceFiles);
+			console.log("나머지 데이터:", courseData);
+
+			const res = await postCourse(
+				courseData,
+				thumbnailFile ?? null,
+				practiceFiles ?? null,
+			);
+
+			Swal.fire({
+				title: "강의 업로드 완료",
+				icon: "success",
+				text: "강의 업로드가 완료되었습니다.",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			}).then(() => {
+				router.push("/creator/courses");
+			});
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
 	if (!data) return <div>데이터가 없습니다.</div>;
+
 	return (
 		<div className="flex flex-col gap-8 items-stretch relative">
 			<div className="font-bold text-2xl mt-10">{data.title}</div>
+
 			<CommunitySidebar />
 			<button
 				className="fixed bottom-8 right-8 z-50 flex items-center bg-primary-green-400 hover:bg-primary-green-500 text-white font-semibold px-6 py-2 rounded-full shadow-none"
@@ -39,9 +99,17 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 			{openChatbot && <ChatbotModal open={openChatbot} />}
 
 			<div className="flex gap-4 w-full">
-				<div className="w-[730px] h-[468px] bg-gray-200 rounded-2xl flex items-center justify-center">
-					<span className="text-gray-400">영상 미리보기</span>
-				</div>
+				{data.videoFile ? (
+					<VideoPlayer
+						url={URL.createObjectURL(data.videoFile)}
+						width="w-[800px]"
+						onDurationChange={setVideoDuration}
+					/>
+				) : (
+					<div className="w-[800px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
+						<span className="text-gray-400">영상 미리보기</span>
+					</div>
+				)}
 
 				<div className="flex flex-col gap-2 flex-1 justify-between ml-2">
 					<div className="flex gap-2 flex-wrap">
@@ -86,13 +154,18 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 
 						<div className="flex gap-2 items-center">
 							<Image src="/time.svg" alt="clock" width={36} height={36} />
-							<span className="text-black-300 text-2xl">1시간 7분 32초</span>
+							<span className="text-black-300 text-2xl">
+								{videoDuration > 0 ? formatTime(videoDuration) : ""}
+							</span>
 						</div>
 					</div>
 					{mode === "creator" && (
 						<div className="flex gap-4 mt-auto pt-8">
 							<BaseButton title="수정하기" fill={false} onClick={onEdit} />
-							<BaseButton title="업로드 진행하기" onClick={() => {}} />
+							<BaseButton
+								title="업로드 진행하기"
+								onClick={handleSubmitCourseForm}
+							/>
 						</div>
 					)}
 				</div>

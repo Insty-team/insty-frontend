@@ -1,20 +1,41 @@
 "use client";
 
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { UploadformData } from "@/app/types/course";
 
-import CourseForm from "../common/CourseForm";
+import CourseUploadForm from "../common/CourseUploadForm";
 import PreviewInfomation from "./PreviewInfomation";
 
+type Step = "upload" | "preview" | "edit";
+
 function CourseUpload() {
-	const [step, setStep] = useState<"upload" | "preview" | "edit">("upload");
+	const router = useRouter();
+	const searchParams = useSearchParams();
 	const { data, setData } = useVideoUploadStore();
+
+	const getStepFromQuery = (): Step => {
+		const mode = searchParams.get("uploadmode");
+		if (mode === "preview" || mode === "edit") return mode;
+		return "upload";
+	};
+
+	const [step, setStepState] = useState<Step>(getStepFromQuery());
+
+	useEffect(() => {
+		setStepState(getStepFromQuery());
+	}, [searchParams]);
+
+	const setStep = (newStep: Step) => {
+		const params = new URLSearchParams(Array.from(searchParams.entries()));
+		params.set("uploadmode", newStep);
+		router.replace(`?${params.toString()}`);
+		setStepState(newStep);
+	};
 
 	const handleUpload = (formData: UploadformData) => {
 		setData(formData);
-		console.log(data);
 		setStep("preview");
 	};
 
@@ -22,10 +43,18 @@ function CourseUpload() {
 		setStep("edit");
 	};
 
+	const handleBack = () => {
+		if (step === "preview") {
+			setStep("upload");
+		} else if (step === "edit") {
+			setStep("preview");
+		}
+	};
+
 	return (
 		<>
 			{step === "upload" && (
-				<CourseForm
+				<CourseUploadForm
 					subject="강의 업로드"
 					onSubmit={handleUpload}
 					onBack={() => {}}
@@ -34,16 +63,17 @@ function CourseUpload() {
 			{step === "preview" && data && (
 				<PreviewInfomation
 					data={data}
-					onEdit={() => handleEdit()}
+					onEdit={handleEdit}
+					onBack={handleBack}
 					mode="creator"
 				/>
 			)}
 			{step === "edit" && data && (
-				<CourseForm
+				<CourseUploadForm
 					subject="업로드 전 강의 수정"
-					//initialData={data}
+					initialData={data}
 					onSubmit={handleUpload}
-					onBack={() => setStep("preview")}
+					onBack={handleBack}
 				/>
 			)}
 		</>
