@@ -31,13 +31,13 @@ function Login() {
 		try {
 			const submitData = { ...data, userType: userType === "creator" ? "CREATOR" : "LEARNER" };
 			const res = await postLogin(submitData);
-			setAccessToken(res.token.accessToken);
-			setRefreshToken(res.token.refreshToken);
+			setAccessToken(res.data.token.accessToken);
+			setRefreshToken(res.data.token.refreshToken);
 
 			//액세스 토큰으로 나중에 사용자 정보를 조회한다. 이후 값 저장
 			setUser({
-				nickname: res.nickname,
-				userType: res.userType,
+				nickname: res.data.nickname,
+				userType: res.data.userType,
 			});
 
 			if (userType === "creator") {

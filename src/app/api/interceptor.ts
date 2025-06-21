@@ -15,7 +15,7 @@ axiosInstance.interceptors.request.use(
 	(config) => {
 		if (typeof window !== "undefined") {
 			const accessToken = getAccessToken();
-			if (accessToken) {
+			if (accessToken && !config.headers?.Authorization) {
 				config.headers.Authorization = `Bearer ${accessToken}`;
 			}
 		}
@@ -63,9 +63,6 @@ axiosInstance.interceptors.response.use(
 			try {
 				const refreshToken = getRefreshToken()
 				const res = await postReissueToken(refreshToken ?? '')
-				// const res = await axiosInstance.post(`${BASE_URL}/auth/reissue`, {}, {
-				// 	withCredentials: true
-				// })
 
 				const newAccessToken = res.token.accessToken;
 				setAccessToken(newAccessToken);
@@ -77,7 +74,7 @@ axiosInstance.interceptors.response.use(
 				return axiosInstance(originalRequest);
 			} catch (err) {
 				processQueue(err, null);
-				postLogout()
+				await postLogout()
 				window.location.href = "/login";
 				return Promise.reject(err);
 			} finally {
