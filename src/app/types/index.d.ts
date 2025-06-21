@@ -50,7 +50,7 @@ export type Token = {
 	tokenType: string;
 };
 
-export type SocialLogin = 'KAKAO' | 'GOOGLE'
+export type SocialLogin = 'KAKAO' | 'NAVER' | 'GOOGLE'
 
 export type SignupForm = {
 	nickname: string;

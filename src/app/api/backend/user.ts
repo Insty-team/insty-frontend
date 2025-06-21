@@ -70,7 +70,7 @@ export const patchUserType = async (
 
 /**
  * OAuth 로그인
- * (현재는 카카오만 가능합니다.)
+ * (현재는 카카오/네이버만 가능합니다.)
  */
 export const getSocialAuthCode = async (socialName: SocialLogin, userType: UserType) => {
 	const res = await axios.get(`${BASE_URL}/auth/login/authorize/${socialName}?state=${userType}`)

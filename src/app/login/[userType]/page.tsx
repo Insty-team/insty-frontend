@@ -56,9 +56,15 @@ function Login() {
 	const handleKakaoLogin = async () => {
 		const state = userType === "creator" ? "CREATOR" : "LEARNER";
 		const res = await getSocialAuthCode("KAKAO", state);
-		console.log('res', res)
 		window.location.href = res;
 	};
+
+	// 네이버 로그인
+	const handleNaverLogin = async () => {
+		const state = userType === "creator" ? "CREATOR" : "LEARNER";
+		const res = await getSocialAuthCode('NAVER', state)
+		window.location.href = res
+	}
 
 	return (
 		<>
@@ -121,7 +127,7 @@ function Login() {
 					>
 						로그인
 					</button>
-
+					{/* Social Login */}
 					<div className="text-md text-black-100">
 						계정이 없으신가요?{" "}
 						<Link
@@ -136,8 +142,6 @@ function Login() {
 					소셜 로그인으로 간편하게 시작하기
 				</div>
 				<div className="flex space-x-4">
-					{/* 나중에 링크 달아놓을 곳 */}
-					{/* <Link href={KAKAO_REDIRECT_URI}> */}
 					<button onClick={() => handleKakaoLogin()}>
 						<Image
 							src="/kakao.svg"
@@ -148,22 +152,24 @@ function Login() {
 
 						/>
 					</button>
-					{/* </Link> */}
-
-					<Image
-						src="/google.svg"
-						alt="google"
-						className="rounded-2xl cursor-pointer"
-						width={36}
-						height={36}
-					/>
-					<Image
-						src="/naver.svg"
-						alt="naver"
-						className="rounded-2xl cursor-pointer"
-						width={36}
-						height={36}
-					/>
+					<button>
+						<Image
+							src="/google.svg"
+							alt="google"
+							className="rounded-2xl cursor-pointer"
+							width={36}
+							height={36}
+						/>
+					</button>
+					<button onClick={() => handleNaverLogin()}>
+						<Image
+							src="/naver.svg"
+							alt="naver"
+							className="rounded-2xl cursor-pointer"
+							width={36}
+							height={36}
+						/>
+					</button>
 				</div>
 			</div>
 		</>
