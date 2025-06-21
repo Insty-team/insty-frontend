@@ -79,6 +79,8 @@ const postCourse = async (
 		const res = await axiosInstance.post(`${BASE_URL}/courses`, formData, {
 			headers: { "Content-Type": "multipart/form-data" },
 		});
+
+		return res.data;
 	} catch (error) {
 		if (axios.isAxiosError(error) && error.response?.data) {
 			return error.response?.data;
