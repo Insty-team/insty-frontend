@@ -7,7 +7,7 @@ import { postSocialLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { UserType } from "@/app/types";
 
-function KaKaoCallback() {
+function NaverCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -24,7 +24,7 @@ function KaKaoCallback() {
 
     const sendCodeToBackend = async () => {
       try {
-        const res = await postSocialLogin("KAKAO", {
+        const res = await postSocialLogin("NAVER", {
           code: code,
           userType: state as UserType,
         });
@@ -52,7 +52,7 @@ function KaKaoCallback() {
     sendCodeToBackend();
   }, [code, router]);
 
-  return <>카카오 로그인 중...</>;
+  return <>네이버 로그인 중...</>;
 }
 
-export default KaKaoCallback;
+export default NaverCallback;

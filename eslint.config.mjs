@@ -8,32 +8,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
-	baseDirectory: __dirname,
+  baseDirectory: __dirname,
 });
 
 const eslintConfig = [
-	...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
-	{
-		plugins: {
-			prettier: eslintPluginPrettier,
-			"simple-import-sort": eslintPluginSimpleImportSort,
-		},
-		rules: {
-			"prettier/prettier": "warn",
-			"simple-import-sort/imports": "warn",
-			"simple-import-sort/exports": "warn",
-			"import/order": "off",
-			extends: [
-				"prettier",
-				"eslint:recommended",
-				"plugin:prettier/recommended",
-			],
-			plugins: ["prettier"],
-			rules: {
-				"prettier/prettier": ["error", { useTabs: false, endOfLine: "auto" }],
-			},
-		},
-	},
+  ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
+  {
+    plugins: {
+      prettier: eslintPluginPrettier,
+      "simple-import-sort": eslintPluginSimpleImportSort,
+    },
+    rules: {
+      "prettier/prettier": ["warn", { useTabs: false, endOfLine: "auto" }],
+      "simple-import-sort/imports": "warn",
+      "simple-import-sort/exports": "warn",
+      "import/order": "off",
+      "@typescript-eslint/no-unused-vars": ["error"],
+      "@typescript-eslint/no-unused-expressions": "off",
+      "no-useless-concat": "warn",
+      "prefer-template": "warn",
+      "no-unused-expressions": ["error", { allowTernary: true }],
+    },
+  },
 ];
 
 export default eslintConfig;
