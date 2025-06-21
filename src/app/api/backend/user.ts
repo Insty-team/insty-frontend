@@ -1,11 +1,6 @@
 import axios from "axios";
 
-import {
-	ChangeProfileForm,
-	SignupForm,
-	UserProfileInfoResponse,
-	UserType,
-} from "@/app/types/index.d";
+import { SocialLogin, LoginResponse, SignupForm, UserProfileInfoResponse, UserType } from "@/app/types";
 
 import axiosInstance from "../interceptor";
 
@@ -36,7 +31,6 @@ const getEmailCheck = async (email: string) => {
 // 회원 가입
 const postSignup = async (data: SignupForm) => {
 	const res = await axios.post(`${BASE_URL}/users`, data);
-
 	return res.data.data;
 };
 
@@ -57,20 +51,15 @@ const putUserProfileInfoEdit = async (
 };
 
 // 사용자 이메일 수신 동의 상태값 변경
-const patchUserEmailAgree = async (
-	isEmailAgree: boolean,
-): Promise<UserProfileInfoResponse> => {
-	const res = await axiosInstance.patch(
-		`${BASE_URL}/users/profile/email-agree`,
-		{
-			isEmailAgree,
-		},
-	);
+export const patchUserEmailAgree = async (isEmailAgree: boolean): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/email-agree`, {
+		isEmailAgree
+	});
 	return res.data.data;
-};
+}
 
 // 사용자 타입 변경
-const patchUserType = async (
+export const patchUserType = async (
 	userType: UserType,
 ): Promise<UserProfileInfoResponse> => {
 	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/userType`, {
@@ -79,12 +68,22 @@ const patchUserType = async (
 	return res.data.data;
 };
 
-export {
-	getNicknameCheck,
-	getEmailCheck,
-	postSignup,
-	getUserProfileInfo,
-	putUserProfileInfoEdit,
-	patchUserEmailAgree,
-	patchUserType,
-};
+/**
+ * OAuth 로그인
+ * (현재는 카카오만 가능합니다.)
+ */
+export const getSocialAuthCode = async (socialName: SocialLogin, userType: UserType) => {
+	const res = await axios.get(`${BASE_URL}/auth/login/authorize/${socialName}?state=${userType}`)
+	return res.data.data
+}
+
+export const postSocialLogin = async (socialName: SocialLogin, data: {
+	code: string
+	userType: UserType
+}): Promise<LoginResponse> => {
+	const res = await axiosInstance.post(`${BASE_URL}/auth/login/${socialName}`, {
+		code: data.code,
+		userType: data.userType
+	})
+	return res.data.data
+}

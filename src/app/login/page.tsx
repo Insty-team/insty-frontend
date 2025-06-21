@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { IoChevronForward } from "react-icons/io5";
+import { SocialLogin } from "../_components/social";
 
 function Select() {
 	return (

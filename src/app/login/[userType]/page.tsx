@@ -5,18 +5,17 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
-import { SocialLogin } from "@/app/_components/social";
 import { PasswordInput, TextInput } from "@/app/_components/validation";
-import { postLogin } from "@/app/api/backend";
+import { postLogin, getSocialAuthCode } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { LoginForm } from "@/app/types";
 import { emailReg, passwordReg } from "@/app/utils";
-import Swal from "sweetalert2";
 
 function Login() {
-	const params = useParams();
+	const { userType } = useParams();
 	const router = useRouter();
-	const type = params.userType === "creator" ? "크리에이터" : "러너";
+	const type = userType === "creator" ? "크리에이터" : "러너";
+
 	const { setAccessToken, setRefreshToken } = useAuthStore();
 	const { setUser, setUserType } = useUserStore();
 	const {
@@ -30,32 +29,18 @@ function Login() {
 
 	const onSubmit = async (data: LoginForm) => {
 		try {
-			const submitData = {
-				...data,
-				userType: params.userType === "creator" ? "CREATOR" : "LEARNER",
-			};
+			const submitData = { ...data, userType: userType === "creator" ? "CREATOR" : "LEARNER" };
 			const res = await postLogin(submitData);
-
-			if (!res.success) {
-				Swal.fire({
-					title: "로그인 실패",
-					text: res.error.message,
-					icon: "error",
-				});
-				console.log(res.error);
-				return;
-			}
-
-			setAccessToken(res.data.token.accessToken);
-			setRefreshToken(res.data.token.refreshToken);
+			setAccessToken(res.token.accessToken);
+			setRefreshToken(res.token.refreshToken);
 
 			//액세스 토큰으로 나중에 사용자 정보를 조회한다. 이후 값 저장
 			setUser({
-				nickname: res.data.nickname,
-				userType: res.data.userType,
+				nickname: res.nickname,
+				userType: res.userType,
 			});
 
-			if (params.userType === "creator") {
+			if (userType === "creator") {
 				setUserType("CREATOR");
 				router.push("/creator/dashboard");
 			} else {
@@ -67,6 +52,14 @@ function Login() {
 		}
 	};
 
+	// 카카오 로그인
+	const handleKakaoLogin = async () => {
+		const state = userType === "creator" ? "CREATOR" : "LEARNER";
+		const res = await getSocialAuthCode("KAKAO", state);
+		console.log('res', res)
+		window.location.href = res;
+	};
+
 	return (
 		<>
 			<div className="flex flex-col justify-center p-8 w-full">
@@ -75,7 +68,7 @@ function Login() {
 					<p className="mt-12 text-3xl font-semibold"> {type}로 로그인하기</p>
 				</div>
 			</div>
-			<div className="flex items-center justify-center">
+			<div className="flex flex-col items-center justify-center gap-8">
 				<form
 					onSubmit={handleSubmit(onSubmit)}
 					className="w-full max-w-md p-4 flex flex-col items-center space-y-6"
@@ -112,14 +105,13 @@ function Login() {
 					/>
 					<button
 						type="submit"
-						className={`w-full py-3 rounded-xl text-white font-semibold ${
-							!!errors.email ||
+						className={`w-full py-3 rounded-xl text-white font-semibold ${!!errors.email ||
 							!!errors.password ||
 							!getValues("email") ||
 							!getValues("password")
-								? "bg-gray-scale-300 cursor-not-allowed"
-								: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
-						}`}
+							? "bg-gray-scale-300 cursor-not-allowed"
+							: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
+							}`}
 						disabled={
 							!!errors.email ||
 							!!errors.password ||
@@ -139,9 +131,40 @@ function Login() {
 							회원가입
 						</Link>
 					</div>
-
-					<SocialLogin />
 				</form>
+				<div className="text-lg text-black-100 font-semibold">
+					소셜 로그인으로 간편하게 시작하기
+				</div>
+				<div className="flex space-x-4">
+					{/* 나중에 링크 달아놓을 곳 */}
+					{/* <Link href={KAKAO_REDIRECT_URI}> */}
+					<button onClick={() => handleKakaoLogin()}>
+						<Image
+							src="/kakao.svg"
+							alt="kakao"
+							className="rounded-2xl cursor-pointer"
+							width={36}
+							height={36}
+
+						/>
+					</button>
+					{/* </Link> */}
+
+					<Image
+						src="/google.svg"
+						alt="google"
+						className="rounded-2xl cursor-pointer"
+						width={36}
+						height={36}
+					/>
+					<Image
+						src="/naver.svg"
+						alt="naver"
+						className="rounded-2xl cursor-pointer"
+						width={36}
+						height={36}
+					/>
+				</div>
 			</div>
 		</>
 	);
