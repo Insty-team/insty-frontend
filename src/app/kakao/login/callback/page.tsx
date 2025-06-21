@@ -19,13 +19,10 @@ function KaKaoCallback() {
 
   useEffect(() => {
     if (!code || !state) { return }
-    console.log('code', code, 'state', state)
 
     const sendCodeToBackend = async () => {
       try {
         const res = await postSocialLogin('KAKAO', { code: code, userType: state as UserType })
-        console.log('postSocialLogin', res)
-
         setAccessToken(res.token.accessToken)
         setRefreshToken(res.token.refreshToken)
 
@@ -34,7 +31,7 @@ function KaKaoCallback() {
           userType: res.userType
         })
 
-        if (params.userType === "creator") {
+        if (res.userType === "CREATOR") {
           setUserType("CREATOR");
           router.push("/creator/dashboard");
         } else {

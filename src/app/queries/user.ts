@@ -11,7 +11,7 @@ import { useUserStore } from "../stores";
 export const useGetUserProfileInfoQuery = () => {
 	return useQuery({
 		queryKey: ["userProfile"],
-		queryFn: getUserProfileInfo,
+		queryFn: () => getUserProfileInfo(),
 	});
 };
 
@@ -28,13 +28,14 @@ export const usePatchUserEmailAgreeMutation = () => {
 	const [_, setIsAgreeEmail] = useAgreeEmail();
 
 	return useMutation<UserProfileInfoResponse, Error, boolean>({
-	mutationKey: ["userProfile"],
-	mutationFn: (isEmailAgree: boolean) => patchUserEmailAgree(isEmailAgree),
-	onSuccess: (res) => {
-		setIsAgreeEmail(res.isEmailAgreed)
-		queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-	}
-})}
+		mutationKey: ["userProfile"],
+		mutationFn: (isEmailAgree: boolean) => patchUserEmailAgree(isEmailAgree),
+		onSuccess: (res) => {
+			setIsAgreeEmail(res.isEmailAgreed)
+			queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+		}
+	})
+}
 
 // 사용자 타입 변경
 export const usePatchUserTypeMutation = () => {
