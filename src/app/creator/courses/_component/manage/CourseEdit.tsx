@@ -1,6 +1,6 @@
 import { UploadformData } from "@/app/types/course";
 
-import CourseForm from "../common/CourseForm";
+import CourseEditForm from "../common/CourseEditForm";
 import { useGetCourseDetailQuery } from "@/app/queries/course";
 
 function CourseEdit({
@@ -19,7 +19,7 @@ function CourseEdit({
 	};
 
 	return (
-		<CourseForm
+		<CourseEditForm
 			subject="콘텐츠 수정"
 			initialData={courseDetail}
 			onSubmit={handleSubmit}

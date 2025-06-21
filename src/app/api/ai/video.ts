@@ -6,9 +6,10 @@ import { ApiResponse } from "@/app/types/api";
 const BASE_URL = "http://13.125.92.232:8000/api/v1/ai";
 
 const postSuggestMetadata = async (videoUuid: string) => {
+	console.log(videoUuid);
 	try {
 		const res = await axiosInstance.post<ApiResponse<string>>(
-			`${BASE_URL}/video/${videoUuid}/metadata-suggestion`,
+			`${BASE_URL}/videos/${videoUuid}/metadata-suggestion`,
 			{
 				videoUuid,
 			},

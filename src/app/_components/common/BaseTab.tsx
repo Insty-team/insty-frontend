@@ -1,60 +1,42 @@
 "use client";
+import { useRouter, usePathname } from "next/navigation";
 
-import {
-	Tab,
-	TabList,
-	TabPanel,
-	TabPanels,
-	TabProps,
-	Tabs,
-	TabsProps,
-} from "@chakra-ui/react";
-
-type BaseTabItem = {
+export type BaseTabItem = {
 	label: string;
-	content: React.ReactNode;
+	path: string;
 };
 
-interface BaseTabProps extends Omit<TabsProps, "children"> {
+interface BaseTabProps {
 	items: BaseTabItem[];
-	defaultIndex?: number;
-	tabProps?: TabProps;
 }
 
-function BaseTab({ items, defaultIndex = 0, tabProps, ...rest }: BaseTabProps) {
+function BaseTab({ items }: BaseTabProps) {
+	const router = useRouter();
+	const pathname = usePathname();
+
 	return (
-		<Tabs defaultIndex={defaultIndex} {...rest} mt={4}>
-			<TabList borderBottom="none" mb={10}>
-				{items.map((item, idx) => (
-					<Tab
-						cursor="pointer"
-						_active={{ background: "none" }}
-						key={idx}
-						{...tabProps}
-						display="inline-flex"
-						flex="none"
-						borderBottomWidth="2px"
-						borderBottomColor="transparent"
-						_selected={{
-							color: "#479B5D",
-							fontWeight: "bold",
-							borderBottomColor: "#479B5D",
-						}}
-						_hover={{
-							color: "#72C380",
-							fontWeight: "semibold",
-						}}
+		<div className="flex gap-2 mb-10 mt-4">
+			{items.map((tab) => {
+				const isActive = pathname === tab.path;
+				return (
+					<button
+						key={tab.path}
+						onClick={() => router.push(tab.path)}
+						className={`
+  						px-6 py-3
+              cursor-pointer outline-none transition-colors duration-200
+              ${
+								isActive
+									? "text-primary-green-600 font-bold border-b !border-primary-green-600"
+									: "border-transparent hover:text-primary-green-400"
+							}
+            `}
 					>
-						{item.label}
-					</Tab>
-				))}
-			</TabList>
-			<TabPanels>
-				{items.map((item, idx) => (
-					<TabPanel key={idx}>{item.content}</TabPanel>
-				))}
-			</TabPanels>
-		</Tabs>
+						{tab.label}
+					</button>
+				);
+			})}
+		</div>
 	);
 }
 

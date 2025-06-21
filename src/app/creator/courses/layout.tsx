@@ -1,7 +1,4 @@
 "use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import BaseTab from "@/app/_components/common/BaseTab";
 
 const tabItems = [
@@ -10,10 +7,15 @@ const tabItems = [
 	{ label: "수익 확인하기", path: "/creator/courses/my-revenue" },
 ];
 
-export default function CoursesPage() {
-	const router = useRouter();
-	useEffect(() => {
-		router.replace("/creator/courses/course-management");
-	}, [router]);
-	return null;
+export default function CoursesLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
+	return (
+		<div>
+			<BaseTab items={tabItems} />
+			{children}
+		</div>
+	);
 }

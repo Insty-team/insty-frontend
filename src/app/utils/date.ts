@@ -30,9 +30,23 @@ type DateFormatType =
 
 const getFormattedDate = (
 	date: string,
-	type: DateFormatType = "YYYY. MM. DD"
+	type: DateFormatType = "YYYY. MM. DD",
 ) => {
 	return dayjs(date).format(type);
 };
 
-export { getLabels, getFormattedDate };
+const formatTime = (seconds: number): string => {
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	const secs = Math.floor(seconds % 60);
+
+	if (hours > 0) {
+		return `${hours}시간 ${minutes}분 ${secs}초`;
+	} else if (minutes > 0) {
+		return `${minutes}분 ${secs}초`;
+	} else {
+		return `${secs}초`;
+	}
+};
+
+export { getLabels, getFormattedDate, formatTime };
