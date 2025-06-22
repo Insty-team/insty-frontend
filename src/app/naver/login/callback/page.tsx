@@ -7,7 +7,7 @@ import { postSocialLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { UserType } from "@/app/types";
 
-function NaverCallback() {
+function NaverCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,11 +52,13 @@ function NaverCallback() {
     sendCodeToBackend();
   }, [code, router]);
 
+  return <div>네이버 로그인 중...</div>;
+}
+
+export default function Page() {
   return (
     <Suspense fallback={<div>네이버 로그인 중...</div>}>
-      <div>네이버 로그인 중...</div>
+      <NaverCallbackClient />
     </Suspense>
   );
 }
-
-export default NaverCallback;

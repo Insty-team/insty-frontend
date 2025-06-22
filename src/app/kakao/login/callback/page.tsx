@@ -7,7 +7,7 @@ import { postSocialLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { UserType } from "@/app/types";
 
-function KaKaoCallback() {
+function KaKaoCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,11 +52,13 @@ function KaKaoCallback() {
     sendCodeToBackend();
   }, [code, router]);
 
+  return <div>카카오 로그인 중...</div>;
+}
+
+export default function Page() {
   return (
     <Suspense fallback={<div>카카오 로그인 중...</div>}>
-      <div>카카오 로그인 중...</div>
+      <KaKaoCallbackClient />
     </Suspense>
   );
 }
-
-export default KaKaoCallback;

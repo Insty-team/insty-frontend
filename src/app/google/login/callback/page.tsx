@@ -7,7 +7,7 @@ import { postSocialLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { UserType } from "@/app/types";
 
-function GoogleCallback() {
+function GoogleCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,11 +52,13 @@ function GoogleCallback() {
     sendCodeToBackend();
   }, [code, router]);
 
+  return <div>구글 로그인 중...</div>;
+}
+
+export default function Page() {
   return (
     <Suspense fallback={<div>구글 로그인 중...</div>}>
-      <div>구글 로그인 중...</div>
+      <GoogleCallbackClient />
     </Suspense>
   );
 }
-
-export default GoogleCallback;
