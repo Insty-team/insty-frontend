@@ -1,15 +1,15 @@
-import { LoginForm, LoginResponse } from "@/app/types/index.d";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import axiosInstance from "../interceptor";
-import { ApiResponse } from "@/app/types/api";
+
+import { LoginForm, LoginResponse } from "@/app/types/index.d";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
-const postLogin = async (data: LoginForm) => {
+export const postLogin = async (data: LoginForm): Promise<AxiosResponse<LoginResponse>> => {
 	try {
 		//테스트 코드 추가
 		console.log(BASE_URL);
-		const res = await axios.post<ApiResponse<LoginResponse>>(
+		const res = await axios.post(
 			`${BASE_URL}/auth/login`,
 			data,
 		);
@@ -18,14 +18,20 @@ const postLogin = async (data: LoginForm) => {
 		if (axios.isAxiosError(error) && error.response) {
 			return error.response.data;
 		}
-
 		throw new Error("서버와 통신 불가");
 	}
 };
 
-const postLogout = async () => {
+export const postLogout = async () => {
 	const res = await axiosInstance.post(`${BASE_URL}/auth/logout`);
 	return res.data.data;
 };
 
-export { postLogin, postLogout };
+export const postReissueToken = async (refreshToken: string): Promise<LoginResponse> => {
+	const res = await axiosInstance.post(`${BASE_URL}/auth/reissue`, {}, {
+		headers: {
+			Authorization: `Bearer ${refreshToken}`
+		}
+	})
+	return res.data.data;
+}

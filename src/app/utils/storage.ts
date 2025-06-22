@@ -18,6 +18,11 @@ export const getAccessToken = () => {
 	return localStorage.getItem(INSTY_ACCESS_TOKEN_KEY);
 };
 
+export const setAccessToken = (token: string) => {
+	if (typeof window === "undefined") return null;
+	localStorage.setItem(INSTY_ACCESS_TOKEN_KEY, token)
+}
+
 /**
  * Refresh Token 관련 hook
  */
@@ -31,11 +36,11 @@ export const getRefreshToken = () => {
  * @returns [value, setValue]
  */
 export const useAgreeEmail = () => {
-  const [isAgreeEmail, setIsAgreeEmail] = useLocalStorage<boolean>(
-    INSTY_RECEIVE_EMAIL_KEY,
-    false
-  );
+	const [isAgreeEmail, setIsAgreeEmail] = useLocalStorage<boolean>(
+		INSTY_RECEIVE_EMAIL_KEY,
+		false
+	);
 
-  return [isAgreeEmail, setIsAgreeEmail] as const;
+	return [isAgreeEmail, setIsAgreeEmail] as const;
 };
 

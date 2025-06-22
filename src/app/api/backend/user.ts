@@ -1,18 +1,13 @@
 import axios from "axios";
 
-import {
-	ChangeProfileForm,
-	SignupForm,
-	UserProfileInfoResponse,
-	UserType,
-} from "@/app/types/index.d";
+import { SocialLogin, LoginResponse, SignupForm, UserProfileInfoResponse, UserType } from "@/app/types";
 
 import axiosInstance from "../interceptor";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
 // 닉네임 중복 체크
-const getNicknameCheck = async (nickname: string) => {
+export const getNicknameCheck = async (nickname: string) => {
 	const res = await axios.get(`${BASE_URL}/users/nickname/check`, {
 		params: {
 			nickname,
@@ -23,7 +18,7 @@ const getNicknameCheck = async (nickname: string) => {
 };
 
 // 이메일 중복 체크
-const getEmailCheck = async (email: string) => {
+export const getEmailCheck = async (email: string) => {
 	const res = await axios.get(`${BASE_URL}/users/email/check`, {
 		params: {
 			email,
@@ -34,20 +29,19 @@ const getEmailCheck = async (email: string) => {
 };
 
 // 회원 가입
-const postSignup = async (data: SignupForm) => {
+export const postSignup = async (data: SignupForm) => {
 	const res = await axios.post(`${BASE_URL}/users`, data);
-
 	return res.data.data;
 };
 
 //사용자 프로필 조회
-const getUserProfileInfo = async (): Promise<UserProfileInfoResponse> => {
+export const getUserProfileInfo = async (): Promise<UserProfileInfoResponse> => {
 	const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
 	return res.data.data;
 };
 
 // 사용자 프로필 정보 수정
-const putUserProfileInfoEdit = async (
+export const putUserProfileInfoEdit = async (
 	data: FormData,
 ): Promise<UserProfileInfoResponse> => {
 	const res = await axiosInstance.put(`${BASE_URL}/users/profile/me`, data, {
@@ -57,20 +51,15 @@ const putUserProfileInfoEdit = async (
 };
 
 // 사용자 이메일 수신 동의 상태값 변경
-const patchUserEmailAgree = async (
-	isEmailAgree: boolean,
-): Promise<UserProfileInfoResponse> => {
-	const res = await axiosInstance.patch(
-		`${BASE_URL}/users/profile/email-agree`,
-		{
-			isEmailAgree,
-		},
-	);
+export const patchUserEmailAgree = async (isEmailAgree: boolean): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/email-agree`, {
+		isEmailAgree
+	});
 	return res.data.data;
-};
+}
 
 // 사용자 타입 변경
-const patchUserType = async (
+export const patchUserType = async (
 	userType: UserType,
 ): Promise<UserProfileInfoResponse> => {
 	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/userType`, {
@@ -79,12 +68,22 @@ const patchUserType = async (
 	return res.data.data;
 };
 
-export {
-	getNicknameCheck,
-	getEmailCheck,
-	postSignup,
-	getUserProfileInfo,
-	putUserProfileInfoEdit,
-	patchUserEmailAgree,
-	patchUserType,
-};
+/**
+ * OAuth 로그인
+ * (현재는 카카오/네이버만 가능합니다.)
+ */
+export const getSocialAuthCode = async (socialName: SocialLogin, userType: UserType) => {
+	const res = await axios.get(`${BASE_URL}/auth/login/authorize/${socialName}?state=${userType}`)
+	return res.data.data
+}
+
+export const postSocialLogin = async (socialName: SocialLogin, data: {
+	code: string
+	userType: UserType
+}): Promise<LoginResponse> => {
+	const res = await axiosInstance.post(`${BASE_URL}/auth/login/${socialName}`, {
+		code: data.code,
+		userType: data.userType
+	})
+	return res.data.data
+}
