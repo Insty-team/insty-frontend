@@ -1,5 +1,5 @@
 function CreatorCommunity() {
-	return <div>Community</div>;
+  return <div>Community</div>;
 }
 
 export default CreatorCommunity;

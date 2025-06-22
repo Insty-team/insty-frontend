@@ -5,106 +5,106 @@
 export type UserType = "LEARNER" | "CREATOR";
 
 export type UserInfo = {
-	nickname: string;
-	userType: string;
-	introduce?: string;
+  nickname: string;
+  userType: string;
+  introduce?: string;
 };
 
 export type UserProfileInfoResponse = {
-	id: number;
-	email: string;
-	nickname: string;
-	isEmailAgreed: boolean;
-	thumbnailUrl: string;
-	introduce: string;
-	userType: string;
-	createdAt?: string;
+  id: number;
+  email: string;
+  nickname: string;
+  isEmailAgreed: boolean;
+  thumbnailUrl: string;
+  introduce: string;
+  userType: string;
+  createdAt?: string;
 };
 
 export type ChangeProfileForm = {
-	email: string;
-	password: string;
-	nickname: string;
-	introduce: string;
+  email: string;
+  password: string;
+  nickname: string;
+  introduce: string;
 };
 
 //2. 로그인/회원가입/토큰/로그아웃
 export type LoginForm = {
-	email: string;
-	password: string;
-	userType: string;
+  email: string;
+  password: string;
+  userType: string;
 };
 
 export type LoginResponse = {
-	id: number;
-	nickname: string;
-	userType: UserType;
-	token: Token;
+  id: number;
+  nickname: string;
+  userType: UserType;
+  token: Token;
 };
 
 export type Token = {
-	accessToken: string;
-	refreshToken: string;
-	accessTokenExpiresAt: string;
-	refreshTokenExpiresAt: string;
-	tokenType: string;
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiresAt: string;
+  refreshTokenExpiresAt: string;
+  tokenType: string;
 };
 
-export type SocialLogin = 'KAKAO' | 'NAVER' | 'GOOGLE'
+export type SocialLogin = "KAKAO" | "NAVER" | "GOOGLE";
 
 export type SignupForm = {
-	nickname: string;
-	email: string;
-	password: string;
-	confirmPassword?: string;
+  nickname: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
 };
 
 // 닉네임 or 이메일 입력
 export type TextInputProps<TFieldValues> = {
-	label: string;
-	name: Path<TFieldValues>;
-	type?: string;
-	placeholder?: string;
-	register: UseFormRegister<TFieldValues>;
-	validation?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
-	error?: FieldError;
-	checkDuplication?: React.ReactNode;
+  label: string;
+  name: Path<TFieldValues>;
+  type?: string;
+  placeholder?: string;
+  register: UseFormRegister<TFieldValues>;
+  validation?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
+  error?: FieldError;
+  checkDuplication?: React.ReactNode;
 };
 
 // 비밀번호 입력
 export type PasswordInputProps<TFieldValues> = {
-	label: string;
-	name: Path<TFieldValues>;
-	placeholder?: string;
-	register: UseFormRegister<TFieldValues>;
-	validation?: RegisterOptions<TfieldValues, Path<TFieldValues>>;
-	error?: FieldError;
+  label: string;
+  name: Path<TFieldValues>;
+  placeholder?: string;
+  register: UseFormRegister<TFieldValues>;
+  validation?: RegisterOptions<TfieldValues, Path<TFieldValues>>;
+  error?: FieldError;
 };
 
 // 비밀번호 확인 폼
 export type PasswordConfirmInputProps<TFieldValues> = {
-	label: string;
-	name: Path<TFieldValues>;
-	placeholder?: string;
-	confirmPasswordName: string;
-	register: UseFormRegister<TFieldValues>;
-	validation?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
-	error?: FieldError;
+  label: string;
+  name: Path<TFieldValues>;
+  placeholder?: string;
+  confirmPasswordName: string;
+  register: UseFormRegister<TFieldValues>;
+  validation?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
+  error?: FieldError;
 };
 
 /**
  * 3. 차트
  */
 export type ChartData = {
-	name: string;
-	fullLabel?: string;
-	value: number;
+  name: string;
+  fullLabel?: string;
+  value: number;
 };
 
 export type CommonLineChartProps = {
-	data: ChartData[];
-	yAxisLabel?: string;
-	tooltipLabel?: string;
-	tooltipUnit?: string;
-	height?: number;
+  data: ChartData[];
+  yAxisLabel?: string;
+  tooltipLabel?: string;
+  tooltipUnit?: string;
+  height?: number;
 };

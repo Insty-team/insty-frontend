@@ -38,8 +38,9 @@ function BaseDropdown({
               e.preventDefault();
               onClick?.();
             }}
-            className={`px-2.5 py-2 mx-2.5 my-2 text-sm cursor-pointer rounded-[8px] hover:bg-[#F0F0F0] ${danger ? "text-red-500" : "text-gray-900"
-              }`}
+            className={`px-2.5 py-2 mx-2.5 my-2 text-sm cursor-pointer rounded-[8px] hover:bg-[#F0F0F0] ${
+              danger ? "text-red-500" : "text-gray-900"
+            }`}
           >
             {label}
           </DropdownMenu.Item>
