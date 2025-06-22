@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 import { postSocialLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
@@ -52,7 +52,11 @@ function KaKaoCallback() {
     sendCodeToBackend();
   }, [code, router]);
 
-  return <>카카오 로그인 중...</>;
+  return (
+    <Suspense fallback={<div>카카오 로그인 중...</div>}>
+      <div>카카오 로그인 중...</div>
+    </Suspense>
+  );
 }
 
 export default KaKaoCallback;
