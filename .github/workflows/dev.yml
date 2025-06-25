@@ -28,9 +28,17 @@ jobs:
           username: ${{ env.ACTOR }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      - name: Load .env from secrets
+        run: |
+          echo "${{ secrets.DEV_APPLICATION_ENV }}" | base64 --decode > .env
+
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_NAME }}:latest .
+          export $(cat .env | grep -v '^\s*$' | grep -v '^#' | xargs)
+          BUILD_ARGS=$(cat .env | grep -v '^#' | xargs -n1 | sed 's/^/--build-arg /' | xargs)
+          echo "Build args: $BUILD_ARGS"
+          
+          docker build $BUILD_ARGS -t ${{ env.DOCKER_IMAGE_NAME }}:latest .
           docker push ${{ env.DOCKER_IMAGE_NAME }}:latest
 
   deploy:
@@ -43,7 +51,6 @@ jobs:
 
       - name: Add Private Files
         run: |
-          echo "${{ secrets.DEV_APPLICATION_ENV }}" | base64 --decode > .env
           echo "${{ secrets.DEV_DOCKER_COMPOSE }}" | base64 --decode > docker-compose.yml
 
       - name: Pull latest image and restart via Docker Compose
