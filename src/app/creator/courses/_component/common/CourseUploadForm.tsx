@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { BsStars } from "react-icons/bs";
+import { FaRegFile } from "react-icons/fa6";
+import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
 import { TiDelete } from "react-icons/ti";
 
 import { BaseButton } from "@/app/_components/common";
@@ -11,23 +14,25 @@ import { FaRegFile } from "react-icons/fa6";
 import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { postSuggestMetadata } from "@/app/api/ai";
-import { useCourseForm } from "../../../../hooks/useCourseForm";
+import { postCourseVideo } from "@/app/api/backend";
+import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
+import { UploadformData } from "@/app/types/course";
+
+import { useCourseForm } from "../../../../hooks/useCourseForm";
 
 interface CourseUploadFormProps {
-	subject: string;
-	initialData?: UploadformData;
-	onSubmit: (formData: UploadformData) => void;
-	onBack: () => void;
+  subject: string;
+  initialData?: UploadformData;
+  onSubmit: (formData: UploadformData) => void;
+  onBack?: () => void;
 }
 
 const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
-	subject,
-	initialData,
-	onSubmit,
-	onBack,
+  subject,
+  initialData,
+  onSubmit,
 }) => {
 	const router = useRouter();
 	const { data, setData, reset } = useVideoUploadStore();

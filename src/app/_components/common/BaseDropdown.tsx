@@ -10,20 +10,26 @@ type DropdownItem = {
 };
 
 type BaseDropdownProps = {
+  isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
   trigger: ReactNode;
   items: DropdownItem[];
 };
 
-function BaseDropdown({ trigger, items }: BaseDropdownProps) {
+function BaseDropdown({
+  isOpen,
+  setIsOpen,
+  trigger,
+  items,
+}: BaseDropdownProps) {
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        {trigger}
-      </DropdownMenu.Trigger>
+    <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenu.Trigger asChild>{trigger}</DropdownMenu.Trigger>
 
       <DropdownMenu.Content
         sideOffset={8}
-        className="z-50 min-w-[160px] rounded-md border bg-white shadow-md p-1"
+        className="z-50 min-w-[160px] rounded-[8px] border bg-white"
+        style={{ boxShadow: "0px 0px 10px 0px rgba(31, 31, 31, 0.15)" }}
       >
         {items.map(({ label, onClick, danger }, idx) => (
           <DropdownMenu.Item
@@ -32,7 +38,7 @@ function BaseDropdown({ trigger, items }: BaseDropdownProps) {
               e.preventDefault();
               onClick?.();
             }}
-            className={`px-3 py-2 text-sm cursor-pointer rounded hover:bg-gray-100 ${
+            className={`px-2.5 py-2 mx-2.5 my-2 text-sm cursor-pointer rounded-[8px] hover:bg-[#F0F0F0] ${
               danger ? "text-red-500" : "text-gray-900"
             }`}
           >

@@ -96,17 +96,18 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							</div>
 							<div
 								className={`text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200
+
 								${
-									msg.type === "user"
-										? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
-										: "bg-white rounded-tr-2xl rounded-tl-md"
-								}
+                  msg.type === "user"
+                    ? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
+                    : "bg-white rounded-tr-2xl rounded-tl-md"
+                }
 							`}
-							>
-								{msg.text}
-							</div>
-						</div>
-					))}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
 
 					{recommendations.length > 0 && (
 						<div className="flex gap-3 mt-10">

@@ -6,10 +6,10 @@ import CreatorHeader from "./CreatorHeader";
 import LearnerHeader from "./LearnerHeader";
 
 export {
-	BaseButton,
-	BaseSearchBar,
-	BaseTab,
-	CommunityVideo,
-	CreatorHeader,
-	LearnerHeader,
+  BaseButton,
+  BaseSearchBar,
+  BaseTab,
+  CommunityVideo,
+  CreatorHeader,
+  LearnerHeader,
 };

@@ -1,13 +1,13 @@
-name: Insty 프론트엔드 CI/CD 파이프라인
+name: Insty(운영) 프론트엔드 CI/CD 파이프라인
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 env:
   ACTOR: ajroot5685
-  DOCKER_IMAGE_NAME: ghcr.io/ajroot5685/insty-frontend
+  DOCKER_IMAGE_NAME: ghcr.io/ajroot5685/insty-prod-frontend
 
 permissions:
   contents: read
@@ -26,14 +26,23 @@ jobs:
           username: ${{ env.ACTOR }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+
+      - name: Load .env from secrets
+        run: |
+          echo "${{ secrets.PROD_APPLICATION_ENV }}" | base64 --decode > .env
+
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_NAME }}:latest .
+          export $(cat .env | grep -v '^\s*$' | grep -v '^#' | xargs)
+          BUILD_ARGS=$(cat .env | grep -v '^#' | xargs -n1 | sed 's/^/--build-arg /' | xargs)
+          echo "Build args: $BUILD_ARGS"
+
+          docker build $BUILD_ARGS -t ${{ env.DOCKER_IMAGE_NAME }}:latest .
           docker push ${{ env.DOCKER_IMAGE_NAME }}:latest
 
   deploy:
     needs: build
-    runs-on: [ self-hosted, insty-dev ]
+    runs-on: [ self-hosted, insty-prod ]
 
     steps:
       - name: Login to GitHub Container Registry
@@ -41,35 +50,15 @@ jobs:
 
       - name: Add Private Files
         run: |
-          echo "${{ secrets.DEV_APPLICATION_ENV }}" | base64 --decode > .env
-          echo "${{ secrets.DEV_DOCKER_COMPOSE }}" | base64 --decode > docker-compose.yml
+          echo "${{ secrets.PROD_DOCKER_COMPOSE }}" | base64 --decode > docker-compose.yml
 
-      - name: Pull latest image and restart via Docker Compose
-        run: |
-          docker-compose pull
-          docker-compose down
-          docker-compose up -d
+      - name: Run Deployment Script
+        run: ../deploy.sh
 
       - name: Cleanup Docker and Cache
         run: |
           docker system prune -af --volumes
 #          rm -rf ~/.npm/_cacache
-
-      - name: Check ping
-        run: |
-          for i in {1..20}; do
-            RESPONSE=$(curl -s localhost:3000 || true)
-          
-            if echo "$RESPONSE" | head -c 50 | grep -q "<!DOCTYPE html>"; then
-              echo "✅ 애플리케이션 실행 완료"
-              exit 0
-            fi
-          
-            sleep 3
-          done
-          
-          echo "❌ 애플리케이션 실행 실패"
-          exit 1
 
   notify-success:
     needs:
@@ -83,7 +72,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: success
-          author_name: 프론트엔드-개발 파이프라인
+          author_name: 프론트엔드-운영 파이프라인
           fields: commit,author,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -100,7 +89,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: failure
-          author_name: 프론트엔드-개발 파이프라인
+          author_name: 프론트엔드-운영 파이프라인
           fields: commit,author,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
