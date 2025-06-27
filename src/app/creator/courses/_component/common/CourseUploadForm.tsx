@@ -8,7 +8,7 @@ import { BaseButton } from "@/app/_components/common";
 import { AllowedFileType, UploadformData } from "@/app/types/course";
 import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
 import { FaRegFile } from "react-icons/fa6";
-import { postCourseVideo } from "@/app/api/backend";
+import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
@@ -30,7 +30,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	onBack,
 }) => {
 	const router = useRouter();
-	const { data, setData } = useVideoUploadStore();
+	const { data, setData, reset } = useVideoUploadStore();
 
 	// store에 데이터가 있으면 그것을 우선 사용, 없으면 initialData 사용
 	const effectiveInitialData = data || initialData;
@@ -189,8 +189,15 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				contentType: file.type,
 			};
 			const res = await postCourseVideo(videoInfo);
-			console.log(res.data.uuid);
+			console.log(res);
 			setVideoUuid(res.data.uuid);
+			try {
+				const response = await putCourseVideoUpload(res.data.uploadUrl, file);
+				console.log(response, "비디오 업로드요청 성공");
+			}
+			catch(error){
+				console.log(error);
+			}
 		} catch (error) {
 			console.log(error);
 		}
@@ -231,6 +238,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 		setData(formData);
 		onSubmit(formData);
+		reset();
 	};
 
 	const handleSuggestMetadata = async () => {
@@ -240,7 +248,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		}
 		try {
 			const res = await postSuggestMetadata(videoUuid);
-			console.log(res.data);
+			console.log(res);
 		} catch (error) {
 			console.log(error);
 		}

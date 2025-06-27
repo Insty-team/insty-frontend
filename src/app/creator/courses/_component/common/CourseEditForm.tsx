@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useCourseForm } from "../../../../hooks/useCourseForm";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
+import { postSuggestTitle } from "@/app/api/ai/video";
 
 const CourseEditForm: React.FC<CourseFormProps> = ({
 	subject,
@@ -153,6 +154,21 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			setExistingPracticeFiles((prev) => prev.filter((_, i) => i !== index));
 		} else {
 			setPracticeFiles((prev) => prev.filter((_, i) => i !== index));
+		}
+	};
+
+	const handleSuggestTitle = async () => {
+		try {
+			if(initialData?.videoInfo.videoUuid){
+				console.log(initialData?.videoInfo.videoUuid, title);
+				const res = await postSuggestTitle(initialData?.videoInfo.videoUuid, title);
+				console.log(res);
+			}
+			else {
+				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	};
 
@@ -336,9 +352,10 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 							/>
 							<button
 								type="button"
-								className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
+								className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md cursor-pointer"
+								onClick={handleSuggestTitle}
 							>
-								AI에게 추천받기
+								AI에게 추천받기에용
 							</button>
 						</div>
 					</div>

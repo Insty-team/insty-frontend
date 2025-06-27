@@ -27,4 +27,17 @@ const postCourseVideo = async (videoInfo: VideoType) => {
 	}
 };
 
-export { postCourseVideo };
+const putCourseVideoUpload = async (videoUrl: string, file: File) => {
+	const s3AxiosInstance = axios.create({
+		withCredentials: false,
+	});
+	
+	const res = await s3AxiosInstance.put(videoUrl, file, {
+		headers: {
+			'Content-Type': file.type,
+		},
+	});
+	return res.data;
+}
+
+export { postCourseVideo, putCourseVideoUpload };
