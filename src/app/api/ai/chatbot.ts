@@ -1,7 +1,9 @@
-import { ApiResponse } from "@/app/types/api";
-import axiosInstance from "../interceptor";
 import axios from "axios";
+
+import { ApiResponse } from "@/app/types/api";
 import { RecommendMessage } from "@/app/types/recommend";
+
+import axiosInstance from "../interceptor";
 
 // AI 챗봇 관련 API
 const AI_BASE_URL = "http://13.125.92.232:8000/api/v1/ai";
@@ -38,4 +40,4 @@ const getAiSearchReccomend = async () => {
 		throw new Error("서버와 통신 불가");
 	}
 };
-export { postAiSearchRecommend, getAiSearchReccomend };
+export { getAiSearchReccomend, postAiSearchRecommend };

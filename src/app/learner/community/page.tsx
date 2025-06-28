@@ -12,11 +12,11 @@ import CommunityTab from "./_components/CommunityTab";
 // ];
 
 function Community() {
-  return (
-    <div className="flex flex-col mt-16">
-      <CommunityTab />
-    </div>
-  );
+	return (
+		<div className="flex flex-col mt-16">
+			<CommunityTab />
+		</div>
+	);
 }
 
 export default Community;

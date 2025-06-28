@@ -6,16 +6,11 @@ import { BsStars } from "react-icons/bs";
 import { FaRegFile } from "react-icons/fa6";
 import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
 import { TiDelete } from "react-icons/ti";
+import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
-import { AllowedFileType, UploadformData } from "@/app/types/course";
-import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
-import { FaRegFile } from "react-icons/fa6";
-import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { postSuggestMetadata } from "@/app/api/ai";
-import { postCourseVideo } from "@/app/api/backend";
+import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UploadformData } from "@/app/types/course";
@@ -23,19 +18,18 @@ import { UploadformData } from "@/app/types/course";
 import { useCourseForm } from "../../../../hooks/useCourseForm";
 
 interface CourseUploadFormProps {
-  subject: string;
-  initialData?: UploadformData;
-  onSubmit: (formData: UploadformData) => void;
-  onBack?: () => void;
+	subject: string;
+	initialData?: UploadformData;
+	onSubmit: (formData: UploadformData) => void;
+	onBack?: () => void;
 }
 
 const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
-  subject,
-  initialData,
-  onSubmit,
+	subject,
+	initialData,
+	onSubmit,
 }) => {
-	const router = useRouter();
-	const { data, setData, reset } = useVideoUploadStore();
+	const { data, setData } = useVideoUploadStore();
 
 	// store에 데이터가 있으면 그것을 우선 사용, 없으면 initialData 사용
 	const effectiveInitialData = data || initialData;
@@ -199,8 +193,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			try {
 				const response = await putCourseVideoUpload(res.data.uploadUrl, file);
 				console.log(response, "비디오 업로드요청 성공");
-			}
-			catch(error){
+			} catch (error) {
 				console.log(error);
 			}
 		} catch (error) {
@@ -243,7 +236,6 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 		setData(formData);
 		onSubmit(formData);
-		reset();
 	};
 
 	const handleSuggestMetadata = async () => {
@@ -253,7 +245,21 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		}
 		try {
 			const res = await postSuggestMetadata(videoUuid);
-			console.log(res);
+			if (res && res.data) {
+				setTitle(res.data.title);
+				setDescription(res.data.description);
+				setTargetAudience(res.data.target);
+				setPrice(Number(res.data.price.replace(/[^0-9,]/g, "")));
+				setTags(res.data.tags);
+			} else {
+				Swal.fire({
+					title: `${res.error.code}`,
+					text: `${res.error.message}`,
+					icon: "error",
+				}).then(() => {
+					return;
+				});
+			}
 		} catch (error) {
 			console.log(error);
 		}

@@ -11,8 +11,8 @@ import Swal from "sweetalert2";
 import { postLogout } from "@/app/api/backend/auth";
 import { CREATOR_MENU_LIST } from "@/app/constants";
 import {
-  useGetUserProfileInfoQuery,
-  usePatchUserTypeMutation,
+	useGetUserProfileInfoQuery,
+	usePatchUserTypeMutation,
 } from "@/app/queries";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { removeAccessToken } from "@/app/utils";
@@ -20,35 +20,35 @@ import { removeAccessToken } from "@/app/utils";
 import BaseDropdown from "./BaseDropdown";
 
 function CreatorHeader() {
-  const pathname = usePathname();
-  const router = useRouter();
+	const pathname = usePathname();
+	const router = useRouter();
 
-  // 드롭다운 메뉴 핸들링
-  const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
+	// 드롭다운 메뉴 핸들링
+	const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
 
   const { user, setUserType, resetUser } = useUserStore();
   const { resetAccessToken } = useAuthStore();
 
-  const { data: userInfo } = useGetUserProfileInfoQuery();
-  const { mutate: patchUserType } = usePatchUserTypeMutation();
-  const isLearner = user.userType === "LEARNER";
+	const { data: userInfo } = useGetUserProfileInfoQuery();
+	const { mutate: patchUserType } = usePatchUserTypeMutation();
+	const isLearner = user.userType === "LEARNER";
 
-  const dashboard = CREATOR_MENU_LIST[0];
-  const mypage = CREATOR_MENU_LIST[2];
+	const dashboard = CREATOR_MENU_LIST[0];
+	const mypage = CREATOR_MENU_LIST[2];
 
-  const changeUserType = () => {
-    const typeToChange = isLearner ? "CREATOR" : "LEARNER";
-    patchUserType(typeToChange, {
-      onSuccess: (res) => {
-        setUserType(res.userType);
-        if (res.userType === "LEARNER") {
-          router.replace("/learner/recommend");
-        } else {
-          router.replace("/creator/dashboard");
-        }
-      },
-    });
-  };
+	const changeUserType = () => {
+		const typeToChange = isLearner ? "CREATOR" : "LEARNER";
+		patchUserType(typeToChange, {
+			onSuccess: (res) => {
+				setUserType(res.userType);
+				if (res.userType === "LEARNER") {
+					router.replace("/learner/recommend");
+				} else {
+					router.replace("/creator/dashboard");
+				}
+			},
+		});
+	};
 
   const handleLogout = async () => {
     Swal.fire({
@@ -74,73 +74,73 @@ function CreatorHeader() {
     });
   };
 
-  return (
-    <div className="flex justify-between items-center">
-      <div className="w-[1400px] h-[88px] flex justify-between">
-        <div className="flex gap-20">
-          <Link
-            href={dashboard.path}
-            className="flex justify-center items-center"
-          >
-            <Image
-              className="object-contain"
-              src="/insty.png"
-              alt="logo"
-              width={72}
-              height={63}
-            />
-          </Link>
-          <div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
-            {CREATOR_MENU_LIST.map((menu) => (
-              <Link
-                href={`${menu.path}`}
-                key={menu.id}
-                className="cursor-pointer hover:text-primary-green-500"
-              >
-                <span
-                  className={
-                    pathname.includes(menu.path) ? "text-primary-green-600" : ""
-                  }
-                >
-                  {menu.title}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div className="flex gap-8 justify-end items-center">
-          <GoBellFill className="cursor-pointer size-8 text-gray-300" />
-          <Link href={mypage.path} key={mypage.id}>
-            <FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
-          </Link>
-          <BaseDropdown
-            isOpen={isDropdownMenuOpen}
-            setIsOpen={setIsDropdownMenuOpen}
-            trigger={
-              <button className="--text-2lg font-medium cursor-pointer">
-                <div className="flex gap-2 items-center justify-center">
-                  <span>{userInfo?.nickname}</span>
-                  {isDropdownMenuOpen ? (
-                    <GoChevronUp size={20} />
-                  ) : (
-                    <GoChevronDown size={20} />
-                  )}
-                </div>
-              </button>
-            }
-            items={[
-              { label: "🔄 러너로 전환", onClick: () => changeUserType() },
-              {
-                label: "🚪 로그아웃",
-                onClick: () => handleLogout(),
-                danger: true,
-              },
-            ]}
-          />
-        </div>
-      </div>
-    </div>
-  );
+	return (
+		<div className="flex justify-between items-center">
+			<div className="w-[1400px] h-[88px] flex justify-between">
+				<div className="flex gap-20">
+					<Link
+						href={dashboard.path}
+						className="flex justify-center items-center"
+					>
+						<Image
+							className="object-contain"
+							src="/insty.png"
+							alt="logo"
+							width={72}
+							height={63}
+						/>
+					</Link>
+					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
+						{CREATOR_MENU_LIST.map((menu) => (
+							<Link
+								href={`${menu.path}`}
+								key={menu.id}
+								className="cursor-pointer hover:text-primary-green-500"
+							>
+								<span
+									className={
+										pathname.includes(menu.path) ? "text-primary-green-600" : ""
+									}
+								>
+									{menu.title}
+								</span>
+							</Link>
+						))}
+					</div>
+				</div>
+				<div className="flex gap-8 justify-end items-center">
+					<GoBellFill className="cursor-pointer size-8 text-gray-300" />
+					<Link href={mypage.path} key={mypage.id}>
+						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
+					</Link>
+					<BaseDropdown
+						isOpen={isDropdownMenuOpen}
+						setIsOpen={setIsDropdownMenuOpen}
+						trigger={
+							<button className="--text-2lg font-medium cursor-pointer">
+								<div className="flex gap-2 items-center justify-center">
+									<span>{userInfo?.nickname}</span>
+									{isDropdownMenuOpen ? (
+										<GoChevronUp size={20} />
+									) : (
+										<GoChevronDown size={20} />
+									)}
+								</div>
+							</button>
+						}
+						items={[
+							{ label: "🔄 러너로 전환", onClick: () => changeUserType() },
+							{
+								label: "🚪 로그아웃",
+								onClick: () => handleLogout(),
+								danger: true,
+							},
+						]}
+					/>
+				</div>
+			</div>
+		</div>
+	);
 }
 
 export default CreatorHeader;

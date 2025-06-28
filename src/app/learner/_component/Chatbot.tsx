@@ -1,9 +1,10 @@
 "use client";
-import { postAiSearchRecommend } from "@/app/api/ai";
-import { CourseRecommend } from "@/app/types/recommend";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+
+import { postAiSearchRecommend } from "@/app/api/ai";
+import { CourseRecommend } from "@/app/types/recommend";
 
 function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	const [messages, setMessages] = useState<
@@ -98,20 +99,20 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 								className={`text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200
 
 								${
-                  msg.type === "user"
-                    ? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
-                    : "bg-white rounded-tr-2xl rounded-tl-md"
-                }
+									msg.type === "user"
+										? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
+										: "bg-white rounded-tr-2xl rounded-tl-md"
+								}
 							`}
-              >
-                {msg.text}
-              </div>
-            </div>
-          ))}
+							>
+								{msg.text}
+							</div>
+						</div>
+					))}
 
 					{recommendations.length > 0 && (
 						<div className="flex gap-3 mt-10">
-							{recommendations.map((course, idx) => (
+							{recommendations.map((course) => (
 								<Link
 									key={course.course_id}
 									href={`/learner/recommend/course/${course.course_id}`}

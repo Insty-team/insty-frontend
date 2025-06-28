@@ -8,57 +8,57 @@ import { useAuthStore, useUserStore } from "@/app/stores";
 import { UserType } from "@/app/types";
 
 function KaKaoCallbackClient() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+	const router = useRouter();
+	const searchParams = useSearchParams();
 
-  const code = searchParams.get("code");
-  const state = searchParams.get("state");
+	const code = searchParams.get("code");
+	const state = searchParams.get("state");
 
-  const { setAccessToken, setRefreshToken } = useAuthStore();
-  const { setUser, setUserType } = useUserStore();
+	const { setAccessToken, setRefreshToken } = useAuthStore();
+	const { setUser, setUserType } = useUserStore();
 
-  useEffect(() => {
-    if (!code || !state) {
-      return;
-    }
+	useEffect(() => {
+		if (!code || !state) {
+			return;
+		}
 
-    const sendCodeToBackend = async () => {
-      try {
-        const res = await postSocialLogin("KAKAO", {
-          code: code,
-          userType: state as UserType,
-        });
-        setAccessToken(res.token.accessToken);
-        setRefreshToken(res.token.refreshToken);
+		const sendCodeToBackend = async () => {
+			try {
+				const res = await postSocialLogin("KAKAO", {
+					code: code,
+					userType: state as UserType,
+				});
+				setAccessToken(res.token.accessToken);
+				setRefreshToken(res.token.refreshToken);
 
-        setUser({
-          nickname: res.nickname,
-          userType: res.userType,
-        });
+				setUser({
+					nickname: res.nickname,
+					userType: res.userType,
+				});
 
-        if (res.userType === "CREATOR") {
-          setUserType("CREATOR");
-          router.push("/creator/dashboard");
-        } else {
-          setUserType("LEARNER");
-          router.push("/learner/recommend");
-        }
-      } catch (err) {
-        console.error("로그인 실패:", err);
-        router.replace("/login");
-      }
-    };
+				if (res.userType === "CREATOR") {
+					setUserType("CREATOR");
+					router.push("/creator/dashboard");
+				} else {
+					setUserType("LEARNER");
+					router.push("/learner/recommend");
+				}
+			} catch (err) {
+				console.error("로그인 실패:", err);
+				router.replace("/login");
+			}
+		};
 
-    sendCodeToBackend();
-  }, [code, router]);
+		sendCodeToBackend();
+	}, [code, router]);
 
-  return <div>카카오 로그인 중...</div>;
+	return <div>카카오 로그인 중...</div>;
 }
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div>카카오 로그인 중...</div>}>
-      <KaKaoCallbackClient />
-    </Suspense>
-  );
+	return (
+		<Suspense fallback={<div>카카오 로그인 중...</div>}>
+			<KaKaoCallbackClient />
+		</Suspense>
+	);
 }
