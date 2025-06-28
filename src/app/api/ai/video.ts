@@ -7,14 +7,11 @@ import axiosInstance from "../interceptor";
 // AI 영상 초안 제작 관련 API
 const AI_BASE_URL = "http://13.125.92.232:8000/api/v1/ai";
 
-const postSuggestMetadata = async (videoUuid: string) => {
-	console.log(videoUuid);
+const postSuggestMetadata = async (video_uuid: string) => {
+	console.log(video_uuid);
 	try {
 		const res = await axiosInstance.post<ApiResponse<string>>(
-			`${AI_BASE_URL}/videos/${videoUuid}/metadata-suggestion`,
-			{
-				videoUuid,
-			},
+			`${AI_BASE_URL}/videos/${video_uuid}/metadata-suggestion`,
 		);
 		return res.data;
 	} catch (error) {
@@ -22,8 +19,8 @@ const postSuggestMetadata = async (videoUuid: string) => {
 			return error.response.data;
 		}
 
-    throw new Error("서버와 통신 불가");
-  }
+		throw new Error("서버와 통신 불가");
+	}
 };
 
 const postSuggestTitle = async (videoUuid: string, originalTitle: string) => {
@@ -44,7 +41,10 @@ const postSuggestTitle = async (videoUuid: string, originalTitle: string) => {
 	}
 };
 
-const postSuggestDescription = async (videoUuid: string, originalDescription: string) => {
+const postSuggestDescription = async (
+	videoUuid: string,
+	originalDescription: string,
+) => {
 	try {
 		const res = await axiosInstance.post<ApiResponse<string>>(
 			`${AI_BASE_URL}/videos/${videoUuid}/suggest-description`,
@@ -63,4 +63,4 @@ const postSuggestDescription = async (videoUuid: string, originalDescription: st
 	}
 };
 
-export { postSuggestMetadata, postSuggestTitle, postSuggestDescription };
+export { postSuggestDescription, postSuggestMetadata, postSuggestTitle };
