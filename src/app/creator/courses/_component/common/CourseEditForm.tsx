@@ -12,9 +12,10 @@ import Swal from "sweetalert2";
 import { BaseButton } from "@/app/_components/common";
 import { putCourse } from "@/app/api/backend";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
+import { postSuggestTitle } from "@/app/api/ai/video";
 import { CourseFormProps } from "@/app/types/course";
-
 import { useCourseForm } from "../../../../hooks/useCourseForm";
+
 
 const CourseEditForm: React.FC<CourseFormProps> = ({
   subject,
@@ -157,18 +158,33 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (
-      title === "" ||
-      price === 0 ||
-      description === "" ||
-      installEnvChecklist.length === 0 ||
-      keyPoints.length === 0
-    ) {
-      alert("모든 항목을 입력해주세요.");
-      return;
-    }
+	const handleSuggestTitle = async () => {
+		try {
+			if(initialData?.videoInfo.videoUuid){
+				console.log(initialData?.videoInfo.videoUuid, title);
+				const res = await postSuggestTitle(initialData?.videoInfo.videoUuid, title);
+				console.log(res);
+			}
+			else {
+				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (
+			title === "" ||
+			price === 0 ||
+			description === "" ||
+			installEnvChecklist.length === 0 ||
+			keyPoints.length === 0
+		) {
+			alert("모든 항목을 입력해주세요.");
+			return;
+		}
 
     const formData = {
       title,
@@ -325,24 +341,25 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-4">
-          <div>
-            <label className="block text-2xl font-semibold mb-1">제목</label>
-            <div className="flex gap-2 relative">
-              <input
-                className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-                placeholder="설치 가이드 주제 입력"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <button
-                type="button"
-                className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
-              >
-                AI에게 추천받기
-              </button>
-            </div>
-          </div>
+				<div className="flex-1 flex flex-col gap-4">
+					<div>
+						<label className="block text-2xl font-semibold mb-1">제목</label>
+						<div className="flex gap-2 relative">
+							<input
+								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
+								placeholder="설치 가이드 주제 입력"
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+							/>
+							<button
+								type="button"
+								className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md cursor-pointer"
+								onClick={handleSuggestTitle}
+							>
+								AI에게 추천받기에용
+							</button>
+						</div>
+					</div>
 
           <div className="flex gap-4 mt-4">
             <div className="flex-1">
