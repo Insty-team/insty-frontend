@@ -8,12 +8,12 @@ import CreatorHeader from "./CreatorHeader";
 import LearnerHeader from "./LearnerHeader";
 
 export {
-  BaseButton,
-  BaseSearchBar,
-  BaseSelect,
-  BaseTab,
-  BaseTag,
-  CommunityVideo,
-  CreatorHeader,
-  LearnerHeader,
+	BaseButton,
+	BaseSearchBar,
+	BaseSelect,
+	BaseTab,
+	BaseTag,
+	CommunityVideo,
+	CreatorHeader,
+	LearnerHeader,
 };

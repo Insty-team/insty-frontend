@@ -26,8 +26,8 @@ function CreatorHeader() {
 	// 드롭다운 메뉴 핸들링
 	const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
 
-  const { user, setUserType, resetUser } = useUserStore();
-  const { resetAccessToken } = useAuthStore();
+	const { user, setUserType, resetUser } = useUserStore();
+	const { resetAccessToken } = useAuthStore();
 
 	const { data: userInfo } = useGetUserProfileInfoQuery();
 	const { mutate: patchUserType } = usePatchUserTypeMutation();
@@ -50,29 +50,29 @@ function CreatorHeader() {
 		});
 	};
 
-  const handleLogout = async () => {
-    Swal.fire({
-      title: "로그아웃 하시겠어요?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "로그아웃",
-      cancelButtonText: "취소",
-      confirmButtonColor: "#6ead79",
-      cancelButtonColor: "#ff4f64",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await postLogout();
-          resetUser();
-          removeAccessToken();
-          resetAccessToken();
-          router.push("/login");
-        } catch (error) {
-          console.error("Logout error:", error);
-        }
-      }
-    });
-  };
+	const handleLogout = async () => {
+		Swal.fire({
+			title: "로그아웃 하시겠어요?",
+			icon: "question",
+			showCancelButton: true,
+			confirmButtonText: "로그아웃",
+			cancelButtonText: "취소",
+			confirmButtonColor: "#6ead79",
+			cancelButtonColor: "#ff4f64",
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				try {
+					await postLogout();
+					resetUser();
+					removeAccessToken();
+					resetAccessToken();
+					router.push("/login");
+				} catch (error) {
+					console.error("Logout error:", error);
+				}
+			}
+		});
+	};
 
 	return (
 		<div className="flex justify-between items-center">

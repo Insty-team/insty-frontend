@@ -4,163 +4,163 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { LuPanelLeftClose, LuPanelLeftOpen } from "react-icons/lu";
 
 import {
-  BaseButton,
-  BaseSearchBar,
-  BaseSelect,
-  BaseTag,
+	BaseButton,
+	BaseSearchBar,
+	BaseSelect,
+	BaseTag,
 } from "@/app/_components/common";
 
 import AIChatItem from "./AIChatItem";
 
 function MyPageAIChat() {
-  const [searchValue, setSearchValue] = useState("");
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-  };
+	const [searchValue, setSearchValue] = useState("");
+	const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+		setSearchValue(e.target.value);
+	};
 
-  const AI_OPTIONS = [
-    "AI 모든 기능 전체",
-    "AI에게 구매 결정 도움 받기",
-    "AI 챗봇에게 질문하기",
-    "AI와 함께 영상 찾기",
-  ];
+	const AI_OPTIONS = [
+		"AI 모든 기능 전체",
+		"AI에게 구매 결정 도움 받기",
+		"AI 챗봇에게 질문하기",
+		"AI와 함께 영상 찾기",
+	];
 
-  const DATE_OPTIONS = [
-    "모든 날짜",
-    "지난 1일",
-    "지난 1주",
-    "지난 1개월",
-    "지난 1년",
-  ];
+	const DATE_OPTIONS = [
+		"모든 날짜",
+		"지난 1일",
+		"지난 1주",
+		"지난 1개월",
+		"지난 1년",
+	];
 
-  const [selectedAIOption, setSelectedAIOption] = useState(AI_OPTIONS[0]);
-  const [selectedDateOption, setSelectedDateOption] = useState(DATE_OPTIONS[0]);
-  const [searchText, setSearchText] = useState("");
-  const [isPanelClosed, setIsPanelClosed] = useState(false);
+	const [selectedAIOption, setSelectedAIOption] = useState(AI_OPTIONS[0]);
+	const [selectedDateOption, setSelectedDateOption] = useState(DATE_OPTIONS[0]);
+	const [searchText, setSearchText] = useState("");
+	const [isPanelClosed, setIsPanelClosed] = useState(false);
 
-  useEffect(() => {
-    console.log("changed!");
-  }, [selectedAIOption, selectedDateOption]);
+	useEffect(() => {
+		console.log("changed!");
+	}, [selectedAIOption, selectedDateOption]);
 
-  return (
-    <div className="w-full flex flex-col gap-10">
-      <div className="flex flex-col gap-6">
-        <h3 className="text-2xl">AI 챗봇 질문 내역</h3>
-        <BaseSearchBar
-          value={searchValue}
-          onChange={(e) => onChange(e)}
-          placeholder="설치 환경(OS), 소프트웨어 이름을 입력해보세요!"
-        />
-      </div>
-      <div className="w-full bg-[#F3F3F3] flex gap-8 p-[30px]">
-        <div className="min-w-[200px]">
-          <BaseSelect
-            options={AI_OPTIONS}
-            value={selectedAIOption}
-            onChange={setSelectedAIOption}
-          />
-        </div>
-        <div className="min-w-[120px]">
-          <BaseSelect
-            options={DATE_OPTIONS}
-            value={selectedDateOption}
-            onChange={setSelectedDateOption}
-          />
-        </div>
-      </div>
-      {(selectedAIOption !== AI_OPTIONS[0] ||
-        selectedDateOption !== DATE_OPTIONS[0]) && (
-        <div className="border border-[#479B5D] py-[17px] px-[30px] rounded-lg flex gap-2 flex-wrap">
-          {selectedAIOption !== AI_OPTIONS[0] && (
-            <BaseTag
-              title={selectedAIOption}
-              onClick={() => setSelectedAIOption(AI_OPTIONS[0])}
-            />
-          )}
-          {selectedDateOption !== DATE_OPTIONS[0] && (
-            <BaseTag
-              title={selectedDateOption}
-              onClick={() => setSelectedDateOption(DATE_OPTIONS[0])}
-            />
-          )}
-        </div>
-      )}
+	return (
+		<div className="w-full flex flex-col gap-10">
+			<div className="flex flex-col gap-6">
+				<h3 className="text-2xl">AI 챗봇 질문 내역</h3>
+				<BaseSearchBar
+					value={searchValue}
+					onChange={(e) => onChange(e)}
+					placeholder="설치 환경(OS), 소프트웨어 이름을 입력해보세요!"
+				/>
+			</div>
+			<div className="w-full bg-[#F3F3F3] flex gap-8 p-[30px]">
+				<div className="min-w-[200px]">
+					<BaseSelect
+						options={AI_OPTIONS}
+						value={selectedAIOption}
+						onChange={setSelectedAIOption}
+					/>
+				</div>
+				<div className="min-w-[120px]">
+					<BaseSelect
+						options={DATE_OPTIONS}
+						value={selectedDateOption}
+						onChange={setSelectedDateOption}
+					/>
+				</div>
+			</div>
+			{(selectedAIOption !== AI_OPTIONS[0] ||
+				selectedDateOption !== DATE_OPTIONS[0]) && (
+				<div className="border border-[#479B5D] py-[17px] px-[30px] rounded-lg flex gap-2 flex-wrap">
+					{selectedAIOption !== AI_OPTIONS[0] && (
+						<BaseTag
+							title={selectedAIOption}
+							onClick={() => setSelectedAIOption(AI_OPTIONS[0])}
+						/>
+					)}
+					{selectedDateOption !== DATE_OPTIONS[0] && (
+						<BaseTag
+							title={selectedDateOption}
+							onClick={() => setSelectedDateOption(DATE_OPTIONS[0])}
+						/>
+					)}
+				</div>
+			)}
 
-      <div className="w-full flex justify-center items-center gap-2">
-        <div className="w-[142px]">
-          <BaseButton
-            title="초기화"
-            fill={false}
-            userType="LEARNER"
-            className="bg-[#DEDEDE] !hover:bg-gray-300 !active:bg-gray-400 border-none text-[#6B6B6B]"
-          />
-        </div>
-        <div className="w-[142px]">
-          <BaseButton title="적용" userType="LEARNER" />
-        </div>
-      </div>
-      <div className="w-full flex flex-col">
-        {/* 헤더 */}
-        <div className="w-full border-b px-6 py-4 flex justify-between bg-gradient-to-r from-[#72C380] to-[#479B5D] rounded-t-lg">
-          <div className="flex flex-col items-start gap-2">
-            <h2 className="text-xl font-semibold text-[#F9F9F9]">
-              Windows 11에서 파이썬 설치해서 간단한 데이터 분석을 하고 싶어요.
-            </h2>
-            <div className="text-sm text-[#F9F9F9]">📅 2025년 6월 14일</div>
-          </div>
-          <div className="w-[200px]">
-            <BaseSearchBar
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="검색어를 입력해 주세요!"
-            />
-          </div>
-        </div>
-        {/* 세션 목록 + 대화 내용 */}
-        <div className="flex border border-[#E6E6E6] rounded-b-lg overflow-hidden">
-          <div
-            className={`flex flex-col flex-none bg-[#ffffff] transition-all duration-300 ease-in-out h-[800px] ${
-              isPanelClosed ? "w-[80px]" : "w-[324px]"
-            }`}
-          >
-            <div className="px-[30px] py-[20px] border-b border-[#E6E6E6] flex justify-between items-center">
-              {!isPanelClosed && (
-                <span className="text-xl font-bold text-[#1F1F1F]">
-                  📝 질문 이력 {15}건
-                </span>
-              )}
-              <button
-                className="cursor-pointer"
-                onClick={() => setIsPanelClosed(!isPanelClosed)}
-              >
-                {isPanelClosed ? (
-                  <LuPanelLeftOpen size={24} color="#6EAD79" />
-                ) : (
-                  <LuPanelLeftClose size={24} color="#6EAD79" />
-                )}
-              </button>
-            </div>
-            {!isPanelClosed && (
-              <div className="flex flex-col">
-                <span className="text-xl font-bold text-[#6B6B6B] px-[30px] py-2.5">
-                  오늘 (6월 14일)
-                </span>
-                <div className="min-h-[800px] max-h-[800px] scroll-auto"></div>
-              </div>
-            )}
-          </div>
-          <div className="bg-[#EFEFEF] w-full h-full px-14 py-10"></div>
-        </div>
-      </div>
-      {[
-        new Date().toISOString(),
-        new Date(Date.now() - 86400000).toISOString(),
-        new Date(Date.now() - 2 * 86400000).toISOString(),
-      ].map((date) => (
-        <AIChatItem key={date} date={date} />
-      ))}
-    </div>
-  );
+			<div className="w-full flex justify-center items-center gap-2">
+				<div className="w-[142px]">
+					<BaseButton
+						title="초기화"
+						fill={false}
+						userType="LEARNER"
+						className="bg-[#DEDEDE] !hover:bg-gray-300 !active:bg-gray-400 border-none text-[#6B6B6B]"
+					/>
+				</div>
+				<div className="w-[142px]">
+					<BaseButton title="적용" userType="LEARNER" />
+				</div>
+			</div>
+			<div className="w-full flex flex-col">
+				{/* 헤더 */}
+				<div className="w-full border-b px-6 py-4 flex justify-between bg-gradient-to-r from-[#72C380] to-[#479B5D] rounded-t-lg">
+					<div className="flex flex-col items-start gap-2">
+						<h2 className="text-xl font-semibold text-[#F9F9F9]">
+							Windows 11에서 파이썬 설치해서 간단한 데이터 분석을 하고 싶어요.
+						</h2>
+						<div className="text-sm text-[#F9F9F9]">📅 2025년 6월 14일</div>
+					</div>
+					<div className="w-[200px]">
+						<BaseSearchBar
+							value={searchText}
+							onChange={(e) => setSearchText(e.target.value)}
+							placeholder="검색어를 입력해 주세요!"
+						/>
+					</div>
+				</div>
+				{/* 세션 목록 + 대화 내용 */}
+				<div className="flex border border-[#E6E6E6] rounded-b-lg overflow-hidden">
+					<div
+						className={`flex flex-col flex-none bg-[#ffffff] transition-all duration-300 ease-in-out h-[800px] ${
+							isPanelClosed ? "w-[80px]" : "w-[324px]"
+						}`}
+					>
+						<div className="px-[30px] py-[20px] border-b border-[#E6E6E6] flex justify-between items-center">
+							{!isPanelClosed && (
+								<span className="text-xl font-bold text-[#1F1F1F]">
+									📝 질문 이력 {15}건
+								</span>
+							)}
+							<button
+								className="cursor-pointer"
+								onClick={() => setIsPanelClosed(!isPanelClosed)}
+							>
+								{isPanelClosed ? (
+									<LuPanelLeftOpen size={24} color="#6EAD79" />
+								) : (
+									<LuPanelLeftClose size={24} color="#6EAD79" />
+								)}
+							</button>
+						</div>
+						{!isPanelClosed && (
+							<div className="flex flex-col">
+								<span className="text-xl font-bold text-[#6B6B6B] px-[30px] py-2.5">
+									오늘 (6월 14일)
+								</span>
+								<div className="min-h-[800px] max-h-[800px] scroll-auto"></div>
+							</div>
+						)}
+					</div>
+					<div className="bg-[#EFEFEF] w-full h-full px-14 py-10"></div>
+				</div>
+			</div>
+			{[
+				new Date().toISOString(),
+				new Date(Date.now() - 86400000).toISOString(),
+				new Date(Date.now() - 2 * 86400000).toISOString(),
+			].map((date) => (
+				<AIChatItem key={date} date={date} />
+			))}
+		</div>
+	);
 }
 
 export default MyPageAIChat;

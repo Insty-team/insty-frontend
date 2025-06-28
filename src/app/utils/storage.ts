@@ -24,7 +24,7 @@ export const setAccessToken = (token: string) => {
 };
 
 export const removeAccessToken = () => {
-  localStorage.removeItem(INSTY_ACCESS_TOKEN_KEY);
+	localStorage.removeItem(INSTY_ACCESS_TOKEN_KEY);
 };
 
 /**
