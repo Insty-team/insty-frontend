@@ -14,7 +14,8 @@ import {
   useGetUserProfileInfoQuery,
   usePatchUserTypeMutation,
 } from "@/app/queries";
-import { useUserStore } from "@/app/stores/user";
+import { useAuthStore, useUserStore } from "@/app/stores";
+import { removeAccessToken } from "@/app/utils";
 
 import BaseDropdown from "./BaseDropdown";
 
@@ -26,6 +27,7 @@ function CreatorHeader() {
   const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
 
   const { user, setUserType, resetUser } = useUserStore();
+  const { resetAccessToken } = useAuthStore();
 
   const { data: userInfo } = useGetUserProfileInfoQuery();
   const { mutate: patchUserType } = usePatchUserTypeMutation();
@@ -62,7 +64,8 @@ function CreatorHeader() {
         try {
           await postLogout();
           resetUser();
-          localStorage.removeItem("accessToken");
+          removeAccessToken();
+          resetAccessToken();
           router.push("/login");
         } catch (error) {
           console.error("Logout error:", error);

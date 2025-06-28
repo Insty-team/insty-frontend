@@ -23,6 +23,10 @@ export const setAccessToken = (token: string) => {
   localStorage.setItem(INSTY_ACCESS_TOKEN_KEY, token);
 };
 
+export const removeAccessToken = () => {
+  localStorage.removeItem(INSTY_ACCESS_TOKEN_KEY);
+};
+
 /**
  * Refresh Token 관련 hook
  */
