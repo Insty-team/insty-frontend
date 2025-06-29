@@ -11,13 +11,6 @@ import {
 import { useGetAIChatHistoryQuery } from "@/app/queries";
 
 function MyPageAIChat() {
-	const AI_OPTIONS = [
-		"AI 모든 기능 전체",
-		"AI에게 구매 결정 도움 받기",
-		"AI 챗봇에게 질문하기",
-		"AI와 함께 영상 찾기",
-	];
-
 	const DATE_OPTIONS = [
 		"모든 날짜",
 		"지난 1일",
@@ -29,8 +22,6 @@ function MyPageAIChat() {
 	// 히스토리 검색/필터 영역 관련
 	const [searchText, setSearchText] = useState("");
 	const [applySearchQuery, setApplySearchQuery] = useState("");
-
-	const [selectedAIOption, setSelectedAIOption] = useState(AI_OPTIONS[0]);
 
 	const [selectedDateOption, setSelectedDateOption] = useState(DATE_OPTIONS[0]);
 	const [applyDateOption, setApplyDateOption] = useState("");
@@ -61,15 +52,14 @@ function MyPageAIChat() {
 
 	useEffect(() => {
 		setSelectedDateOption(selectedDateOption);
-		setSelectedAIOption(selectedAIOption);
-	}, [selectedAIOption, selectedDateOption]);
+	}, [selectedDateOption]);
 
 	return (
 		<div className="w-full flex flex-col gap-10">
 			<div className="flex flex-col gap-6">
 				<h3 className="text-2xl">AI 챗봇 질문 내역</h3>
 				<div className="flex gap-10">
-					<div className="min-w-[120px]">
+					<div className="min-w-[120px] h-full">
 						<BaseSelect
 							options={DATE_OPTIONS}
 							value={selectedDateOption}
@@ -83,22 +73,6 @@ function MyPageAIChat() {
 					/>
 				</div>
 			</div>
-			{/* <div className="w-full bg-[#F3F3F3] flex gap-8 p-[30px]">
-				<div className="min-w-[200px]">
-					<BaseSelect
-						options={AI_OPTIONS}
-						value={selectedAIOption}
-						onChange={setSelectedAIOption}
-					/>
-				</div>
-				<div className="min-w-[120px]">
-					<BaseSelect
-						options={DATE_OPTIONS}
-						value={selectedDateOption}
-						onChange={setSelectedDateOption}
-					/>
-				</div>
-			</div> */}
 			{/* {(selectedAIOption !== AI_OPTIONS[0] ||
 				selectedDateOption !== DATE_OPTIONS[0]) && (
 				<div className="border border-[#479B5D] py-[17px] px-[30px] rounded-lg flex gap-2 flex-wrap">

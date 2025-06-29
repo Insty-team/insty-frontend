@@ -1,9 +1,6 @@
 "use client";
 
-import {
-	LEARNER_MYPAGE_ACTIVITY_SUB_MENU,
-	LEARNER_MYPAGE_MENU_LIST,
-} from "@/app/constants";
+import { LEARNER_MYPAGE_MENU_LIST } from "@/app/constants";
 
 type MyPageLearnerSideProps = {
 	activeMenu: string;
@@ -15,9 +12,12 @@ type MyPageLearnerSideProps = {
 function MyPageLearnerSide({
 	activeMenu,
 	setActiveMenu,
-	activeSubMenu,
-	setActiveSubMenu,
 }: MyPageLearnerSideProps) {
+	const onMenubuttonClick = (menu: string) => {
+		if (menu === "내 활동") return;
+		setActiveMenu(menu);
+	};
+
 	return (
 		<>
 			<div className="flex flex-col gap-10">
@@ -26,8 +26,9 @@ function MyPageLearnerSide({
 					{LEARNER_MYPAGE_MENU_LIST.map((menu) => (
 						<div key={menu.id}>
 							<button
-								onClick={() => setActiveMenu(menu.title)}
-								className="flex justify-start cursor-pointer"
+								onClick={() => onMenubuttonClick(menu.title)}
+								className={`flex justify-start  disabled:text-gray-300 ${menu.title === "내 활동" || menu.title === "설정" ? "cursor-not-allowed" : "cursor-pointer"}`}
+								disabled={menu.title === "내 활동" || menu.title === "설정"}
 							>
 								<span
 									className={activeMenu === menu.title ? "font-semibold" : ""}
@@ -35,7 +36,7 @@ function MyPageLearnerSide({
 									{menu.title}
 								</span>
 							</button>
-							{menu.title === "내 활동" && activeMenu === "내 활동" && (
+							{/* {menu.title === "내 활동" && activeMenu === "내 활동" && (
 								<div className="ml-4 mt-2 flex flex-col gap-2 justify-start items-start">
 									{LEARNER_MYPAGE_ACTIVITY_SUB_MENU.map((subMenu) => (
 										<button
@@ -49,7 +50,7 @@ function MyPageLearnerSide({
 										</button>
 									))}
 								</div>
-							)}
+							)} */}
 						</div>
 					))}
 				</div>

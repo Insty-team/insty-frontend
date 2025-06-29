@@ -95,7 +95,12 @@ function LearnerHeader() {
 									pathname.includes(menu.path)
 										? "text-primary-green-600"
 										: "text-black-400"
-								}`}
+								} ${menu.title === "커뮤니티" ? "cursor-not-allowed text-gray-300" : ""}`}
+								onClick={(e) => {
+									if (menu.title === "커뮤니티") {
+										e.preventDefault(); // 커뮤니티 메뉴 라우팅 방지
+									}
+								}}
 							>
 								{menu.title}
 							</Link>
