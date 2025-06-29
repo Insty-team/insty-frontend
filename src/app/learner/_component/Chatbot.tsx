@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { getAiSearchReccomend, postAiSearchRecommend } from "@/app/api/ai";
+import { getAISearchRecommend, postAISearchRecommend } from "@/app/api/ai";
 import { CourseRecommend, RecommendMessage } from "@/app/types/recommend";
 
 function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
@@ -22,7 +22,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	useEffect(() => {
 		const chatRoad = async () => {
 			try {
-				const res = await getAiSearchReccomend();
+				const res = await getAISearchRecommend();
 				console.log(res);
 				if (res && res.data) {
 					const messages = res.data.messages.map(
@@ -61,7 +61,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 			setRecommendations([]);
 			setMessages((prev) => [...prev, { type: "user", text: searchQuery }]);
 			try {
-				const res = await postAiSearchRecommend(searchQuery);
+				const res = await postAISearchRecommend(searchQuery);
 				setMessages((prev) => [
 					...prev,
 					{ type: "assistant", text: res.data.message },
@@ -78,7 +78,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	}, [messages, recommendations]);
 
 	return (
-		<div className="min-h-[90vh] flex items-center justify-center bg-[#EFEFEF]">
+		<div className="min-h-[90vh] flex items-center justify-center bg-[#EFEFEF] rounded-2xl">
 			<div className="w-full h-[90dvh] rounded-2xl shadow-lg bg-[#EFEFEF] flex flex-col overflow-hidden border border-gray-scale-200">
 				<div className="px-6 py-4 flex items-center border-b border-gray-scale-200">
 					<div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center mr-3">

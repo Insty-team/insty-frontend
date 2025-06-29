@@ -17,4 +17,5 @@ const useGetCourseDetailQuery = (courseId: number) => {
 		queryFn: () => getCourseDetail(courseId),
 	});
 };
+
 export { useGetCourseDetailQuery, useGetMyCoursesQuery };
