@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getCourseDetail, getMyCourses } from "../api/backend";
+import { CourseDetail } from "../types/course";
 
 // queries/course.ts
 const useGetMyCoursesQuery = (page: number, pageSize: number) => {
@@ -11,7 +12,7 @@ const useGetMyCoursesQuery = (page: number, pageSize: number) => {
 };
 
 const useGetCourseDetailQuery = (courseId: number) => {
-	return useQuery({
+	return useQuery<CourseDetail>({
 		queryKey: ["courseDetail", courseId],
 		queryFn: () => getCourseDetail(courseId),
 	});

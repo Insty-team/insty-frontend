@@ -7,7 +7,7 @@ import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { UploadformData } from "@/app/types/course";
 
 import CourseUploadForm from "../common/CourseUploadForm";
-import PreviewInfomation from "./PreviewInfomation";
+import PreviewUploadInfomation from "./PreviewUploadInfomation";
 
 type Step = "upload" | "preview" | "edit";
 
@@ -62,12 +62,7 @@ function CourseUpload() {
 				/>
 			)}
 			{step === "preview" && data && (
-				<PreviewInfomation
-					data={data}
-					onEdit={handleEdit}
-					onBack={handleBack}
-					mode="creator"
-				/>
+				<PreviewUploadInfomation data={data} onEdit={handleEdit} />
 			)}
 			{step === "edit" && data && (
 				<CourseUploadForm

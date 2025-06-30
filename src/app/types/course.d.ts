@@ -37,9 +37,9 @@ type CourseDetail = {
 type CourseFormProps = {
 	subject: string;
 	initialData?: CourseDetail;
-	onSubmit: (formData: UploadformData) => void;
+	onSubmit?: (formData: UploadformData) => void;
 	submitText?: string;
-	onBack: () => void;
+	onBack?: () => void;
 };
 
 type AllowedFileType = {
@@ -80,11 +80,39 @@ type UploadformData = {
 	tags: string[];
 };
 
+type PurchaseAssistantChatbotReq = {
+	course_id: number;
+	query: string;
+};
+
+type ChatbotAttachment = {
+	name: string;
+	type: string;
+	preview: string | null;
+};
+
+type CourserChatbotMessage = {
+	sender: string;
+	content: string;
+	created_at?: string;
+	attachments?: ChatbotAttachment[];
+};
+
+type PostMessageStreamReq = {
+	course_id: number;
+	message_text: string;
+	has_attachment: boolean;
+	file: string | null;
+};
+
 export type {
 	AllowedFileType,
 	CourseDetail,
 	CourseFormProps,
+	CourserChatbotMessage,
 	CourseUpdateReq,
 	MyCoursesItems,
+	PostMessageStreamReq,
+	PurchaseAssistantChatbotReq,
 	UploadformData,
 };
