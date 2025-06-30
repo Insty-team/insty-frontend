@@ -121,7 +121,9 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 					<div className="flex flex-col gap-4">
 						<div className="flex gap-2 items-center aspect-auto">
 							<Image src="/profile.svg" alt="user" width={48} height={48} />
-							<span className="text-black-100 text-2xl">크리에이터 이름</span>
+							<span className="text-black-100 text-2xl">
+								{data.creatorInfo?.nickname}
+							</span>
 						</div>
 						<div className="flex gap-2 items-center">
 							<Image src="/user.svg" alt="user" width={36} height={36} />

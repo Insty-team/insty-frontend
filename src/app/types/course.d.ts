@@ -12,6 +12,10 @@ type MyCoursesItems = {
 
 type CourseDetail = {
 	courseId: number;
+	creatorInfo?: {
+		id: number;
+		nickname: string;
+	};
 	title: string;
 	description: string;
 	targetAudience: string;
@@ -101,7 +105,6 @@ type CourserChatbotMessage = {
 type PostMessageStreamReq = {
 	course_id: number;
 	message_text: string;
-	has_attachment: boolean;
 	file: string | null;
 };
 
