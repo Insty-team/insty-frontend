@@ -3,31 +3,23 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { IoIosCheckbox, IoIosCheckboxOutline } from "react-icons/io";
-import { IoChatbubbleEllipses } from "react-icons/io5";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
-import Modal from "@/app/_components/common/Modal";
 import VideoPlayer from "@/app/_components/common/VideoPlayer";
 import { postCourse } from "@/app/api/backend";
-import { REFUND_POLICY } from "@/app/constants";
-import ChatbotModal from "@/app/learner/_component/ChatbotModal";
-import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { UploadformData } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
 
-interface PreviewInfomationProps {
+interface PreviewUploadInfomationProps {
 	data: UploadformData;
 	onEdit: () => void;
-	onBack?: () => void;
-	mode: "creator" | "learner";
 }
 
-function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
-	const [open, setOpen] = useState(false);
-	const [openChatbot, setOpenChatbot] = useState(false);
-	const [checked, setChecked] = useState(false);
+function PreviewUploadInfomation({
+	data,
+	onEdit,
+}: PreviewUploadInfomationProps) {
 	const [videoDuration, setVideoDuration] = useState(0);
 
 	const router = useRouter();
@@ -81,17 +73,6 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 		<div className="flex flex-col gap-8 items-stretch relative">
 			<div className="font-bold text-2xl mt-10">{data.title}</div>
 
-			<CommunitySidebar />
-			<button
-				className="fixed bottom-8 right-8 z-50 flex items-center bg-primary-green-400 hover:bg-primary-green-500 text-white font-semibold px-6 py-2 rounded-full shadow-none"
-				onClick={() => setOpenChatbot(!openChatbot)}
-			>
-				<span className="text-base">AI 챗봇에게 질문하기</span>
-				<IoChatbubbleEllipses className="w-7 h-7 ml-2" />
-			</button>
-
-			{openChatbot && <ChatbotModal open={openChatbot} />}
-
 			<div className="flex gap-4 w-full">
 				{data.videoFile ? (
 					<VideoPlayer
@@ -121,19 +102,6 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 							<Image src="/profile.svg" alt="user" width={48} height={48} />
 							<span className="text-black-100 text-2xl">크리에이터 이름</span>
 						</div>
-						{mode === "learner" && (
-							<div className="flex flex-col gap-2">
-								<span className="text-black-300 text-2xl font-medium">
-									가격
-								</span>
-								<span className="text-3xl text-primary-blue-600 font-semibold">
-									₩ {data.price.toLocaleString()}원
-								</span>
-								<p className="text-secondary-red-300 text-2lg">
-									*해당 영상은 미리보기 버전입니다.
-								</p>
-							</div>
-						)}
 						<div className="flex gap-2 items-center">
 							<Image src="/user.svg" alt="user" width={36} height={36} />
 							<span className="text-black-300 text-2xl">
@@ -153,71 +121,15 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 							</span>
 						</div>
 					</div>
-					{mode === "creator" && (
-						<div className="flex gap-4 mt-auto pt-8">
-							<BaseButton title="수정하기" fill={false} onClick={onEdit} />
-							<BaseButton
-								title="업로드 진행하기"
-								onClick={handleSubmitCourseForm}
-							/>
-						</div>
-					)}
+					<div className="flex gap-4 mt-auto pt-8">
+						<BaseButton title="수정하기" fill={false} onClick={onEdit} />
+						<BaseButton
+							title="업로드 진행하기"
+							onClick={handleSubmitCourseForm}
+						/>
+					</div>
 				</div>
 			</div>
-
-			{mode === "learner" && (
-				<div className="flex justify-between gap-8">
-					<div className="w-1/2 flex flex-col text-secondary-red-300 text-lg leading-relaxed">
-						<div>환불 규정 안내</div>
-						<ul className="list-disc pl-5 ml-4 mt-2">
-							{REFUND_POLICY.map((text) => (
-								<li key={text.line}>{text.text}</li>
-							))}
-						</ul>
-					</div>
-					<div className="w-[30%] flex items-center mr-auto">
-						<BaseButton title="구매하기" onClick={() => setOpen(true)} />
-					</div>
-				</div>
-			)}
-
-			{open && (
-				<Modal
-					open={open}
-					title="구매하기"
-					onClose={() => setOpen(false)}
-					onCloseTitle="취소하기"
-					actionsTitle="구매하기"
-					actions={() => {}}
-				>
-					<div className="mb-4">
-						<div className="text-xl text-secondary-red-300 font-semibold mb-2">
-							환불 규정 안내
-						</div>
-						<ul className="list-disc pl-5 text-secondary-red-300 text-2lg ml-2">
-							{REFUND_POLICY.map((text) => (
-								<li key={text.line}>{text.text}</li>
-							))}
-						</ul>
-					</div>
-					<label className="flex items-center gap-2 mt-16 text-2xl">
-						<span className="inline-flex items-center justify-center cursor-pointer">
-							{checked ? (
-								<IoIosCheckbox
-									className="text-primary-green-600 w-9 h-9"
-									onClick={() => setChecked(!checked)}
-								/>
-							) : (
-								<IoIosCheckboxOutline
-									className="text-gray-scale-400 w-9 h-9"
-									onClick={() => setChecked(!checked)}
-								/>
-							)}
-						</span>
-						<span>환불 규정을 확인했습니다.</span>
-					</label>
-				</Modal>
-			)}
 
 			<div className="flex gap-8 mt-8">
 				<div className="flex-1">
@@ -260,4 +172,4 @@ function PreviewInfomation({ data, onEdit, mode }: PreviewInfomationProps) {
 	);
 }
 
-export default PreviewInfomation;
+export default PreviewUploadInfomation;

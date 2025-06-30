@@ -42,4 +42,61 @@ const putCourseVideoUpload = async (videoUrl: string, file: File) => {
 	return res.data;
 };
 
-export { postCourseVideo, putCourseVideoUpload };
+const getCourseVideoPreview = async (signedUrl: string) => {
+	const s3AxiosInstance = axios.create({
+		withCredentials: true,
+	});
+	const res = await s3AxiosInstance.get(signedUrl);
+	return res.data;
+};
+
+const postPreviewVideo = async (type: string, id: number) => {
+	try {
+		const res = await axiosInstance.post(`${BASE_URL}/videos/preview`, {
+			type,
+			id,
+		});
+
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+
+	throw new Error("서버와 통신 불가");
+};
+
+const postPlayListVideo = async (type: string, id: number) => {
+	try {
+		const res = await axiosInstance.post(`${BASE_URL}/videos/playlist`, {
+			type,
+			id,
+		});
+
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+
+	throw new Error("서버와 통신 불가");
+};
+
+const getPlaylistVideo = async (signedUrl: string) => {
+	const s3AxiosInstance = axios.create({
+		withCredentials: true,
+	});
+	const res = await s3AxiosInstance.get(signedUrl);
+	return res.data;
+};
+
+export {
+	getCourseVideoPreview,
+	getPlaylistVideo,
+	postCourseVideo,
+	postPlayListVideo,
+	postPreviewVideo,
+	putCourseVideoUpload,
+};

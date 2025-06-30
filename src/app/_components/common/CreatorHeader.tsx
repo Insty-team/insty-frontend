@@ -93,9 +93,9 @@ function CreatorHeader() {
 					<div className="flex justify-center items-center gap-24 cursor-pointer --text-2lg font-bold">
 						{CREATOR_MENU_LIST.map((menu) => (
 							<Link
-								href={`${menu.path}`}
+								href={`${menu.id === 1 || menu.id === 4 ? "" : menu.path}`}
 								key={menu.id}
-								className="cursor-pointer hover:text-primary-green-500"
+								className={`${menu.id === 1 || menu.id === 4 ? "text-gray-scale-300 disabled disabled:cursor-not-allowed" : "hover:text-primary-green-500 cursor-pointer "}`}
 							>
 								<span
 									className={
