@@ -3,23 +3,48 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { postAiSearchRecommend } from "@/app/api/ai";
-import { CourseRecommend } from "@/app/types/recommend";
+import { getAiSearchReccomend, postAiSearchRecommend } from "@/app/api/ai";
+import { CourseRecommend, RecommendMessage } from "@/app/types/recommend";
 
 function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	const [messages, setMessages] = useState<
 		{
-			type: "user" | "bot";
+			type: "user" | "assistant";
 			text: string;
 		}[]
 	>([
 		{
-			type: "bot",
+			type: "assistant",
 			text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
 		},
 	]);
 
-	useEffect(() => {}, []);
+	useEffect(() => {
+		const chatRoad = async () => {
+			try {
+				const res = await getAiSearchReccomend();
+				console.log(res);
+				if (res && res.data) {
+					const messages = res.data.messages.map(
+						(message: RecommendMessage) => ({
+							type: message.sender,
+							text: message.content,
+						}),
+					);
+					setMessages((prev) => [...prev, ...messages]);
+
+					const lastMessage = res.data.messages[res.data.messages.length - 1];
+					if (lastMessage.courses) {
+						setRecommendations(lastMessage.courses);
+					}
+				}
+			} catch (error) {
+				console.log(error);
+			}
+		};
+
+		chatRoad();
+	}, []);
 
 	const [recommendations, setRecommendations] = useState<CourseRecommend[]>([]);
 	const [searchQuery, setSearchQuery] = useState<string>("");
@@ -30,17 +55,18 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 		e: React.KeyboardEvent<HTMLInputElement>,
 	) => {
 		if (e.key === "Enter" && searchQuery.trim()) {
-			//먼저 이전에 추천된 영상은 지워주고고
+			setSearchQuery("");
+
+			//먼저 이전에 추천된 영상은 지워주고
 			setRecommendations([]);
 			setMessages((prev) => [...prev, { type: "user", text: searchQuery }]);
 			try {
 				const res = await postAiSearchRecommend(searchQuery);
 				setMessages((prev) => [
 					...prev,
-					{ type: "bot", text: res.data.message },
+					{ type: "assistant", text: res.data.message },
 				]);
 				setRecommendations(res.data.courses);
-				setSearchQuery("");
 			} catch (error) {
 				console.log(error);
 			}
@@ -73,6 +99,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 					<button
 						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2"
 						onClick={changeDirectSearch}
+						disabled
 					>
 						직접 찾기
 					</button>
