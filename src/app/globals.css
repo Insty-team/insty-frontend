@@ -83,3 +83,39 @@ body {
 	color: var(--foreground);
 	font-family: "Pretendard", sans-serif;
 }
+
+.codeblock-group {
+	display: flex;
+	flex-direction: column;
+}
+
+.codeblock-lang {
+	background: #e5e7eb;
+	color: #000;
+	font-size: 12px;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	padding: 4px 12px 2px 12px;
+	border-bottom: 1px solid #d1d5db;
+}
+
+.codeblock-group pre {
+	background: #f4f4f4;
+	border-radius: 0 0 6px 6px;
+	padding: 10px 14px;
+	font-size: 13px;
+	overflow-x: auto;
+}
+
+code {
+	background: #e5e7eb;
+	border-radius: 4px;
+	padding: 2px 6px;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+strong {
+	font-weight: bold;
+	color: #15803d; /* Tailwind의 primary-green-700 */
+}
