@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { AIHistoryResponse } from "@/app/types/ai";
+import { AIHistoryResponse, AIMessageResponse } from "@/app/types/ai";
 import { ApiResponse } from "@/app/types/api";
 import { PurchaseAssistantChatbotReq } from "@/app/types/course";
 import { RecommendMessage } from "@/app/types/recommend";
@@ -77,7 +77,6 @@ const postChatSession = async (course_id: number) => {
 		if (axios.isAxiosError(error) && error.response) {
 			return error.response.data;
 		}
-
 		throw new Error("서버와 통신 불가");
 	}
 };
