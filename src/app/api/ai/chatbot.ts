@@ -100,8 +100,8 @@ const postMessageStream = async (session_id: number, formData: FormData) => {
 	try {
 		const res = await axiosInstance.post<ApiResponse<string[]>>(
 			`${AI_BASE_URL}/chatbot/sessions/${session_id}/messages/stream`,
+			formData,
 			{
-				formData,
 				headers: { "Content-Type": "multipart/form-data" },
 			},
 		);

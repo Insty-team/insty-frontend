@@ -92,12 +92,12 @@ function CourseQuestionChatBotModal({
 				const formData = new FormData();
 				formData.append("course_id", String(courseId));
 				formData.append("message_text", input);
-				formData.append("has_attachment", file ? "true" : "false");
 				if (file) {
 					formData.append("file", file);
 				}
 
-				console.log(formData.get("has_attachment"));
+				console.log(formData.get("course_id"));
+				console.log(formData.get("message_text"));
 				console.log(formData.get("file"));
 
 				const postmessageResponse = await postMessageStream(
