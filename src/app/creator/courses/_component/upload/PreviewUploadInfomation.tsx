@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import { BaseButton } from "@/app/_components/common";
 import VideoPlayer from "@/app/_components/common/VideoPlayer";
 import { postCourse } from "@/app/api/backend";
+import { useVideoUploadStore } from "@/app/stores";
 import { UploadformData } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
 
@@ -21,6 +22,7 @@ function PreviewUploadInfomation({
 	onEdit,
 }: PreviewUploadInfomationProps) {
 	const [videoDuration, setVideoDuration] = useState(0);
+	const { reset } = useVideoUploadStore();
 
 	const router = useRouter();
 
@@ -60,6 +62,7 @@ function PreviewUploadInfomation({
 				confirmButtonText: "확인",
 				confirmButtonColor: "#6ead79",
 			}).then(() => {
+				reset();
 				router.push("/creator/courses");
 			});
 		} catch (error) {
