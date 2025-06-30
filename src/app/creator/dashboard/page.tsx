@@ -1,7 +1,8 @@
 "use client";
 
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { GoGraph } from "react-icons/go";
 import { LiaWonSignSolid } from "react-icons/lia";
 import { MdDriveFolderUpload } from "react-icons/md";
@@ -17,6 +18,13 @@ function CreatorDashboard() {
 	const labels = getLabels(period as "1개월" | "6개월" | "1년");
 	const { user } = useUserStore();
 	console.log(user);
+
+	//임시방편, 라우트 튕기게
+	const router = useRouter();
+
+	useEffect(() => {
+		router.push("/creator/courses");
+	}, []);
 
 	const revenueData = labels.map((label, idx) => ({
 		name: label,

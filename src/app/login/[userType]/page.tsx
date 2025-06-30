@@ -45,7 +45,7 @@ function Login() {
 
 			if (userType === "creator") {
 				setUserType("CREATOR");
-				router.push("/creator/dashboard");
+				router.push("/creator/courses");
 			} else {
 				setUserType("LEARNER");
 				router.push("/learner/recommend");
