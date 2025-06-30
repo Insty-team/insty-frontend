@@ -13,4 +13,5 @@ type ApiResponse<DATA_TYPE> =
 				};
 			};
 	  };
+
 export type { ApiResponse };

@@ -34,8 +34,7 @@ export const LEARNER_MYPAGE_MENU_LIST = [
 	{ id: 2, title: "내 활동" },
 	{ id: 3, title: "AI 챗봇 질문 이력" },
 	{ id: 4, title: "구매 내역" },
-	{ id: 5, title: "찜한 영상" },
-	{ id: 6, title: "설정" },
+	{ id: 5, title: "설정" },
 ];
 
 export const LEARNER_MYPAGE_ACTIVITY_SUB_MENU = [

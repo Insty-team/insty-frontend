@@ -4,7 +4,7 @@ import { IoSend } from "react-icons/io5";
 import { LuFileUp } from "react-icons/lu";
 
 import { postMessageStream } from "@/app/api/ai";
-import { useFormatAssistantText } from "@/app/hooks/useFormatAssistantText";
+import { useFormatAssistantText } from "@/app/hooks";
 import { CourserChatbotMessage } from "@/app/types/course";
 interface CourseQuestionChatBotModalProps {
 	open: boolean;
