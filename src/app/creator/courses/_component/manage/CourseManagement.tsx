@@ -1,11 +1,13 @@
 "use client";
 
-import { BaseButton } from "@/app/_components/common";
-import Loading from "@/app/_components/common/Loading";
-import { useGetMyCoursesQuery } from "@/app/queries";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { BaseButton } from "@/app/_components/common";
+import Loading from "@/app/_components/common/Loading";
+import { useGetMyCoursesQuery } from "@/app/queries";
+
 import CourseDetail from "./CourseDetail";
 import CourseEdit from "./CourseEdit";
 import CourseList from "./CourseList";
@@ -39,6 +41,10 @@ function CourseManagement() {
 		newMode: "list" | "edit" | "detail",
 		courseId?: number,
 	) => {
+		//상세보기는 1차기능 아니므로 주석처리
+		if (newMode === "detail") {
+			return;
+		}
 		const params = new URLSearchParams(searchParams.toString());
 		params.set("mode", newMode);
 		if (courseId) {
