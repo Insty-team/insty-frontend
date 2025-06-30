@@ -44,11 +44,9 @@ const putCourseVideoUpload = async (videoUrl: string, file: File) => {
 
 const getCourseVideoPreview = async (signedUrl: string) => {
 	const s3AxiosInstance = axios.create({
-		withCredentials: false,
+		withCredentials: true,
 	});
-	const res = await s3AxiosInstance.get(signedUrl, {
-		responseType: "blob",
-	});
+	const res = await s3AxiosInstance.get(signedUrl);
 	return res.data;
 };
 

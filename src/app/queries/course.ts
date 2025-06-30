@@ -12,7 +12,7 @@ const useGetMyCoursesQuery = (page: number, pageSize: number) => {
 };
 
 const useGetCourseDetailQuery = (courseId: number) => {
-	return useQuery<CourseDetail>({
+	return useQuery<{ data: CourseDetail }>({
 		queryKey: ["courseDetail", courseId],
 		queryFn: () => getCourseDetail(courseId),
 	});
