@@ -23,12 +23,12 @@ const postSuggestMetadata = async (video_uuid: string) => {
 	}
 };
 
-const postSuggestTitle = async (videoUuid: string, originalTitle: string) => {
+const postSuggestTitle = async (video_uuid: string, originalTitle: string) => {
 	try {
 		const res = await axiosInstance.post<ApiResponse<string>>(
-			`${AI_BASE_URL}/videos/${videoUuid}/suggest-title`,
+			`${AI_BASE_URL}/videos/${video_uuid}/suggest-title`,
 			{
-				originalTitle,
+				original_title: originalTitle,
 			},
 		);
 		return res.data;
@@ -42,14 +42,14 @@ const postSuggestTitle = async (videoUuid: string, originalTitle: string) => {
 };
 
 const postSuggestDescription = async (
-	videoUuid: string,
+	video_uuid: string,
 	originalDescription: string,
 ) => {
 	try {
 		const res = await axiosInstance.post<ApiResponse<string>>(
-			`${AI_BASE_URL}/videos/${videoUuid}/suggest-description`,
+			`${AI_BASE_URL}/videos/${video_uuid}/suggest-description`,
 			{
-				originalDescription,
+				original_description: originalDescription,
 			},
 		);
 

@@ -10,7 +10,7 @@ import { TiDelete } from "react-icons/ti";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
-import { postSuggestTitle } from "@/app/api/ai/video";
+import { postSuggestDescription, postSuggestTitle } from "@/app/api/ai/video";
 import { putCourse } from "@/app/api/backend";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { CourseFormProps } from "@/app/types/course";
@@ -88,16 +88,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				setExistingPracticeFiles(initialData.practiceFile);
 			}
 		}
-	}, [
-		initialData,
-		setDescription,
-		setInstallEnvChecklist,
-		setKeyPoints,
-		setPrice,
-		setTags,
-		setTitle,
-		setTargetAudience,
-	]);
+	}, []);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -167,6 +158,25 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 					title,
 				);
 				console.log(res);
+				setTitle(res.data.title);
+			} else {
+				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const handleSuggestDescription = async () => {
+		try {
+			if (initialData?.videoInfo.videoUuid) {
+				console.log(initialData?.videoInfo.videoUuid, description);
+				const res = await postSuggestDescription(
+					initialData?.videoInfo.videoUuid,
+					description,
+				);
+				console.log(res);
+				setDescription(res.data.description);
 			} else {
 				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
 			}
@@ -358,7 +368,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md cursor-pointer"
 								onClick={handleSuggestTitle}
 							>
-								AI에게 추천받기에용
+								AI에게 추천받기
 							</button>
 						</div>
 					</div>
@@ -399,6 +409,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 							<button
 								type="button"
 								className="flex-none top-1 right-4 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
+								onClick={handleSuggestDescription}
 							>
 								AI에게 추천받기
 							</button>
@@ -502,7 +513,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 							</button>
 						</div>
 						<div className="flex flex-wrap gap-2 mt-2">
-							{tags.map((tag, idx) => (
+							{tags?.map((tag, idx) => (
 								<span
 									key={tag}
 									className="px-4 py-2 rounded-full flex items-center text-lg border !border-primary-green-600"

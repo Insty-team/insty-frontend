@@ -246,10 +246,11 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		try {
 			const res = await postSuggestMetadata(videoUuid);
 			if (res && res.data) {
+				console.log(res);
 				setTitle(res.data.title);
 				setDescription(res.data.description);
 				setTargetAudience(res.data.target);
-				setPrice(Number(res.data.price.replace(/[^0-9,]/g, "")));
+				setPrice(Number(res.data.price.replace(/[^0-9]/g, "")));
 				setTags(res.data.tags);
 			} else {
 				Swal.fire({

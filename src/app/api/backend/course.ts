@@ -19,13 +19,17 @@ const getMyCourses = async (page: number, pageSize: number) => {
 };
 
 const getCourseDetail = async (courseId: number) => {
-	const res = await axiosInstance.get(`${BASE_URL}/courses/${courseId}`, {
-		params: {
-			courseId,
-		},
-	});
+	try {
+		const res = await axiosInstance.get(`${BASE_URL}/courses/${courseId}`);
 
-	return res.data.data;
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+
+	throw new Error("서버와 통신 불가");
 };
 
 const putCourse = async (
