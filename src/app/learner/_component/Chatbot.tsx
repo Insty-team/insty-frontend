@@ -62,9 +62,10 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 			setMessages((prev) => [...prev, { type: "user", text: searchQuery }]);
 			try {
 				const res = await postAISearchRecommend(searchQuery);
+				console.log(res);
 				setMessages((prev) => [
 					...prev,
-					{ type: "assistant", text: res.data.message },
+					{ type: "assistant", text: res.data?.message },
 				]);
 				setRecommendations(res.data.courses);
 			} catch (error) {

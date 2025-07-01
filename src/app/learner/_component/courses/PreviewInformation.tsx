@@ -7,12 +7,12 @@ import { IoChatbubbleEllipses } from "react-icons/io5";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
-import { postPreviewVideo } from "@/app/api/backend";
+import { getCourseVideoPreview, postPreviewVideo } from "@/app/api/backend";
 import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssistantChatbotModal";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail } from "@/app/types/course";
 
-//import HLSPlayer from "./HLSPlayer";
+import HLSPlayer from "./HLSPlayer";
 
 interface PreviewInformationProps {
 	data: CourseDetail;
@@ -22,6 +22,8 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	const router = useRouter();
 	const [openPurchaseAssistantChatbot, setOpenPurchaseAssistantChatbot] =
 		useState(false);
+
+	const [m3u8Url, setM3u8Url] = useState<string | null>(null);
 
 	console.log(data);
 
@@ -41,14 +43,30 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 			);
 			if (res && res.data) {
 				console.log(res.data.signedUrl, "이거에요");
-				// try {
-				// 	const previewResponse = await getCourseVideoPreview(
-				// 		res.data.signedUrl,
-				// 	);
-				// 	console.log(typeof previewResponse);
-				// } catch (error) {
-				// 	console.log(error);
-				// }
+				try {
+					const previewResponse = await getCourseVideoPreview(
+						res.data.signedUrl,
+					);
+					console.log(typeof previewResponse);
+					console.log(previewResponse);
+
+					const masterUrl = res.data.signedUrl;
+					const lines = previewResponse.trim().split("\n");
+					const variantM3u8 = lines.find(
+						(line: string) => line.endsWith(".m3u8") && !line.startsWith("#"),
+					);
+					console.log(variantM3u8);
+
+					const baseUrl = masterUrl.substring(
+						0,
+						masterUrl.lastIndexOf("/") + 1,
+					);
+					const m3u8Url = baseUrl + variantM3u8;
+					console.log(m3u8Url);
+					setM3u8Url(m3u8Url);
+				} catch (error) {
+					console.log(error);
+				}
 			}
 		};
 
@@ -99,10 +117,13 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 			)}
 
 			<div className="flex gap-4 w-full">
-				{/* <HLSPlayer src={""} width="800px" /> */}
-				<div className="w-[800px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
-					<span className="text-gray-400">영상 미리보기</span>
-				</div>
+				{m3u8Url ? (
+					<HLSPlayer src={m3u8Url} width="800px" />
+				) : (
+					<div className="w-[800px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
+						<span className="text-gray-400">영상 미리보기</span>
+					</div>
+				)}
 
 				<div className="flex flex-col gap-2 flex-1 justify-between ml-2">
 					<div className="flex gap-2 flex-wrap">
