@@ -16,6 +16,7 @@ import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UploadformData } from "@/app/types/course";
 
 import { useCourseForm } from "../../../../hooks/useCourseForm";
+import { useTranscriptionProgress } from "./TranscriptionProgress";
 
 interface CourseUploadFormProps {
 	subject: string;
@@ -70,6 +71,11 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const [videoUuid, setVideoUuid] = useState<string>(
 		effectiveInitialData?.videoUuid || "",
 	);
+
+	// 전사 진행률 커스텀 훅 사용
+	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
+		useTranscriptionProgress(videoUuid);
+
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
 	const videoInputRef = useRef<HTMLInputElement>(null);
@@ -287,17 +293,37 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		<form onSubmit={handleSubmit}>
 			<div className="flex items-center justify-between">
 				<div className="font-bold text-3xl mb-12">{subject}</div>
-				{subject === "강의 업로드" && (
-					<BaseButton
-						title="AI로 초안 작성하기"
-						alignIcon="left"
-						icon={<BsStars />}
-						fill={false}
-						className="!px-4 !py-2 !rounded-lg !border-primary-green-600 !w-[210px]"
-						onClick={handleSuggestMetadata}
-					/>
-				)}
+				<BaseButton
+					title="AI로 초안 작성하기"
+					alignIcon="left"
+					icon={<BsStars />}
+					fill={false}
+					className="!px-4 !py-2 !rounded-lg !border-primary-green-600 !w-[210px] !disabled:cursor-not-allowed !disabled:bg-gray-scale-300"
+					onClick={handleSuggestMetadata}
+					disabled={transcriptionStatus !== "COMPLETED"}
+				/>
 			</div>
+			{/* 전사 진행률 표시 */}
+			{transcriptionStatus && videoUuid !== "" && (
+				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
+					<div className="mb-2">
+						<strong>변환 상태:</strong> {transcriptionStatus}
+					</div>
+					<div className="mb-2">
+						<strong>진행 단계:</strong> {transcriptionStep}
+					</div>
+					<div className="mb-1 flex justify-between">
+						<strong>진행률:</strong>
+						<span>{transcriptionProgress}%</span>
+					</div>
+					<div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+						<div
+							className="h-full bg-green-500 transition-all duration-500"
+							style={{ width: `${transcriptionProgress}%` }}
+						/>
+					</div>
+				</div>
+			)}
 			<div className="flex w-full gap-9">
 				<div className="flex flex-col w-3/5 max-w-[350px]">
 					<label className="block text-2xl font-semibold mb-1">

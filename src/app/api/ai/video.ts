@@ -63,4 +63,23 @@ const postSuggestDescription = async (
 	}
 };
 
-export { postSuggestDescription, postSuggestMetadata, postSuggestTitle };
+const getTranscriptionStatus = async (video_uuid: string) => {
+	try {
+		const res = await axiosInstance.get(
+			`${AI_BASE_URL}/videos/${video_uuid}/transcription-status`,
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return error.response.data;
+		}
+		throw new Error("상태 확인 실패");
+	}
+};
+
+export {
+	getTranscriptionStatus,
+	postSuggestDescription,
+	postSuggestMetadata,
+	postSuggestTitle,
+};

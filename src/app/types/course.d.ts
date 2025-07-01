@@ -35,6 +35,7 @@ type CourseDetail = {
 	videoInfo: {
 		videoType: string;
 		videoUuid: string;
+		originFileName: string;
 	};
 };
 
