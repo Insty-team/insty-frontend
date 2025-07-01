@@ -109,6 +109,10 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
+		if (file && !ALLOWED_FILE_TYPES.image.types.includes(file.type)) {
+			alert("이미지 관련 파일만 업로드 가능합니다.(jpg, jpeg, png, webp)");
+			return;
+		}
 		if (file) {
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -122,6 +126,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const handleRemoveThumbnail = () => {
 		setThumbnailUrl("");
 		setThumbnailFile(null);
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
 	};
 
 	const handleThumbnailClick = () => {
@@ -137,6 +144,10 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		const validFiles = files.filter((file) =>
 			ALLOWED_FILE_TYPES.document.types.includes(file.type),
 		);
+
+		//파일 형식 디버깅용
+		console.log("파일 형식 비교(설정한 확장자)", validFiles);
+		console.log("파일 형식 비교(내가 올린 파일)", files);
 
 		if (validFiles.length !== files.length) {
 			alert(
@@ -155,6 +166,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 	const handleRemovePracticeFile = (index: number) => {
 		setPracticeFiles((prev) => prev.filter((_, i) => i !== index));
+		if (practiceFileInputRef.current) {
+			practiceFileInputRef.current.value = "";
+		}
 	};
 
 	const handleUploadVideo = () => {
@@ -204,6 +218,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const handleRemoveVideoFile = () => {
 		setVideoFile(null);
 		setVideoUuid("");
+		if (videoInputRef.current) {
+			videoInputRef.current.value = "";
+		}
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -311,7 +328,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 						<input
 							ref={fileInputRef}
 							type="file"
-							accept="image/*"
+							accept=".jpg,.jpeg,.png,.webp"
 							className="hidden"
 							onChange={handleUploadThumbnail}
 						/>
@@ -319,6 +336,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 							title="썸네일 선택"
 							icon={<RiFolderUploadLine />}
 							onClick={handleThumbnailClick}
+							className="!rounded-lg !w-[75%] !mx-auto"
 						/>
 						<input
 							ref={videoInputRef}
@@ -331,17 +349,11 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 							title="영상 선택"
 							icon={<RiFolderUploadLine />}
 							onClick={handleUploadVideo}
+							className="!rounded-lg !w-[75%] !mx-auto"
 						/>
 						{videoFile && (
-							<div className="flex justify-between text-md truncate items-center bg-gray-100 p-2 rounded">
+							<div className="flex w-[75%] mx-auto justify-between text-md truncate items-center bg-gray-100 p-2 rounded">
 								업로드한 영상 : {videoFile.name}
-								<button
-									type="button"
-									onClick={handleRemoveVideoFile}
-									className="text-secondary-red-300"
-								>
-									✕
-								</button>
 							</div>
 						)}
 						<div className="flex flex-col gap-2">
@@ -357,6 +369,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 								title="실습 자료 파일 선택"
 								fill={false}
 								onClick={handlePracticeFileClick}
+								className="!rounded-lg !w-[75%] !mx-auto"
 							/>
 							{practiceFiles.length > 0 && (
 								<div className="flex flex-col gap-2 mt-2">
@@ -383,7 +396,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 						</div>
 						<button
 							type="button"
-							className="mt-4 text-2lg text-secondary-red-300 flex justify-center items-center cursor-pointer"
+							className="w-[75%] mx-auto mt-2 text-2lg py-3 text-secondary-red-300 flex justify-center items-center cursor-pointer hover:border-secondary-red-300 hover:bg-secondary-red-300 hover:rounded-lg hover:text-white transition-all duration-300"
+							onClick={handleRemoveVideoFile}
 						>
 							<span className="mr-2">업로드 강의 삭제</span>
 							<RiDeleteBinFill />
@@ -486,7 +500,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 					<div className="mt-4">
 						<label className="block text-2xl font-semibold mb-1">
-							핵심 전달이 되는 핵심 내용
+							해당 영상이 다루는 핵심 내용
 						</label>
 						<div className="flex flex-col gap-2">
 							{keyPoints.map((content, idx) => (
