@@ -47,6 +47,10 @@ type CourseFormProps = {
 };
 
 type AllowedFileType = {
+	image: {
+		accept: string;
+		types: string[];
+	};
 	document: {
 		accept: string;
 		types: string[];

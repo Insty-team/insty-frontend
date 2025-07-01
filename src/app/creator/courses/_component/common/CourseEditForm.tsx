@@ -88,10 +88,14 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				setExistingPracticeFiles(initialData.practiceFile);
 			}
 		}
-	}, []);
+	}, [initialData]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
+		if (file && !ALLOWED_FILE_TYPES.image.types.includes(file.type)) {
+			alert("이미지 관련 파일만 업로드 가능합니다.(jpg, jpeg, png, webp)");
+			return;
+		}
 		if (file) {
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -105,6 +109,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const handleRemoveThumbnail = () => {
 		setThumbnailUrl("");
 		setThumbnailFile(null);
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
 	};
 
 	const handleThumbnailClick = () => {
@@ -121,9 +128,13 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			ALLOWED_FILE_TYPES.document.types.includes(file.type),
 		);
 
+		//디버깅용 코드
+		console.log("파일 형식 비교(설정한 확장자)", validFiles);
+		console.log("파일 형식 비교(내가 올린 파일)", files);
+
 		if (validFiles.length !== files.length) {
 			alert(
-				"PDF, HWP, DOC, DOCX, ZIP, JPG, JPEG, PNG, GIF 파일만 업로드 가능합니다.",
+				`PDF, HWP, DOC, DOCX, ZIP, JPG, JPEG, PNG, GIF 파일만 업로드 가능합니다.`,
 			);
 			return;
 		}
@@ -146,6 +157,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			setExistingPracticeFiles((prev) => prev.filter((_, i) => i !== index));
 		} else {
 			setPracticeFiles((prev) => prev.filter((_, i) => i !== index));
+		}
+		if (practiceFileInputRef.current) {
+			practiceFileInputRef.current.value = "";
 		}
 	};
 
@@ -259,7 +273,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								src={initialData?.thumbnailUrl}
 								alt="썸네일"
 								className="w-full h-full object-contain rounded-2xl"
-								fill
+								width={400}
+								height={400}
 							/>
 						) : (
 							<span className="text-gray-400">썸네일을 선택해주세요</span>
@@ -286,6 +301,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 							title="썸네일 선택"
 							icon={<RiFolderUploadLine />}
 							onClick={handleThumbnailClick}
+							className="!rounded-lg !w-[75%] !mx-auto"
 						/>
 						<div className="flex flex-col gap-2">
 							<input
@@ -300,6 +316,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								title="실습 자료 파일 선택"
 								fill={false}
 								onClick={handlePracticeFileClick}
+								className="!rounded-lg !w-[75%] !mx-auto"
 							/>
 							{(practiceFiles.length > 0 ||
 								existingPracticeFiles.length > 0) && (
@@ -345,7 +362,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 						</div>
 						<button
 							type="button"
-							className="mt-4 text-2lg text-secondary-red-300 flex justify-center items-center cursor-pointer"
+							className="w-[75%] mx-auto mt-2 text-2lg py-3 text-secondary-red-300 flex justify-center items-center cursor-pointer hover:border-secondary-red-300 hover:bg-secondary-red-300 hover:rounded-lg hover:text-white transition-all duration-300"
 						>
 							<span className="mr-2">업로드 강의 삭제</span>
 							<RiDeleteBinFill />
@@ -355,7 +372,16 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 				<div className="flex-1 flex flex-col gap-4">
 					<div>
-						<label className="block text-2xl font-semibold mb-1">제목</label>
+						<div className="flex justify-between mb-1">
+							<label className="block text-2xl font-semibold">제목</label>
+							<button
+								type="button"
+								className="text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-1 text-md cursor-pointer hover:bg-gray-scale-300 hover:text-black-100 transition-all duration-300"
+								onClick={handleSuggestTitle}
+							>
+								AI에게 추천받기
+							</button>
+						</div>
 						<div className="flex gap-2 relative">
 							<input
 								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
@@ -363,13 +389,6 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
 							/>
-							<button
-								type="button"
-								className="absolute top-2 right-2 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md cursor-pointer"
-								onClick={handleSuggestTitle}
-							>
-								AI에게 추천받기
-							</button>
 						</div>
 					</div>
 
@@ -397,7 +416,16 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 					</div>
 
 					<div className="mt-4">
-						<label className="block text-2xl font-semibold mb-1">설명</label>
+						<div className="flex justify-between mb-1">
+							<label className="block text-2xl font-semibold">설명</label>
+							<button
+								type="button"
+								className="flex-none top-1 right-4 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-1 text-md cursor-pointer hover:bg-gray-scale-300 hover:text-black-100 transition-all duration-300"
+								onClick={handleSuggestDescription}
+							>
+								AI에게 추천받기
+							</button>
+						</div>
 						<div className="flex flex-col gap-2">
 							<textarea
 								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg resize-none"
@@ -406,13 +434,6 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 							/>
-							<button
-								type="button"
-								className="flex-none top-1 right-4 text-black-300 bg-white border border-gray-scale-300 rounded-2xl px-4 py-2 text-md"
-								onClick={handleSuggestDescription}
-							>
-								AI에게 추천받기
-							</button>
 						</div>
 					</div>
 
@@ -462,7 +483,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 					<div className="mt-4">
 						<label className="block text-2xl font-semibold mb-1">
-							핵심 전달이 되는 핵심 내용
+							해당 영상이 다루는 핵심 내용
 						</label>
 						<div className="flex flex-col gap-2">
 							{keyPoints.map((content, idx) => (
