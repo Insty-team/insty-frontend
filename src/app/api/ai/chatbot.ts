@@ -3,45 +3,11 @@ import axios from "axios";
 import { AIHistoryResponse, AIMessageResponse } from "@/app/types/ai";
 import { ApiResponse } from "@/app/types/api";
 import { PurchaseAssistantChatbotReq } from "@/app/types/course";
-import { RecommendMessage } from "@/app/types/recommend";
 
 import axiosInstance from "../interceptor";
 
 // AI 챗봇 관련 API
-const AI_BASE_URL = "http://13.125.92.232:8000/api/v1/ai";
-
-const postAISearchRecommend = async (query: string) => {
-	try {
-		const res = await axiosInstance.post<ApiResponse<string[]>>(
-			`${AI_BASE_URL}/search/recommend`,
-			{
-				query,
-			},
-		);
-		return res.data;
-	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			return error.response.data;
-		}
-
-		throw new Error("서버와 통신 불가");
-	}
-};
-
-const getAISearchRecommend = async () => {
-	try {
-		const res = await axiosInstance.get<ApiResponse<RecommendMessage[]>>(
-			`${AI_BASE_URL}/search/recommend`,
-		);
-		return res.data;
-	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			return error.response.data;
-		}
-
-		throw new Error("서버와 통신 불가");
-	}
-};
+const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
 
 const postPurchaseAssistantChatbot = async (
 	course_id: number,
@@ -164,9 +130,7 @@ const getAIMessageList = async (
 export {
 	getAIChatHistory,
 	getAIMessageList,
-	getAISearchRecommend,
 	getSessionMessages,
-	postAISearchRecommend,
 	postChatSession,
 	postMessageStream,
 	postPurchaseAssistantChatbot,

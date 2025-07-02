@@ -5,7 +5,7 @@ import { ApiResponse } from "@/app/types/api";
 import axiosInstance from "../interceptor";
 
 // AI 영상 초안 제작 관련 API
-const AI_BASE_URL = "http://13.125.92.232:8000/api/v1/ai";
+const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
 
 const postSuggestMetadata = async (video_uuid: string) => {
 	console.log(video_uuid);
