@@ -34,7 +34,11 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 					setMessages((prev) => [...prev, ...messages]);
 
 					const lastMessage = res.data.messages[res.data.messages.length - 1];
-					if (lastMessage.courses) {
+					if (
+						lastMessage &&
+						lastMessage.courses &&
+						lastMessage.courses.length > 0
+					) {
 						setRecommendations(lastMessage.courses);
 					}
 				}
@@ -67,7 +71,9 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 					...prev,
 					{ type: "assistant", text: res.data?.message },
 				]);
-				setRecommendations(res.data.courses);
+				if (res.data?.courses) {
+					setRecommendations(res.data.courses);
+				}
 			} catch (error) {
 				console.log(error);
 			}
@@ -98,7 +104,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 						</div>
 					</div>
 					<button
-						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2"
+						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2 disabled:bg-gray-scale-300"
 						onClick={changeDirectSearch}
 						disabled
 					>
@@ -167,7 +173,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 					<Image src="/profile.svg" alt="profile" width={50} height={50} />
 					<input
 						type="text"
-						placeholder="입력해주세요 ..."
+						placeholder="입력 후 엔터를 눌러 주세요."
 						className="flex-1 rounded-xl px-4 py-2.5 text-[15px] bg-white outline-none shadow-sm border-none"
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}

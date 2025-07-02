@@ -3,6 +3,18 @@
  * 모든 상수는 `UpperCase`로 작성하고 `underscore(_)`로 구분합니다.
  */
 
+//퍼블릭 페이지(토큰 필요X)
+export const PUBLIC_PAGE_PATH = [
+	"/",
+	"/login",
+	"/login/learner",
+	"/login/creator",
+	"/signup",
+	"/kakao/login/callback",
+	"/naver/login/callback",
+	"/google/login/callback",
+];
+
 // localStorage key 관련
 export const INSTY_ACCESS_TOKEN_KEY = "@insty-app.accessToken";
 export const INSTY_REFRESH_TOKEN_KEY = "@insty-app.refreshToken";

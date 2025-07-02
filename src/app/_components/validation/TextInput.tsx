@@ -19,16 +19,18 @@ function TextInput<TFieldValues>({
 				type={type}
 				placeholder={placeholder}
 				className={`w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none ${
-					error ? "border !border-secondary-red-300" : ""
+					error ? "border !border-secondary-red-300" : "border !border-gray-200"
 				}`}
 				{...register(name, validation)}
 			/>
 			{checkDuplication && (
-				<div className="absolute right-3 top-10.5">{checkDuplication}</div>
+				<div className="absolute right-3 top-11 ">{checkDuplication}</div>
 			)}
-			{error && (
-				<p className="mt-1 ml-2 text-secondary-red-300">{error.message}</p>
-			)}
+			<div className="min-h-[24px]">
+				{error && (
+					<p className="mt-1 ml-2 text-secondary-red-300">{error.message}</p>
+				)}
+			</div>
 		</div>
 	);
 }

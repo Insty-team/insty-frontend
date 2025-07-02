@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
+import Swal from "sweetalert2";
 
 import { getAccessToken, getRefreshToken, setAccessToken } from "@/app/utils";
 
@@ -78,7 +79,15 @@ axiosInstance.interceptors.response.use(
 			} catch (err) {
 				processQueue(err, null);
 				await postLogout();
-				window.location.href = "/login";
+				Swal.fire({
+					icon: "warning",
+					title: "로그인 만료",
+					text: "로그인 세션이 만료되었습니다. 다시 로그인 해주세요.",
+					confirmButtonText: "확인",
+					confirmButtonColor: "#6ead79",
+				}).then(() => {
+					window.location.href = "/login";
+				});
 				return Promise.reject(err);
 			} finally {
 				isRefreshing = false;
