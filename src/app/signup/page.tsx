@@ -50,7 +50,7 @@ function Signup() {
 				icon: "success",
 				iconColor: "#6ead79",
 				title: "회원가입 성공",
-				text: `${res.nickname}님, 환영합니다.}`,
+				text: `${res.nickname}님, 환영합니다.`,
 				confirmButtonText: "로그인하러 가기",
 				confirmButtonColor: "#6ead79",
 			}).then(() => {
@@ -112,7 +112,13 @@ function Signup() {
 									setNicknameCheckStatus("");
 								},
 							}}
-							error={errors.nickname}
+							error={
+								errors.nickname
+									? errors.nickname
+									: !errors.nickname && nickname && isNicknameAvailable === null
+										? { message: "닉네임 중복 확인을 해주세요." }
+										: undefined
+							}
 							checkDuplication={
 								<button
 									type="button"
@@ -158,7 +164,13 @@ function Signup() {
 									setEmailCheckStatus("");
 								},
 							}}
-							error={errors.email}
+							error={
+								errors.email
+									? errors.email
+									: !errors.email && email && isEmailAvailable === null
+										? { message: "이메일 중복 확인을 해주세요." }
+										: undefined
+							}
 							checkDuplication={
 								<button
 									type="button"
@@ -196,7 +208,8 @@ function Signup() {
 							required: "",
 							pattern: {
 								value: passwordReg,
-								message: "비밀번호 형식이 잘못되었습니다.",
+								message:
+									"영문/숫자/특수문자를 포함한 8~20자 이내로 입력해주세요.",
 							},
 						}}
 						error={errors.password}
@@ -215,7 +228,7 @@ function Signup() {
 
 					<button
 						type="submit"
-						className={`w-full py-3 rounded-xl text-white font-semibold ${
+						className={`w-full mt-2 py-3 rounded-xl text-white font-semibold ${
 							!isNicknameAvailable ||
 							!isEmailAvailable ||
 							!getValues("password") ||

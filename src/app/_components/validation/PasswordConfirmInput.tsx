@@ -40,7 +40,7 @@ export default function PasswordConfirmInput<TFieldValues>({
 			/>
 			<button
 				type="button"
-				className="absolute right-3 top-11 cursor-pointer"
+				className="absolute right-3 top-11.5 cursor-pointer"
 				onClick={onChangeConfirmPassword}
 			>
 				<div className="text-gray-400 flex items-center">
@@ -51,9 +51,11 @@ export default function PasswordConfirmInput<TFieldValues>({
 					)}
 				</div>
 			</button>
-			{error && (
-				<p className="mt-1 ml-2 text-secondary-red-300">{error.message}</p>
-			)}
+			<div className="min-h-[24px]">
+				{error && (
+					<p className="mt-1 ml-2 text-secondary-red-300">{error.message}</p>
+				)}
+			</div>
 		</div>
 	);
 }
