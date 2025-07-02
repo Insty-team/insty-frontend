@@ -454,11 +454,13 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 									{existingPracticeFiles.map((file, index) => (
 										<div
 											key={`existing-${index}`}
-											className="flex items-center justify-between bg-gray-100 p-2 rounded"
+											className="flex w-[75%] mx-auto items-center justify-between bg-gray-100 p-2 rounded truncate"
 										>
 											<div className="text-md truncate flex items-center">
 												<FaRegFile className="mr-2" />
-												{file.name}
+												{file.name.length >= 15
+													? `${file.name.slice(0, 15)}...`
+													: file.name}
 											</div>
 											<button
 												type="button"
