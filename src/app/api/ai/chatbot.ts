@@ -7,7 +7,7 @@ import { PurchaseAssistantChatbotReq } from "@/app/types/course";
 import axiosInstance from "../interceptor";
 
 // AI 챗봇 관련 API
-const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
+const AI_BASE_URL = process.env.NEXT_PUBLIC_BACK_AI_URL;
 
 const postPurchaseAssistantChatbot = async (
 	course_id: number,

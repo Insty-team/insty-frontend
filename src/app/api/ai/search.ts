@@ -5,7 +5,7 @@ import { RecommendMessage } from "@/app/types/recommend";
 
 import axiosInstance from "../interceptor";
 
-const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
+const AI_BASE_URL = process.env.NEXT_PUBLIC_BACK_AI_URL;
 
 // AI 추천 관련 API
 const postAISearchRecommend = async (query: string) => {
