@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
 
 import { PasswordInput, TextInput } from "@/app/_components/validation";
 import { getSocialAuthCode, postLogin } from "@/app/api/backend";
@@ -22,10 +23,12 @@ function Login() {
 		register,
 		handleSubmit,
 		formState: { errors },
-		getValues,
+		watch,
 	} = useForm<LoginForm>({
 		mode: "onChange",
 	});
+	const email = watch("email");
+	const password = watch("password");
 
 	const onSubmit = async (data: LoginForm) => {
 		try {
@@ -34,21 +37,33 @@ function Login() {
 				userType: userType === "creator" ? "CREATOR" : "LEARNER",
 			};
 			const res = await postLogin(submitData);
-			setAccessToken(res.data.token.accessToken);
-			setRefreshToken(res.data.token.refreshToken);
+			if (res && res.success) {
+				setAccessToken(res.data.token.accessToken);
+				setRefreshToken(res.data.token.refreshToken);
 
-			//액세스 토큰으로 나중에 사용자 정보를 조회한다. 이후 값 저장
-			setUser({
-				nickname: res.data.nickname,
-				userType: res.data.userType,
-			});
+				//액세스 토큰으로 나중에 사용자 정보를 조회한다. 이후 값 저장
+				setUser({
+					nickname: res.data.nickname,
+					userType: res.data.userType,
+				});
 
-			if (userType === "creator") {
-				setUserType("CREATOR");
-				router.push("/creator/courses");
+				if (userType === "creator") {
+					setUserType("CREATOR");
+					router.push("/creator/courses");
+				} else {
+					setUserType("LEARNER");
+					router.push("/learner/recommend");
+				}
 			} else {
-				setUserType("LEARNER");
-				router.push("/learner/recommend");
+				Swal.fire({
+					title: "로그인 실패!",
+					text: `${res.error.message} === "사용자를 찾을 수 없습니다."`
+						? "이메일을 확인해주세요."
+						: `${res.error.message}`,
+					icon: "error",
+				}).then(() => {
+					return;
+				});
 			}
 		} catch (error) {
 			console.error("로그인 실패:", error);
@@ -108,18 +123,12 @@ function Login() {
 					<button
 						type="submit"
 						className={`w-full py-3 rounded-xl text-white font-semibold ${
-							!!errors.email ||
-							!!errors.password ||
-							!getValues("email") ||
-							!getValues("password")
+							!!errors.email || !!errors.password || !email || !password
 								? "bg-gray-scale-300 cursor-not-allowed"
 								: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
 						}`}
 						disabled={
-							!!errors.email ||
-							!!errors.password ||
-							!getValues("email") ||
-							!getValues("password")
+							!!errors.email || !!errors.password || !email || !password
 						}
 					>
 						로그인
