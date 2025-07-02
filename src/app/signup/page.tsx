@@ -105,7 +105,7 @@ function Signup() {
 								required: "",
 								pattern: {
 									value: nicknameReg,
-									message: "닉네임 형식이 잘못되었습니다.",
+									message: "닉네임은 2글자 이상이여야합니다.",
 								},
 								onChange: () => {
 									setIsNicknameAvailable(null);
