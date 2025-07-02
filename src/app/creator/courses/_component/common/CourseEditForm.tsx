@@ -11,11 +11,16 @@ import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
 import { postSuggestDescription, postSuggestTitle } from "@/app/api/ai/video";
-import { putCourse } from "@/app/api/backend";
+import {
+	postCourseVideo,
+	putCourse,
+	putCourseVideoUpload,
+} from "@/app/api/backend";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { CourseFormProps } from "@/app/types/course";
 
 import { useCourseForm } from "../../../../hooks/useCourseForm";
+import { useTranscriptionProgress } from "./TranscriptionProgress";
 
 const CourseEditForm: React.FC<CourseFormProps> = ({
 	subject,
@@ -68,6 +73,14 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	>([]);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
+	const videoInputRef = useRef<HTMLInputElement>(null);
+	const [videoFile, setVideoFile] = useState<File | null>(null);
+	const [videoFileName, setVideoFileName] = useState<string | null>(null);
+	const [videoUuid, setVideoUuid] = useState<string | null>(null);
+
+	// 전사 진행률 커스텀 훅 사용
+	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
+		useTranscriptionProgress(videoUuid);
 
 	useEffect(() => {
 		if (initialData) {
@@ -86,6 +99,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			);
 			if (initialData.practiceFile && initialData.practiceFile.length > 0) {
 				setExistingPracticeFiles(initialData.practiceFile);
+			}
+			if (initialData.videoInfo && initialData.videoInfo.originFileName) {
+				setVideoFileName(initialData.videoInfo.originFileName);
 			}
 		}
 	}, [initialData]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -163,16 +179,77 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		}
 	};
 
+	const handleUploadVideo = () => {
+		videoInputRef.current?.click();
+	};
+
+	const handleVideoFileChange = async (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		if (!ALLOWED_FILE_TYPES.video.types.includes(file.type)) {
+			alert(
+				"지원하지 않는 비디오 형식입니다. MP4, MOV, AVI 파일만 업로드 가능합니다.",
+			);
+			return;
+		}
+
+		if (file.size > 2 * 1024 * 1024 * 1024) {
+			alert("파일 크기가 너무 큽니다. 2GB 이하의 파일만 업로드 가능합니다.");
+			return;
+		}
+
+		// 새 영상 업로드 시 기존 영상 정보 삭제
+		setVideoFileName(null);
+		handleRemoveThumbnail();
+		setVideoFile(file);
+		setVideoFileName(file.name);
+		console.log("선택된 비디오:", file);
+
+		try {
+			const videoInfo = {
+				fileName: file.name,
+				contentType: file.type,
+			};
+			const res = await postCourseVideo(videoInfo);
+			console.log(res);
+			setVideoUuid(res.data.uuid);
+			try {
+				const response = await putCourseVideoUpload(res.data.uploadUrl, file);
+				console.log(response, "비디오 업로드요청 성공");
+			} catch (error) {
+				console.log(error);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const handleRemoveVideoFile = () => {
+		setVideoFile(null);
+		setVideoFileName(null);
+		if (videoInputRef.current) {
+			videoInputRef.current.value = "";
+		}
+	};
+
 	const handleSuggestTitle = async () => {
 		try {
-			if (initialData?.videoInfo.videoUuid) {
-				console.log(initialData?.videoInfo.videoUuid, title);
-				const res = await postSuggestTitle(
-					initialData?.videoInfo.videoUuid,
-					title,
-				);
-				console.log(res);
-				setTitle(res.data.title);
+			if (videoUuid) {
+				console.log(videoUuid, title);
+				const res = await postSuggestTitle(videoUuid, title);
+				if (res && res.data) {
+					console.log(res);
+					setTitle(res.data.title);
+				} else {
+					Swal.fire({
+						title: `${res.error.code}`,
+						text: `${res.error.message}`,
+						icon: "error",
+					});
+				}
 			} else {
 				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
 			}
@@ -183,14 +260,21 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 	const handleSuggestDescription = async () => {
 		try {
-			if (initialData?.videoInfo.videoUuid) {
-				console.log(initialData?.videoInfo.videoUuid, description);
-				const res = await postSuggestDescription(
-					initialData?.videoInfo.videoUuid,
-					description,
-				);
-				console.log(res);
-				setDescription(res.data.description);
+			if (videoUuid) {
+				console.log(videoUuid, description);
+				const res = await postSuggestDescription(videoUuid, description);
+				if (res && res.data) {
+					console.log(res);
+					setDescription(res.data.description);
+				} else {
+					Swal.fire({
+						title: `${res.error.code}`,
+						text: `${res.error.message}`,
+						icon: "error",
+					}).then(() => {
+						return;
+					});
+				}
 			} else {
 				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
 			}
@@ -221,13 +305,14 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			keyPoints,
 			installEnvChecklist,
 			deletePracticeField: deletePracticeFiles,
-			updateVideoUuid: null,
+			updateVideoUuid: videoUuid ? videoUuid : null,
 		};
 		const thumbnailData = thumbnailFile;
 		const practiceFileData = practiceFiles;
 		console.log("폼 데이터:", formData);
 		console.log("썸네일 데이터:", thumbnailData);
 		console.log("실습 파일 데이터:", practiceFileData);
+		console.log("비디오 업로드 요청 데이터:", videoUuid);
 
 		try {
 			if (typeof initialData?.courseId !== "number") {
@@ -262,15 +347,36 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			<div className="flex items-center justify-between">
 				<div className="font-bold text-3xl mb-12">{subject}</div>
 			</div>
+			{/* 전사 진행률 표시 */}
+			{transcriptionStatus && videoUuid !== "" && (
+				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
+					<div className="mb-2">
+						<strong>변환 상태:</strong> {transcriptionStatus}
+					</div>
+					<div className="mb-2">
+						<strong>진행 단계:</strong> {transcriptionStep}
+					</div>
+					<div className="mb-1 flex justify-between">
+						<strong>진행률:</strong>
+						<span>{transcriptionProgress}%</span>
+					</div>
+					<div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+						<div
+							className="h-full bg-green-500 transition-all duration-500"
+							style={{ width: `${transcriptionProgress}%` }}
+						/>
+					</div>
+				</div>
+			)}
 			<div className="flex w-full gap-9">
 				<div className="flex flex-col w-3/5 max-w-[350px]">
 					<label className="block text-2xl font-semibold mb-1">
 						강의 썸네일
 					</label>
 					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
-						{initialData?.thumbnailUrl ? (
+						{thumbnailUrl ? (
 							<Image
-								src={initialData?.thumbnailUrl}
+								src={thumbnailUrl}
 								alt="썸네일"
 								className="w-full h-full object-contain rounded-2xl"
 								width={400}
@@ -303,6 +409,27 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 							onClick={handleThumbnailClick}
 							className="!rounded-lg !w-[75%] !mx-auto"
 						/>
+						<input
+							ref={videoInputRef}
+							type="file"
+							accept={ALLOWED_FILE_TYPES.video.accept}
+							className="hidden"
+							onChange={handleVideoFileChange}
+						/>
+						<BaseButton
+							title="영상 선택"
+							icon={<RiFolderUploadLine />}
+							onClick={handleUploadVideo}
+							className="!rounded-lg !w-[75%] !mx-auto"
+						/>
+						{videoFileName && (
+							<div className="flex w-[75%] mx-auto justify-between text-md truncate items-center bg-gray-100 p-2 rounded">
+								<div className="text-md truncate flex items-center">
+									{videoFile ? "" : "기존 영상 : "}
+									{videoFileName}
+								</div>
+							</div>
+						)}
 						<div className="flex flex-col gap-2">
 							<input
 								ref={practiceFileInputRef}
@@ -363,6 +490,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 						<button
 							type="button"
 							className="w-[75%] mx-auto mt-2 text-2lg py-3 text-secondary-red-300 flex justify-center items-center cursor-pointer hover:border-secondary-red-300 hover:bg-secondary-red-300 hover:rounded-lg hover:text-white transition-all duration-300"
+							onClick={handleRemoveVideoFile}
 						>
 							<span className="mr-2">업로드 강의 삭제</span>
 							<RiDeleteBinFill />
