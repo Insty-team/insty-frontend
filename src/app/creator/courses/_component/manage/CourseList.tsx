@@ -6,7 +6,6 @@ import { GoCalendar } from "react-icons/go";
 import { GoGraph } from "react-icons/go";
 import { IoClipboardOutline } from "react-icons/io5";
 import { IoPencil } from "react-icons/io5";
-import { LiaWonSignSolid } from "react-icons/lia";
 
 import { BaseButton } from "@/app/_components/common";
 import { MyCoursesItems } from "@/app/types/course";
@@ -82,13 +81,6 @@ function CourseList({
 								</span>
 							</span>
 							<span className="mx-2 text-gray-300">·</span>
-							<span className="flex items-center gap-1 text-gray-500">
-								<LiaWonSignSolid className="size-8" />
-								가격
-								<span className="text-primary-green-600 ml-1">
-									{course.price.toLocaleString()}원
-								</span>
-							</span>
 						</div>
 						<div className="flex gap-2 mt-2 w-[60%]">
 							<BaseButton

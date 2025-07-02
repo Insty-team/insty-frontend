@@ -222,49 +222,86 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	};
 
 	const handleRemoveVideoFile = () => {
-		setVideoFile(null);
-		setVideoUuid("");
-		if (videoInputRef.current) {
-			videoInputRef.current.value = "";
-		}
+		Swal.fire({
+			title: "업로드한 영상을 삭제하시겠어요?",
+			text: "재업로드시, 영상 분석이 다시 진행됩니다.",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: "삭제",
+			cancelButtonText: "취소",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				setVideoFile(null);
+				setVideoUuid("");
+				if (videoInputRef.current) {
+					videoInputRef.current.value = "";
+				}
+			}
+		});
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (
+		if (!videoFile) {
+			Swal.fire({
+				title: "비디오를 업로드 해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			}).then(() => {
+				return;
+			});
+		} else if (transcriptionProgress !== 100) {
+			Swal.fire({
+				title: "아직 영상 분석이 완료되지 않았습니다.",
+				text: "조금만 기다려주세요!",
+				icon: "error",
+				confirmButtonText: "확인",
+			}).then(() => {
+				return;
+			});
+		} else if (
 			title === "" ||
-			price === 0 ||
 			description === "" ||
 			installEnvChecklist.length === 0 ||
 			keyPoints.length === 0
 		) {
-			alert("모든 항목을 입력해주세요.");
-			return;
+			Swal.fire({
+				title: "모든 항목을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			}).then(() => {
+				return;
+			});
+		} else {
+			const formData: UploadformData = {
+				title,
+				description,
+				targetAudience,
+				price,
+				tags,
+				keyPoints,
+				isShow: true,
+				installEnvChecklist,
+				videoUuid: videoUuid,
+				videoFile: videoFile,
+				thumbnailFile: thumbnailFile ? thumbnailFile : null,
+				practiceFiles: practiceFiles.length > 0 ? practiceFiles : [],
+			};
+
+			setData(formData);
+			onSubmit(formData);
 		}
-
-		const formData: UploadformData = {
-			title,
-			description,
-			targetAudience,
-			price,
-			tags,
-			keyPoints,
-			isShow: true,
-			installEnvChecklist,
-			videoUuid: videoUuid,
-			videoFile: videoFile,
-			thumbnailFile: thumbnailFile ? thumbnailFile : null,
-			practiceFiles: practiceFiles.length > 0 ? practiceFiles : [],
-		};
-
-		setData(formData);
-		onSubmit(formData);
 	};
 
 	const handleSuggestMetadata = async () => {
 		if (!videoUuid) {
-			alert("먼저 비디오를 업로드해주세요.");
-			return;
+			Swal.fire({
+				title: "먼저 비디오를 업로드 해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			}).then(() => {
+				return;
+			});
 		}
 		try {
 			const res = await postSuggestMetadata(videoUuid);
@@ -273,7 +310,6 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				setTitle(res.data.title);
 				setDescription(res.data.description);
 				setTargetAudience(res.data.target);
-				setPrice(Number(res.data.price.replace(/[^0-9]/g, "")));
 				setTags(res.data.tags);
 			} else {
 				Swal.fire({
@@ -300,7 +336,11 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					fill={false}
 					className="!px-4 !py-2 !rounded-lg !border-primary-green-600 !w-[210px] !disabled:cursor-not-allowed !disabled:bg-gray-scale-300"
 					onClick={handleSuggestMetadata}
-					disabled={transcriptionStatus !== "COMPLETED"}
+					disabled={
+						transcriptionStatus !== "COMPLETED" ||
+						videoFile === null ||
+						videoUuid === ""
+					}
 				/>
 			</div>
 			{/* 전사 진행률 표시 */}
@@ -454,15 +494,6 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 								placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
 								value={targetAudience}
 								onChange={(e) => setTargetAudience(e.target.value)}
-							/>
-						</div>
-						<div className="flex-1">
-							<label className="block text-2xl font-semibold mb-1">가격</label>
-							<input
-								className="w-full bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-								placeholder="예: 199,990"
-								value={price}
-								onChange={(e) => setPrice(Number(e.target.value))}
 							/>
 						</div>
 					</div>

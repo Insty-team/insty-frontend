@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FiFile } from "react-icons/fi";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
 import VideoPlayer from "@/app/_components/common/VideoPlayer";
 import { postCourse } from "@/app/api/backend";
-import { useVideoUploadStore } from "@/app/stores";
+import { useUserStore, useVideoUploadStore } from "@/app/stores";
 import { UploadformData } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
 
@@ -23,6 +24,7 @@ function PreviewUploadInfomation({
 }: PreviewUploadInfomationProps) {
 	const [videoDuration, setVideoDuration] = useState(0);
 	const { reset } = useVideoUploadStore();
+	const { user: userData } = useUserStore();
 
 	const router = useRouter();
 
@@ -103,7 +105,9 @@ function PreviewUploadInfomation({
 					<div className="flex flex-col gap-4">
 						<div className="flex gap-2 items-center aspect-auto">
 							<Image src="/profile.svg" alt="user" width={48} height={48} />
-							<span className="text-black-100 text-2xl">크리에이터 이름</span>
+							<span className="text-black-100 text-2xl">
+								{userData?.nickname}
+							</span>
 						</div>
 						<div className="flex gap-2 items-center">
 							<Image src="/user.svg" alt="user" width={36} height={36} />
@@ -114,9 +118,31 @@ function PreviewUploadInfomation({
 
 						<div className="flex gap-2 items-center">
 							<Image src="/file.svg" alt="file" width={36} height={36} />
-							<span className="text-black-300 text-2xl">실습 자료 포함</span>
+							<span className="text-black-300 text-2xl">
+								{data.practiceFiles ? "실습 자료 포함" : "실습 자료 미포함"}
+							</span>
 						</div>
-
+						{data.practiceFiles && (
+							<div className="flex flex-col ml-6 text-2lg">
+								{data.practiceFiles.map((file) => {
+									const url = URL.createObjectURL(file);
+									return (
+										<a
+											key={file.name}
+											href={url}
+											download={file.name}
+											className="flex items-center gap-2 hover:underline cursor-pointer"
+											onClick={() => {
+												setTimeout(() => URL.revokeObjectURL(url), 1000);
+											}}
+										>
+											<FiFile />
+											{file.name}
+										</a>
+									);
+								})}
+							</div>
+						)}
 						<div className="flex gap-2 items-center">
 							<Image src="/time.svg" alt="clock" width={36} height={36} />
 							<span className="text-black-300 text-2xl">
@@ -124,7 +150,7 @@ function PreviewUploadInfomation({
 							</span>
 						</div>
 					</div>
-					<div className="flex gap-4 mt-auto pt-8">
+					<div className="flex gap-4 pt-8">
 						<BaseButton title="수정하기" fill={false} onClick={onEdit} />
 						<BaseButton
 							title="업로드 진행하기"
