@@ -1,5 +1,6 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 
+import { ApiResponse } from "@/app/types/api";
 import { LoginForm, LoginResponse } from "@/app/types/index.d";
 
 import axiosInstance from "../interceptor";
@@ -8,7 +9,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
 export const postLogin = async (
 	data: LoginForm,
-): Promise<AxiosResponse<LoginResponse>> => {
+): Promise<ApiResponse<LoginResponse>> => {
 	try {
 		//테스트 코드 추가
 		console.log(BASE_URL);

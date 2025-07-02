@@ -287,13 +287,16 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		e.preventDefault();
 		if (
 			title === "" ||
-			price === 0 ||
 			description === "" ||
 			installEnvChecklist.length === 0 ||
 			keyPoints.length === 0
 		) {
-			alert("모든 항목을 입력해주세요.");
-			return;
+			Swal.fire({
+				title: "모든 항목을 입력해주세요.",
+				icon: "error",
+			}).then(() => {
+				return;
+			});
 		}
 
 		const formData = {
@@ -530,15 +533,6 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
 								value={targetAudience}
 								onChange={(e) => setTargetAudience(e.target.value)}
-							/>
-						</div>
-						<div className="flex-1">
-							<label className="block text-2xl font-semibold mb-1">가격</label>
-							<input
-								className="w-full bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-								placeholder="예: 199,990"
-								value={price}
-								onChange={(e) => setPrice(Number(e.target.value))}
 							/>
 						</div>
 					</div>

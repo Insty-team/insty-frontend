@@ -95,7 +95,7 @@ function CreatorHeader() {
 							<Link
 								href={`${menu.id === 1 || menu.id === 4 ? "" : menu.path}`}
 								key={menu.id}
-								className={`${menu.id === 1 || menu.id === 4 ? "text-gray-scale-300 disabled disabled:cursor-not-allowed" : "hover:text-primary-green-500 cursor-pointer "}`}
+								className={`${menu.id === 1 || menu.id === 4 ? "text-gray-scale-300 disabled cursor-not-allowed" : "hover:text-primary-green-500 cursor-pointer "}`}
 							>
 								<span
 									className={
@@ -109,7 +109,7 @@ function CreatorHeader() {
 					</div>
 				</div>
 				<div className="flex gap-8 justify-end items-center">
-					<GoBellFill className="cursor-pointer size-8 text-gray-300" />
+					<GoBellFill className="cursor-not-allowed size-8 text-gray-300" />
 					<Link href={mypage.path} key={mypage.id}>
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
 					</Link>

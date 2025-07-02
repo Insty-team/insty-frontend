@@ -108,7 +108,7 @@ function LearnerHeader() {
 					</div>
 				</div>
 				<div className="flex gap-8 justify-center items-center">
-					<GoBellFill className="cursor-pointer size-8 text-gray-300" />
+					<GoBellFill className="cursor-not-allowed size-8 text-gray-300" />
 					{userInfo?.thumbnailUrl ? (
 						<Image
 							src={userInfo.thumbnailUrl}
