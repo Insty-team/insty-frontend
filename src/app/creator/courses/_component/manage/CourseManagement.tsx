@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
@@ -72,13 +73,22 @@ function CourseManagement() {
 		);
 	}
 
-	if (isLoading)
+	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center h-screen">
 				<Loading width={100} height={100} />
 			</div>
 		);
-	if (error) return <div>에러가 발생했습니다</div>;
+	}
+	//오류 처리
+	if (error) {
+		Swal.fire({
+			title: `${error.name}`,
+			text: `${error.message}`,
+			icon: "error",
+			confirmButtonText: "확인",
+		});
+	}
 
 	return (
 		<>
