@@ -334,6 +334,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				icon: "success",
 				confirmButtonText: "확인",
 				confirmButtonColor: "#6ead79",
+				timer: 30000,
+				timerProgressBar: true,
 			}).then(async () => {
 				await queryClient.invalidateQueries({
 					queryKey: ["courseDetail", initialData?.courseId],
