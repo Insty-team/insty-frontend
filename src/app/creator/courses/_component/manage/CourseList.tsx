@@ -2,6 +2,7 @@
 
 import dayjs from "dayjs";
 import Image from "next/image";
+import { useState } from "react";
 import { GoCalendar } from "react-icons/go";
 import { GoGraph } from "react-icons/go";
 import { IoClipboardOutline } from "react-icons/io5";
@@ -19,10 +20,48 @@ function CourseList({
 	onEdit: (courseId: number) => void;
 	onDetail: (courseId: number) => void;
 }) {
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 5;
+
+	const totalPages = Math.ceil(myCoursesItems.length / itemsPerPage);
+
+	const currentCourses = myCoursesItems.slice(
+		(currentPage - 1) * itemsPerPage,
+		currentPage * itemsPerPage,
+	);
+
+	const handlePageChange = (page: number) => {
+		setCurrentPage(page);
+	};
+
+	const getPageNumbers = () => {
+		const pages = [];
+		const maxVisiblePages = 5;
+
+		if (totalPages <= maxVisiblePages) {
+			for (let i = 1; i <= totalPages; i++) {
+				pages.push(i);
+			}
+		} else {
+			let start = Math.max(1, currentPage - 2);
+			const end = Math.min(totalPages, start + maxVisiblePages - 1);
+
+			if (end === totalPages) {
+				start = Math.max(1, end - maxVisiblePages + 1);
+			}
+
+			for (let i = start; i <= end; i++) {
+				pages.push(i);
+			}
+		}
+
+		return pages;
+	};
+
 	console.log(myCoursesItems);
 	return (
 		<>
-			{myCoursesItems?.map((course: MyCoursesItems) => (
+			{currentCourses?.map((course: MyCoursesItems) => (
 				<div
 					key={course.courseId}
 					className="flex bg-white p-4 items-center gap-6"
@@ -102,6 +141,49 @@ function CourseList({
 					</div>
 				</div>
 			))}
+
+			{/* 페이지네이션 부분 */}
+			{totalPages > 1 && (
+				<div className="flex justify-center items-center gap-2 mt-8 mb-4">
+					<button
+						onClick={() => handlePageChange(currentPage - 1)}
+						disabled={currentPage === 1}
+						className={`px-3 py-2 rounded-lg text-lg border border-gray-scale-200 ${
+							currentPage === 1
+								? "text-gray-400 cursor-not-allowed"
+								: "text-black-100 hover:bg-gray-100 cursor-pointer"
+						}`}
+					>
+						이전
+					</button>
+
+					{getPageNumbers().map((page) => (
+						<button
+							key={page}
+							onClick={() => handlePageChange(page)}
+							className={`px-4 py-2 rounded-lg text-lg cursor-pointer ${
+								currentPage === page
+									? "bg-primary-green-600 text-white"
+									: "text-black-100 hover:bg-gray-100"
+							}`}
+						>
+							{page}
+						</button>
+					))}
+
+					<button
+						onClick={() => handlePageChange(currentPage + 1)}
+						disabled={currentPage === totalPages}
+						className={`px-3 py-2 rounded-lg text-lg border border-gray-scale-200 ${
+							currentPage === totalPages
+								? "text-gray-400 cursor-not-allowed"
+								: "text-black-100 hover:bg-gray-100 cursor-pointer"
+						}`}
+					>
+						다음
+					</button>
+				</div>
+			)}
 		</>
 	);
 }
