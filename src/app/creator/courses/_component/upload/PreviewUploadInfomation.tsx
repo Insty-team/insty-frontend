@@ -82,11 +82,11 @@ function PreviewUploadInfomation({
 				{data.videoFile ? (
 					<VideoPlayer
 						url={URL.createObjectURL(data.videoFile)}
-						width="w-[800px]"
+						width="w-[600px]"
 						onDurationChange={setVideoDuration}
 					/>
 				) : (
-					<div className="w-[800px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
+					<div className="w-[600px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
 						<span className="text-gray-400">영상 미리보기</span>
 					</div>
 				)}
