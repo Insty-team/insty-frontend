@@ -149,7 +149,7 @@ function Login() {
 				<div className="text-lg text-black-100 font-semibold">
 					소셜 로그인으로 간편하게 시작하기
 				</div>
-				<div className="flex space-x-4">
+				<div className="flex space-x-4 mb-8">
 					<button onClick={() => handleSocialoLogin("KAKAO")}>
 						<Image
 							src="/kakao.svg"
