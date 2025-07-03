@@ -311,6 +311,18 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				setDescription(res.data.description);
 				setTargetAudience(res.data.target);
 				setTags(res.data.tags);
+				if (res.data.core_contents) {
+					setKeyPoints(res.data.core_contents);
+				}
+				if (res.data.installation_checklist) {
+					const convertedChecklist = res.data.installation_checklist.map(
+						(content: string) => ({
+							content: content,
+							isSupported: true,
+						}),
+					);
+					setInstallEnvChecklist(convertedChecklist);
+				}
 			} else {
 				Swal.fire({
 					title: `${res.error.code}`,

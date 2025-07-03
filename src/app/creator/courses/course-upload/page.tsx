@@ -8,9 +8,10 @@ function CourseUploadPage() {
 	return (
 		<Suspense
 			fallback={
-				<>
-					강의 업로드 페이지 준비중... <Loading />
-				</>
+				<div className="flex flex-col items-center justify-center h-[90vh]">
+					<p className="text-xl font-semibold">강의 업로드 페이지 준비중...</p>
+					<Loading width={40} height={40} />
+				</div>
 			}
 		>
 			<CourseUpload />
