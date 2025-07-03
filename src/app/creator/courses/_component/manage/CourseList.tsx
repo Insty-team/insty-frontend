@@ -91,7 +91,9 @@ function CourseList({
 					</div>
 					<div className="flex-1 flex flex-col gap-3">
 						<div className="font-semibold text-2xl text-ellipsis whitespace-nowrap overflow-hidden">
-							{course.title}
+							{course.title.length > 35
+								? `${course.title.slice(0, 35)}...`
+								: course.title}
 						</div>
 						<div className="flex flex-wrap gap-1">
 							{course.tags.map((tag, idx) => (
