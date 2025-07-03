@@ -39,6 +39,30 @@ function Signup() {
 
 	const nickname = watch("nickname");
 	const email = watch("email");
+	const password = watch("password");
+
+	// 닉네임 에러 메시지 로직
+	const getNicknameErrorMessage = () => {
+		if (!nickname) return undefined; // 입력하지 않았을 때는 아무 문구 없음
+
+		if (nickname.length < 2) {
+			return { message: "닉네임은 2글자 이상입니다." };
+		}
+
+		if (nickname.length > 10) {
+			return { message: "닉네임은 10글자 이하여야 합니다." };
+		}
+
+		if (!nicknameReg.test(nickname)) {
+			return { message: "닉네임 형식이 맞지 않습니다." };
+		}
+
+		if (isNicknameAvailable === null) {
+			return { message: "닉네임 중복 확인을 해주세요." };
+		}
+
+		return undefined;
+	};
 
 	const onSubmit = async (data: SignupForm) => {
 		const submitData = { ...data };
@@ -105,27 +129,23 @@ function Signup() {
 								required: "",
 								pattern: {
 									value: nicknameReg,
-									message: "닉네임은 2글자 이상이여야합니다.",
+									message: "닉네임 형식이 맞지 않습니다.",
 								},
 								onChange: () => {
 									setIsNicknameAvailable(null);
 									setNicknameCheckStatus("");
 								},
 							}}
-							error={
-								errors.nickname
-									? errors.nickname
-									: !errors.nickname && nickname && isNicknameAvailable === null
-										? { message: "닉네임 중복 확인을 해주세요." }
-										: undefined
-							}
+							error={getNicknameErrorMessage()}
 							checkDuplication={
 								<button
 									type="button"
 									onClick={() => handleNicknameCheck()}
-									disabled={!!errors.nickname || nickname === ""}
+									disabled={
+										!!errors.nickname || nickname === "" || nickname.length < 2
+									}
 									className={`px-3 py-1 rounded-lg ${
-										errors.nickname || nickname === ""
+										errors.nickname || nickname === "" || nickname.length < 2
 											? "bg-gray-scale-300 cursor-not-allowed"
 											: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
 									} text-white text-sm`}
@@ -218,7 +238,7 @@ function Signup() {
 					<PasswordConfirmInput
 						label="비밀번호 확인"
 						name="confirmPassword"
-						confirmPasswordName={getValues("password")}
+						confirmPasswordName={password}
 						register={register}
 						validation={{
 							required: "",
