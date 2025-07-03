@@ -89,6 +89,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			setPrice(initialData.price);
 			setDescription(initialData.description);
 			setTags(initialData.tags);
+			setThumbnailUrl(initialData.thumbnailUrl || "");
 			setInstallEnvChecklist(
 				initialData.installEnvChecklist?.length
 					? initialData.installEnvChecklist
@@ -293,6 +294,14 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		) {
 			Swal.fire({
 				title: "모든 항목을 입력해주세요.",
+				icon: "error",
+			}).then(() => {
+				return;
+			});
+		}
+		if (!videoFile) {
+			Swal.fire({
+				title: "강의 비디오를 업로드해주세요.",
 				icon: "error",
 			}).then(() => {
 				return;
