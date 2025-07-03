@@ -59,6 +59,7 @@ function CourseManagement() {
 	if (mode === "edit" && selectedCourseId) {
 		return (
 			<CourseEdit
+				key={selectedCourseId}
 				courseId={selectedCourseId}
 				onBack={() => handleModeChange("list")}
 			/>
@@ -67,6 +68,7 @@ function CourseManagement() {
 	if (mode === "detail" && selectedCourseId) {
 		return (
 			<CourseDetail
+				key={selectedCourseId}
 				courseId={selectedCourseId}
 				onBack={() => handleModeChange("list")}
 			/>

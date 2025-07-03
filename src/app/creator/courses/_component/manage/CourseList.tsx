@@ -136,8 +136,9 @@ function CourseList({
 								fill={false}
 								textSize="text-21g"
 								icon={<IoClipboardOutline />}
-								className="!rounded-lg"
+								className="!rounded-lg disabled:cursor-not-allowed disabled:bg-gray-scale-200 disabled:!text-gray-400"
 								onClick={() => onDetail(course.courseId)}
+								disabled
 							/>
 						</div>
 					</div>

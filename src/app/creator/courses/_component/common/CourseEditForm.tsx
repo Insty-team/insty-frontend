@@ -319,31 +319,49 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 		try {
 			if (typeof initialData?.courseId !== "number") {
-				alert("코스 아이디가 존재하지 않습니다. 다시 확인해주세요.");
-				router.push("/creator/courses");
+				Swal.fire({
+					title: "코스 아이디가 존재하지 않습니다.",
+					icon: "error",
+				}).then(() => {
+					router.push("/creator/courses");
+				});
 				return;
 			}
-			await putCourse(
+			const res = await putCourse(
 				initialData?.courseId,
 				formData,
 				thumbnailData,
 				practiceFileData,
 			);
-			Swal.fire({
-				title: "강의가 수정 되었습니다.",
-				icon: "success",
-				confirmButtonText: "확인",
-				confirmButtonColor: "#6ead79",
-				timer: 30000,
-				timerProgressBar: true,
-			}).then(async () => {
-				await queryClient.invalidateQueries({
-					queryKey: ["courseDetail", initialData?.courseId],
+			console.log(res);
+
+			// 응답이 성공인지 확인
+			if (res && !res.error) {
+				Swal.fire({
+					title: "강의가 수정 되었습니다.",
+					icon: "success",
+					confirmButtonText: "확인",
+					confirmButtonColor: "#6ead79",
+					timer: 30000,
+					timerProgressBar: true,
+				}).then(async () => {
+					await queryClient.invalidateQueries({
+						queryKey: ["courseDetail", initialData?.courseId],
+					});
+					router.push("/creator/courses");
 				});
-				router.push("/creator/courses");
-			});
+			} else {
+				// 서버에서 에러 응답을 보낸 경우
+				Swal.fire({
+					title: "강의 수정 실패",
+					text: res?.error?.message || "알 수 없는 오류가 발생했습니다.",
+					icon: "error",
+					confirmButtonText: "확인",
+					confirmButtonColor: "#6ead79",
+				});
+			}
 		} catch (error) {
-			console.log(error);
+			console.error("강의 수정 중 오류 발생:", error);
 		}
 	};
 
@@ -374,16 +392,16 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				</div>
 			)}
 			<div className="flex w-full gap-9">
-				<div className="flex flex-col w-3/5 max-w-[350px]">
+				<div className="flex flex-col w-[350px]">
 					<label className="block text-2xl font-semibold mb-1">
 						강의 썸네일
 					</label>
-					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
+					<div className="mb-2 w-full h-[250px] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
 						{thumbnailUrl ? (
 							<Image
 								src={thumbnailUrl}
 								alt="썸네일"
-								className="w-full h-full object-contain rounded-2xl"
+								className="w-full h-full object-cover rounded-2xl z-10"
 								width={400}
 								height={400}
 							/>
@@ -393,7 +411,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 						{thumbnailUrl && (
 							<button
 								type="button"
-								className="absolute top-1 right-2 text-black-500"
+								className="absolute top-1 right-2 text-secondary-red-300 z-20 cursor-pointer hover:text-2lg"
 								onClick={handleRemoveThumbnail}
 							>
 								✕
@@ -452,11 +470,11 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 							/>
 							{(practiceFiles.length > 0 ||
 								existingPracticeFiles.length > 0) && (
-								<div className="flex flex-col gap-2 mt-2">
+								<div className="flex w-[75%] mx-auto flex-col gap-2 mt-2">
 									{existingPracticeFiles.map((file, index) => (
 										<div
 											key={`existing-${index}`}
-											className="flex w-[75%] mx-auto items-center justify-between bg-gray-100 p-2 rounded truncate"
+											className="flex items-center justify-between bg-gray-100 p-2 rounded truncate"
 										>
 											<div className="text-md truncate flex items-center">
 												<FaRegFile className="mr-2" />

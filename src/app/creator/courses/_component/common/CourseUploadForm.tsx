@@ -386,7 +386,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 							<Image
 								src={thumbnailUrl}
 								alt="썸네일"
-								className="w-full h-full object-contain rounded-2xl"
+								className="w-full h-full object-cover rounded-2xl"
 								fill
 							/>
 						) : (
@@ -395,7 +395,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 						{thumbnailUrl && (
 							<button
 								type="button"
-								className="absolute top-1 right-2 text-black-500"
+								className="absolute top-1 right-2 text-secondary-red-300 z-20 cursor-pointer hover:text-2lg"
 								onClick={handleRemoveThumbnail}
 							>
 								✕
