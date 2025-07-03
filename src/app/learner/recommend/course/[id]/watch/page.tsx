@@ -141,9 +141,9 @@ function WatchCoursePage() {
 
 			<div className="flex gap-4 w-full">
 				{m3u8Url ? (
-					<HLSPlayer src={m3u8Url} width="800px" height="450px" />
+					<HLSPlayer src={m3u8Url} width="600px" height="450px" />
 				) : (
-					<div className="w-[800px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
+					<div className="w-[600px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
 						<span className="text-gray-400">영상 미리보기</span>
 					</div>
 				)}
