@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useTags } from "./useTags";
+
 export interface CourseData {
 	title?: string;
 	description?: string;
@@ -29,20 +31,17 @@ export const useCourseForm = (initialData?: CourseData) => {
 	const [keyPoints, setKeyPoints] = useState<string[]>(
 		initialData?.keyPoints?.length ? initialData.keyPoints : [""],
 	);
-	const [tags, setTags] = useState<string[]>(initialData?.tags || []);
-	const [tagInput, setTagInput] = useState("");
 
-	const handleAddTag = () => {
-		const val = tagInput.trim();
-		if (val && !tags.includes(val)) {
-			setTags([...tags, val]);
-			setTagInput("");
-		}
-	};
-
-	const handleRemoveTag = (idx: number) => {
-		setTags(tags.filter((_, i) => i !== idx));
-	};
+	const {
+		tags,
+		setTags,
+		tagInput,
+		setTagInput,
+		handleAddTag,
+		handleRemoveTag,
+		handleTagInputChange,
+		handleTagKeyDown,
+	} = useTags({ initialTags: initialData?.tags || [] });
 
 	const handleAddEnv = () => {
 		setInstallEnvChecklist([
@@ -105,6 +104,8 @@ export const useCourseForm = (initialData?: CourseData) => {
 		setTagInput,
 		handleAddTag,
 		handleRemoveTag,
+		handleTagInputChange,
+		handleTagKeyDown,
 		handleAddEnv,
 		handleEnvChange,
 		handleRemoveEnv,

@@ -38,29 +38,36 @@ const putCourse = async (
 	thumbnailFile: File | null,
 	practiceFile: File[] | null,
 ) => {
-	const formData = new FormData();
+	try {
+		const formData = new FormData();
 
-	formData.append("courseUpdateReq", JSON.stringify(courseData));
+		formData.append("courseUpdateReq", JSON.stringify(courseData));
 
-	if (thumbnailFile) {
-		formData.append("thumbnail", thumbnailFile);
+		if (thumbnailFile) {
+			formData.append("thumbnail", thumbnailFile);
+		}
+
+		if (practiceFile) {
+			practiceFile.forEach((file) => {
+				formData.append("practiceFile", file);
+			});
+		}
+
+		const res = await axiosInstance.put(
+			`${BASE_URL}/courses/${courseId}`,
+			formData,
+			{
+				headers: { "Content-Type": "multipart/form-data" },
+			},
+		);
+
+		return res.data.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+		throw error;
 	}
-
-	if (practiceFile) {
-		practiceFile.forEach((file) => {
-			formData.append("practiceFile", file);
-		});
-	}
-
-	const res = await axiosInstance.put(
-		`${BASE_URL}/courses/${courseId}`,
-		formData,
-		{
-			headers: { "Content-Type": "multipart/form-data" },
-		},
-	);
-
-	return res.data.data;
 };
 
 const postCourse = async (

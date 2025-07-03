@@ -311,6 +311,18 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				setDescription(res.data.description);
 				setTargetAudience(res.data.target);
 				setTags(res.data.tags);
+				if (res.data.core_contents) {
+					setKeyPoints(res.data.core_contents);
+				}
+				if (res.data.installation_checklist) {
+					const convertedChecklist = res.data.installation_checklist.map(
+						(content: string) => ({
+							content: content,
+							isSupported: true,
+						}),
+					);
+					setInstallEnvChecklist(convertedChecklist);
+				}
 			} else {
 				Swal.fire({
 					title: `${res.error.code}`,
@@ -374,7 +386,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 							<Image
 								src={thumbnailUrl}
 								alt="썸네일"
-								className="w-full h-full object-contain rounded-2xl"
+								className="w-full h-full object-cover rounded-2xl"
 								fill
 							/>
 						) : (
@@ -383,7 +395,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 						{thumbnailUrl && (
 							<button
 								type="button"
-								className="absolute top-1 right-2 text-black-500"
+								className="absolute top-1 right-2 text-secondary-red-300 z-20 cursor-pointer hover:text-2lg"
 								onClick={handleRemoveThumbnail}
 							>
 								✕
