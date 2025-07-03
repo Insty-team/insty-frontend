@@ -57,9 +57,11 @@ function Login() {
 			} else {
 				Swal.fire({
 					title: "로그인 실패!",
-					text: `${res.error.message} === "사용자를 찾을 수 없습니다."`
-						? "이메일을 확인해주세요."
-						: `${res.error.message}`,
+					text:
+						`${res.error.message} === "사용자를 찾을 수 없습니다."` ||
+						`${res.error.message} === "비밀번호가 올바르지 않습니다."`
+							? "이메일 또는 비밀번호가 올바르지 않습니다."
+							: `${res.error.message}`,
 					icon: "error",
 				}).then(() => {
 					return;

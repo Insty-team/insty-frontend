@@ -142,10 +142,10 @@ function Signup() {
 									type="button"
 									onClick={() => handleNicknameCheck()}
 									disabled={
-										!!errors.nickname || nickname === "" || nickname.length < 2
+										!!errors.nickname || !nickname || nickname.length < 2
 									}
 									className={`px-3 py-1 rounded-lg ${
-										errors.nickname || nickname === "" || nickname.length < 2
+										errors.nickname || !nickname || nickname.length < 2
 											? "bg-gray-scale-300 cursor-not-allowed"
 											: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
 									} text-white text-sm`}
