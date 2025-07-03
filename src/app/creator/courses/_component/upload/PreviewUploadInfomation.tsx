@@ -87,7 +87,7 @@ function PreviewUploadInfomation({
 					/>
 				) : (
 					<div className="w-[600px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
-						<span className="text-gray-400">영상 미리보기</span>
+						<span className="text-gray-400">영상을 재생할 수 없습니다.</span>
 					</div>
 				)}
 
