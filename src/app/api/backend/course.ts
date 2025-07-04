@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { ApiResponse } from "@/app/types/api";
 import { CourseUpdateReq, UploadformData } from "@/app/types/course";
 
 import axiosInstance from "../interceptor";
@@ -103,4 +104,28 @@ const postCourse = async (
 	throw new Error("서버와 통신 불가");
 };
 
-export { getCourseDetail, getMyCourses, postCourse, putCourse };
+const getVideoThumbnail = async (videoUuid: string) => {
+	try {
+		const res = await axiosInstance.get<ApiResponse<string>>(
+			`${BASE_URL}/videos/${videoUuid}/thumbnail`,
+		);
+
+		if (res && res.data) {
+			return res.data;
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+
+	throw new Error("서버와 통신 불가");
+};
+
+export {
+	getCourseDetail,
+	getMyCourses,
+	getVideoThumbnail,
+	postCourse,
+	putCourse,
+};
