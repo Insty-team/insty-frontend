@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
 import {
@@ -11,6 +12,7 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
+import { getEmailCheck, getNicknameCheck } from "@/app/api/backend";
 import { useEditUserProfileInfoMutation } from "@/app/queries";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
@@ -32,15 +34,31 @@ function MyPageProfile() {
 		reset,
 		getValues,
 		formState: { errors },
+		watch,
+		trigger,
 	} = useForm<ChangeProfileForm>({
 		defaultValues: {
 			nickname: "",
 			email: "",
 			password: "",
+			changedPassword: "",
 			introduce: "",
 		},
 		mode: "onChange",
 	});
+
+	const [isNicknameAvailable, setIsNicknameAvailable] = useState<boolean>(true);
+	const [nicknameCheckStatus, setNicknameCheckStatus] = useState<string>("");
+	const [isEmailAvailable, setIsEmailAvailable] = useState<boolean>(true);
+	const [emailCheckStatus, setEmailCheckStatus] = useState<string>("");
+	const password = watch("password");
+	const changedPassword = watch("changedPassword");
+	const nickname = watch("nickname");
+	const email = watch("email");
+
+	useEffect(() => {
+		trigger("changedPassword");
+	}, [password, trigger]);
 
 	useEffect(() => {
 		if (!userInfo) return;
@@ -48,14 +66,46 @@ function MyPageProfile() {
 			nickname: userInfo.nickname,
 			email: userInfo.email,
 			password: "",
+			changedPassword: "",
 			introduce: userInfo.introduce,
 		});
 	}, [userInfo, reset]);
 
+	useEffect(() => {
+		if (!userInfo) return;
+		if (nickname === userInfo.nickname) {
+			setIsNicknameAvailable(true);
+			setNicknameCheckStatus("");
+		} else {
+			setIsNicknameAvailable(false);
+			setNicknameCheckStatus("");
+		}
+	}, [nickname, userInfo]);
+
+	useEffect(() => {
+		if (!userInfo) return;
+		if (email === userInfo.email) {
+			setIsEmailAvailable(true);
+			setEmailCheckStatus("");
+		} else {
+			setIsEmailAvailable(false);
+			setEmailCheckStatus("");
+		}
+	}, [email, userInfo]);
+
+	const isNicknameChanged = nickname !== userInfo?.nickname;
+	const isEmailChanged = email !== userInfo?.email;
+	const isChangedPasswordSame = password && password === changedPassword;
+
+	const isSaveDisabled =
+		(isNicknameChanged && !isNicknameAvailable) ||
+		(isEmailChanged && !isEmailAvailable) ||
+		isChangedPasswordSame;
+
 	const onSaveProfileInfo = (data: ChangeProfileForm) => {
 		const body = {
 			email: data.email,
-			password: data.password,
+			password: data.changedPassword,
 			nickname: data.nickname,
 			introduce: data.introduce,
 		};
@@ -72,13 +122,36 @@ function MyPageProfile() {
 
 		editProfile(formData, {
 			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-				setIsEditing(false);
+				Swal.fire({
+					icon: "success",
+					title: "수정에 성공했습니다.",
+					confirmButtonText: "확인",
+				}).then(() => {
+					queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+					setIsEditing(false);
+					reset();
+				});
 			},
 			onError: () => {
-				alert("수정에 실패했습니다.");
+				Swal.fire({
+					icon: "error",
+					title: `${password === "" ? "현재 비밀번호를 입력해주세요" : "수정에 실패했습니다."}`,
+					confirmButtonText: "확인",
+				});
 			},
 		});
+	};
+
+	const handleNicknameCheck = async () => {
+		const res = await getNicknameCheck(getValues("nickname"));
+		setIsNicknameAvailable(res.isAvailable);
+		setNicknameCheckStatus(res.reason);
+	};
+
+	const handleEmailCheck = async () => {
+		const res = await getEmailCheck(getValues("email"));
+		setIsEmailAvailable(res.isAvailable);
+		setEmailCheckStatus(res.reason);
 	};
 
 	return (
@@ -151,14 +224,41 @@ function MyPageProfile() {
 											value: nicknameReg,
 											message: "닉네임 형식이 잘못되었습니다.",
 										},
+										onChange: () => {
+											setIsNicknameAvailable(false);
+											setNicknameCheckStatus("");
+										},
 									}}
-									error={errors.nickname}
+									error={
+										errors.nickname
+											? errors.nickname
+											: isNicknameChanged && !isNicknameAvailable
+												? { message: "닉네임 중복 확인을 해주세요." }
+												: undefined
+									}
 									checkDuplication={
 										<BaseButton
 											title="닉네임 중복 확인"
 											userType="CREATOR"
 											className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+											onClick={handleNicknameCheck}
+											disabled={
+												!!errors.nickname ||
+												!nickname ||
+												nickname.length < 2 ||
+												nickname === userInfo?.nickname
+											}
 										/>
+									}
+									success={
+										isNicknameAvailable !== null ? nicknameCheckStatus : ""
+									}
+									status={
+										isNicknameAvailable === null
+											? undefined
+											: isNicknameAvailable
+												? "success"
+												: "error"
 									}
 								/>
 								<TextInput
@@ -173,14 +273,39 @@ function MyPageProfile() {
 											value: emailReg,
 											message: "이메일 형식이 잘못되었습니다.",
 										},
+										onChange: () => {
+											setIsEmailAvailable(false);
+											setEmailCheckStatus("");
+										},
 									}}
-									error={errors.email}
+									error={
+										errors.email
+											? errors.email
+											: isEmailChanged && !isEmailAvailable
+												? { message: "이메일 중복 확인을 해주세요." }
+												: undefined
+									}
 									checkDuplication={
 										<BaseButton
 											title="이메일 중복 확인"
 											userType="CREATOR"
 											className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+											onClick={handleEmailCheck}
+											disabled={
+												!!errors.email ||
+												!email ||
+												email.length < 2 ||
+												email === userInfo?.email
+											}
 										/>
+									}
+									success={isEmailAvailable !== null ? emailCheckStatus : ""}
+									status={
+										isEmailAvailable === null
+											? undefined
+											: isEmailAvailable
+												? "success"
+												: "error"
 									}
 								/>
 								<PasswordInput
@@ -198,20 +323,32 @@ function MyPageProfile() {
 									error={errors.password}
 								/>
 								<PasswordConfirmInput
+									type="change"
 									label="변경할 비밀번호"
 									name="changedPassword"
-									confirmPasswordName={getValues("password")}
+									confirmPasswordName={password}
 									register={register}
 									validation={{
 										required: "",
+										pattern: {
+											value: passwordReg,
+											message: "비밀번호 형식이 잘못되었습니다.",
+										},
+										validate: (value: string) => {
+											if (value === password) {
+												return "현재 비밀번호와 다르게 입력해주세요.";
+											}
+											return true;
+										},
 									}}
-									error={errors.password}
+									error={errors.changedPassword}
 								/>
 								<div className="mt-10 w-full">
 									<BaseButton
 										title="저장하기"
 										onClick={handleSubmit(onSaveProfileInfo)}
 										userType="CREATOR"
+										disabled={!!isSaveDisabled}
 									/>
 								</div>
 							</form>
