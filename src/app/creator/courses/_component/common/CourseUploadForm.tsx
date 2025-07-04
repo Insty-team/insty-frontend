@@ -9,8 +9,13 @@ import { TiDelete } from "react-icons/ti";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
+import Loading from "@/app/_components/common/Loading";
 import { postSuggestMetadata } from "@/app/api/ai";
-import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
+import {
+	getVideoThumbnail,
+	postCourseVideo,
+	putCourseVideoUpload,
+} from "@/app/api/backend";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UploadformData } from "@/app/types/course";
@@ -71,6 +76,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const [videoUuid, setVideoUuid] = useState<string>(
 		effectiveInitialData?.videoUuid || "",
 	);
+	const [isThumbnailLoading, setIsThumbnailLoading] = useState(false);
 
 	// 전사 진행률 커스텀 훅 사용
 	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
@@ -79,6 +85,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
 	const videoInputRef = useRef<HTMLInputElement>(null);
+	const thumbnailIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
 		const dataToUse = data || initialData;
@@ -112,6 +119,63 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		setTitle,
 		setTargetAudience,
 	]);
+
+	// 썸네일 요청 함수
+	const requestThumbnail = async (uuid: string) => {
+		try {
+			const thumbnailResponse = await getVideoThumbnail(uuid);
+			if (thumbnailResponse && thumbnailResponse.data) {
+				console.log(thumbnailResponse, "썸네일 요청 성공");
+				setThumbnailUrl(thumbnailResponse.data.thumbnailUrl);
+				setIsThumbnailLoading(false);
+				// 성공하면 인터벌 정리
+				if (thumbnailIntervalRef.current) {
+					clearInterval(thumbnailIntervalRef.current);
+					thumbnailIntervalRef.current = null;
+				}
+				return true;
+			}
+		} catch (error) {
+			console.log("썸네일 요청 실패:", error);
+			// 403 에러가 아닌 다른 에러는 인터벌을 중단
+			if (error && typeof error === "object" && "response" in error) {
+				const errorResponse = error as { response?: { status?: number } };
+				if (errorResponse.response?.status !== 403) {
+					setIsThumbnailLoading(false);
+					if (thumbnailIntervalRef.current) {
+						clearInterval(thumbnailIntervalRef.current);
+						thumbnailIntervalRef.current = null;
+					}
+				}
+			}
+		}
+		return false;
+	};
+
+	// 썸네일 요청 인터벌 시작
+	const startThumbnailRequest = (uuid: string) => {
+		setIsThumbnailLoading(true);
+		requestThumbnail(uuid);
+
+		thumbnailIntervalRef.current = setInterval(() => {
+			requestThumbnail(uuid);
+		}, 5000);
+	};
+
+	useEffect(() => {
+		return () => {
+			if (thumbnailIntervalRef.current) {
+				clearInterval(thumbnailIntervalRef.current);
+			}
+		};
+	}, []);
+
+	// videoUuid가 변경될 때 썸네일 요청 시작
+	useEffect(() => {
+		if (videoUuid && !isThumbnailLoading) {
+			startThumbnailRequest(videoUuid);
+		}
+	}, [videoUuid]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -211,8 +275,12 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			console.log(res);
 			setVideoUuid(res.data.uuid);
 			try {
-				const response = await putCourseVideoUpload(res.data.uploadUrl, file);
-				console.log(response, "비디오 업로드요청 성공");
+				//비디오 분석 요청
+				const videoUploadResponse = await putCourseVideoUpload(
+					res.data.uploadUrl,
+					file,
+				);
+				console.log(videoUploadResponse, "비디오 업로드요청 성공");
 			} catch (error) {
 				console.log(error);
 			}
@@ -233,6 +301,13 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			if (result.isConfirmed) {
 				setVideoFile(null);
 				setVideoUuid("");
+				setThumbnailUrl("");
+				setIsThumbnailLoading(false);
+				// 썸네일 요청 인터벌 정리
+				if (thumbnailIntervalRef.current) {
+					clearInterval(thumbnailIntervalRef.current);
+					thumbnailIntervalRef.current = null;
+				}
 				if (videoInputRef.current) {
 					videoInputRef.current.value = "";
 				}
@@ -389,8 +464,12 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 								className="w-full h-full object-cover rounded-2xl"
 								fill
 							/>
+						) : isThumbnailLoading ? (
+							<div className="text-black-300 flex flex-col items-center justify-center">
+								썸네일 생성 중... <Loading width={30} height={30} />
+							</div>
 						) : (
-							<span className="text-gray-400">썸네일을 선택해주세요</span>
+							<span className="text-gray-scale-200">썸네일을 선택해주세요</span>
 						)}
 						{thumbnailUrl && (
 							<button
