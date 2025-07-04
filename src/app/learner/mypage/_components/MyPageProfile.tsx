@@ -193,6 +193,7 @@ function MyPageProfile() {
 									error={errors.password}
 								/>
 								<PasswordConfirmInput
+									type="change"
 									label="변경할 비밀번호"
 									name="changedPassword"
 									confirmPasswordName={getValues("password")}
