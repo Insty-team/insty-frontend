@@ -111,7 +111,17 @@ function CreatorHeader() {
 				<div className="flex gap-8 justify-end items-center">
 					<GoBellFill className="cursor-not-allowed size-8 text-gray-300" />
 					<Link href={mypage.path} key={mypage.id}>
-						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
+						{userInfo?.thumbnailUrl ? (
+							<Image
+								src={userInfo?.thumbnailUrl}
+								alt="profile"
+								width={30}
+								height={30}
+								className="rounded-full"
+							/>
+						) : (
+							<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
+						)}
 					</Link>
 					<BaseDropdown
 						isOpen={isDropdownMenuOpen}

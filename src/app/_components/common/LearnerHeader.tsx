@@ -112,10 +112,9 @@ function LearnerHeader() {
 					{userInfo?.thumbnailUrl ? (
 						<Image
 							src={userInfo.thumbnailUrl}
-							width={128}
-							height={128}
+							width={30}
+							height={30}
 							alt="프로필 사진"
-							style={{ objectFit: "cover", width: "32px", height: "32px" }}
 							className="rounded-full"
 						/>
 					) : (
