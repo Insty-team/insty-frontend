@@ -35,14 +35,30 @@ function LearnerHeader() {
 	const recommend = LEARNER_MENU_LIST[0];
 
 	const changeUserType = () => {
-		const typeToChange = user.userType === "LEARNER" ? "CREATOR" : "LEARNER";
-		patchUserType(typeToChange, {
-			onSuccess: (res) => {
-				setUserType(res.userType);
-				res.userType === "LEARNER"
-					? router.replace("/learner/recommend")
-					: router.replace("/creator/dashboard");
-			},
+		Swal.fire({
+			title: "전환 하시겠어요?",
+			text: "전환 후 현재 페이지는 보이지 않습니다.",
+			icon: "question",
+			showCancelButton: true,
+			confirmButtonText: "전환하기",
+			cancelButtonText: "취소",
+			confirmButtonColor: "#6ead79",
+			cancelButtonColor: "#ff4f64",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				const typeToChange =
+					user.userType === "LEARNER" ? "CREATOR" : "LEARNER";
+				patchUserType(typeToChange, {
+					onSuccess: (res) => {
+						setUserType(res.userType);
+						if (res.userType === "LEARNER") {
+							router.replace("/learner/recommend");
+						} else {
+							router.replace("/creator/dashboard");
+						}
+					},
+				});
+			}
 		});
 	};
 
