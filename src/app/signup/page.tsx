@@ -153,18 +153,15 @@ function Signup() {
 									닉네임 중복 확인
 								</button>
 							}
+							success={isNicknameAvailable !== null ? nicknameCheckStatus : ""}
+							status={
+								isNicknameAvailable === null
+									? undefined
+									: isNicknameAvailable
+										? "success"
+										: "error"
+							}
 						/>
-						{isNicknameAvailable !== null && (
-							<p
-								className={`mt-1 ml-2 ${
-									isNicknameAvailable
-										? "text-primary-green-500"
-										: "text-secondary-red-300"
-								}`}
-							>
-								{nicknameCheckStatus}
-							</p>
-						)}
 					</div>
 					<div className="w-full">
 						<TextInput
@@ -205,18 +202,15 @@ function Signup() {
 									이메일 중복 확인
 								</button>
 							}
+							success={isEmailAvailable !== null ? emailCheckStatus : ""}
+							status={
+								isEmailAvailable === null
+									? undefined
+									: isEmailAvailable
+										? "success"
+										: "error"
+							}
 						/>
-						{isEmailAvailable !== null && (
-							<p
-								className={`mt-1 ml-2 ${
-									isEmailAvailable
-										? "text-primary-green-500"
-										: "text-secondary-red-300"
-								}`}
-							>
-								{emailCheckStatus}
-							</p>
-						)}
 					</div>
 
 					<PasswordInput
@@ -236,6 +230,7 @@ function Signup() {
 					/>
 
 					<PasswordConfirmInput
+						type="signup"
 						label="비밀번호 확인"
 						name="confirmPassword"
 						confirmPasswordName={password}

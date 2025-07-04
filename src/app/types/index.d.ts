@@ -26,6 +26,7 @@ export type ChangeProfileForm = {
 	password: string;
 	nickname: string;
 	introduce: string;
+	changedPassword: string;
 };
 
 //2. 로그인/회원가입/토큰/로그아웃
@@ -69,6 +70,8 @@ export type TextInputProps<TFieldValues> = {
 	validation?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
 	error?: FieldError;
 	checkDuplication?: React.ReactNode;
+	success?: string;
+	status?: "success" | "error";
 };
 
 // 비밀번호 입력
@@ -83,6 +86,7 @@ export type PasswordInputProps<TFieldValues> = {
 
 // 비밀번호 확인 폼
 export type PasswordConfirmInputProps<TFieldValues> = {
+	type: "signup" | "change";
 	label: string;
 	name: Path<TFieldValues>;
 	placeholder?: string;

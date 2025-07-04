@@ -4,6 +4,7 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { PasswordConfirmInputProps } from "@/app/types";
 
 export default function PasswordConfirmInput<TFieldValues>({
+	type,
 	label,
 	name,
 	confirmPasswordName,
@@ -32,8 +33,15 @@ export default function PasswordConfirmInput<TFieldValues>({
 				{...register(name, {
 					...validation,
 					validate: (value: string) => {
-						if (value !== confirmPasswordName) {
-							return "비밀번호가 일치하지 않습니다.";
+						if (type === "signup") {
+							if (value !== confirmPasswordName) {
+								return "비밀번호가 일치하지 않습니다.";
+							}
+						}
+						if (type === "change") {
+							if (value === confirmPasswordName) {
+								return "현재 비밀번호와 다르게 입력해주세요.";
+							}
 						}
 					},
 				})}
