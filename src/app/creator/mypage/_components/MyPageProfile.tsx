@@ -103,9 +103,32 @@ function MyPageProfile() {
 		isChangedPasswordSame;
 
 	const onSaveProfileInfo = (data: ChangeProfileForm) => {
+		if (isNicknameChanged && !isNicknameAvailable) {
+			Swal.fire({
+				icon: "error",
+				title: "닉네임 중복확인을 해주세요.",
+				confirmButtonText: "확인",
+			});
+			return;
+		} else if (isEmailChanged && !isEmailAvailable) {
+			Swal.fire({
+				icon: "error",
+				title: "이메일 중복확인을 해주세요.",
+				confirmButtonText: "확인",
+			});
+			return;
+		} else if (isChangedPasswordSame) {
+			Swal.fire({
+				icon: "error",
+				title: "현재 비밀번호와 다른 비밀번호를 입력해주세요.",
+			});
+			return;
+		}
+
 		const body = {
 			email: data.email,
-			password: data.changedPassword,
+			currentPassword: data.password,
+			newPassword: data.changedPassword,
 			nickname: data.nickname,
 			introduce: data.introduce,
 		};
@@ -135,7 +158,7 @@ function MyPageProfile() {
 			onError: () => {
 				Swal.fire({
 					icon: "error",
-					title: `${password === "" ? "현재 비밀번호를 입력해주세요" : "수정에 실패했습니다."}`,
+					title: `${password === "" ? "현재 비밀번호를 입력해주세요" : "현재 비밀번호가 일치하지 않습니다."}`,
 					confirmButtonText: "확인",
 				});
 			},
