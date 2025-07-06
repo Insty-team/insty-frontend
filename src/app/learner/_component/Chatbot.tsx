@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import Loading from "@/app/_components/common/Loading";
 import { getAISearchRecommend, postAISearchRecommend } from "@/app/api/ai";
 import { CourseRecommend, RecommendMessage } from "@/app/types/recommend";
 
@@ -52,6 +53,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 
 	const [recommendations, setRecommendations] = useState<CourseRecommend[]>([]);
 	const [searchQuery, setSearchQuery] = useState<string>("");
+	const [isRecommendLoading, setIsRecommendLoading] = useState<boolean>(false);
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +61,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 		e: React.KeyboardEvent<HTMLInputElement>,
 	) => {
 		if (e.key === "Enter" && searchQuery.trim()) {
+			setIsRecommendLoading(true);
 			setSearchQuery("");
 
 			//먼저 이전에 추천된 영상은 지워주고
@@ -74,6 +77,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 				if (res.data?.courses) {
 					setRecommendations(res.data.courses);
 				}
+				setIsRecommendLoading(false);
 			} catch (error) {
 				console.log(error);
 			}
@@ -143,6 +147,24 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							</div>
 						</div>
 					))}
+
+					{isRecommendLoading && (
+						<div className="flex items-end justify-start flex-row">
+							<div className="w-[60px] h-[60px] flex items-center justify-center overflow-hidden mr-3 rounded-full bg-white">
+								<Image
+									src="/insty.png"
+									alt="insty"
+									width={50}
+									height={50}
+									className="object-contain"
+								/>
+							</div>
+							<div className="flex flex-row text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200 bg-white rounded-tr-2xl rounded-tl-md">
+								<p>추천 영상을 찾는 중입니다...</p>
+								<Loading width={30} height={30} className="ml-2" />
+							</div>
+						</div>
+					)}
 
 					{recommendations.length > 0 && (
 						<div className="flex gap-3 mt-10">
