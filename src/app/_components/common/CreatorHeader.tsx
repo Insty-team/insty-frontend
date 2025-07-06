@@ -8,14 +8,19 @@ import { FaCircleUser } from "react-icons/fa6";
 import { GoBellFill, GoChevronDown, GoChevronUp } from "react-icons/go";
 import Swal from "sweetalert2";
 
-import { postLogout } from "@/app/api/backend/auth";
+import { postLogout, postReissueToken } from "@/app/api/backend";
 import { CREATOR_MENU_LIST } from "@/app/constants";
 import {
 	useGetUserProfileInfoQuery,
 	usePatchUserTypeMutation,
 } from "@/app/queries";
+import { queryClient } from "@/app/queries/queryClient";
 import { useAuthStore, useUserStore } from "@/app/stores";
-import { removeAccessToken } from "@/app/utils";
+import {
+	getRefreshToken,
+	removeAccessToken,
+	setAccessToken,
+} from "@/app/utils";
 
 import BaseDropdown from "./BaseDropdown";
 
@@ -50,13 +55,54 @@ function CreatorHeader() {
 			if (result.isConfirmed) {
 				const typeToChange = isLearner ? "CREATOR" : "LEARNER";
 				patchUserType(typeToChange, {
-					onSuccess: (res) => {
+					onSuccess: async (res) => {
 						setUserType(res.userType);
-						if (res.userType === "LEARNER") {
-							router.replace("/learner/recommend");
-						} else {
-							router.replace("/creator/dashboard");
+
+						// 모든 쿼리 무효화하여 새로운 권한으로 재조회
+						await queryClient.invalidateQueries();
+
+						// ACCESS TOKEN 재발급 - 새로운 권한 정보 반영
+						try {
+							const refreshToken = getRefreshToken();
+							if (refreshToken) {
+								const tokenRes = await postReissueToken(refreshToken);
+								setAccessToken(tokenRes.token.accessToken);
+								console.log("토큰 재발급 완료:", tokenRes.token.accessToken);
+							}
+						} catch (tokenError) {
+							console.error("토큰 재발급 실패:", tokenError);
+							Swal.fire({
+								title: "권한 업데이트 필요",
+								text: "새로운 권한 적용을 위해 다시 로그인해주세요.",
+								icon: "info",
+							}).then(() => {
+								resetUser();
+								removeAccessToken();
+								resetAccessToken();
+								router.push("/login");
+							});
+							return;
 						}
+
+						// 사용자 정보 재조회
+						await queryClient.refetchQueries({ queryKey: ["userProfile"] });
+
+						// 약간의 딜레이 후 페이지 이동
+						setTimeout(() => {
+							if (res.userType === "LEARNER") {
+								router.replace("/learner/recommend");
+							} else {
+								router.replace("/creator/courses");
+							}
+						}, 300);
+					},
+					onError: (error) => {
+						console.error("사용자 타입 변경 실패:", error);
+						Swal.fire({
+							title: "전환 실패",
+							text: "사용자 타입 전환에 실패했습니다. 다시 시도해주세요.",
+							icon: "error",
+						});
 					},
 				});
 			}
