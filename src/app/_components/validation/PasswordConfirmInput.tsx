@@ -34,12 +34,12 @@ export default function PasswordConfirmInput<TFieldValues>({
 					...validation,
 					validate: (value: string) => {
 						if (type === "signup") {
-							if (value !== confirmPasswordName) {
+							if (value !== confirmPasswordName && confirmPasswordName !== "") {
 								return "비밀번호가 일치하지 않습니다.";
 							}
 						}
 						if (type === "change") {
-							if (value === confirmPasswordName) {
+							if (value === confirmPasswordName && confirmPasswordName !== "") {
 								return "현재 비밀번호와 다르게 입력해주세요.";
 							}
 						}
