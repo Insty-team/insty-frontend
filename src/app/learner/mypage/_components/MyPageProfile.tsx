@@ -97,7 +97,8 @@ function MyPageProfile() {
 
 	const isNicknameChanged = nickname !== userInfo?.nickname;
 	const isEmailChanged = email !== userInfo?.email;
-	const isChangedPasswordSame = password && password === changedPassword;
+	const isChangedPasswordSame =
+		password && changedPassword && password === changedPassword;
 
 	const isSaveDisabled =
 		(isNicknameChanged && !isNicknameAvailable) ||
