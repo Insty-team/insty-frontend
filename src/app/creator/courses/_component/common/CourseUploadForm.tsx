@@ -67,16 +67,19 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		handleRemoveCore,
 	} = useCourseForm(effectiveInitialData);
 
-	const [thumbnailUrl, setThumbnailUrl] = useState("");
 	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-	const [videoFile, setVideoFile] = useState<File | null>(
-		effectiveInitialData?.videoFile || null,
-	);
+	const [videoFile, setVideoFile] = useState<File | null>(null);
+	const [videoUuid, setVideoUuid] = useState<string>("");
 	const [practiceFiles, setPracticeFiles] = useState<File[]>([]);
-	const [videoUuid, setVideoUuid] = useState<string>(
-		effectiveInitialData?.videoUuid || "",
-	);
+	const [thumbnailUrl, setThumbnailUrl] = useState("");
 	const [isThumbnailLoading, setIsThumbnailLoading] = useState(false);
+	const thumbnailRequestCountRef = useRef(0);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const videoInputRef = useRef<HTMLInputElement>(null);
+	const practiceFileInputRef = useRef<HTMLInputElement>(null);
+	const thumbnailIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+	const MAX_THUMBNAIL_REQUESTS = 120;
 
 	// 전사 진행률 커스텀 훅 사용
 	const {
@@ -85,11 +88,6 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		transcriptionStep,
 		reason,
 	} = useTranscriptionProgress(videoUuid);
-
-	const fileInputRef = useRef<HTMLInputElement>(null);
-	const practiceFileInputRef = useRef<HTMLInputElement>(null);
-	const videoInputRef = useRef<HTMLInputElement>(null);
-	const thumbnailIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
 		const dataToUse = data || initialData;
@@ -126,12 +124,33 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 	// 썸네일 요청 함수
 	const requestThumbnail = async (uuid: string) => {
+		// 카운터 증가
+		thumbnailRequestCountRef.current += 1;
+		console.log(thumbnailRequestCountRef.current, "썸네일 요청 횟수");
+
+		// 최대 요청 횟수 체크
+		if (thumbnailRequestCountRef.current > MAX_THUMBNAIL_REQUESTS) {
+			setIsThumbnailLoading(false);
+			if (thumbnailIntervalRef.current) {
+				clearInterval(thumbnailIntervalRef.current);
+				thumbnailIntervalRef.current = null;
+			}
+			Swal.fire({
+				title: "썸네일 생성 시간 초과",
+				text: "썸네일을 생성하지 못했습니다. 직접 업로드 해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+			return false;
+		}
+
 		try {
 			const thumbnailResponse = await getVideoThumbnail(uuid);
 			if (thumbnailResponse && thumbnailResponse.data) {
 				console.log(thumbnailResponse, "썸네일 요청 성공");
 				setThumbnailUrl(thumbnailResponse.data.thumbnailUrl);
 				setIsThumbnailLoading(false);
+
 				// 성공하면 인터벌 정리
 				if (thumbnailIntervalRef.current) {
 					clearInterval(thumbnailIntervalRef.current);
@@ -141,7 +160,6 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			}
 		} catch (error) {
 			console.log("썸네일 요청 실패:", error);
-			// 403 에러가 아닌 다른 에러는 인터벌을 중단
 			if (error && typeof error === "object" && "response" in error) {
 				const errorResponse = error as { response?: { status?: number } };
 				if (errorResponse.response?.status !== 403) {
@@ -159,6 +177,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	// 썸네일 요청 인터벌 시작
 	const startThumbnailRequest = (uuid: string) => {
 		setIsThumbnailLoading(true);
+		thumbnailRequestCountRef.current = 0; // 카운터 초기화
 		requestThumbnail(uuid);
 
 		thumbnailIntervalRef.current = setInterval(() => {
@@ -307,6 +326,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				setVideoUuid("");
 				setThumbnailUrl("");
 				setIsThumbnailLoading(false);
+				thumbnailRequestCountRef.current = 0; // 카운터 초기화
 				// 썸네일 요청 인터벌 정리
 				if (thumbnailIntervalRef.current) {
 					clearInterval(thumbnailIntervalRef.current);
