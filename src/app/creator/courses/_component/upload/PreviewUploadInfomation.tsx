@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import VideoPlayer from "@/app/_components/common/VideoPlayer";
+import { postVectorStatus } from "@/app/api/ai/video";
 import { postCourse } from "@/app/api/backend";
 import { useUserStore, useVideoUploadStore } from "@/app/stores";
 import { UploadformData } from "@/app/types/course";
@@ -60,18 +61,37 @@ function PreviewUploadInfomation({
 				practiceFiles ?? null,
 			);
 
-			Swal.fire({
-				title: "강의 업로드 완료",
-				icon: "success",
-				text: "강의 업로드가 완료되었습니다.",
-				confirmButtonText: "확인",
-				confirmButtonColor: "#6ead79",
-				timer: 30000,
-				timerProgressBar: true,
-			}).then(() => {
-				reset();
-				router.push("/creator/courses");
-			});
+			try {
+				if (courseData.videoUuid) {
+					const res = await postVectorStatus(courseData.videoUuid);
+					if (res && res.data) {
+						Swal.fire({
+							title: "강의 업로드 완료",
+							icon: "success",
+							text: "강의 업로드가 완료되었습니다.",
+							confirmButtonText: "확인",
+							confirmButtonColor: "#6ead79",
+							timer: 30000,
+							timerProgressBar: true,
+						}).then(() => {
+							reset();
+							router.push("/creator/courses");
+						});
+					}
+				}
+			} catch (error) {
+				console.log(error);
+				Swal.fire({
+					title: "서버 내부 오류가 발생했습니다.",
+					icon: "error",
+					text: "업로드를 다시 시도해주세요.",
+					confirmButtonText: "확인",
+					confirmButtonColor: "#ff4f64",
+				}).then(() => {
+					reset();
+					router.push("/creator/courses");
+				});
+			}
 		} catch (error) {
 			console.log(error);
 			Swal.fire({

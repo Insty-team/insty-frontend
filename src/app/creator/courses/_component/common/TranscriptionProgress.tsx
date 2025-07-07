@@ -8,6 +8,7 @@ export const useTranscriptionProgress = (videoUuid: string | null) => {
 	);
 	const [transcriptionProgress, setTranscriptionProgress] = useState<number>(0);
 	const [transcriptionStep, setTranscriptionStep] = useState<string>("");
+	const [reason, setReason] = useState<string>("");
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
@@ -19,10 +20,14 @@ export const useTranscriptionProgress = (videoUuid: string | null) => {
 		const poll = async () => {
 			try {
 				const statusRes = await getTranscriptionStatus(videoUuid);
+				console.log(statusRes);
 				if (statusRes?.success && statusRes.data) {
 					setTranscriptionStatus(statusRes.data.status);
 					setTranscriptionProgress(statusRes.data.progress);
 					setTranscriptionStep(statusRes.data.step);
+					if (statusRes.data.reason) {
+						setReason(statusRes.data.reason);
+					}
 
 					if (
 						statusRes.data.status === "COMPLETED" ||
@@ -63,5 +68,6 @@ export const useTranscriptionProgress = (videoUuid: string | null) => {
 		transcriptionStatus,
 		transcriptionProgress,
 		transcriptionStep,
+		reason,
 	};
 };

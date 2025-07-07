@@ -79,8 +79,12 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const [isThumbnailLoading, setIsThumbnailLoading] = useState(false);
 
 	// 전사 진행률 커스텀 훅 사용
-	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
-		useTranscriptionProgress(videoUuid);
+	const {
+		transcriptionStatus,
+		transcriptionProgress,
+		transcriptionStep,
+		reason,
+	} = useTranscriptionProgress(videoUuid);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
@@ -436,8 +440,16 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					<div className="mb-2">
 						<strong>변환 상태:</strong> {transcriptionStatus}
 					</div>
-					<div className="mb-2">
-						<strong>진행 단계:</strong> {transcriptionStep}
+					<div className="mb-2 flex flex-row">
+						{transcriptionStatus === "FAILED" ? (
+							<div>
+								<strong>분석 실패: </strong> {reason}
+							</div>
+						) : (
+							<div>
+								<strong>진행 단계:</strong> {transcriptionStep}
+							</div>
+						)}
 					</div>
 					<div className="mb-1 flex justify-between">
 						<strong>진행률:</strong>
