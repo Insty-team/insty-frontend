@@ -10,12 +10,14 @@ import { TiDelete } from "react-icons/ti";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
+import Loading from "@/app/_components/common/Loading";
 import { postSuggestDescription, postSuggestTitle } from "@/app/api/ai/video";
 import {
 	postCourseVideo,
 	putCourse,
 	putCourseVideoUpload,
 } from "@/app/api/backend";
+import { useThumbnailUpload } from "@/app/hooks/useThumbnailUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { CourseFormProps } from "@/app/types/course";
 
@@ -56,9 +58,15 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		handleRemoveCore,
 	} = useCourseForm(initialData);
 
-	const [thumbnailUrl, setThumbnailUrl] = useState(
-		initialData?.thumbnailUrl || "",
-	);
+	// 썸네일 업로드 커스텀 훅 사용
+	const {
+		thumbnailUrl,
+		setThumbnailUrl,
+		isThumbnailLoading,
+		startThumbnailRequest,
+		stopThumbnailRequest,
+	} = useThumbnailUpload();
+
 	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 	const [practiceFiles, setPracticeFiles] = useState<File[]>([]);
 	const [deletePracticeFiles, setDeletePracticeFiles] = useState<number[]>([]);
@@ -105,7 +113,14 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				setVideoFileName(initialData.videoInfo.originFileName);
 			}
 		}
-	}, [initialData]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [initialData, setThumbnailUrl]); // setThumbnailUrl 의존성 추가
+
+	// videoUuid가 변경될 때 썸네일 요청 시작 (기존 썸네일이 없을 때만)
+	useEffect(() => {
+		if (videoUuid && !thumbnailUrl) {
+			startThumbnailRequest(videoUuid);
+		}
+	}, [videoUuid, thumbnailUrl, startThumbnailRequest]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -229,11 +244,25 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	};
 
 	const handleRemoveVideoFile = () => {
-		setVideoFile(null);
-		setVideoFileName(null);
-		if (videoInputRef.current) {
-			videoInputRef.current.value = "";
-		}
+		Swal.fire({
+			title: "업로드한 영상을 삭제하시겠어요?",
+			text: "재업로드시, 영상 분석이 다시 진행됩니다.",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: "삭제",
+			cancelButtonText: "취소",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				setVideoFile(null);
+				setVideoFileName(null);
+				setVideoUuid("");
+				setThumbnailUrl("");
+				stopThumbnailRequest();
+				if (videoInputRef.current) {
+					videoInputRef.current.value = "";
+				}
+			}
+		});
 	};
 
 	const handleSuggestTitle = async () => {
@@ -286,26 +315,59 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (
-			title === "" ||
-			description === "" ||
-			installEnvChecklist.length === 0 ||
-			keyPoints.length === 0
-		) {
-			Swal.fire({
-				title: "모든 항목을 입력해주세요.",
-				icon: "error",
-			}).then(() => {
-				return;
-			});
-		}
-		if (!videoFile) {
+		if (!videoFileName) {
 			Swal.fire({
 				title: "강의 비디오를 업로드해주세요.",
 				icon: "error",
-			}).then(() => {
-				return;
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
 			});
+			return;
+		}
+		if (title === "") {
+			Swal.fire({
+				title: "제목을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (targetAudience === "") {
+			Swal.fire({
+				title: "강의 대상을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (description === "") {
+			Swal.fire({
+				title: "설명을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (installEnvChecklist.length === 0) {
+			Swal.fire({
+				title: "설치 환경 체크리스트를 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (keyPoints.length === 0) {
+			Swal.fire({
+				title: "핵심 내용을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
 		}
 
 		const formData = {
@@ -414,6 +476,10 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								width={400}
 								height={400}
 							/>
+						) : isThumbnailLoading ? (
+							<div className="text-black-300 flex flex-col items-center justify-center">
+								썸네일 생성 중... <Loading width={30} height={30} />
+							</div>
 						) : (
 							<span className="text-gray-400">썸네일을 선택해주세요</span>
 						)}
