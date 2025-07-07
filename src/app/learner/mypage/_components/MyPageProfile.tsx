@@ -170,14 +170,24 @@ function MyPageProfile() {
 
 	const handleNicknameCheck = async () => {
 		const res = await getNicknameCheck(getValues("nickname"));
-		setIsNicknameAvailable(res.isAvailable);
-		setNicknameCheckStatus(res.reason);
+		if (res.error) {
+			setIsNicknameAvailable(false);
+			setNicknameCheckStatus(res.error.message);
+		} else {
+			setIsNicknameAvailable(true);
+			setNicknameCheckStatus("사용 가능한 닉네임입니다.");
+		}
 	};
 
 	const handleEmailCheck = async () => {
 		const res = await getEmailCheck(getValues("email"));
-		setIsEmailAvailable(res.isAvailable);
-		setEmailCheckStatus(res.reason);
+		if (res.error) {
+			setIsEmailAvailable(false);
+			setEmailCheckStatus(res.error.message);
+		} else {
+			setIsEmailAvailable(true);
+			setEmailCheckStatus("사용 가능한 이메일입니다.");
+		}
 	};
 
 	return (
