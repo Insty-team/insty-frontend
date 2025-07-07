@@ -54,7 +54,9 @@ function Signup() {
 		}
 
 		if (!nicknameReg.test(nickname)) {
-			return { message: "닉네임 형식이 맞지 않습니다." };
+			return {
+				message: "닉네임은 2~10자의 한글, 영어 또는 숫자 여야 합니다.",
+			};
 		}
 
 		if (isNicknameAvailable === null) {
@@ -95,14 +97,24 @@ function Signup() {
 
 	const handleNicknameCheck = async () => {
 		const res = await getNicknameCheck(getValues("nickname"));
-		setIsNicknameAvailable(res.isAvailable);
-		setNicknameCheckStatus(res.reason);
+		if (res.error) {
+			setIsNicknameAvailable(false);
+			setNicknameCheckStatus(res.error.message);
+		} else {
+			setIsNicknameAvailable(true);
+			setNicknameCheckStatus("사용 가능한 닉네임입니다.");
+		}
 	};
 
 	const handleEmailCheck = async () => {
 		const res = await getEmailCheck(getValues("email"));
-		setIsEmailAvailable(res.isAvailable);
-		setEmailCheckStatus(res.reason);
+		if (res.error) {
+			setIsEmailAvailable(false);
+			setEmailCheckStatus(res.error.message);
+		} else {
+			setIsEmailAvailable(true);
+			setEmailCheckStatus("사용 가능한 이메일입니다.");
+		}
 	};
 
 	return (

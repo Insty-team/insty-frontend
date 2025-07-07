@@ -14,24 +14,36 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
 // 닉네임 중복 체크
 export const getNicknameCheck = async (nickname: string) => {
-	const res = await axios.get(`${BASE_URL}/users/nickname/check`, {
-		params: {
-			nickname,
-		},
-	});
-
-	return res.data.data;
+	try {
+		const res = await axios.get(`${BASE_URL}/users/nickname/check`, {
+			params: {
+				nickname,
+			},
+		});
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		return { error: "닉네임 중복 확인에 실패했습니다." };
+	}
 };
 
 // 이메일 중복 체크
 export const getEmailCheck = async (email: string) => {
-	const res = await axios.get(`${BASE_URL}/users/email/check`, {
-		params: {
-			email,
-		},
-	});
-
-	return res.data.data;
+	try {
+		const res = await axios.get(`${BASE_URL}/users/email/check`, {
+			params: {
+				email,
+			},
+		});
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		return { error: "이메일 중복 확인에 실패했습니다." };
+	}
 };
 
 // 회원 가입
