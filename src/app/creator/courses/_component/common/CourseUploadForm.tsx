@@ -11,16 +11,13 @@ import Swal from "sweetalert2";
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { postSuggestMetadata } from "@/app/api/ai";
-import {
-	getVideoThumbnail,
-	postCourseVideo,
-	putCourseVideoUpload,
-} from "@/app/api/backend";
+import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UploadformData } from "@/app/types/course";
 
 import { useCourseForm } from "../../../../hooks/useCourseForm";
+import { useThumbnailUpload } from "../../../../hooks/useThumbnailUpload";
 import { useTranscriptionProgress } from "./TranscriptionProgress";
 
 interface CourseUploadFormProps {
@@ -67,19 +64,22 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		handleRemoveCore,
 	} = useCourseForm(effectiveInitialData);
 
+	// 썸네일 업로드 커스텀 훅 사용
+	const {
+		thumbnailUrl,
+		setThumbnailUrl,
+		isThumbnailLoading,
+		startThumbnailRequest,
+		stopThumbnailRequest,
+	} = useThumbnailUpload();
+
 	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 	const [videoFile, setVideoFile] = useState<File | null>(null);
 	const [videoUuid, setVideoUuid] = useState<string>("");
 	const [practiceFiles, setPracticeFiles] = useState<File[]>([]);
-	const [thumbnailUrl, setThumbnailUrl] = useState("");
-	const [isThumbnailLoading, setIsThumbnailLoading] = useState(false);
-	const thumbnailRequestCountRef = useRef(0);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const videoInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
-	const thumbnailIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-	const MAX_THUMBNAIL_REQUESTS = 120;
 
 	// 전사 진행률 커스텀 훅 사용
 	const {
@@ -122,80 +122,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		setTargetAudience,
 	]);
 
-	// 썸네일 요청 함수
-	const requestThumbnail = async (uuid: string) => {
-		// 카운터 증가
-		thumbnailRequestCountRef.current += 1;
-		console.log(thumbnailRequestCountRef.current, "썸네일 요청 횟수");
-
-		// 최대 요청 횟수 체크
-		if (thumbnailRequestCountRef.current > MAX_THUMBNAIL_REQUESTS) {
-			setIsThumbnailLoading(false);
-			if (thumbnailIntervalRef.current) {
-				clearInterval(thumbnailIntervalRef.current);
-				thumbnailIntervalRef.current = null;
-			}
-			Swal.fire({
-				title: "썸네일 생성 시간 초과",
-				text: "썸네일을 생성하지 못했습니다. 직접 업로드 해주세요.",
-				icon: "error",
-				confirmButtonText: "확인",
-			});
-			return false;
-		}
-
-		try {
-			const thumbnailResponse = await getVideoThumbnail(uuid);
-			if (thumbnailResponse && thumbnailResponse.data) {
-				console.log(thumbnailResponse, "썸네일 요청 성공");
-				setThumbnailUrl(thumbnailResponse.data.thumbnailUrl);
-				setIsThumbnailLoading(false);
-
-				// 성공하면 인터벌 정리
-				if (thumbnailIntervalRef.current) {
-					clearInterval(thumbnailIntervalRef.current);
-					thumbnailIntervalRef.current = null;
-				}
-				return true;
-			}
-		} catch (error) {
-			console.log("썸네일 요청 실패:", error);
-			if (error && typeof error === "object" && "response" in error) {
-				const errorResponse = error as { response?: { status?: number } };
-				if (errorResponse.response?.status !== 403) {
-					setIsThumbnailLoading(false);
-					if (thumbnailIntervalRef.current) {
-						clearInterval(thumbnailIntervalRef.current);
-						thumbnailIntervalRef.current = null;
-					}
-				}
-			}
-		}
-		return false;
-	};
-
-	// 썸네일 요청 인터벌 시작
-	const startThumbnailRequest = (uuid: string) => {
-		setIsThumbnailLoading(true);
-		thumbnailRequestCountRef.current = 0; // 카운터 초기화
-		requestThumbnail(uuid);
-
-		thumbnailIntervalRef.current = setInterval(() => {
-			requestThumbnail(uuid);
-		}, 5000);
-	};
-
-	useEffect(() => {
-		return () => {
-			if (thumbnailIntervalRef.current) {
-				clearInterval(thumbnailIntervalRef.current);
-			}
-		};
-	}, []);
-
 	// videoUuid가 변경될 때 썸네일 요청 시작
 	useEffect(() => {
-		if (videoUuid && !isThumbnailLoading) {
+		if (videoUuid && !thumbnailUrl && !isThumbnailLoading) {
 			startThumbnailRequest(videoUuid);
 		}
 	}, [videoUuid]);
@@ -325,13 +254,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				setVideoFile(null);
 				setVideoUuid("");
 				setThumbnailUrl("");
-				setIsThumbnailLoading(false);
-				thumbnailRequestCountRef.current = 0; // 카운터 초기화
-				// 썸네일 요청 인터벌 정리
-				if (thumbnailIntervalRef.current) {
-					clearInterval(thumbnailIntervalRef.current);
-					thumbnailIntervalRef.current = null;
-				}
+				stopThumbnailRequest(); // 썸네일 요청 중단
 				if (videoInputRef.current) {
 					videoInputRef.current.value = "";
 				}
