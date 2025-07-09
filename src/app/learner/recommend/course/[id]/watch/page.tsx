@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 
+import Loading from "@/app/_components/common/Loading";
 import { getSessionMessages, postChatSession } from "@/app/api/ai";
 import {
 	getCourseDetail,
@@ -114,7 +115,13 @@ function WatchCoursePage() {
 		createSession();
 	}, [getCourseData, createSession]);
 
-	if (!data) return <div>데이터가 없습니다.</div>;
+	if (!data)
+		return (
+			<div className="flex flex-row w-full justify-center items-center h-screen">
+				데이터 불러오는 중...
+				<Loading width={60} height={60} />
+			</div>
+		);
 
 	return (
 		<div className="flex flex-col gap-8 items-stretch relative">

@@ -106,7 +106,13 @@ function PreviewUploadInfomation({
 		}
 	};
 
-	if (!data) return <div>데이터가 없습니다.</div>;
+	if (!data)
+		return (
+			<div className="flex flex-row w-full justify-center items-center h-screen">
+				데이터 불러오는 중...
+				<Loading width={60} height={60} />
+			</div>
+		);
 
 	return (
 		<>
