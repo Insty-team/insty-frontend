@@ -125,7 +125,7 @@ const postMessageStream = async (
 
 			for (const line of lines) {
 				if (line.startsWith("data: ")) {
-					const data = line.slice(6); // "data: " 제거
+					const data = line.slice(6);
 					if (data === "[END]") {
 						return fullContent;
 					}
