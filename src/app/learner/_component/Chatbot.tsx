@@ -16,20 +16,14 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 			text: string;
 			created_at: string;
 		}[]
-	>([
-		{
-			type: "assistant",
-			text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
-			created_at: new Date().toISOString(),
-		},
-	]);
+	>([]);
 
 	useEffect(() => {
 		const chatRoad = async () => {
 			try {
 				const res = await getAISearchRecommend();
 				console.log(res);
-				if (res && res.data) {
+				if (res && res.data && res.data.messages.length > 0) {
 					const messages = res.data.messages.map(
 						(message: RecommendMessage) => ({
 							type: message.sender,
@@ -37,7 +31,14 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							created_at: message.created_at,
 						}),
 					);
-					setMessages((prev) => [...prev, ...messages]);
+
+					const defaultMessage = {
+						type: "assistant" as const,
+						text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
+						created_at: messages[0].created_at,
+					};
+
+					setMessages([defaultMessage, ...messages]);
 
 					const lastMessage = res.data.messages[res.data.messages.length - 1];
 					if (
@@ -47,9 +48,24 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 					) {
 						setRecommendations(lastMessage.courses);
 					}
+				} else {
+					setMessages([
+						{
+							type: "assistant",
+							text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
+							created_at: new Date().toISOString(),
+						},
+					]);
 				}
 			} catch (error) {
 				console.log(error);
+				setMessages([
+					{
+						type: "assistant",
+						text: "페이지 로딩에 문제가 있습니다. 다시 로그인해주세요.",
+						created_at: new Date().toISOString(),
+					},
+				]);
 			}
 		};
 
@@ -80,7 +96,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 			if (i === 0) {
 				result.push(
 					<div key={`date-${i}`} className="flex justify-center my-4">
-						<div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm">
+						<div className="bg-primary-green-500 text-white px-3 py-1 rounded-full text-sm">
 							{currentDate}
 						</div>
 					</div>,
@@ -98,7 +114,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 				if (currentDate !== previousDate) {
 					result.push(
 						<div key={`date-${i}`} className="flex justify-center my-4">
-							<div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm">
+							<div className="bg-primary-green-500 text-white px-3 py-1 rounded-full text-sm">
 								{currentDate}
 							</div>
 						</div>,
@@ -125,7 +141,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							alt={currentMessage.type === "user" ? "user" : "insty"}
 							width={50}
 							height={50}
-							className="object-contain"
+							className="object-contain rounded-full"
 						/>
 					</div>
 					<div
@@ -200,6 +216,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							width={100}
 							height={100}
 							className="object-contain"
+							priority
 						/>
 					</div>
 					<div className="flex flex-col ml-8">
@@ -229,6 +246,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 									width={50}
 									height={50}
 									className="object-contain"
+									priority
 								/>
 							</div>
 							<div className="flex flex-row text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200 bg-white rounded-tr-2xl rounded-tl-md">

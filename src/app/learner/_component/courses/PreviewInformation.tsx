@@ -3,10 +3,13 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { FiFile } from "react-icons/fi";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
+import Loading from "@/app/_components/common/Loading";
+import { getPurchaseAssistantUsageCount } from "@/app/api/ai";
 import { getCourseVideoPreview, postPreviewVideo } from "@/app/api/backend";
 import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssistantChatbotModal";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
@@ -30,10 +33,19 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	const baseMessages = [
 		{
 			type: "assistant",
-			text: "안녕하세요! 저는 구매 결정을 도움드리는 Insty AI 챗봇입니다. 어떤 점을 고민하고 계신가요?",
+			text: "안녕하세요! 저는 수강 결정을 도움드리는 Insty AI 챗봇입니다. 어떤 점을 고민하고 계신가요?",
 		},
 	];
 	const [messages, setMessages] = useState(baseMessages);
+	const [remainCount, setRemainCount] = useState(0);
+
+	useEffect(() => {
+		const getUsageCount = async () => {
+			const res = await getPurchaseAssistantUsageCount(data.courseId);
+			setRemainCount(Number(res.data.remaining));
+		};
+		getUsageCount();
+	}, [data.courseId]);
 
 	useEffect(() => {
 		const getSignedUrl = async () => {
@@ -75,12 +87,12 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 
 	const handleWatchCourse = () => {
 		Swal.fire({
-			title: "강의를 시청하시겠습니까?",
-			html: "시청하기 버튼을 누르면 영상을 시청할 수 있습니다.",
+			title: "강의를 수강하시겠습니까?",
+			html: "수강하기 버튼을 누르면 강의를 수강할 수 있습니다.",
 			icon: "question",
 			showCancelButton: true,
 			cancelButtonText: "닫기",
-			confirmButtonText: "시청하기",
+			confirmButtonText: "수강하기",
 			confirmButtonColor: "#6ead79",
 		}).then((result) => {
 			if (result.isConfirmed) {
@@ -89,7 +101,13 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 		});
 	};
 
-	if (!data) return <div>데이터가 없습니다.</div>;
+	if (!data)
+		return (
+			<div className="flex flex-row w-full justify-center items-center h-screen">
+				데이터 불러오는 중...
+				<Loading width={60} height={60} />
+			</div>
+		);
 
 	return (
 		<div className="flex flex-col gap-8 items-stretch relative">
@@ -102,7 +120,7 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 					setOpenPurchaseAssistantChatbot(!openPurchaseAssistantChatbot)
 				}
 			>
-				<span className="text-base">구매 결정 도움받기</span>
+				<span>수강 결정 도움받기</span>
 				<IoChatbubbleEllipses className="w-7 h-7 ml-2" />
 			</button>
 
@@ -111,8 +129,8 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 					open={openPurchaseAssistantChatbot}
 					messages={messages}
 					setMessages={setMessages}
-					usageCount={0}
 					courseId={data.courseId}
+					remainCount={remainCount}
 				/>
 			)}
 
@@ -152,13 +170,35 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 
 						<div className="flex gap-2 items-center">
 							<Image src="/file.svg" alt="file" width={36} height={36} />
-							<span className="text-black-300 text-2xl">실습 자료 포함</span>
+							<span className="text-black-300 text-2xl">
+								{data.practiceFile && data.practiceFile.length > 0
+									? "실습 자료 포함"
+									: "실습 자료 미포함"}
+							</span>
+							<span className="text-black-300 text-2xl">
+								{data.practiceFile &&
+									data.practiceFile.length > 0 &&
+									data.practiceFile.map((file) => {
+										return (
+											<div key={file.id}>
+												<a
+													href={file.url}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<FiFile />
+													{file.name}
+												</a>
+											</div>
+										);
+									})}
+							</span>
 						</div>
 					</div>
 
 					<div className="flex justify-between gap-8">
 						<div className="w-full flex items-center mr-auto">
-							<BaseButton title="시청하기" onClick={handleWatchCourse} />
+							<BaseButton title="수강하기" onClick={handleWatchCourse} />
 						</div>
 					</div>
 				</div>

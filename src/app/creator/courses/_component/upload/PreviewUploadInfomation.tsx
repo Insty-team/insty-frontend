@@ -106,7 +106,13 @@ function PreviewUploadInfomation({
 		}
 	};
 
-	if (!data) return <div>데이터가 없습니다.</div>;
+	if (!data)
+		return (
+			<div className="flex flex-row w-full justify-center items-center h-screen">
+				데이터 불러오는 중...
+				<Loading width={60} height={60} />
+			</div>
+		);
 
 	return (
 		<>
@@ -166,7 +172,9 @@ function PreviewUploadInfomation({
 							<div className="flex gap-2 items-center">
 								<Image src="/file.svg" alt="file" width={36} height={36} />
 								<span className="text-black-300 text-2xl">
-									{data.practiceFiles ? "실습 자료 포함" : "실습 자료 미포함"}
+									{data.practiceFiles && data.practiceFiles.length > 0
+										? "실습 자료 포함"
+										: "실습 자료 미포함"}
 								</span>
 							</div>
 							{data.practiceFiles && (

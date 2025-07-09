@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { FiFile } from "react-icons/fi";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 
+import Loading from "@/app/_components/common/Loading";
 import { getSessionMessages, postChatSession } from "@/app/api/ai";
 import {
 	getCourseDetail,
@@ -114,7 +116,13 @@ function WatchCoursePage() {
 		createSession();
 	}, [getCourseData, createSession]);
 
-	if (!data) return <div>데이터가 없습니다.</div>;
+	if (!data)
+		return (
+			<div className="flex flex-row w-full justify-center items-center h-screen">
+				데이터 불러오는 중...
+				<Loading width={60} height={60} />
+			</div>
+		);
 
 	return (
 		<div className="flex flex-col gap-8 items-stretch relative">
@@ -173,7 +181,29 @@ function WatchCoursePage() {
 
 						<div className="flex gap-2 items-center">
 							<Image src="/file.svg" alt="file" width={36} height={36} />
-							<span className="text-black-300 text-2xl">실습 자료 포함</span>
+							<span className="text-black-300 text-2xl">
+								{data.practiceFile && data.practiceFile.length > 0
+									? "실습 자료 포함"
+									: "실습 자료 미포함"}
+							</span>
+							<span className="text-black-300 text-2xl">
+								{data.practiceFile &&
+									data.practiceFile.length > 0 &&
+									data.practiceFile.map((file) => {
+										return (
+											<div key={file.id}>
+												<a
+													href={file.url}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<FiFile />
+													{file.name}
+												</a>
+											</div>
+										);
+									})}
+							</span>
 						</div>
 					</div>
 				</div>

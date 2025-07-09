@@ -3,6 +3,7 @@ import axios from "axios";
 import { AIHistoryResponse, AIMessageResponse } from "@/app/types/ai";
 import { ApiResponse } from "@/app/types/api";
 import { PurchaseAssistantChatbotReq } from "@/app/types/course";
+import { getAccessToken } from "@/app/utils";
 
 import axiosInstance from "../interceptor";
 
@@ -26,6 +27,25 @@ const postPurchaseAssistantChatbot = async (
 			return error.response.data;
 		}
 
+		throw new Error("서버와 통신 불가");
+	}
+};
+
+const getPurchaseAssistantUsageCount = async (course_id: number) => {
+	try {
+		const res = await axiosInstance.get<ApiResponse<string>>(
+			`${AI_BASE_URL}/courses/purchase-assistant/usage-info`,
+			{
+				params: {
+					course_id,
+				},
+			},
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return error.response.data;
+		}
 		throw new Error("서버와 통신 불가");
 	}
 };
@@ -62,22 +82,67 @@ const getSessionMessages = async (session_id: number) => {
 	}
 };
 
-const postMessageStream = async (session_id: number, formData: FormData) => {
+const postMessageStream = async (
+	session_id: number,
+	formData: FormData,
+	onChunk?: (chunk: string) => void,
+) => {
 	try {
-		const res = await axiosInstance.post<ApiResponse<string[]>>(
-			`${AI_BASE_URL}/chatbot/sessions/${session_id}/messages/stream`,
-			formData,
-			{
-				headers: { "Content-Type": "multipart/form-data" },
-			},
-		);
-		return res.data;
-	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			return error.response.data;
+		const accessToken = getAccessToken();
+		const headers: Record<string, string> = {};
+
+		if (accessToken) {
+			headers.Authorization = `Bearer ${accessToken}`;
 		}
 
-		throw new Error("서버와 통신 불가");
+		const response = await fetch(
+			`${AI_BASE_URL}/chatbot/sessions/${session_id}/messages/stream`,
+			{
+				method: "POST",
+				body: formData,
+				headers,
+			},
+		);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const reader = response.body?.getReader();
+		if (!reader) {
+			throw new Error("스트림을 읽을 수 없습니다.");
+		}
+
+		let fullContent = "";
+		const decoder = new TextDecoder();
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			const chunk = decoder.decode(value, { stream: true });
+			const lines = chunk.split("\n");
+
+			for (const line of lines) {
+				if (line.startsWith("data: ")) {
+					const data = line.slice(6);
+					if (data === "[END]") {
+						return fullContent;
+					}
+					if (data.trim()) {
+						fullContent += data;
+						if (onChunk) {
+							onChunk(fullContent);
+						}
+					}
+				}
+			}
+		}
+
+		return fullContent;
+	} catch (error) {
+		console.error("스트림 처리 중 오류:", error);
+		throw new Error("스트림 처리 실패");
 	}
 };
 
@@ -130,6 +195,7 @@ const getAIMessageList = async (
 export {
 	getAIChatHistory,
 	getAIMessageList,
+	getPurchaseAssistantUsageCount,
 	getSessionMessages,
 	postChatSession,
 	postMessageStream,

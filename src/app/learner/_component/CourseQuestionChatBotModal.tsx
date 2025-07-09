@@ -3,6 +3,7 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { IoSend } from "react-icons/io5";
 import { LuFileUp } from "react-icons/lu";
 
+import Loading from "@/app/_components/common/Loading";
 import { postMessageStream } from "@/app/api/ai";
 import { useFormatAssistantText } from "@/app/hooks";
 import { CourserChatbotMessage } from "@/app/types/course";
@@ -24,6 +25,7 @@ function CourseQuestionChatBotModal({
 	const [input, setInput] = useState("");
 	const [file, setFile] = useState<File | null>(null);
 	const [filePreview, setFilePreview] = useState<string | null>(null);
+	const [isResponseLoading, setIsResponseLoading] = useState(false);
 	const chatEndRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const formatAssistantText = useFormatAssistantText();
@@ -71,6 +73,9 @@ function CourseQuestionChatBotModal({
 			}
 			if (!input.trim() && !file) return;
 
+			setIsResponseLoading(true);
+
+			// 사용자 메시지 추가
 			setMessages((prev) => [
 				...prev,
 				{
@@ -88,6 +93,15 @@ function CourseQuestionChatBotModal({
 				},
 			]);
 
+			// 빈 assistant 메시지 추가 (스트리밍 응답용)
+			setMessages((prev) => [
+				...prev,
+				{
+					sender: "assistant",
+					content: "",
+				},
+			]);
+
 			try {
 				const formData = new FormData();
 				formData.append("course_id", String(courseId));
@@ -96,24 +110,17 @@ function CourseQuestionChatBotModal({
 					formData.append("file", file);
 				}
 
-				console.log(formData.get("course_id"));
-				console.log(formData.get("message_text"));
-				console.log(formData.get("file"));
-
-				const postmessageResponse = await postMessageStream(
-					sessionId,
-					formData,
-				);
-
-				console.log(postmessageResponse);
-
-				setMessages((prev) => [
-					...prev,
-					{
-						sender: "assistant",
-						content: postmessageResponse,
-					},
-				]);
+				await postMessageStream(sessionId, formData, (chunk) => {
+					// 실시간으로 assistant 메시지 업데이트
+					setMessages((prev) => {
+						const newMessages = [...prev];
+						const lastMessage = newMessages[newMessages.length - 1];
+						if (lastMessage && lastMessage.sender === "assistant") {
+							lastMessage.content = chunk;
+						}
+						return newMessages;
+					});
+				});
 
 				setInput("");
 				setFile(null);
@@ -122,6 +129,18 @@ function CourseQuestionChatBotModal({
 				}
 			} catch (error) {
 				console.error(error);
+				// 에러 발생 시 마지막 assistant 메시지를 에러 메시지로 교체
+				setMessages((prev) => {
+					const newMessages = [...prev];
+					const lastMessage = newMessages[newMessages.length - 1];
+					if (lastMessage && lastMessage.sender === "assistant") {
+						lastMessage.content =
+							"죄송합니다. 응답 생성 중 오류가 발생했습니다.";
+					}
+					return newMessages;
+				});
+			} finally {
+				setIsResponseLoading(false);
 			}
 		},
 		[input, file, filePreview, sessionId, courseId, setMessages],
@@ -137,7 +156,7 @@ function CourseQuestionChatBotModal({
 	if (!open) return null;
 
 	return (
-		<div className="fixed bottom-24 right-8 z-[2600] w-[60%] h-[80%] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-scale-100">
+		<div className="fixed bottom-24 right-8 z-[2600] w-[40%] h-[80%] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-scale-100">
 			<div className="flex items-center justify-between px-4 py-3 border-b border-gray-scale-100 rounded-t-2xl bg-gray-scale-50">
 				<div className="flex items-center gap-2">
 					<Image src="/insty.png" alt="logo" width={48} height={48} />
@@ -166,11 +185,26 @@ function CourseQuestionChatBotModal({
 							}`}
 						>
 							{msg.sender === "assistant" ? (
-								<span
-									dangerouslySetInnerHTML={{
-										__html: formatAssistantText(msg.content),
-									}}
-								/>
+								<>
+									{msg.content ? (
+										<span
+											dangerouslySetInnerHTML={{
+												__html: formatAssistantText(msg.content),
+											}}
+										/>
+									) : isResponseLoading ? (
+										<div className="flex items-center">
+											<p>답변을 생성 중입니다...</p>
+											<Loading width={30} height={30} className="ml-2" />
+										</div>
+									) : (
+										<span
+											dangerouslySetInnerHTML={{
+												__html: formatAssistantText(msg.content),
+											}}
+										/>
+									)}
+								</>
 							) : (
 								<>
 									{msg.attachments &&
@@ -210,10 +244,11 @@ function CourseQuestionChatBotModal({
 					type="button"
 					className="px-2 py-1 text-lg"
 					onClick={() => fileInputRef.current?.click()}
+					disabled={isResponseLoading}
 				>
 					<LuFileUp
 						size={24}
-						className="hover:text-primary-green-600 cursor-pointer"
+						className={`hover:text-primary-green-600 cursor-pointer ${isResponseLoading ? "text-gray-400" : ""}`}
 					/>
 				</button>
 				{filePreview && (
@@ -229,6 +264,7 @@ function CourseQuestionChatBotModal({
 							type="button"
 							className="text-secondary-red-300 text-xs cursor-pointer"
 							onClick={handleRemoveFile}
+							disabled={isResponseLoading}
 						>
 							삭제
 						</button>
@@ -239,12 +275,17 @@ function CourseQuestionChatBotModal({
 					placeholder="입력해주세요 ..."
 					value={input}
 					onChange={handleInputChange}
+					disabled={isResponseLoading}
 				/>
 				<button
 					type="submit"
-					className="text-primary-green-600 hover:text-primary-green-800"
+					className="text-primary-green-600 hover:text-primary-green-800 disabled:text-gray-400"
+					disabled={isResponseLoading}
 				>
-					<IoSend size={22} className="text-primary-green-600" />
+					<IoSend
+						size={22}
+						className={`text-primary-green-600 ${isResponseLoading ? "text-gray-400" : ""}`}
+					/>
 				</button>
 			</form>
 		</div>

@@ -18,6 +18,7 @@ import {
 	useGetUserProfileInfoQuery,
 } from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
+import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
@@ -128,13 +129,16 @@ function MyPageProfile() {
 			return;
 		}
 
-		const body = {
+		const body: UserUpdateRequest = {
 			email: data.email,
 			currentPassword: data.password,
-			newPassword: data.changedPassword,
 			nickname: data.nickname,
 			introduce: data.introduce,
 		};
+
+		if (data.changedPassword) {
+			body.newPassword = data.changedPassword;
+		}
 
 		const formData = new FormData();
 		formData.append(
@@ -161,7 +165,8 @@ function MyPageProfile() {
 			onError: () => {
 				Swal.fire({
 					icon: "error",
-					title: `${password === "" ? "현재 비밀번호를 입력해주세요" : "현재 비밀번호가 일치하지 않습니다."}`,
+					title: "수정에 실패하였습니다.",
+					text: `${password === "" ? "현재 비밀번호를 입력해주세요" : "현재 비밀번호가 일치하지 않습니다."}`,
 					confirmButtonText: "확인",
 				});
 			},

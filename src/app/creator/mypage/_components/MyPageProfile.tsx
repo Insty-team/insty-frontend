@@ -16,6 +16,7 @@ import { getEmailCheck, getNicknameCheck } from "@/app/api/backend";
 import { useEditUserProfileInfoMutation } from "@/app/queries";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
+import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
@@ -125,13 +126,18 @@ function MyPageProfile() {
 			return;
 		}
 
-		const body = {
+		const body: UserUpdateRequest = {
 			email: data.email,
 			currentPassword: data.password,
-			newPassword: data.changedPassword,
 			nickname: data.nickname,
 			introduce: data.introduce,
 		};
+
+		if (data.changedPassword) {
+			body.newPassword = data.changedPassword;
+		}
+
+		console.log(body);
 
 		const formData = new FormData();
 		formData.append(
@@ -158,7 +164,8 @@ function MyPageProfile() {
 			onError: () => {
 				Swal.fire({
 					icon: "error",
-					title: `${password === "" ? "현재 비밀번호를 입력해주세요" : "현재 비밀번호가 일치하지 않습니다."}`,
+					title: "수정에 실패하였습니다.",
+					text: `${password === "" ? "현재 비밀번호를 입력해주세요" : "현재 비밀번호가 일치하지 않습니다."}`,
 					confirmButtonText: "확인",
 				});
 			},
@@ -200,15 +207,11 @@ function MyPageProfile() {
 											? URL.createObjectURL(profileImageFile)
 											: userInfo?.thumbnailUrl || "/profile.svg"
 									}
+									alt="프로필 사진"
 									width={128}
 									height={128}
-									alt="프로필 사진"
-									style={{
-										objectFit: "cover",
-										width: "128px",
-										height: "128px",
-									}}
-									className="rounded-full"
+									className="rounded-full object-cover"
+									priority
 								/>
 								<input
 									type="file"
@@ -233,7 +236,12 @@ function MyPageProfile() {
 										소개글
 									</label>
 									<textarea
-										placeholder={userInfo?.introduce}
+										{...register("introduce")}
+										placeholder={
+											userInfo?.introduce
+												? userInfo.introduce
+												: "소개글을 입력해주세요."
+										}
 										className="w-full h-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none resize-none"
 									/>
 								</div>
@@ -404,7 +412,10 @@ function MyPageProfile() {
 						{[
 							{ label: "닉네임", value: userInfo?.nickname },
 							{ label: "이메일", value: userInfo?.email },
-							{ label: "소개글", value: userInfo?.introduce },
+							{
+								label: "소개글",
+								value: userInfo?.introduce || "소개글이 없습니다.",
+							},
 						].map((item) => (
 							<div key={item.label} className="flex flex-col gap-2">
 								<span className="text-xl font-semibold">{item.label}</span>

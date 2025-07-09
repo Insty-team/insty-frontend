@@ -158,10 +158,10 @@ function LearnerHeader() {
 									pathname.includes(menu.path)
 										? "text-primary-green-600"
 										: "text-black-400"
-								} ${menu.title === "커뮤니티" ? "cursor-not-allowed text-gray-300" : ""}`}
+								} ${menu.title === "커뮤니티" ? "cursor-not-allowed text-gray-300" : "hover:text-primary-green-500"}`}
 								onClick={(e) => {
 									if (menu.title === "커뮤니티") {
-										e.preventDefault(); // 커뮤니티 메뉴 라우팅 방지
+										e.preventDefault();
 									}
 								}}
 							>
@@ -179,6 +179,7 @@ function LearnerHeader() {
 							height={30}
 							alt="프로필 사진"
 							className="rounded-full"
+							priority
 						/>
 					) : (
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />

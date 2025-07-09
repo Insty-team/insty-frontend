@@ -11,4 +11,12 @@ type LoginResponse = {
 	};
 };
 
-export type { LoginResponse };
+type UserUpdateRequest = {
+	email: string;
+	nickname: string;
+	currentPassword: string;
+	newPassword?: string;
+	introduce?: string;
+};
+
+export type { LoginResponse, UserUpdateRequest };

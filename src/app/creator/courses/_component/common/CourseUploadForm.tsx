@@ -421,7 +421,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 							/>
 						) : isThumbnailLoading ? (
 							<div className="text-black-300 flex flex-col items-center justify-center">
-								썸네일 생성 중... <Loading width={30} height={30} />
+								썸네일 로드 중... <Loading width={30} height={30} />
 							</div>
 						) : (
 							<span className="text-gray-scale-200">썸네일을 선택해주세요</span>
