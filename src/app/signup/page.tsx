@@ -125,7 +125,7 @@ function Signup() {
 					<p className="mt-12 text-3xl font-semibold"> 회원가입하기</p>
 				</div>
 			</div>
-			<div className="flex items-center justify-center">
+			<div className="flex flex-col items-center justify-center">
 				<form
 					onSubmit={handleSubmit(onSubmit)}
 					className="w-full max-w-md p-4 flex flex-col items-center space-y-6"
@@ -272,7 +272,8 @@ function Signup() {
 					>
 						회원가입
 					</button>
-
+				</form>
+				<div className="flex flex-col items-center gap-4">
 					<div className="text-md text-black-100">
 						계정이 이미 있으신가요?{" "}
 						<Link
@@ -282,9 +283,8 @@ function Signup() {
 							로그인
 						</Link>
 					</div>
-
 					<SocialLogin />
-				</form>
+				</div>
 			</div>
 		</>
 	);
