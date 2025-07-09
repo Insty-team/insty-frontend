@@ -6,10 +6,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
+import SocialLogin from "@/app/_components/social/SocialLogin";
 import { PasswordInput, TextInput } from "@/app/_components/validation";
-import { getSocialAuthCode, postLogin } from "@/app/api/backend";
+import { postLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
-import { LoginForm, SocialLogin } from "@/app/types";
+import { LoginForm } from "@/app/types";
 import { emailReg, passwordReg } from "@/app/utils";
 
 function Login() {
@@ -72,13 +73,6 @@ function Login() {
 		}
 	};
 
-	// 카카오 로그인
-	const handleSocialoLogin = async (socialName: SocialLogin) => {
-		const state = userType === "creator" ? "CREATOR" : "LEARNER";
-		const res = await getSocialAuthCode(socialName, state);
-		window.location.href = res;
-	};
-
 	return (
 		<>
 			<div className="flex flex-col justify-center p-8 w-full">
@@ -135,7 +129,8 @@ function Login() {
 					>
 						로그인
 					</button>
-					{/* Social Login */}
+				</form>
+				<div className="flex flex-col items-center gap-4">
 					<div className="text-md text-black-100">
 						계정이 없으신가요?{" "}
 						<Link
@@ -145,38 +140,7 @@ function Login() {
 							회원가입
 						</Link>
 					</div>
-				</form>
-				<div className="text-lg text-black-100 font-semibold">
-					소셜 로그인으로 간편하게 시작하기
-				</div>
-				<div className="flex space-x-4 mb-8">
-					<button onClick={() => handleSocialoLogin("KAKAO")}>
-						<Image
-							src="/kakao.svg"
-							alt="kakao"
-							className="rounded-2xl cursor-pointer"
-							width={36}
-							height={36}
-						/>
-					</button>
-					<button onClick={() => handleSocialoLogin("GOOGLE")}>
-						<Image
-							src="/google.svg"
-							alt="google"
-							className="rounded-2xl cursor-pointer"
-							width={36}
-							height={36}
-						/>
-					</button>
-					<button onClick={() => handleSocialoLogin("NAVER")}>
-						<Image
-							src="/naver.svg"
-							alt="naver"
-							className="rounded-2xl cursor-pointer"
-							width={36}
-							height={36}
-						/>
-					</button>
+					<SocialLogin />
 				</div>
 			</div>
 		</>
