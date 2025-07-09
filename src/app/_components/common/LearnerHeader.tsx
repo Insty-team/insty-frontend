@@ -179,6 +179,7 @@ function LearnerHeader() {
 							height={30}
 							alt="프로필 사진"
 							className="rounded-full"
+							priority
 						/>
 					) : (
 						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />

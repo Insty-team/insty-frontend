@@ -177,6 +177,7 @@ function CreatorHeader() {
 								width={30}
 								height={30}
 								className="rounded-full"
+								priority
 							/>
 						) : (
 							<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
