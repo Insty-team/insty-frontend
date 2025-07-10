@@ -411,7 +411,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					<label className="block text-2xl font-semibold mb-1">
 						강의 썸네일
 					</label>
-					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
+					<div className="mb-2 w-full h-[250px] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
 						{thumbnailUrl ? (
 							<Image
 								src={thumbnailUrl}
