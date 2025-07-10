@@ -20,6 +20,7 @@ import {
 	getRefreshToken,
 	removeAccessToken,
 	setAccessToken,
+	setRefreshToken,
 } from "@/app/utils";
 
 import BaseDropdown from "./BaseDropdown";
@@ -66,6 +67,7 @@ function LearnerHeader() {
 							if (refreshToken) {
 								const tokenRes = await postReissueToken(refreshToken);
 								setAccessToken(tokenRes.token.accessToken);
+								setRefreshToken(tokenRes.token.refreshToken);
 								console.log("토큰 재발급 완료:", tokenRes.token.accessToken);
 							}
 						} catch (tokenError) {
