@@ -127,7 +127,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		if (videoUuid && !thumbnailUrl && !isThumbnailLoading) {
 			startThumbnailRequest(videoUuid);
 		}
-	}, [videoUuid]);
+	}, [videoUuid, thumbnailUrl, isThumbnailLoading, startThumbnailRequest]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -377,8 +377,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					}
 				/>
 			</div>
-			{/* 전사 진행률 표시 */}
-			{transcriptionStatus && videoUuid !== "" && (
+			{/* 전사 진행률 표시 (새 비디오일 때만) */}
+			{videoUuid !== "" && (
 				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
 					<div className="mb-2">
 						<strong>변환 상태:</strong> {transcriptionStatus}
