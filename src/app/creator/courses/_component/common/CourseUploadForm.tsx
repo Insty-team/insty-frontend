@@ -127,7 +127,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		if (videoUuid && !thumbnailUrl && !isThumbnailLoading) {
 			startThumbnailRequest(videoUuid);
 		}
-	}, [videoUuid]);
+	}, [videoUuid, thumbnailUrl, isThumbnailLoading, startThumbnailRequest]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -377,8 +377,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					}
 				/>
 			</div>
-			{/* 전사 진행률 표시 */}
-			{transcriptionStatus && videoUuid !== "" && (
+			{/* 전사 진행률 표시 (새 비디오일 때만) */}
+			{videoUuid !== "" && (
 				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
 					<div className="mb-2">
 						<strong>변환 상태:</strong> {transcriptionStatus}
@@ -411,7 +411,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					<label className="block text-2xl font-semibold mb-1">
 						강의 썸네일
 					</label>
-					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
+					<div className="mb-2 w-full h-[250px] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
 						{thumbnailUrl ? (
 							<Image
 								src={thumbnailUrl}
@@ -643,7 +643,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 								value={tagInput}
 								onChange={(e) => setTagInput(e.target.value)}
 								onKeyDown={(e) =>
-									e.key === "Enter" && (e.preventDefault(), handleAddTag())
+									e.key === "Enter" &&
+									!e.nativeEvent.isComposing &&
+									(e.preventDefault(), handleAddTag())
 								}
 								placeholder="태그 입력 후 Enter"
 							/>

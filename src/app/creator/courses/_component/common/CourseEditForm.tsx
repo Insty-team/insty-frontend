@@ -85,10 +85,10 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const [videoFile, setVideoFile] = useState<File | null>(null);
 	const [videoFileName, setVideoFileName] = useState<string | null>(null);
 	const [videoUuid, setVideoUuid] = useState<string | null>(null);
+	const [isNewVideo, setIsNewVideo] = useState<boolean>(false);
 
-	// 전사 진행률 커스텀 훅 사용
 	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
-		useTranscriptionProgress(videoUuid);
+		useTranscriptionProgress(isNewVideo ? videoUuid : null);
 
 	useEffect(() => {
 		if (initialData) {
@@ -112,8 +112,12 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			if (initialData.videoInfo && initialData.videoInfo.originFileName) {
 				setVideoFileName(initialData.videoInfo.originFileName);
 			}
+			if (initialData.videoInfo && initialData.videoInfo.videoUuid) {
+				setVideoUuid(initialData.videoInfo.videoUuid);
+				setIsNewVideo(false); // 기존 비디오는 새 비디오가 아님
+			}
 		}
-	}, [initialData, setThumbnailUrl]); // setThumbnailUrl 의존성 추가
+	}, [initialData]);
 
 	// videoUuid가 변경될 때 썸네일 요청 시작 (기존 썸네일이 없을 때만)
 	useEffect(() => {
@@ -217,11 +221,11 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			return;
 		}
 
-		// 새 영상 업로드 시 기존 영상 정보 삭제
 		setVideoFileName(null);
 		handleRemoveThumbnail();
 		setVideoFile(file);
 		setVideoFileName(file.name);
+		setIsNewVideo(true);
 		console.log("선택된 비디오:", file);
 
 		try {
@@ -257,6 +261,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				setVideoFileName(null);
 				setVideoUuid("");
 				setThumbnailUrl("");
+				setIsNewVideo(false);
 				stopThumbnailRequest();
 				if (videoInputRef.current) {
 					videoInputRef.current.value = "";
@@ -266,6 +271,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	};
 
 	const handleSuggestTitle = async () => {
+		console.log(videoUuid, title);
 		try {
 			if (videoUuid) {
 				console.log(videoUuid, title);
@@ -406,7 +412,6 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			);
 			console.log(res);
 
-			// 응답이 성공인지 확인
 			if (res && !res.error) {
 				Swal.fire({
 					title: "강의가 수정 되었습니다.",
@@ -422,7 +427,6 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 					router.push("/creator/courses");
 				});
 			} else {
-				// 서버에서 에러 응답을 보낸 경우
 				Swal.fire({
 					title: "강의 수정 실패",
 					text: res?.error?.message || "알 수 없는 오류가 발생했습니다.",
@@ -442,7 +446,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				<div className="font-bold text-3xl mb-12">{subject}</div>
 			</div>
 			{/* 전사 진행률 표시 */}
-			{transcriptionStatus && videoUuid !== "" && (
+			{isNewVideo && transcriptionStatus && videoUuid !== "" && (
 				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
 					<div className="mb-2">
 						<strong>변환 상태:</strong> {transcriptionStatus}
@@ -740,7 +744,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								value={tagInput}
 								onChange={(e) => setTagInput(e.target.value)}
 								onKeyDown={(e) =>
-									e.key === "Enter" && (e.preventDefault(), handleAddTag())
+									e.key === "Enter" &&
+									!e.nativeEvent.isComposing &&
+									(e.preventDefault(), handleAddTag())
 								}
 								placeholder="태그 입력 후 Enter"
 							/>

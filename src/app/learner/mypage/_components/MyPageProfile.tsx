@@ -59,6 +59,25 @@ function MyPageProfile() {
 	const nickname = watch("nickname");
 	const email = watch("email");
 
+	// 닉네임 에러 메시지 로직
+	const getNicknameErrorMessage = () => {
+		if (nickname.length < 2) {
+			return { message: "닉네임은 2글자 이상입니다." };
+		}
+
+		if (nickname.length > 10) {
+			return { message: "닉네임은 10글자 이하여야 합니다." };
+		}
+
+		if (!nicknameReg.test(nickname)) {
+			return {
+				message: "닉네임은 2~10자의 한글, 영어 또는 숫자 여야 합니다.",
+			};
+		}
+
+		return undefined;
+	};
+
 	useEffect(() => {
 		trigger("changedPassword");
 	}, [password, trigger]);
@@ -246,7 +265,7 @@ function MyPageProfile() {
 									label="닉네임"
 									name="nickname"
 									type="text"
-									placeholder={userInfo?.nickname}
+									placeholder="닉네임을 입력하세요."
 									register={register}
 									validation={{
 										required: "",
@@ -260,11 +279,13 @@ function MyPageProfile() {
 										},
 									}}
 									error={
-										errors.nickname
-											? errors.nickname
-											: isNicknameChanged && !isNicknameAvailable
-												? { message: "닉네임 중복 확인을 해주세요." }
-												: undefined
+										isNicknameAvailable === false && nicknameCheckStatus
+											? { message: nicknameCheckStatus }
+											: getNicknameErrorMessage() ||
+												errors.nickname ||
+												(isNicknameChanged && !isNicknameAvailable
+													? { message: "닉네임 중복 확인을 해주세요." }
+													: undefined)
 									}
 									checkDuplication={
 										<BaseButton
@@ -294,7 +315,7 @@ function MyPageProfile() {
 									label="이메일"
 									name="email"
 									type="email"
-									placeholder={userInfo?.email}
+									placeholder="이메일을 입력하세요."
 									register={register}
 									validation={{
 										required: "",
