@@ -643,7 +643,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 								value={tagInput}
 								onChange={(e) => setTagInput(e.target.value)}
 								onKeyDown={(e) =>
-									e.key === "Enter" && (e.preventDefault(), handleAddTag())
+									e.key === "Enter" &&
+									!e.nativeEvent.isComposing &&
+									(e.preventDefault(), handleAddTag())
 								}
 								placeholder="태그 입력 후 Enter"
 							/>
