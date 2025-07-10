@@ -252,23 +252,45 @@ function MyPageAIChat() {
 												new Date(b.created_at).getTime(),
 										)
 										.map((msg: AIMessage) => (
-											<MessageBox
+											<div
 												key={msg.message_id}
-												id={msg.message_id}
-												status="waiting"
-												retracted={false}
-												position={msg.sender === "assistant" ? "left" : "right"}
-												type="text"
-												text={formatAssistantText(msg.content)}
-												date={new Date(msg.created_at)}
-												title={msg.sender === "assistant" ? "AI" : "나"}
-												focus={false}
-												titleColor="#000"
-												forwarded={false}
-												replyButton={false}
-												removeButton={false}
-												notch={true}
-											/>
+												className={`flex w-full ${msg.sender === "assistant" ? "justify-start" : "justify-end"}`}
+											>
+												<div
+													className={`mb-3 min-w-auto max-w-[60%] ${msg.sender === "assistant" ? "mr-auto ai-message" : "ml-auto user-message"}`}
+												>
+													<MessageBox
+														id={msg.message_id}
+														status="waiting"
+														retracted={false}
+														className="text-lg"
+														position={
+															msg.sender === "assistant" ? "left" : "right"
+														}
+														type="text"
+														text={formatAssistantText(msg.content)}
+														date={new Date(msg.created_at)}
+														dateString=""
+														title=""
+														focus={false}
+														titleColor={
+															msg.sender === "assistant" ? "#000" : "#fff"
+														}
+														forwarded={false}
+														replyButton={false}
+														removeButton={false}
+														notch={false}
+													/>
+													<div
+														className={`text-xs text-gray-400 mt-1 ${msg.sender === "assistant" ? "ml-2 text-left" : "mr-2 text-right"}`}
+													>
+														{getFormattedDate(
+															msg.created_at,
+															"YYYY/MM/DD HH:mm",
+														)}
+													</div>
+												</div>
+											</div>
 										))}
 									<div ref={bottomRef} />
 								</div>
