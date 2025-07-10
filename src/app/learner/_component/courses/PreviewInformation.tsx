@@ -14,6 +14,7 @@ import { getCourseVideoPreview, postPreviewVideo } from "@/app/api/backend";
 import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssistantChatbotModal";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail } from "@/app/types/course";
+import { formatTime } from "@/app/utils/date";
 
 import HLSPlayer from "./HLSPlayer";
 
@@ -27,6 +28,7 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 		useState(false);
 
 	const [m3u8Url, setM3u8Url] = useState<string | null>(null);
+	const [videoDuration, setVideoDuration] = useState<number>(0);
 
 	console.log(data);
 
@@ -136,7 +138,11 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 
 			<div className="flex gap-4 w-full">
 				{m3u8Url ? (
-					<HLSPlayer src={m3u8Url} width="600px" />
+					<HLSPlayer
+						src={m3u8Url}
+						width="600px"
+						onDurationChange={setVideoDuration}
+					/>
 				) : (
 					<div className="w-[600px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
 						<span className="text-gray-400">영상을 재생할 수 없습니다.</span>
@@ -194,10 +200,16 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 									})}
 							</span>
 						</div>
+						<div className="flex gap-2 items-center">
+							<Image src="/time.svg" alt="clock" width={36} height={36} />
+							<span className="text-black-300 text-2xl">
+								{videoDuration > 0 ? formatTime(videoDuration) : "로딩 중..."}
+							</span>
+						</div>
 					</div>
 
 					<div className="flex justify-between gap-8">
-						<div className="w-full flex items-center mr-auto">
+						<div className="w-[60%] flex items-center mr-auto">
 							<BaseButton title="수강하기" onClick={handleWatchCourse} />
 						</div>
 					</div>

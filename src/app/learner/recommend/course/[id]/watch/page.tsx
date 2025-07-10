@@ -17,6 +17,7 @@ import CourseQuestionChatBotModal from "@/app/learner/_component/CourseQuestionC
 import HLSPlayer from "@/app/learner/_component/courses/HLSPlayer";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail, CourserChatbotMessage } from "@/app/types/course";
+import { formatTime } from "@/app/utils/date";
 
 function WatchCoursePage() {
 	const [openChatbot, setOpenChatbot] = useState(false);
@@ -24,6 +25,7 @@ function WatchCoursePage() {
 	const [m3u8Url, setM3u8Url] = useState<string | null>(null);
 	const { id } = useParams();
 	const [sessionId, setSessionId] = useState<number | null>(null);
+	const [videoDuration, setVideoDuration] = useState<number>(0);
 
 	const baseMessages: CourserChatbotMessage[] = [
 		{
@@ -149,7 +151,11 @@ function WatchCoursePage() {
 
 			<div className="flex gap-4 w-full">
 				{m3u8Url ? (
-					<HLSPlayer src={m3u8Url} width="600px" height="450px" />
+					<HLSPlayer
+						src={m3u8Url}
+						width="600px"
+						onDurationChange={setVideoDuration}
+					/>
 				) : (
 					<div className="w-[600px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
 						<span className="text-gray-400">영상 미리보기</span>
@@ -203,6 +209,12 @@ function WatchCoursePage() {
 											</div>
 										);
 									})}
+							</span>
+						</div>
+						<div className="flex gap-2 items-center">
+							<Image src="/time.svg" alt="clock" width={36} height={36} />
+							<span className="text-black-300 text-2xl">
+								{videoDuration > 0 ? formatTime(videoDuration) : "로딩 중..."}
 							</span>
 						</div>
 					</div>

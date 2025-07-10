@@ -5,12 +5,14 @@ interface HLSPlayerProps {
 	src: string;
 	width?: string;
 	height?: string;
+	onDurationChange?: (duration: number) => void;
 }
 
 const HLSPlayer: React.FC<HLSPlayerProps> = ({
 	src,
 	width = "100%",
 	height = "auto",
+	onDurationChange,
 }) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,22 @@ const HLSPlayer: React.FC<HLSPlayerProps> = ({
 		hls.loadSource(src);
 		hls.attachMedia(videoRef.current);
 		hlsRef.current = hls;
-	}, [src]);
+
+		// 비디오 메타데이터 로드 이벤트 리스너 추가
+		const videoElement = videoRef.current;
+		const handleLoadedMetadata = () => {
+			if (videoElement && onDurationChange) {
+				onDurationChange(videoElement.duration);
+			}
+		};
+
+		videoElement.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+		// 클린업 함수에서 이벤트 리스너 제거
+		return () => {
+			videoElement.removeEventListener("loadedmetadata", handleLoadedMetadata);
+		};
+	}, [src, onDurationChange]);
 
 	// src가 변경될 때만 HLS 초기화
 	useEffect(() => {
