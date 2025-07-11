@@ -59,7 +59,8 @@ function MyPageProfile() {
 	const nickname = watch("nickname");
 	const email = watch("email");
 
-	// 닉네임 에러 메시지 로직
+	const isSocialLoginUser = userInfo?.socialType === null ? false : true;
+
 	const getNicknameErrorMessage = () => {
 		if (nickname.length < 2) {
 			return { message: "닉네임은 2글자 이상입니다." };
@@ -126,36 +127,52 @@ function MyPageProfile() {
 		isChangedPasswordSame;
 
 	const onSaveProfileInfo = (data: ChangeProfileForm) => {
-		if (isNicknameChanged && !isNicknameAvailable) {
-			Swal.fire({
-				icon: "error",
-				title: "닉네임 중복확인을 해주세요.",
-				confirmButtonText: "확인",
-			});
-			return;
-		} else if (isEmailChanged && !isEmailAvailable) {
-			Swal.fire({
-				icon: "error",
-				title: "이메일 중복확인을 해주세요.",
-				confirmButtonText: "확인",
-			});
-			return;
-		} else if (isChangedPasswordSame) {
-			Swal.fire({
-				icon: "error",
-				title: "현재 비밀번호와 다른 비밀번호를 입력해주세요.",
-			});
-			return;
+		if (isSocialLoginUser) {
+			if (isNicknameChanged && !isNicknameAvailable) {
+				Swal.fire({
+					icon: "error",
+					title: "닉네임 중복확인을 해주세요.",
+					confirmButtonText: "확인",
+				});
+				return;
+			}
+		} else {
+			if (isNicknameChanged && !isNicknameAvailable) {
+				Swal.fire({
+					icon: "error",
+					title: "닉네임 중복확인을 해주세요.",
+					confirmButtonText: "확인",
+				});
+				return;
+			} else if (isEmailChanged && !isEmailAvailable) {
+				Swal.fire({
+					icon: "error",
+					title: "이메일 중복확인을 해주세요.",
+					confirmButtonText: "확인",
+				});
+				return;
+			} else if (isChangedPasswordSame) {
+				Swal.fire({
+					icon: "error",
+					title: "현재 비밀번호와 다른 비밀번호를 입력해주세요.",
+				});
+				return;
+			}
 		}
 
-		const body: UserUpdateRequest = {
-			email: data.email,
-			currentPassword: data.password,
-			nickname: data.nickname,
-			introduce: data.introduce,
-		};
+		const body: UserUpdateRequest = isSocialLoginUser
+			? {
+					nickname: data.nickname,
+					email: data.email,
+					currentPassword: "",
+				}
+			: {
+					nickname: data.nickname,
+					email: data.email,
+					currentPassword: data.password,
+				};
 
-		if (data.changedPassword) {
+		if (!isSocialLoginUser && data.changedPassword) {
 			body.newPassword = data.changedPassword;
 		}
 
@@ -220,7 +237,7 @@ function MyPageProfile() {
 				<>
 					<div className="flex flex-col w-[700px] gap-10">
 						<div className="flex gap-10">
-							<div className="flex flex-col gap-2 justify-center items-center w-full">
+							<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
 								<Image
 									src={
 										profileImageFile
@@ -230,12 +247,8 @@ function MyPageProfile() {
 									width={128}
 									height={128}
 									alt="프로필 사진"
-									style={{
-										objectFit: "cover",
-										width: "128px",
-										height: "128px",
-									}}
-									className="rounded-full"
+									className="rounded-full object-cover"
+									style={{ width: "128px", height: "128px" }}
 								/>
 								<input
 									type="file"
@@ -336,17 +349,21 @@ function MyPageProfile() {
 												: undefined
 									}
 									checkDuplication={
-										<BaseButton
-											title="이메일 중복 확인"
-											className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
-											onClick={handleEmailCheck}
-											disabled={
-												!!errors.email ||
-												!email ||
-												email.length < 2 ||
-												email === userInfo?.email
-											}
-										/>
+										isSocialLoginUser ? (
+											<></>
+										) : (
+											<BaseButton
+												title="이메일 중복 확인"
+												className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+												onClick={handleEmailCheck}
+												disabled={
+													!!errors.email ||
+													!email ||
+													email.length < 2 ||
+													email === userInfo?.email
+												}
+											/>
+										)
 									}
 									success={isEmailAvailable !== null ? emailCheckStatus : ""}
 									status={
@@ -356,6 +373,7 @@ function MyPageProfile() {
 												? "success"
 												: "error"
 									}
+									disabled={isSocialLoginUser}
 								/>
 								<PasswordInput
 									label="현재 비밀번호"
@@ -370,6 +388,7 @@ function MyPageProfile() {
 										},
 									}}
 									error={errors.password}
+									disabled={isSocialLoginUser}
 								/>
 								<PasswordConfirmInput
 									type="change"
@@ -391,6 +410,7 @@ function MyPageProfile() {
 										},
 									}}
 									error={errors.changedPassword}
+									disabled={isSocialLoginUser}
 								/>
 								<div className="mt-10 w-full">
 									<BaseButton
@@ -405,16 +425,18 @@ function MyPageProfile() {
 				</>
 			) : (
 				<>
-					<Image
-						src={
-							userInfo?.thumbnailUrl ? userInfo.thumbnailUrl : "/profile.svg"
-						}
-						width={128}
-						height={128}
-						alt="프로필 사진"
-						style={{ objectFit: "cover", width: "128px", height: "128px" }}
-						className="rounded-full"
-					/>
+					<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
+						<Image
+							src={
+								userInfo?.thumbnailUrl ? userInfo.thumbnailUrl : "/profile.svg"
+							}
+							width={128}
+							height={128}
+							alt="프로필 사진"
+							className="rounded-full object-cover"
+							style={{ width: "128px", height: "128px" }}
+						/>
+					</div>
 					<div className="flex flex-col gap-10">
 						{[
 							{ label: "닉네임", value: userInfo?.nickname },

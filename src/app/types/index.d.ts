@@ -19,6 +19,7 @@ export type UserProfileInfoResponse = {
 	introduce: string;
 	userType: string;
 	createdAt?: string;
+	socialType?: string;
 };
 
 export type ChangeProfileForm = {
@@ -72,6 +73,7 @@ export type TextInputProps<TFieldValues> = {
 	checkDuplication?: React.ReactNode;
 	success?: string;
 	status?: "success" | "error";
+	disabled?: boolean;
 };
 
 // 비밀번호 입력
@@ -82,6 +84,7 @@ export type PasswordInputProps<TFieldValues> = {
 	register: UseFormRegister<TFieldValues>;
 	validation?: RegisterOptions<TfieldValues, Path<TFieldValues>>;
 	error?: FieldError;
+	disabled?: boolean;
 };
 
 // 비밀번호 확인 폼
@@ -94,6 +97,7 @@ export type PasswordConfirmInputProps<TFieldValues> = {
 	register: UseFormRegister<TFieldValues>;
 	validation?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
 	error?: FieldError;
+	disabled?: boolean;
 };
 
 /**

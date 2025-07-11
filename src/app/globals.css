@@ -120,6 +120,28 @@ strong {
 	color: #15803d;
 }
 
+/* 번호 목록 스타일 */
+.numbered-list-item {
+	display: flex;
+	align-items: flex-start;
+	line-height: 1.4;
+}
+
+.list-number {
+	font-weight: 600;
+	color: #479b5d;
+	margin-right: 4px;
+	flex-shrink: 0;
+}
+
+.list-content {
+	flex: 1;
+}
+
+.paragraph-break {
+	height: 8px;
+}
+
 /* 마이페이지 AI 챗봇 - MessageBox 디자인 */
 .rce-mbox {
 	border-radius: 0px 20px 20px 20px !important;

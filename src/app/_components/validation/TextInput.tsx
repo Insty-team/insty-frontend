@@ -11,6 +11,7 @@ function TextInput<TFieldValues>({
 	checkDuplication,
 	success,
 	status,
+	disabled,
 }: TextInputProps<TFieldValues>) {
 	return (
 		<div className="w-full relative">
@@ -24,8 +25,9 @@ function TextInput<TFieldValues>({
 					error || status === "error"
 						? "border !border-secondary-red-300"
 						: "border !border-gray-200"
-				}`}
+				} ${disabled ? "bg-gray-scale-200 cursor-not-allowed" : ""}`}
 				{...register(name, validation)}
+				disabled={disabled}
 			/>
 			{checkDuplication && (
 				<div className="absolute right-3 top-11 ">{checkDuplication}</div>

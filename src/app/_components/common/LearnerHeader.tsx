@@ -39,6 +39,7 @@ function LearnerHeader() {
 	const { mutate: patchUserType } = usePatchUserTypeMutation();
 
 	const recommend = LEARNER_MENU_LIST[0];
+	const mypage = LEARNER_MENU_LIST[1];
 
 	const changeUserType = () => {
 		Swal.fire({
@@ -174,18 +175,21 @@ function LearnerHeader() {
 				</div>
 				<div className="flex gap-8 justify-center items-center">
 					<GoBellFill className="cursor-not-allowed size-8 text-gray-300" />
-					{userInfo?.thumbnailUrl ? (
-						<Image
-							src={userInfo.thumbnailUrl}
-							width={30}
-							height={30}
-							alt="프로필 사진"
-							className="rounded-full"
-							priority
-						/>
-					) : (
-						<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
-					)}
+					<Link href={mypage.path} key={mypage.id} className="aspect-square">
+						{userInfo?.thumbnailUrl ? (
+							<Image
+								src={userInfo?.thumbnailUrl}
+								alt="profile"
+								width={30}
+								height={30}
+								className="rounded-full object-cover"
+								style={{ width: "30px", height: "30px" }}
+								priority
+							/>
+						) : (
+							<FaCircleUser className="cursor-pointer size-7.5 text-gray-300" />
+						)}
+					</Link>
 					<BaseDropdown
 						isOpen={isDropdownMenuOpen}
 						setIsOpen={setIsDropdownMenuOpen}

@@ -75,6 +75,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	const [recommendations, setRecommendations] = useState<CourseRecommend[]>([]);
 	const [searchQuery, setSearchQuery] = useState<string>("");
 	const [isRecommendLoading, setIsRecommendLoading] = useState<boolean>(false);
+	const [isComposing, setIsComposing] = useState<boolean>(false);
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -166,7 +167,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	const handleAiReccomend = async (
 		e: React.KeyboardEvent<HTMLInputElement>,
 	) => {
-		if (e.key === "Enter" && searchQuery.trim()) {
+		if (e.key === "Enter" && searchQuery.trim() && !isComposing) {
 			setIsRecommendLoading(true);
 			setSearchQuery("");
 
@@ -226,7 +227,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 						</div>
 					</div>
 					<button
-						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2 disabled:bg-gray-scale-300"
+						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2 disabled:bg-gray-scale-300 cursor-not-allowed"
 						onClick={changeDirectSearch}
 						disabled
 					>
@@ -290,6 +291,9 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						onKeyDown={handleAiReccomend}
+						onCompositionStart={() => setIsComposing(true)}
+						onCompositionEnd={() => setIsComposing(false)}
+						disabled={isRecommendLoading}
 					/>
 				</div>
 			</div>

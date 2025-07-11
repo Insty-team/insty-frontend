@@ -1,7 +1,6 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { MessageBox } from "react-chat-elements";
 import { LuPanelLeftClose, LuPanelLeftOpen } from "react-icons/lu";
 
 import {
@@ -257,30 +256,25 @@ function MyPageAIChat() {
 												className={`flex w-full ${msg.sender === "assistant" ? "justify-start" : "justify-end"}`}
 											>
 												<div
-													className={`mb-3 min-w-auto max-w-[60%] ${msg.sender === "assistant" ? "mr-auto ai-message" : "ml-auto user-message"}`}
+													className={`mb-3 min-w-auto max-w-[60%] ${msg.sender === "assistant" ? "mr-auto" : "ml-auto"}`}
 												>
-													<MessageBox
-														id={msg.message_id}
-														status="waiting"
-														retracted={false}
-														className="text-lg"
-														position={
-															msg.sender === "assistant" ? "left" : "right"
-														}
-														type="text"
-														text={formatAssistantText(msg.content)}
-														date={new Date(msg.created_at)}
-														dateString=""
-														title=""
-														focus={false}
-														titleColor={
-															msg.sender === "assistant" ? "#000" : "#fff"
-														}
-														forwarded={false}
-														replyButton={false}
-														removeButton={false}
-														notch={false}
-													/>
+													<div
+														className={`px-4 py-2 rounded-2xl text-lg ${
+															msg.sender === "assistant"
+																? "bg-white border border-gray-scale-200 text-black rounded-tr-2xl rounded-tl-md rounded-br-2xl"
+																: "bg-primary-green-400 text-white rounded-tl-2xl rounded-tr-md rounded-bl-2xl"
+														}`}
+													>
+														{msg.sender === "assistant" ? (
+															<span
+																dangerouslySetInnerHTML={{
+																	__html: formatAssistantText(msg.content),
+																}}
+															/>
+														) : (
+															<span>{msg.content}</span>
+														)}
+													</div>
 													<div
 														className={`text-xs text-gray-400 mt-1 ${msg.sender === "assistant" ? "ml-2 text-left" : "mr-2 text-right"}`}
 													>

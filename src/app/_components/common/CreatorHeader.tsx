@@ -171,14 +171,15 @@ function CreatorHeader() {
 				</div>
 				<div className="flex gap-8 justify-end items-center">
 					<GoBellFill className="cursor-not-allowed size-8 text-gray-300" />
-					<Link href={mypage.path} key={mypage.id}>
+					<Link href={mypage.path} key={mypage.id} className="aspect-square">
 						{userInfo?.thumbnailUrl ? (
 							<Image
 								src={userInfo?.thumbnailUrl}
 								alt="profile"
 								width={30}
 								height={30}
-								className="rounded-full"
+								className="rounded-full object-cover"
+								style={{ width: "30px", height: "30px" }}
 								priority
 							/>
 						) : (
