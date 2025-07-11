@@ -237,7 +237,7 @@ function MyPageProfile() {
 				<>
 					<div className="flex flex-col w-[700px] gap-10">
 						<div className="flex gap-10">
-							<div className="flex flex-col gap-2 justify-center items-center w-full">
+							<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
 								<Image
 									src={
 										profileImageFile
@@ -247,12 +247,8 @@ function MyPageProfile() {
 									width={128}
 									height={128}
 									alt="프로필 사진"
-									style={{
-										objectFit: "cover",
-										width: "128px",
-										height: "128px",
-									}}
-									className="rounded-full"
+									className="rounded-full object-cover"
+									style={{ width: "128px", height: "128px" }}
 								/>
 								<input
 									type="file"
@@ -429,16 +425,18 @@ function MyPageProfile() {
 				</>
 			) : (
 				<>
-					<Image
-						src={
-							userInfo?.thumbnailUrl ? userInfo.thumbnailUrl : "/profile.svg"
-						}
-						width={128}
-						height={128}
-						alt="프로필 사진"
-						style={{ objectFit: "cover", width: "128px", height: "128px" }}
-						className="rounded-full"
-					/>
+					<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
+						<Image
+							src={
+								userInfo?.thumbnailUrl ? userInfo.thumbnailUrl : "/profile.svg"
+							}
+							width={128}
+							height={128}
+							alt="프로필 사진"
+							className="rounded-full object-cover"
+							style={{ width: "128px", height: "128px" }}
+						/>
+					</div>
 					<div className="flex flex-col gap-10">
 						{[
 							{ label: "닉네임", value: userInfo?.nickname },
