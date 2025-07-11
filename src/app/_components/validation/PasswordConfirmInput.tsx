@@ -11,6 +11,7 @@ export default function PasswordConfirmInput<TFieldValues>({
 	register,
 	validation,
 	error,
+	disabled,
 	placeholder = "비밀번호를 입력해주세요.",
 }: PasswordConfirmInputProps<TFieldValues>) {
 	const [confirmPassword, setConfirmPassword] = useState(false);
@@ -29,7 +30,7 @@ export default function PasswordConfirmInput<TFieldValues>({
 				placeholder={placeholder}
 				className={`w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none ${
 					error ? "border !border-secondary-red-300" : ""
-				}`}
+				} ${disabled ? "bg-gray-scale-200 cursor-not-allowed" : ""}`}
 				{...register(name, {
 					...validation,
 					validate: (value: string) => {
@@ -45,11 +46,13 @@ export default function PasswordConfirmInput<TFieldValues>({
 						}
 					},
 				})}
+				disabled={disabled}
 			/>
 			<button
 				type="button"
-				className="absolute right-3 top-11.5 cursor-pointer"
+				className={`absolute right-3 top-11.5 ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
 				onClick={onChangeConfirmPassword}
+				disabled={disabled}
 			>
 				<div className="text-gray-400 flex items-center">
 					{confirmPassword ? (
