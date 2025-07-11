@@ -14,6 +14,7 @@ interface PurchaseAssistantChatbotModalProps {
 	>;
 	courseId: number;
 	remainCount: number;
+	onUsageCountUpdate: (newCount: number) => void;
 }
 
 function PurchaseAssistantChatbotModal({
@@ -22,11 +23,19 @@ function PurchaseAssistantChatbotModal({
 	setMessages,
 	remainCount,
 	courseId,
+	onUsageCountUpdate,
 }: PurchaseAssistantChatbotModalProps) {
 	const [input, setInput] = useState("");
 	const chatEndRef = useRef<HTMLDivElement>(null);
-	const chatbotUsageCountRef = useRef(remainCount);
+	const [currentRemainCount, setCurrentRemainCount] = useState(remainCount);
 	const [isResponseLoading, setIsResponseLoading] = useState(false);
+
+	// remainCount가 변경될 때만 currentRemainCount 업데이트 (초기 로드 시에만)
+	useEffect(() => {
+		if (remainCount > 0 && currentRemainCount === 0) {
+			setCurrentRemainCount(remainCount);
+		}
+	}, [remainCount, currentRemainCount]);
 
 	// 스크롤 함수를 useCallback으로 메모이제이션
 	const scrollToBottom = useCallback(() => {
@@ -44,7 +53,7 @@ function PurchaseAssistantChatbotModal({
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent) => {
 			e.preventDefault();
-			if (chatbotUsageCountRef.current === 0) {
+			if (currentRemainCount === 0) {
 				Swal.fire({
 					title: "구매 결정 도움 횟수를 초과했습니다. (최대 2회)",
 					icon: "error",
@@ -63,21 +72,35 @@ function PurchaseAssistantChatbotModal({
 				if (res && res.data) {
 					console.log(res.data);
 					const { recommendation, judgment, reasons } = res.data;
-					const assistantMessage = [
-						`추천: ${recommendation}`,
-						`판단: ${judgment}`,
-						`이유:`,
-						...reasons.map(
-							(reason: string, idx: number) => `${idx + 1}. ${reason}`,
-						),
-					].join("\n");
+					let assistantMessage = "";
+
+					if (judgment === "판단 불가") {
+						assistantMessage = [
+							`${reasons.map((reason: string) => `${reason}`).join("\n")}`,
+						].join("\n");
+					} else {
+						assistantMessage = [
+							`추천: ${recommendation}`,
+							`판단: ${judgment}`,
+							`이유:`,
+							`${reasons
+								.map((reason: string, idx: number) => `${idx + 1}. ${reason}`)
+								.join("\n")}`,
+						].join("\n");
+					}
 
 					setMessages((prev) => [
 						...prev,
 						{ type: "assistant", text: assistantMessage },
 					]);
 
-					chatbotUsageCountRef.current -= 1;
+					const newCount = currentRemainCount - 1;
+					setCurrentRemainCount(newCount);
+
+					// useEffect로 부모 상태 업데이트를 지연시킴
+					setTimeout(() => {
+						onUsageCountUpdate(newCount);
+					}, 0);
 				}
 			} catch (error) {
 				console.error(error);
@@ -85,7 +108,7 @@ function PurchaseAssistantChatbotModal({
 				setIsResponseLoading(false);
 			}
 		},
-		[input, setMessages, courseId],
+		[input, setMessages, courseId, currentRemainCount, onUsageCountUpdate],
 	);
 
 	// 입력 변경 핸들러를 useCallback으로 메모이제이션
@@ -149,18 +172,20 @@ function PurchaseAssistantChatbotModal({
 				<input
 					className="flex-1 px-3 py-2 rounded-full border border-gray-scale-200 focus:outline-none focus:ring-2 focus:ring-primary-green-400 text-sm"
 					placeholder={
-						chatbotUsageCountRef.current !== 0
-							? `입력해주세요... (남은 횟수: ${chatbotUsageCountRef.current})`
-							: "이용 가능 횟수를 모두 사용하였습니다."
+						currentRemainCount === 0
+							? "이용 가능 횟수를 모두 사용하였습니다."
+							: isResponseLoading
+								? "답변을 기다리고 있습니다... "
+								: `입력해주세요... (남은 횟수: ${currentRemainCount})`
 					}
 					value={input}
 					onChange={handleInputChange}
-					disabled={chatbotUsageCountRef.current === 0}
+					disabled={currentRemainCount === 0 || isResponseLoading}
 				/>
 				<button
 					type="submit"
 					className="text-primary-green-600 hover:text-primary-green-800"
-					disabled={chatbotUsageCountRef.current === 0}
+					disabled={currentRemainCount === 0 || isResponseLoading}
 				>
 					<IoSend size={22} className="text-primary-green-600" />
 				</button>

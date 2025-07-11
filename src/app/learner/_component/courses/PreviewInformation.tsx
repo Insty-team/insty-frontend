@@ -40,14 +40,23 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	];
 	const [messages, setMessages] = useState(baseMessages);
 	const [remainCount, setRemainCount] = useState(0);
+	const [isInitialized, setIsInitialized] = useState(false);
 
 	useEffect(() => {
-		const getUsageCount = async () => {
-			const res = await getPurchaseAssistantUsageCount(data.courseId);
-			setRemainCount(Number(res.data.remaining));
-		};
-		getUsageCount();
-	}, [data.courseId]);
+		if (!isInitialized) {
+			const getUsageCount = async () => {
+				const res = await getPurchaseAssistantUsageCount(data.courseId);
+				setRemainCount(Number(res.data.remaining));
+				setIsInitialized(true);
+			};
+			getUsageCount();
+		}
+	}, [data.courseId, isInitialized]);
+
+	// 모달에서 사용 횟수 업데이트를 위한 콜백
+	const handleUsageCountUpdate = (newCount: number) => {
+		setRemainCount(newCount);
+	};
 
 	useEffect(() => {
 		const getSignedUrl = async () => {
@@ -133,6 +142,7 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 					setMessages={setMessages}
 					courseId={data.courseId}
 					remainCount={remainCount}
+					onUsageCountUpdate={handleUsageCountUpdate}
 				/>
 			)}
 
