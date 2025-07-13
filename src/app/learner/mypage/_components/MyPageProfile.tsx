@@ -342,11 +342,12 @@ function MyPageProfile() {
 										},
 									}}
 									error={
-										errors.email
-											? errors.email
-											: isEmailChanged && !isEmailAvailable
-												? { message: "이메일 중복 확인을 해주세요." }
-												: undefined
+										isEmailAvailable === false && emailCheckStatus
+											? { message: emailCheckStatus }
+											: errors.email ||
+												(isEmailChanged && !isEmailAvailable
+													? { message: "이메일 중복 확인을 해주세요." }
+													: undefined)
 									}
 									checkDuplication={
 										isSocialLoginUser ? (

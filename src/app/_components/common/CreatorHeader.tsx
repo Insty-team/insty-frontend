@@ -19,6 +19,7 @@ import { useAuthStore, useUserStore } from "@/app/stores";
 import {
 	getRefreshToken,
 	removeAccessToken,
+	removeRefreshToken,
 	setAccessToken,
 	setRefreshToken,
 } from "@/app/utils";
@@ -33,7 +34,7 @@ function CreatorHeader() {
 	const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
 
 	const { user, setUserType, resetUser } = useUserStore();
-	const { resetAccessToken } = useAuthStore();
+	const { resetAccessToken, resetRefreshToken } = useAuthStore();
 
 	const { data: userInfo } = useGetUserProfileInfoQuery();
 	const { mutate: patchUserType } = usePatchUserTypeMutation();
@@ -124,9 +125,12 @@ function CreatorHeader() {
 			if (result.isConfirmed) {
 				try {
 					await postLogout();
+					//로그아웃시 액세스 및 리프레시 관련 모두 초기화시켜야 나중에 소셜로그인할 때 문제 없는 듯?
 					resetUser();
 					removeAccessToken();
+					removeRefreshToken();
 					resetAccessToken();
+					resetRefreshToken();
 					router.push("/login");
 				} catch (error) {
 					console.error("Logout error:", error);

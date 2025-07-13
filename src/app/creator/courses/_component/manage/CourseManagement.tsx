@@ -96,7 +96,13 @@ function CourseManagement() {
 		<>
 			{myCoursesItems.items.length === 0 ? (
 				<div className="flex flex-col h-[50vh] justify-center items-center text-center text-2xl text-primary-green-600">
-					<Image src="/insty.png" alt="로고" width={120} height={120} />
+					<Image
+						src="/insty.png"
+						alt="로고"
+						width={120}
+						height={120}
+						className="aspect-square"
+					/>
 					<p className="mt-4 text-2lg">아직 업로드한 강의가 없네요!</p>
 					<BaseButton
 						title="강의 업로드 하러가기"
