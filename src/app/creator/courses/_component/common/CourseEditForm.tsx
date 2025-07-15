@@ -27,6 +27,7 @@ import { useTranscriptionProgress } from "./TranscriptionProgress";
 const CourseEditForm: React.FC<CourseFormProps> = ({
 	subject,
 	initialData,
+	courseId,
 }) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
@@ -395,7 +396,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		console.log("비디오 업로드 요청 데이터:", videoUuid);
 
 		try {
-			if (typeof initialData?.courseId !== "number") {
+			if (!courseId) {
 				Swal.fire({
 					title: "코스 아이디가 존재하지 않습니다.",
 					icon: "error",
@@ -405,7 +406,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				return;
 			}
 			const res = await putCourse(
-				initialData?.courseId,
+				courseId,
 				formData,
 				thumbnailData,
 				practiceFileData,
@@ -421,10 +422,19 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 					timer: 30000,
 					timerProgressBar: true,
 				}).then(async () => {
-					await queryClient.invalidateQueries({
-						queryKey: ["courseDetail", initialData?.courseId],
-					});
+					// 먼저 페이지 이동
 					router.push("/creator/courses");
+
+					// 페이지 이동 후 쿼리 무효화 (백그라운드에서 실행)
+					setTimeout(() => {
+						queryClient.invalidateQueries({
+							queryKey: ["myCourses"],
+						});
+						// 현재 강의 상세 쿼리 캐시 제거
+						queryClient.removeQueries({
+							queryKey: ["courseDetail"],
+						});
+					}, 100);
 				});
 			} else {
 				Swal.fire({

@@ -10,9 +10,14 @@ function CourseEdit({
 	courseId: number;
 	onBack: () => void;
 }) {
-	const { data: courseDetail, isLoading } = useGetCourseDetailQuery(courseId);
+	const {
+		data: courseDetail,
+		isLoading,
+		error,
+	} = useGetCourseDetailQuery(courseId);
 
-	console.log(courseDetail);
+	console.log("CourseDetail Response:", courseDetail);
+	console.log("CourseDetail Error:", error);
 
 	if (isLoading) {
 		return (
@@ -27,6 +32,7 @@ function CourseEdit({
 		<CourseEditForm
 			subject="콘텐츠 수정"
 			initialData={courseDetail?.data}
+			courseId={courseId}
 			onBack={onBack}
 		/>
 	);

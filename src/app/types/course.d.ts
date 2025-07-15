@@ -42,6 +42,7 @@ type CourseDetail = {
 type CourseFormProps = {
 	subject: string;
 	initialData?: CourseDetail;
+	courseId?: number;
 	onSubmit?: (formData: UploadformData) => void;
 	submitText?: string;
 	onBack?: () => void;
