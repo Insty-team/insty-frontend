@@ -111,7 +111,8 @@ function Login() {
 							required: "",
 							pattern: {
 								value: passwordReg,
-								message: "비밀번호 형식이 잘못되었습니다.",
+								message:
+									"영문/숫자/특수문자를 포함한 8~20자 이내로 입력해주세요.",
 							},
 						}}
 						error={errors.password}
