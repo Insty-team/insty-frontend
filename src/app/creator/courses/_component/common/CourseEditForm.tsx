@@ -386,14 +386,15 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			keyPoints,
 			installEnvChecklist,
 			deletePracticeField: deletePracticeFiles,
-			updateVideoUuid: videoUuid ? videoUuid : null,
+			// 새 비디오를 업로드했을 때만 videoUuid 전송, 그렇지 않으면 null
+			updateVideoUuid: isNewVideo ? videoUuid : null,
 		};
 		const thumbnailData = thumbnailFile;
 		const practiceFileData = practiceFiles;
 		console.log("폼 데이터:", formData);
 		console.log("썸네일 데이터:", thumbnailData);
 		console.log("실습 파일 데이터:", practiceFileData);
-		console.log("비디오 업로드 요청 데이터:", videoUuid);
+		console.log("비디오 업로드 요청 데이터:", isNewVideo ? videoUuid : null);
 
 		try {
 			if (!courseId) {
