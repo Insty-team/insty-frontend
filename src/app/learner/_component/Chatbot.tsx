@@ -184,17 +184,29 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 			try {
 				const res = await postAISearchRecommend(searchQuery);
 				console.log(res);
-				setMessages((prev) => [
-					...prev,
-					{
-						type: "assistant",
-						text: res.data?.message,
-						created_at: new Date().toISOString(),
-					},
-				]);
-				if (res.data?.courses) {
-					setRecommendations(res.data.courses);
+				if (res && res.data) {
+					setMessages((prev) => [
+						...prev,
+						{
+							type: "assistant",
+							text: res.data?.message,
+							created_at: new Date().toISOString(),
+						},
+					]);
+					if (res.data?.courses) {
+						setRecommendations(res.data.courses);
+					}
+				} else {
+					setMessages((prev) => [
+						...prev,
+						{
+							type: "assistant",
+							text: res.error?.message,
+							created_at: new Date().toISOString(),
+						},
+					]);
 				}
+
 				setIsRecommendLoading(false);
 			} catch (error) {
 				console.log(error);
