@@ -15,6 +15,7 @@ import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssi
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
+import { useUserStore } from "@/app/stores";
 
 import HLSPlayer from "./HLSPlayer";
 
@@ -29,13 +30,14 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 
 	const [m3u8Url, setM3u8Url] = useState<string | null>(null);
 	const [videoDuration, setVideoDuration] = useState<number>(0);
+	const { user: userInfo } = useUserStore();
 
 	console.log(data);
 
 	const baseMessages = [
 		{
 			type: "assistant",
-			text: "안녕하세요! 저는 수강 결정을 도움드리는 Insty AI 챗봇입니다. 어떤 점을 고민하고 계신가요?",
+			text: `안녕하세요! 저는 수강 결정을 도움드리는 Insty AI 챗봇입니다. 어떤 점을 고민하고 계신가요? ${userInfo.nickname ? `${userInfo.nickname}님` : "러너님"}께서 설치를 원하는 소프트웨어 이름/설치 환경 (예시: 윈도우, Mac 등)/목적/상황 등을 묘사해주시면 좀 더 정확한 답변을 드릴 수 있어요!`,
 		},
 	];
 	const [messages, setMessages] = useState(baseMessages);
