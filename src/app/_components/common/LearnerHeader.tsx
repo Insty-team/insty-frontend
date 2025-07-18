@@ -66,12 +66,23 @@ function LearnerHeader() {
 						// ACCESS TOKEN 재발급 - 새로운 권한 정보 반영
 						try {
 							const refreshToken = getRefreshToken();
-							if (refreshToken) {
-								const tokenRes = await postReissueToken(refreshToken);
-								setAccessToken(tokenRes.token.accessToken);
-								setRefreshToken(tokenRes.token.refreshToken);
-								console.log("토큰 재발급 완료:", tokenRes.token.accessToken);
+							if (!refreshToken) {
+								Swal.fire({
+									title: "토큰이 만료되었습니다.",
+									text: "다시 로그인해주세요.",
+									icon: "warning",
+								}).then(() => {
+									resetUser();
+									removeAccessToken();
+									resetAccessToken();
+									router.replace("/login");
+								});
+								return;
 							}
+							const tokenRes = await postReissueToken(refreshToken);
+							setAccessToken(tokenRes.token.accessToken);
+							setRefreshToken(tokenRes.token.refreshToken);
+							console.log("토큰 재발급 완료:", tokenRes.token.accessToken);
 						} catch (tokenError) {
 							console.error("토큰 재발급 실패:", tokenError);
 							Swal.fire({
@@ -82,7 +93,7 @@ function LearnerHeader() {
 								resetUser();
 								removeAccessToken();
 								resetAccessToken();
-								router.push("/login");
+								router.replace("/login");
 							});
 							return;
 						}

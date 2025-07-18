@@ -65,7 +65,14 @@ axiosInstance.interceptors.response.use(
 
 			try {
 				const refreshToken = getRefreshToken();
-				const res = await postReissueToken(refreshToken ?? "");
+
+				if (!refreshToken) {
+					throw new Error("No refresh token available");
+				}
+
+				console.log("refreshToken", refreshToken);
+
+				const res = await postReissueToken(refreshToken);
 
 				const newAccessToken = res.token.accessToken;
 				setAccessToken(newAccessToken);
@@ -86,7 +93,7 @@ axiosInstance.interceptors.response.use(
 					confirmButtonText: "확인",
 					confirmButtonColor: "#6ead79",
 				}).then(() => {
-					window.location.href = "/login";
+					window.location.replace("/login");
 				});
 				return Promise.reject(err);
 			} finally {
