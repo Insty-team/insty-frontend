@@ -176,7 +176,9 @@ function WatchCoursePage() {
 					<div className="flex flex-col gap-4 mt-4">
 						<div className="flex gap-2 items-center aspect-auto">
 							<Image src="/profile.svg" alt="user" width={48} height={48} />
-							<span className="text-black-100 text-2xl">{"작성자"}</span>
+							<span className="text-black-100 text-2xl">
+								{data.creatorInfo?.nickname ?? "작성자 정보 없음"}
+							</span>
 						</div>
 						<div className="flex gap-2 items-center">
 							<Image src="/user.svg" alt="user" width={36} height={36} />
@@ -192,24 +194,26 @@ function WatchCoursePage() {
 									? "실습 자료 포함"
 									: "실습 자료 미포함"}
 							</span>
-							<span className="text-black-300 text-2xl">
-								{data.practiceFile &&
-									data.practiceFile.length > 0 &&
-									data.practiceFile.map((file) => {
-										return (
-											<div key={file.id}>
-												<a
-													href={file.url}
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													<FiFile />
-													{file.name}
-												</a>
-											</div>
-										);
-									})}
-							</span>
+						</div>
+						<div className="text-black-300 text-2xl">
+							{data.practiceFile &&
+								data.practiceFile.length > 0 &&
+								data.practiceFile.map((file) => {
+									return (
+										<div key={file.id}>
+											<a
+												href={file.url}
+												target="_blank"
+												rel="noopener noreferrer"
+												download={`${data.title} 실습 자료`}
+												className="flex flex-row items-center gap-2 ml-3 text-lg"
+											>
+												<FiFile />
+												{file.name}
+											</a>
+										</div>
+									);
+								})}
 						</div>
 						<div className="flex gap-2 items-center">
 							<Image src="/time.svg" alt="clock" width={36} height={36} />
