@@ -193,24 +193,26 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 									? "실습 자료 포함"
 									: "실습 자료 미포함"}
 							</span>
-							<span className="text-black-300 text-2xl">
-								{data.practiceFile &&
-									data.practiceFile.length > 0 &&
-									data.practiceFile.map((file) => {
-										return (
-											<div key={file.id}>
-												<a
-													href={file.url}
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													<FiFile />
-													{file.name}
-												</a>
-											</div>
-										);
-									})}
-							</span>
+						</div>
+						<div className="text-black-300 text-2xl">
+							{data.practiceFile &&
+								data.practiceFile.length > 0 &&
+								data.practiceFile.map((file) => {
+									return (
+										<div key={file.id}>
+											<a
+												href={file.url}
+												target="_blank"
+												rel="noopener noreferrer"
+												download={file.name}
+												className="flex flex-row items-center gap-2 ml-3 text-lg"
+											>
+												<FiFile />
+												{file.name}
+											</a>
+										</div>
+									);
+								})}
 						</div>
 						<div className="flex gap-2 items-center">
 							<Image src="/time.svg" alt="clock" width={36} height={36} />

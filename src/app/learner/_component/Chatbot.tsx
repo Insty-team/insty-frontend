@@ -129,7 +129,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 					className={`flex items-end ${currentMessage.type === "user" ? "flex-row-reverse" : "justify-start flex-row"}`}
 				>
 					<div
-						className={`w-[60px] h-[60px] flex items-center justify-center overflow-hidden ${currentMessage.type === "user" ? "ml-3" : "mr-3 rounded-full bg-white"}`}
+						className={`w-[50px] h-[50px] flex items-center justify-center overflow-hidden rounded-full ${currentMessage.type === "user" ? "ml-3" : "mr-3 bg-white"}`}
 					>
 						<Image
 							src={
@@ -142,7 +142,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							alt={currentMessage.type === "user" ? "user" : "insty"}
 							width={50}
 							height={50}
-							className="object-contain rounded-full"
+							className="object-cover w-full h-full rounded-full"
 						/>
 					</div>
 					<div
