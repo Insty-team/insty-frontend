@@ -11,6 +11,7 @@ import Loading from "@/app/_components/common/Loading";
 import VideoPlayer from "@/app/_components/common/VideoPlayer";
 import { postVectorStatus } from "@/app/api/ai/video";
 import { postCourse } from "@/app/api/backend";
+import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { useUserStore, useVideoUploadStore } from "@/app/stores";
 import { UploadformData } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
@@ -28,8 +29,10 @@ function PreviewUploadInfomation({
 	const [isUploading, setIsUploading] = useState(false);
 	const { reset } = useVideoUploadStore();
 	const { user: userData } = useUserStore();
+	const { data: userProfileInfo } = useGetUserProfileInfoQuery();
 
 	const router = useRouter();
+	console.log(data);
 
 	const handleSubmitCourseForm = async () => {
 		setIsUploading(true);
@@ -159,7 +162,7 @@ function PreviewUploadInfomation({
 							<div className="flex gap-2 items-center aspect-auto">
 								<Image src="/profile.svg" alt="user" width={48} height={48} />
 								<span className="text-black-100 text-2xl">
-									{userData?.nickname}
+									{userData.nickname || userProfileInfo?.nickname || "작성자"}
 								</span>
 							</div>
 							<div className="flex gap-2 items-center">

@@ -40,7 +40,6 @@ export const useThumbnailUpload = (): UseThumbnailUploadReturn => {
 		}
 
 		if (thumbnailUrlRef.current) {
-			console.log("썸네일이 이미 존재하므로 요청을 중단합니다.");
 			isActiveRef.current = false;
 			setIsThumbnailLoading(false);
 			if (thumbnailIntervalRef.current) {

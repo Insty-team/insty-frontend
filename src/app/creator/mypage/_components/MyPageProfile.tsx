@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
@@ -16,12 +16,14 @@ import { getEmailCheck, getNicknameCheck } from "@/app/api/backend";
 import { useEditUserProfileInfoMutation } from "@/app/queries";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
+import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+	const profileImageInputRef = useRef<HTMLInputElement>(null);
 	const onClickProfileEditButton = () => setIsEditing(true);
 
 	const queryClient = useQueryClient();
@@ -251,11 +253,26 @@ function MyPageProfile() {
 									style={{ width: "128px", height: "128px" }}
 								/>
 								<input
+									ref={profileImageInputRef}
 									type="file"
-									accept="image/*"
+									accept={ALLOWED_FILE_TYPES.image.accept}
 									onChange={(e) => {
 										const file = e.target.files?.[0];
-										if (file) setProfileImageFile(file);
+										if (file) {
+											if (!ALLOWED_FILE_TYPES.image.types.includes(file.type)) {
+												Swal.fire({
+													title: "지원하지 않는 파일 형식",
+													text: "JPG, JPEG, PNG, WEBP 파일만 업로드 가능합니다.",
+													icon: "error",
+													confirmButtonText: "확인",
+												});
+												if (profileImageInputRef.current) {
+													profileImageInputRef.current.value = "";
+												}
+												return;
+											}
+											setProfileImageFile(file);
+										}
 									}}
 									className="hidden"
 									id="profileImageInput"
