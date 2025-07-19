@@ -45,6 +45,12 @@ export const removeRefreshToken = () => {
 	sessionStorage.removeItem(INSTY_REFRESH_TOKEN_KEY);
 };
 
+export const clearAllTokens = () => {
+	if (typeof window === "undefined") return;
+	localStorage.removeItem(INSTY_ACCESS_TOKEN_KEY);
+	sessionStorage.removeItem(INSTY_REFRESH_TOKEN_KEY);
+};
+
 /**
  * 이메일 수신 동의 여부 관련 hook
  * @returns [value, setValue]

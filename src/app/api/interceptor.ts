@@ -2,7 +2,12 @@
 import axios from "axios";
 import Swal from "sweetalert2";
 
-import { getAccessToken, getRefreshToken, setAccessToken } from "@/app/utils";
+import {
+	getAccessToken,
+	getRefreshToken,
+	setAccessToken,
+	clearAllTokens,
+} from "@/app/utils";
 
 import { postLogout, postReissueToken } from "./backend";
 
@@ -85,6 +90,7 @@ axiosInstance.interceptors.response.use(
 				return axiosInstance(originalRequest);
 			} catch (err) {
 				processQueue(err, null);
+				clearAllTokens(); // 모든 토큰 정리
 				await postLogout();
 				Swal.fire({
 					icon: "warning",
