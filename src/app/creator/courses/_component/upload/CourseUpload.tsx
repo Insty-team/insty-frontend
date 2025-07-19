@@ -14,7 +14,7 @@ type Step = "upload" | "preview" | "edit";
 function CourseUpload() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const { data, setData } = useVideoUploadStore();
+	const { data, setData, reset } = useVideoUploadStore();
 
 	const getStepFromQuery = (): Step => {
 		const mode = searchParams.get("uploadmode");
@@ -27,6 +27,12 @@ function CourseUpload() {
 	useEffect(() => {
 		setStepState(getStepFromQuery());
 	}, [searchParams]);
+
+	useEffect(() => {
+		return () => {
+			reset();
+		};
+	}, [reset]);
 
 	const setStep = (newStep: Step) => {
 		const params = new URLSearchParams(Array.from(searchParams.entries()));
@@ -41,6 +47,8 @@ function CourseUpload() {
 	};
 
 	const handleEdit = () => {
+		console.log("편집 시 store 데이터:", data);
+		console.log("thumbnailUrl:", data?.thumbnailUrl);
 		setStep("edit");
 	};
 

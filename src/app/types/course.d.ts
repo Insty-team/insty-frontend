@@ -84,6 +84,7 @@ type UploadformData = {
 	videoUuid: string | null;
 	videoFile?: File | null;
 	thumbnailFile?: File | null;
+	thumbnailUrl?: string | null;
 	practiceFiles?: File[];
 	title: string;
 	description: string;

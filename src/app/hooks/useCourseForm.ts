@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useTags } from "./useTags";
 
@@ -43,6 +43,25 @@ export const useCourseForm = (initialData?: CourseData) => {
 		handleTagKeyDown,
 	} = useTags({ initialTags: initialData?.tags || [] });
 
+	// initialData가 변경될 때마다 상태 업데이트
+	useEffect(() => {
+		if (initialData) {
+			setTitle(initialData.title || "");
+			setDescription(initialData.description || "");
+			setTargetAudience(initialData.targetAudience || "");
+			setPrice(initialData.price || 0);
+			setInstallEnvChecklist(
+				initialData.installEnvChecklist?.length
+					? initialData.installEnvChecklist
+					: [{ content: "", isSupported: true }],
+			);
+			setKeyPoints(
+				initialData.keyPoints?.length ? initialData.keyPoints : [""],
+			);
+			setTags(initialData.tags || []);
+		}
+	}, [initialData, setTags]);
+
 	const handleAddEnv = () => {
 		setInstallEnvChecklist([
 			...installEnvChecklist,
@@ -57,7 +76,7 @@ export const useCourseForm = (initialData?: CourseData) => {
 	) => {
 		const newChecklist = [...installEnvChecklist];
 		if (field === "content") {
-			newChecklist[idx] = { ...newChecklist[idx], content: value };
+			newChecklist[idx] = { ...newChecklist[idx], content: value.trim() };
 		} else {
 			newChecklist[idx] = {
 				...newChecklist[idx],
@@ -73,7 +92,7 @@ export const useCourseForm = (initialData?: CourseData) => {
 
 	const handleCoreChange = (idx: number, value: string) => {
 		const arr = [...keyPoints];
-		arr[idx] = value;
+		arr[idx] = value.trim();
 		setKeyPoints(arr);
 	};
 
