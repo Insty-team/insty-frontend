@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
@@ -58,6 +59,7 @@ function CourseManagement() {
 	if (mode === "edit" && selectedCourseId) {
 		return (
 			<CourseEdit
+				key={selectedCourseId}
 				courseId={selectedCourseId}
 				onBack={() => handleModeChange("list")}
 			/>
@@ -66,25 +68,41 @@ function CourseManagement() {
 	if (mode === "detail" && selectedCourseId) {
 		return (
 			<CourseDetail
+				key={selectedCourseId}
 				courseId={selectedCourseId}
 				onBack={() => handleModeChange("list")}
 			/>
 		);
 	}
 
-	if (isLoading)
+	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center h-screen">
 				<Loading width={100} height={100} />
 			</div>
 		);
-	if (error) return <div>에러가 발생했습니다</div>;
+	}
+	//오류 처리
+	if (error) {
+		Swal.fire({
+			title: `${error.name}`,
+			text: `${error.message}`,
+			icon: "error",
+			confirmButtonText: "확인",
+		});
+	}
 
 	return (
 		<>
 			{myCoursesItems.items.length === 0 ? (
 				<div className="flex flex-col h-[50vh] justify-center items-center text-center text-2xl text-primary-green-600">
-					<Image src="/insty.png" alt="로고" width={120} height={120} />
+					<Image
+						src="/insty.png"
+						alt="로고"
+						width={120}
+						height={120}
+						className="aspect-square"
+					/>
 					<p className="mt-4 text-2lg">아직 업로드한 강의가 없네요!</p>
 					<BaseButton
 						title="강의 업로드 하러가기"

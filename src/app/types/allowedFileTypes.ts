@@ -2,8 +2,8 @@ import { AllowedFileType } from "@/app/types/course";
 
 export const ALLOWED_FILE_TYPES: AllowedFileType = {
 	image: {
-		accept: ".jpg,.jpeg,.png,.webp",
-		types: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+		accept: ".jpg,.jpeg,.png",
+		types: ["image/jpeg", "image/jpg", "image/png"],
 	},
 	document: {
 		accept: ".pdf,.hwp,.doc,.docx,.zip,.jpg,.jpeg,.png,.gif",

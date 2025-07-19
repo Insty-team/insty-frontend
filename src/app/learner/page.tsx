@@ -1,5 +1,10 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 function Home() {
-	return <div>page</div>;
+	const router = useRouter();
+	return router.push("/learner/recommend");
 }
 
 export default Home;

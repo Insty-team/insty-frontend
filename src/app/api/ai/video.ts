@@ -77,9 +77,24 @@ const getTranscriptionStatus = async (video_uuid: string) => {
 	}
 };
 
+const postVectorStatus = async (video_uuid: string) => {
+	try {
+		const res = await axiosInstance.post(
+			`${AI_BASE_URL}/videos/${video_uuid}/vector-upsert`,
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return error.response.data;
+		}
+		throw new Error("벡터 업데이트 실패");
+	}
+};
+
 export {
 	getTranscriptionStatus,
 	postSuggestDescription,
 	postSuggestMetadata,
 	postSuggestTitle,
+	postVectorStatus,
 };

@@ -10,12 +10,14 @@ import { TiDelete } from "react-icons/ti";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
+import Loading from "@/app/_components/common/Loading";
 import { postSuggestDescription, postSuggestTitle } from "@/app/api/ai/video";
 import {
 	postCourseVideo,
 	putCourse,
 	putCourseVideoUpload,
 } from "@/app/api/backend";
+import { useThumbnailUpload } from "@/app/hooks/useThumbnailUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { CourseFormProps } from "@/app/types/course";
 
@@ -25,6 +27,7 @@ import { useTranscriptionProgress } from "./TranscriptionProgress";
 const CourseEditForm: React.FC<CourseFormProps> = ({
 	subject,
 	initialData,
+	courseId,
 }) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
@@ -56,9 +59,15 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		handleRemoveCore,
 	} = useCourseForm(initialData);
 
-	const [thumbnailUrl, setThumbnailUrl] = useState(
-		initialData?.thumbnailUrl || "",
-	);
+	// 썸네일 업로드 커스텀 훅 사용
+	const {
+		thumbnailUrl,
+		setThumbnailUrl,
+		isThumbnailLoading,
+		startThumbnailRequest,
+		stopThumbnailRequest,
+	} = useThumbnailUpload();
+
 	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 	const [practiceFiles, setPracticeFiles] = useState<File[]>([]);
 	const [deletePracticeFiles, setDeletePracticeFiles] = useState<number[]>([]);
@@ -77,10 +86,10 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const [videoFile, setVideoFile] = useState<File | null>(null);
 	const [videoFileName, setVideoFileName] = useState<string | null>(null);
 	const [videoUuid, setVideoUuid] = useState<string | null>(null);
+	const [isNewVideo, setIsNewVideo] = useState<boolean>(false);
 
-	// 전사 진행률 커스텀 훅 사용
 	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
-		useTranscriptionProgress(videoUuid);
+		useTranscriptionProgress(isNewVideo ? videoUuid : null);
 
 	useEffect(() => {
 		if (initialData) {
@@ -89,6 +98,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			setPrice(initialData.price);
 			setDescription(initialData.description);
 			setTags(initialData.tags);
+			setThumbnailUrl(initialData.thumbnailUrl || "");
 			setInstallEnvChecklist(
 				initialData.installEnvChecklist?.length
 					? initialData.installEnvChecklist
@@ -103,8 +113,19 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			if (initialData.videoInfo && initialData.videoInfo.originFileName) {
 				setVideoFileName(initialData.videoInfo.originFileName);
 			}
+			if (initialData.videoInfo && initialData.videoInfo.videoUuid) {
+				setVideoUuid(initialData.videoInfo.videoUuid);
+				setIsNewVideo(false); // 기존 비디오는 새 비디오가 아님
+			}
 		}
-	}, [initialData]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [initialData]);
+
+	// videoUuid가 변경될 때 썸네일 요청 시작 (기존 썸네일이 없을 때만)
+	useEffect(() => {
+		if (videoUuid && !thumbnailUrl) {
+			startThumbnailRequest(videoUuid);
+		}
+	}, [videoUuid, thumbnailUrl, startThumbnailRequest]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -201,11 +222,11 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			return;
 		}
 
-		// 새 영상 업로드 시 기존 영상 정보 삭제
 		setVideoFileName(null);
 		handleRemoveThumbnail();
 		setVideoFile(file);
 		setVideoFileName(file.name);
+		setIsNewVideo(true);
 		console.log("선택된 비디오:", file);
 
 		try {
@@ -228,14 +249,30 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	};
 
 	const handleRemoveVideoFile = () => {
-		setVideoFile(null);
-		setVideoFileName(null);
-		if (videoInputRef.current) {
-			videoInputRef.current.value = "";
-		}
+		Swal.fire({
+			title: "업로드한 영상을 삭제하시겠어요?",
+			text: "재업로드시, 영상 분석이 다시 진행됩니다.",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: "삭제",
+			cancelButtonText: "취소",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				setVideoFile(null);
+				setVideoFileName(null);
+				setVideoUuid("");
+				setThumbnailUrl("");
+				setIsNewVideo(false);
+				stopThumbnailRequest();
+				if (videoInputRef.current) {
+					videoInputRef.current.value = "";
+				}
+			}
+		});
 	};
 
 	const handleSuggestTitle = async () => {
+		console.log(videoUuid, title);
 		try {
 			if (videoUuid) {
 				console.log(videoUuid, title);
@@ -285,14 +322,58 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (
-			title === "" ||
-			price === 0 ||
-			description === "" ||
-			installEnvChecklist.length === 0 ||
-			keyPoints.length === 0
-		) {
-			alert("모든 항목을 입력해주세요.");
+		if (!videoFileName) {
+			Swal.fire({
+				title: "강의 비디오를 업로드해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (title === "") {
+			Swal.fire({
+				title: "제목을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (targetAudience === "") {
+			Swal.fire({
+				title: "강의 대상을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (description === "") {
+			Swal.fire({
+				title: "설명을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (installEnvChecklist.length === 0) {
+			Swal.fire({
+				title: "설치 환경 체크리스트를 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+			return;
+		}
+		if (keyPoints.length === 0) {
+			Swal.fire({
+				title: "핵심 내용을 입력해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
 			return;
 		}
 
@@ -305,40 +386,68 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			keyPoints,
 			installEnvChecklist,
 			deletePracticeField: deletePracticeFiles,
-			updateVideoUuid: videoUuid ? videoUuid : null,
+			// 새 비디오를 업로드했을 때만 videoUuid 전송, 그렇지 않으면 null
+			updateVideoUuid: isNewVideo ? videoUuid : null,
 		};
 		const thumbnailData = thumbnailFile;
 		const practiceFileData = practiceFiles;
 		console.log("폼 데이터:", formData);
 		console.log("썸네일 데이터:", thumbnailData);
 		console.log("실습 파일 데이터:", practiceFileData);
-		console.log("비디오 업로드 요청 데이터:", videoUuid);
+		console.log("비디오 업로드 요청 데이터:", isNewVideo ? videoUuid : null);
 
 		try {
-			if (typeof initialData?.courseId !== "number") {
-				alert("코스 아이디가 존재하지 않습니다. 다시 확인해주세요.");
-				router.push("/creator/courses");
+			if (!courseId) {
+				Swal.fire({
+					title: "코스 아이디가 존재하지 않습니다.",
+					icon: "error",
+				}).then(() => {
+					router.push("/creator/courses");
+				});
 				return;
 			}
-			await putCourse(
-				initialData?.courseId,
+			const res = await putCourse(
+				courseId,
 				formData,
 				thumbnailData,
 				practiceFileData,
 			);
-			Swal.fire({
-				title: "강의가 수정 되었습니다.",
-				icon: "success",
-				confirmButtonText: "확인",
-				confirmButtonColor: "#6ead79",
-			}).then(async () => {
-				await queryClient.invalidateQueries({
-					queryKey: ["courseDetail", initialData?.courseId],
+			console.log(res);
+
+			if (res && !res.error) {
+				Swal.fire({
+					title: "강의가 수정 되었습니다.",
+					icon: "success",
+					confirmButtonText: "확인",
+					confirmButtonColor: "#6ead79",
+					timer: 30000,
+					timerProgressBar: true,
+				}).then(async () => {
+					// 먼저 페이지 이동
+					router.push("/creator/courses");
+
+					// 페이지 이동 후 쿼리 무효화 (백그라운드에서 실행)
+					setTimeout(() => {
+						queryClient.invalidateQueries({
+							queryKey: ["myCourses"],
+						});
+						// 현재 강의 상세 쿼리 캐시 제거
+						queryClient.removeQueries({
+							queryKey: ["courseDetail"],
+						});
+					}, 100);
 				});
-				router.push("/creator/courses");
-			});
+			} else {
+				Swal.fire({
+					title: "강의 수정 실패",
+					text: res?.error?.message || "알 수 없는 오류가 발생했습니다.",
+					icon: "error",
+					confirmButtonText: "확인",
+					confirmButtonColor: "#6ead79",
+				});
+			}
 		} catch (error) {
-			console.log(error);
+			console.error("강의 수정 중 오류 발생:", error);
 		}
 	};
 
@@ -348,7 +457,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				<div className="font-bold text-3xl mb-12">{subject}</div>
 			</div>
 			{/* 전사 진행률 표시 */}
-			{transcriptionStatus && videoUuid !== "" && (
+			{isNewVideo && transcriptionStatus && videoUuid !== "" && (
 				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
 					<div className="mb-2">
 						<strong>변환 상태:</strong> {transcriptionStatus}
@@ -369,26 +478,30 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				</div>
 			)}
 			<div className="flex w-full gap-9">
-				<div className="flex flex-col w-3/5 max-w-[350px]">
+				<div className="flex flex-col w-[350px]">
 					<label className="block text-2xl font-semibold mb-1">
 						강의 썸네일
 					</label>
-					<div className="mb-2 w-full h-[20%] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
+					<div className="mb-2 w-full h-[250px] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
 						{thumbnailUrl ? (
 							<Image
 								src={thumbnailUrl}
 								alt="썸네일"
-								className="w-full h-full object-contain rounded-2xl"
+								className="w-full h-full object-cover rounded-2xl z-10"
 								width={400}
 								height={400}
 							/>
+						) : isThumbnailLoading ? (
+							<div className="text-black-300 flex flex-col items-center justify-center">
+								썸네일 생성 중... <Loading width={30} height={30} />
+							</div>
 						) : (
 							<span className="text-gray-400">썸네일을 선택해주세요</span>
 						)}
 						{thumbnailUrl && (
 							<button
 								type="button"
-								className="absolute top-1 right-2 text-black-500"
+								className="absolute top-1 right-2 text-secondary-red-300 z-20 cursor-pointer hover:text-2lg"
 								onClick={handleRemoveThumbnail}
 							>
 								✕
@@ -447,15 +560,17 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 							/>
 							{(practiceFiles.length > 0 ||
 								existingPracticeFiles.length > 0) && (
-								<div className="flex flex-col gap-2 mt-2">
+								<div className="flex w-[75%] mx-auto flex-col gap-2 mt-2">
 									{existingPracticeFiles.map((file, index) => (
 										<div
 											key={`existing-${index}`}
-											className="flex items-center justify-between bg-gray-100 p-2 rounded"
+											className="flex items-center justify-between bg-gray-100 p-2 rounded truncate"
 										>
 											<div className="text-md truncate flex items-center">
 												<FaRegFile className="mr-2" />
-												{file.name}
+												{file.name.length >= 15
+													? `${file.name.slice(0, 15)}...`
+													: file.name}
 											</div>
 											<button
 												type="button"
@@ -530,15 +645,6 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
 								value={targetAudience}
 								onChange={(e) => setTargetAudience(e.target.value)}
-							/>
-						</div>
-						<div className="flex-1">
-							<label className="block text-2xl font-semibold mb-1">가격</label>
-							<input
-								className="w-full bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-								placeholder="예: 199,990"
-								value={price}
-								onChange={(e) => setPrice(Number(e.target.value))}
 							/>
 						</div>
 					</div>
@@ -649,7 +755,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 								value={tagInput}
 								onChange={(e) => setTagInput(e.target.value)}
 								onKeyDown={(e) =>
-									e.key === "Enter" && (e.preventDefault(), handleAddTag())
+									e.key === "Enter" &&
+									!e.nativeEvent.isComposing &&
+									(e.preventDefault(), handleAddTag())
 								}
 								placeholder="태그 입력 후 Enter"
 							/>

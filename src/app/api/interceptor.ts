@@ -2,7 +2,12 @@
 import axios from "axios";
 import Swal from "sweetalert2";
 
-import { getAccessToken, getRefreshToken, setAccessToken } from "@/app/utils";
+import {
+	getAccessToken,
+	getRefreshToken,
+	setAccessToken,
+	clearAllTokens,
+} from "@/app/utils";
 
 import { postLogout, postReissueToken } from "./backend";
 
@@ -65,7 +70,14 @@ axiosInstance.interceptors.response.use(
 
 			try {
 				const refreshToken = getRefreshToken();
-				const res = await postReissueToken(refreshToken ?? "");
+
+				if (!refreshToken) {
+					throw new Error("No refresh token available");
+				}
+
+				console.log("refreshToken", refreshToken);
+
+				const res = await postReissueToken(refreshToken);
 
 				const newAccessToken = res.token.accessToken;
 				setAccessToken(newAccessToken);
@@ -78,6 +90,7 @@ axiosInstance.interceptors.response.use(
 				return axiosInstance(originalRequest);
 			} catch (err) {
 				processQueue(err, null);
+				clearAllTokens(); // 모든 토큰 정리
 				await postLogout();
 				Swal.fire({
 					icon: "warning",
@@ -86,7 +99,7 @@ axiosInstance.interceptors.response.use(
 					confirmButtonText: "확인",
 					confirmButtonColor: "#6ead79",
 				}).then(() => {
-					window.location.href = "/login";
+					window.location.replace("/login");
 				});
 				return Promise.reject(err);
 			} finally {

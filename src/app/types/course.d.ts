@@ -42,6 +42,7 @@ type CourseDetail = {
 type CourseFormProps = {
 	subject: string;
 	initialData?: CourseDetail;
+	courseId?: number;
 	onSubmit?: (formData: UploadformData) => void;
 	submitText?: string;
 	onBack?: () => void;
@@ -83,6 +84,7 @@ type UploadformData = {
 	videoUuid: string | null;
 	videoFile?: File | null;
 	thumbnailFile?: File | null;
+	thumbnailUrl?: string | null;
 	practiceFiles?: File[];
 	title: string;
 	description: string;

@@ -10,6 +10,7 @@ function PasswordInput<TFieldValues>({
 	register,
 	validation,
 	error,
+	disabled,
 }: PasswordInputProps<TFieldValues>) {
 	const [showPassword, setShowPassword] = useState(false);
 
@@ -26,13 +27,15 @@ function PasswordInput<TFieldValues>({
 				placeholder={placeholder}
 				className={`w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none ${
 					error ? "border !border-secondary-red-300" : ""
-				}`}
+				} ${disabled ? "bg-gray-scale-200 cursor-not-allowed" : ""}`}
 				{...register(name, validation)}
+				disabled={disabled}
 			/>
 			<button
 				type="button"
-				className="absolute right-3 top-11.5 cursor-pointer"
+				className={`absolute right-3 top-11.5 ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
 				onClick={onChangeShowPassword}
+				disabled={disabled}
 			>
 				<div className="text-gray-400 flex items-center">
 					{showPassword ? (

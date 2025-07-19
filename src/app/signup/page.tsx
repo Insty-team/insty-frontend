@@ -39,6 +39,32 @@ function Signup() {
 
 	const nickname = watch("nickname");
 	const email = watch("email");
+	const password = watch("password");
+
+	// 닉네임 에러 메시지 로직
+	const getNicknameErrorMessage = () => {
+		if (!nickname) return undefined; // 입력하지 않았을 때는 아무 문구 없음
+
+		if (nickname.length < 2) {
+			return { message: "닉네임은 2글자 이상입니다." };
+		}
+
+		if (nickname.length > 10) {
+			return { message: "닉네임은 10글자 이하여야 합니다." };
+		}
+
+		if (!nicknameReg.test(nickname)) {
+			return {
+				message: "닉네임은 2~10자의 한글, 영어 또는 숫자 여야 합니다.",
+			};
+		}
+
+		if (isNicknameAvailable === null) {
+			return { message: "닉네임 중복 확인을 해주세요." };
+		}
+
+		return undefined;
+	};
 
 	const onSubmit = async (data: SignupForm) => {
 		const submitData = { ...data };
@@ -71,14 +97,24 @@ function Signup() {
 
 	const handleNicknameCheck = async () => {
 		const res = await getNicknameCheck(getValues("nickname"));
-		setIsNicknameAvailable(res.isAvailable);
-		setNicknameCheckStatus(res.reason);
+		if (res.error) {
+			setIsNicknameAvailable(false);
+			setNicknameCheckStatus(res.error.message);
+		} else {
+			setIsNicknameAvailable(true);
+			setNicknameCheckStatus("사용 가능한 닉네임입니다.");
+		}
 	};
 
 	const handleEmailCheck = async () => {
 		const res = await getEmailCheck(getValues("email"));
-		setIsEmailAvailable(res.isAvailable);
-		setEmailCheckStatus(res.reason);
+		if (res.error) {
+			setIsEmailAvailable(false);
+			setEmailCheckStatus(res.error.message);
+		} else {
+			setIsEmailAvailable(true);
+			setEmailCheckStatus("사용 가능한 이메일입니다.");
+		}
 	};
 
 	return (
@@ -89,7 +125,7 @@ function Signup() {
 					<p className="mt-12 text-3xl font-semibold"> 회원가입하기</p>
 				</div>
 			</div>
-			<div className="flex items-center justify-center">
+			<div className="flex flex-col items-center justify-center">
 				<form
 					onSubmit={handleSubmit(onSubmit)}
 					className="w-full max-w-md p-4 flex flex-col items-center space-y-6"
@@ -105,27 +141,23 @@ function Signup() {
 								required: "",
 								pattern: {
 									value: nicknameReg,
-									message: "닉네임 형식이 잘못되었습니다.",
+									message: "닉네임 형식이 맞지 않습니다.",
 								},
 								onChange: () => {
 									setIsNicknameAvailable(null);
 									setNicknameCheckStatus("");
 								},
 							}}
-							error={
-								errors.nickname
-									? errors.nickname
-									: !errors.nickname && nickname && isNicknameAvailable === null
-										? { message: "닉네임 중복 확인을 해주세요." }
-										: undefined
-							}
+							error={getNicknameErrorMessage()}
 							checkDuplication={
 								<button
 									type="button"
 									onClick={() => handleNicknameCheck()}
-									disabled={!!errors.nickname || nickname === ""}
+									disabled={
+										!!errors.nickname || !nickname || nickname.length < 2
+									}
 									className={`px-3 py-1 rounded-lg ${
-										errors.nickname || nickname === ""
+										errors.nickname || !nickname || nickname.length < 2
 											? "bg-gray-scale-300 cursor-not-allowed"
 											: "bg-primary-green-300 hover:bg-primary-green-500 cursor-pointer"
 									} text-white text-sm`}
@@ -133,18 +165,15 @@ function Signup() {
 									닉네임 중복 확인
 								</button>
 							}
+							success={isNicknameAvailable !== null ? nicknameCheckStatus : ""}
+							status={
+								isNicknameAvailable === null
+									? undefined
+									: isNicknameAvailable
+										? "success"
+										: "error"
+							}
 						/>
-						{isNicknameAvailable !== null && (
-							<p
-								className={`mt-1 ml-2 ${
-									isNicknameAvailable
-										? "text-primary-green-500"
-										: "text-secondary-red-300"
-								}`}
-							>
-								{nicknameCheckStatus}
-							</p>
-						)}
 					</div>
 					<div className="w-full">
 						<TextInput
@@ -185,18 +214,15 @@ function Signup() {
 									이메일 중복 확인
 								</button>
 							}
+							success={isEmailAvailable !== null ? emailCheckStatus : ""}
+							status={
+								isEmailAvailable === null
+									? undefined
+									: isEmailAvailable
+										? "success"
+										: "error"
+							}
 						/>
-						{isEmailAvailable !== null && (
-							<p
-								className={`mt-1 ml-2 ${
-									isEmailAvailable
-										? "text-primary-green-500"
-										: "text-secondary-red-300"
-								}`}
-							>
-								{emailCheckStatus}
-							</p>
-						)}
 					</div>
 
 					<PasswordInput
@@ -216,9 +242,10 @@ function Signup() {
 					/>
 
 					<PasswordConfirmInput
+						type="signup"
 						label="비밀번호 확인"
 						name="confirmPassword"
-						confirmPasswordName={getValues("password")}
+						confirmPasswordName={password}
 						register={register}
 						validation={{
 							required: "",
@@ -245,7 +272,8 @@ function Signup() {
 					>
 						회원가입
 					</button>
-
+				</form>
+				<div className="flex flex-col items-center gap-4">
 					<div className="text-md text-black-100">
 						계정이 이미 있으신가요?{" "}
 						<Link
@@ -255,9 +283,8 @@ function Signup() {
 							로그인
 						</Link>
 					</div>
-
 					<SocialLogin />
-				</form>
+				</div>
 			</div>
 		</>
 	);

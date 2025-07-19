@@ -3,35 +3,42 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import Loading from "@/app/_components/common/Loading";
 import { getAISearchRecommend, postAISearchRecommend } from "@/app/api/ai";
+import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { CourseRecommend, RecommendMessage } from "@/app/types/recommend";
 
 function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
+	const { data: userInfo } = useGetUserProfileInfoQuery();
 	const [messages, setMessages] = useState<
 		{
 			type: "user" | "assistant";
 			text: string;
+			created_at: string;
 		}[]
-	>([
-		{
-			type: "assistant",
-			text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
-		},
-	]);
+	>([]);
 
 	useEffect(() => {
 		const chatRoad = async () => {
 			try {
 				const res = await getAISearchRecommend();
 				console.log(res);
-				if (res && res.data) {
+				if (res && res.data && res.data.messages.length > 0) {
 					const messages = res.data.messages.map(
 						(message: RecommendMessage) => ({
 							type: message.sender,
 							text: message.content,
+							created_at: message.created_at,
 						}),
 					);
-					setMessages((prev) => [...prev, ...messages]);
+
+					const defaultMessage = {
+						type: "assistant" as const,
+						text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
+						created_at: messages[0].created_at,
+					};
+
+					setMessages([defaultMessage, ...messages]);
 
 					const lastMessage = res.data.messages[res.data.messages.length - 1];
 					if (
@@ -41,9 +48,24 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 					) {
 						setRecommendations(lastMessage.courses);
 					}
+				} else {
+					setMessages([
+						{
+							type: "assistant",
+							text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
+							created_at: new Date().toISOString(),
+						},
+					]);
 				}
 			} catch (error) {
 				console.log(error);
+				setMessages([
+					{
+						type: "assistant",
+						text: "페이지 로딩에 문제가 있습니다. 다시 로그인해주세요.",
+						created_at: new Date().toISOString(),
+					},
+				]);
 			}
 		};
 
@@ -52,28 +74,140 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 
 	const [recommendations, setRecommendations] = useState<CourseRecommend[]>([]);
 	const [searchQuery, setSearchQuery] = useState<string>("");
+	const [isRecommendLoading, setIsRecommendLoading] = useState<boolean>(false);
+	const [isComposing, setIsComposing] = useState<boolean>(false);
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+
+	// 날짜 구분선을 포함한 메시지 렌더링 함수
+	const renderMessagesWithDateDividers = () => {
+		const result = [];
+
+		for (let i = 0; i < messages.length; i++) {
+			const currentMessage = messages[i];
+			const currentDate = new Date(
+				currentMessage.created_at,
+			).toLocaleDateString("ko-KR", {
+				year: "numeric",
+				month: "2-digit",
+				day: "2-digit",
+			});
+
+			// 첫 번째 메시지이거나 이전 메시지와 날짜가 다른 경우 구분선 추가
+			if (i === 0) {
+				result.push(
+					<div key={`date-${i}`} className="flex justify-center my-4">
+						<div className="bg-primary-green-500 text-white px-3 py-1 rounded-full text-sm">
+							{currentDate}
+						</div>
+					</div>,
+				);
+			} else {
+				const previousMessage = messages[i - 1];
+				const previousDate = new Date(
+					previousMessage.created_at,
+				).toLocaleDateString("ko-KR", {
+					year: "numeric",
+					month: "2-digit",
+					day: "2-digit",
+				});
+
+				if (currentDate !== previousDate) {
+					result.push(
+						<div key={`date-${i}`} className="flex justify-center my-4">
+							<div className="bg-primary-green-500 text-white px-3 py-1 rounded-full text-sm">
+								{currentDate}
+							</div>
+						</div>,
+					);
+				}
+			}
+
+			result.push(
+				<div
+					key={i}
+					className={`flex items-end ${currentMessage.type === "user" ? "flex-row-reverse" : "justify-start flex-row"}`}
+				>
+					<div
+						className={`w-[50px] h-[50px] flex items-center justify-center overflow-hidden rounded-full ${currentMessage.type === "user" ? "ml-3" : "mr-3 bg-white"}`}
+					>
+						<Image
+							src={
+								currentMessage.type === "user"
+									? userInfo?.thumbnailUrl
+										? userInfo?.thumbnailUrl
+										: "/profile.svg"
+									: "/insty.png"
+							}
+							alt={currentMessage.type === "user" ? "user" : "insty"}
+							width={50}
+							height={50}
+							className="object-cover w-full h-full rounded-full"
+						/>
+					</div>
+					<div
+						className={`text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200
+
+						${
+							currentMessage.type === "user"
+								? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
+								: "bg-white rounded-tr-2xl rounded-tl-md"
+						}
+					`}
+					>
+						{currentMessage.text}
+					</div>
+				</div>,
+			);
+		}
+
+		return result;
+	};
 
 	const handleAiReccomend = async (
 		e: React.KeyboardEvent<HTMLInputElement>,
 	) => {
-		if (e.key === "Enter" && searchQuery.trim()) {
+		if (e.key === "Enter" && searchQuery.trim() && !isComposing) {
+			setIsRecommendLoading(true);
 			setSearchQuery("");
 
 			//먼저 이전에 추천된 영상은 지워주고
 			setRecommendations([]);
-			setMessages((prev) => [...prev, { type: "user", text: searchQuery }]);
+			setMessages((prev) => [
+				...prev,
+				{
+					type: "user",
+					text: searchQuery,
+					created_at: new Date().toISOString(),
+				},
+			]);
 			try {
 				const res = await postAISearchRecommend(searchQuery);
 				console.log(res);
-				setMessages((prev) => [
-					...prev,
-					{ type: "assistant", text: res.data?.message },
-				]);
-				if (res.data?.courses) {
-					setRecommendations(res.data.courses);
+				if (res && res.data) {
+					setMessages((prev) => [
+						...prev,
+						{
+							type: "assistant",
+							text: res.data?.message,
+							created_at: new Date().toISOString(),
+						},
+					]);
+					if (res.data?.courses) {
+						setRecommendations(res.data.courses);
+					}
+				} else {
+					setMessages((prev) => [
+						...prev,
+						{
+							type: "assistant",
+							text: res.error?.message,
+							created_at: new Date().toISOString(),
+						},
+					]);
 				}
+
+				setIsRecommendLoading(false);
 			} catch (error) {
 				console.log(error);
 			}
@@ -95,6 +229,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							width={100}
 							height={100}
 							className="object-contain"
+							priority
 						/>
 					</div>
 					<div className="flex flex-col ml-8">
@@ -104,7 +239,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 						</div>
 					</div>
 					<button
-						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2 disabled:bg-gray-scale-300"
+						className="ml-auto bg-primary-green-500 text-white rounded-2xl px-4 py-2 disabled:bg-gray-scale-300 cursor-not-allowed"
 						onClick={changeDirectSearch}
 						disabled
 					>
@@ -113,36 +248,26 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 				</div>
 
 				<div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 h-[100vh] min-h-0">
-					{messages.map((msg, idx) => (
-						<div
-							key={idx}
-							className={`flex items-end ${msg.type === "user" ? "flex-row-reverse" : "justify-start flex-row"}`}
-						>
-							<div
-								className={`w-[60px] h-[60px] flex items-center justify-center overflow-hidden ${msg.type === "user" ? "ml-3" : "mr-3 rounded-full bg-white"}`}
-							>
+					{renderMessagesWithDateDividers()}
+
+					{isRecommendLoading && (
+						<div className="flex items-end justify-start flex-row">
+							<div className="w-[60px] h-[60px] flex items-center justify-center overflow-hidden mr-3 rounded-full bg-white">
 								<Image
-									src={msg.type === "user" ? "/profile.svg" : "/insty.png"}
-									alt={msg.type === "user" ? "user" : "insty"}
+									src="/insty.png"
+									alt="insty"
 									width={50}
 									height={50}
 									className="object-contain"
+									priority
 								/>
 							</div>
-							<div
-								className={`text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200
-
-								${
-									msg.type === "user"
-										? "bg-blue-100 rounded-tl-2xl rounded-tr-md"
-										: "bg-white rounded-tr-2xl rounded-tl-md"
-								}
-							`}
-							>
-								{msg.text}
+							<div className="flex flex-row text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200 bg-white rounded-tr-2xl rounded-tl-md">
+								<p>추천 영상을 찾는 중입니다...</p>
+								<Loading width={30} height={30} className="ml-2" />
 							</div>
 						</div>
-					))}
+					)}
 
 					{recommendations.length > 0 && (
 						<div className="flex gap-3 mt-10">
@@ -178,6 +303,9 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						onKeyDown={handleAiReccomend}
+						onCompositionStart={() => setIsComposing(true)}
+						onCompositionEnd={() => setIsComposing(false)}
+						disabled={isRecommendLoading}
 					/>
 				</div>
 			</div>

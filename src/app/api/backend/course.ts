@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { ApiResponse } from "@/app/types/api";
 import { CourseUpdateReq, UploadformData } from "@/app/types/course";
 
 import axiosInstance from "../interceptor";
@@ -38,29 +39,36 @@ const putCourse = async (
 	thumbnailFile: File | null,
 	practiceFile: File[] | null,
 ) => {
-	const formData = new FormData();
+	try {
+		const formData = new FormData();
 
-	formData.append("courseUpdateReq", JSON.stringify(courseData));
+		formData.append("courseUpdateReq", JSON.stringify(courseData));
 
-	if (thumbnailFile) {
-		formData.append("thumbnail", thumbnailFile);
+		if (thumbnailFile) {
+			formData.append("thumbnail", thumbnailFile);
+		}
+
+		if (practiceFile) {
+			practiceFile.forEach((file) => {
+				formData.append("practiceFile", file);
+			});
+		}
+
+		const res = await axiosInstance.put(
+			`${BASE_URL}/courses/${courseId}`,
+			formData,
+			{
+				headers: { "Content-Type": "multipart/form-data" },
+			},
+		);
+
+		return res.data.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+		throw error;
 	}
-
-	if (practiceFile) {
-		practiceFile.forEach((file) => {
-			formData.append("practiceFile", file);
-		});
-	}
-
-	const res = await axiosInstance.put(
-		`${BASE_URL}/courses/${courseId}`,
-		formData,
-		{
-			headers: { "Content-Type": "multipart/form-data" },
-		},
-	);
-
-	return res.data.data;
 };
 
 const postCourse = async (
@@ -96,4 +104,28 @@ const postCourse = async (
 	throw new Error("서버와 통신 불가");
 };
 
-export { getCourseDetail, getMyCourses, postCourse, putCourse };
+const getVideoThumbnail = async (videoUuid: string) => {
+	try {
+		const res = await axiosInstance.get<ApiResponse<string>>(
+			`${BASE_URL}/videos/${videoUuid}/thumbnail`,
+		);
+
+		if (res && res.data) {
+			return res.data;
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+
+	throw new Error("서버와 통신 불가");
+};
+
+export {
+	getCourseDetail,
+	getMyCourses,
+	getVideoThumbnail,
+	postCourse,
+	putCourse,
+};

@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { FiFile } from "react-icons/fi";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 
+import Loading from "@/app/_components/common/Loading";
 import { getSessionMessages, postChatSession } from "@/app/api/ai";
 import {
 	getCourseDetail,
@@ -15,6 +17,7 @@ import CourseQuestionChatBotModal from "@/app/learner/_component/CourseQuestionC
 import HLSPlayer from "@/app/learner/_component/courses/HLSPlayer";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail, CourserChatbotMessage } from "@/app/types/course";
+import { formatTime } from "@/app/utils/date";
 
 function WatchCoursePage() {
 	const [openChatbot, setOpenChatbot] = useState(false);
@@ -22,6 +25,7 @@ function WatchCoursePage() {
 	const [m3u8Url, setM3u8Url] = useState<string | null>(null);
 	const { id } = useParams();
 	const [sessionId, setSessionId] = useState<number | null>(null);
+	const [videoDuration, setVideoDuration] = useState<number>(0);
 
 	const baseMessages: CourserChatbotMessage[] = [
 		{
@@ -114,7 +118,13 @@ function WatchCoursePage() {
 		createSession();
 	}, [getCourseData, createSession]);
 
-	if (!data) return <div>데이터가 없습니다.</div>;
+	if (!data)
+		return (
+			<div className="flex flex-row w-full justify-center items-center h-screen">
+				데이터 불러오는 중...
+				<Loading width={60} height={60} />
+			</div>
+		);
 
 	return (
 		<div className="flex flex-col gap-8 items-stretch relative">
@@ -141,9 +151,13 @@ function WatchCoursePage() {
 
 			<div className="flex gap-4 w-full">
 				{m3u8Url ? (
-					<HLSPlayer src={m3u8Url} width="800px" height="450px" />
+					<HLSPlayer
+						src={m3u8Url}
+						width="600px"
+						onDurationChange={setVideoDuration}
+					/>
 				) : (
-					<div className="w-[800px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
+					<div className="w-[600px] h-auto bg-gray-200 rounded-2xl flex items-center justify-center">
 						<span className="text-gray-400">영상 미리보기</span>
 					</div>
 				)}
@@ -162,7 +176,9 @@ function WatchCoursePage() {
 					<div className="flex flex-col gap-4 mt-4">
 						<div className="flex gap-2 items-center aspect-auto">
 							<Image src="/profile.svg" alt="user" width={48} height={48} />
-							<span className="text-black-100 text-2xl">{"작성자"}</span>
+							<span className="text-black-100 text-2xl">
+								{data.creatorInfo?.nickname ?? "작성자 정보 없음"}
+							</span>
 						</div>
 						<div className="flex gap-2 items-center">
 							<Image src="/user.svg" alt="user" width={36} height={36} />
@@ -173,7 +189,37 @@ function WatchCoursePage() {
 
 						<div className="flex gap-2 items-center">
 							<Image src="/file.svg" alt="file" width={36} height={36} />
-							<span className="text-black-300 text-2xl">실습 자료 포함</span>
+							<span className="text-black-300 text-2xl">
+								{data.practiceFile && data.practiceFile.length > 0
+									? "실습 자료 포함"
+									: "실습 자료 미포함"}
+							</span>
+						</div>
+						<div className="text-black-300 text-2xl">
+							{data.practiceFile &&
+								data.practiceFile.length > 0 &&
+								data.practiceFile.map((file) => {
+									return (
+										<div key={file.id}>
+											<a
+												href={file.url}
+												target="_blank"
+												rel="noopener noreferrer"
+												download={`${data.title} 실습 자료`}
+												className="flex flex-row items-center gap-2 ml-3 text-lg"
+											>
+												<FiFile />
+												{file.name}
+											</a>
+										</div>
+									);
+								})}
+						</div>
+						<div className="flex gap-2 items-center">
+							<Image src="/time.svg" alt="clock" width={36} height={36} />
+							<span className="text-black-300 text-2xl">
+								{videoDuration > 0 ? formatTime(videoDuration) : "로딩 중..."}
+							</span>
 						</div>
 					</div>
 				</div>

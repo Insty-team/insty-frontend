@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
+import Loading from "@/app/_components/common/Loading";
 import { postSocialLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { UserType } from "@/app/types";
@@ -24,6 +25,7 @@ function KaKaoCallbackClient() {
 
 		const sendCodeToBackend = async () => {
 			try {
+				console.log("실행 됨", code, state);
 				const res = await postSocialLogin("KAKAO", {
 					code: code,
 					userType: state as UserType,
@@ -52,12 +54,24 @@ function KaKaoCallbackClient() {
 		sendCodeToBackend();
 	}, [code, router]);
 
-	return <div>카카오 로그인 중...</div>;
+	return (
+		<div className="flex flex-row justify-center items-center h-screen">
+			<p className="mr-2">카카오 로그인 중...</p>
+			<Loading />
+		</div>
+	);
 }
 
 export default function Page() {
 	return (
-		<Suspense fallback={<div>카카오 로그인 중...</div>}>
+		<Suspense
+			fallback={
+				<div className="flex flex-row justify-center items-center h-screen">
+					<p className="mr-2">카카오 로그인 중...</p>
+					<Loading />
+				</div>
+			}
+		>
 			<KaKaoCallbackClient />
 		</Suspense>
 	);

@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 import { PUBLIC_PAGE_PATH } from "./constants";
+import { useAuthStore } from "./stores";
 import Providers from "./Providers";
 
 function RootLayout({
@@ -19,11 +20,14 @@ function RootLayout({
 	const pathname = usePathname();
 	const router = useRouter();
 	const [checked, setChecked] = useState(false);
+	const { validateTokens } = useAuthStore();
 
 	useEffect(() => {
-		const token = localStorage.getItem("@insty-app.accessToken");
+		// 토큰 유효성 검증
+		const isValidToken = validateTokens();
+
 		const isPublicPage = PUBLIC_PAGE_PATH.includes(pathname);
-		if (!token && !isPublicPage) {
+		if (!isValidToken && !isPublicPage) {
 			Swal.fire({
 				title: "로그인이 필요한 페이지입니다.",
 				icon: "error",
@@ -34,7 +38,7 @@ function RootLayout({
 		} else {
 			setChecked(true);
 		}
-	}, [pathname, router]);
+	}, [pathname, router, validateTokens]);
 
 	return (
 		<html lang="ko">

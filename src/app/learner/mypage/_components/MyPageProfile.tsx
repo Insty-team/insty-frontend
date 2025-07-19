@@ -2,8 +2,9 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
 import {
@@ -11,16 +12,20 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
+import { getEmailCheck, getNicknameCheck } from "@/app/api/backend";
 import {
 	useEditUserProfileInfoMutation,
 	useGetUserProfileInfoQuery,
 } from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
+import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
+import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+	const profileImageInputRef = useRef<HTMLInputElement>(null);
 	const onClickProfileEditButton = () => setIsEditing(true);
 
 	const queryClient = useQueryClient();
@@ -33,16 +38,52 @@ function MyPageProfile() {
 		handleSubmit,
 		reset,
 		getValues,
-		formState: { isValid, errors },
+		formState: { errors },
+		watch,
+		trigger,
 	} = useForm<ChangeProfileForm>({
 		defaultValues: {
 			nickname: "",
 			email: "",
 			password: "",
+			changedPassword: "",
 			introduce: "",
 		},
 		mode: "onChange",
 	});
+
+	const [isNicknameAvailable, setIsNicknameAvailable] = useState<boolean>(true);
+	const [nicknameCheckStatus, setNicknameCheckStatus] = useState<string>("");
+	const [isEmailAvailable, setIsEmailAvailable] = useState<boolean>(true);
+	const [emailCheckStatus, setEmailCheckStatus] = useState<string>("");
+	const password = watch("password");
+	const changedPassword = watch("changedPassword");
+	const nickname = watch("nickname");
+	const email = watch("email");
+
+	const isSocialLoginUser = userInfo?.socialType === null ? false : true;
+
+	const getNicknameErrorMessage = () => {
+		if (nickname.length < 2) {
+			return { message: "닉네임은 2글자 이상입니다." };
+		}
+
+		if (nickname.length > 10) {
+			return { message: "닉네임은 10글자 이하여야 합니다." };
+		}
+
+		if (!nicknameReg.test(nickname)) {
+			return {
+				message: "닉네임은 2~10자의 한글, 영어 또는 숫자 여야 합니다.",
+			};
+		}
+
+		return undefined;
+	};
+
+	useEffect(() => {
+		trigger("changedPassword");
+	}, [password, trigger]);
 
 	useEffect(() => {
 		if (!userInfo) return;
@@ -50,17 +91,92 @@ function MyPageProfile() {
 			nickname: userInfo.nickname,
 			email: userInfo.email,
 			password: "",
+			changedPassword: "",
 			introduce: userInfo.introduce,
 		});
 	}, [userInfo, reset]);
 
-	const onSaveProfileInfo = handleSubmit((data: ChangeProfileForm) => {
-		const body = {
-			email: data.email,
-			password: data.password,
-			nickname: data.nickname,
-			introduce: data.introduce,
-		};
+	useEffect(() => {
+		if (!userInfo) return;
+		if (nickname === userInfo.nickname) {
+			setIsNicknameAvailable(true);
+			setNicknameCheckStatus("");
+		} else {
+			setIsNicknameAvailable(false);
+			setNicknameCheckStatus("");
+		}
+	}, [nickname, userInfo]);
+
+	useEffect(() => {
+		if (!userInfo) return;
+		if (email === userInfo.email) {
+			setIsEmailAvailable(true);
+			setEmailCheckStatus("");
+		} else {
+			setIsEmailAvailable(false);
+			setEmailCheckStatus("");
+		}
+	}, [email, userInfo]);
+
+	const isNicknameChanged = nickname !== userInfo?.nickname;
+	const isEmailChanged = email !== userInfo?.email;
+	const isChangedPasswordSame =
+		password && changedPassword && password === changedPassword;
+
+	const isSaveDisabled =
+		(isNicknameChanged && !isNicknameAvailable) ||
+		(isEmailChanged && !isEmailAvailable) ||
+		isChangedPasswordSame;
+
+	const onSaveProfileInfo = (data: ChangeProfileForm) => {
+		if (isSocialLoginUser) {
+			if (isNicknameChanged && !isNicknameAvailable) {
+				Swal.fire({
+					icon: "error",
+					title: "닉네임 중복확인을 해주세요.",
+					confirmButtonText: "확인",
+				});
+				return;
+			}
+		} else {
+			if (isNicknameChanged && !isNicknameAvailable) {
+				Swal.fire({
+					icon: "error",
+					title: "닉네임 중복확인을 해주세요.",
+					confirmButtonText: "확인",
+				});
+				return;
+			} else if (isEmailChanged && !isEmailAvailable) {
+				Swal.fire({
+					icon: "error",
+					title: "이메일 중복확인을 해주세요.",
+					confirmButtonText: "확인",
+				});
+				return;
+			} else if (isChangedPasswordSame) {
+				Swal.fire({
+					icon: "error",
+					title: "현재 비밀번호와 다른 비밀번호를 입력해주세요.",
+				});
+				return;
+			}
+		}
+
+		const body: UserUpdateRequest = isSocialLoginUser
+			? {
+					nickname: data.nickname,
+					email: data.email,
+					currentPassword: "",
+				}
+			: {
+					nickname: data.nickname,
+					email: data.email,
+					currentPassword: data.password,
+				};
+
+		if (!isSocialLoginUser && data.changedPassword) {
+			body.newPassword = data.changedPassword;
+		}
 
 		const formData = new FormData();
 		formData.append(
@@ -74,14 +190,48 @@ function MyPageProfile() {
 
 		editProfile(formData, {
 			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-				setIsEditing(false);
+				Swal.fire({
+					icon: "success",
+					title: "수정에 성공했습니다.",
+					confirmButtonText: "확인",
+				}).then(() => {
+					queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+					setIsEditing(false);
+					reset();
+				});
 			},
 			onError: () => {
-				alert("수정에 실패했습니다.");
+				Swal.fire({
+					icon: "error",
+					title: "수정에 실패하였습니다.",
+					text: `${password === "" ? "현재 비밀번호를 입력해주세요" : "현재 비밀번호가 일치하지 않습니다."}`,
+					confirmButtonText: "확인",
+				});
 			},
 		});
-	});
+	};
+
+	const handleNicknameCheck = async () => {
+		const res = await getNicknameCheck(getValues("nickname"));
+		if (res.error) {
+			setIsNicknameAvailable(false);
+			setNicknameCheckStatus(res.error.message);
+		} else {
+			setIsNicknameAvailable(true);
+			setNicknameCheckStatus("사용 가능한 닉네임입니다.");
+		}
+	};
+
+	const handleEmailCheck = async () => {
+		const res = await getEmailCheck(getValues("email"));
+		if (res.error) {
+			setIsEmailAvailable(false);
+			setEmailCheckStatus(res.error.message);
+		} else {
+			setIsEmailAvailable(true);
+			setEmailCheckStatus("사용 가능한 이메일입니다.");
+		}
+	};
 
 	return (
 		<div className="flex flex-col gap-12 justify-center items-center w-full">
@@ -89,7 +239,7 @@ function MyPageProfile() {
 				<>
 					<div className="flex flex-col w-[700px] gap-10">
 						<div className="flex gap-10">
-							<div className="flex flex-col gap-2 justify-center items-center w-full">
+							<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
 								<Image
 									src={
 										profileImageFile
@@ -99,19 +249,30 @@ function MyPageProfile() {
 									width={128}
 									height={128}
 									alt="프로필 사진"
-									style={{
-										objectFit: "cover",
-										width: "128px",
-										height: "128px",
-									}}
-									className="rounded-full"
+									className="rounded-full object-cover"
+									style={{ width: "128px", height: "128px" }}
 								/>
 								<input
+									ref={profileImageInputRef}
 									type="file"
-									accept="image/*"
+									accept={ALLOWED_FILE_TYPES.image.accept}
 									onChange={(e) => {
 										const file = e.target.files?.[0];
-										if (file) setProfileImageFile(file);
+										if (file) {
+											if (!ALLOWED_FILE_TYPES.image.types.includes(file.type)) {
+												Swal.fire({
+													title: "지원하지 않는 파일 형식",
+													text: "JPG, JPEG, PNG, WEBP 파일만 업로드 가능합니다.",
+													icon: "error",
+													confirmButtonText: "확인",
+												});
+												if (profileImageInputRef.current) {
+													profileImageInputRef.current.value = "";
+												}
+												return;
+											}
+											setProfileImageFile(file);
+										}
 									}}
 									className="hidden"
 									id="profileImageInput"
@@ -127,14 +288,14 @@ function MyPageProfile() {
 						{/* Form */}
 						<div className="flex items-center justify-center">
 							<form
-								onSubmit={onSaveProfileInfo}
+								onSubmit={handleSubmit(onSaveProfileInfo)}
 								className="w-full p-4 flex flex-col items-center space-y-6"
 							>
 								<TextInput
 									label="닉네임"
 									name="nickname"
 									type="text"
-									placeholder={userInfo?.nickname}
+									placeholder="닉네임을 입력하세요."
 									register={register}
 									validation={{
 										required: "",
@@ -142,23 +303,49 @@ function MyPageProfile() {
 											value: nicknameReg,
 											message: "닉네임 형식이 잘못되었습니다.",
 										},
+										onChange: () => {
+											setIsNicknameAvailable(false);
+											setNicknameCheckStatus("");
+										},
 									}}
-									error={errors.nickname}
+									error={
+										isNicknameAvailable === false && nicknameCheckStatus
+											? { message: nicknameCheckStatus }
+											: getNicknameErrorMessage() ||
+												errors.nickname ||
+												(isNicknameChanged && !isNicknameAvailable
+													? { message: "닉네임 중복 확인을 해주세요." }
+													: undefined)
+									}
 									checkDuplication={
-										<button
-											type="button"
-											onClick={() => console.log("nickname check")}
-											className="px-3 py-1 rounded-lg bg-primary-green-400 active:bg-primary-green-500 cursor-pointer text-white text-sm"
-										>
-											닉네임 중복 확인
-										</button>
+										<BaseButton
+											title="닉네임 중복 확인"
+											className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+											onClick={handleNicknameCheck}
+											disabled={
+												!!errors.nickname ||
+												!nickname ||
+												nickname.length < 2 ||
+												nickname === userInfo?.nickname
+											}
+										/>
+									}
+									success={
+										isNicknameAvailable !== null ? nicknameCheckStatus : ""
+									}
+									status={
+										isNicknameAvailable === null
+											? undefined
+											: isNicknameAvailable
+												? "success"
+												: "error"
 									}
 								/>
 								<TextInput
 									label="이메일"
 									name="email"
 									type="email"
-									placeholder={userInfo?.email}
+									placeholder="이메일을 입력하세요."
 									register={register}
 									validation={{
 										required: "",
@@ -166,17 +353,45 @@ function MyPageProfile() {
 											value: emailReg,
 											message: "이메일 형식이 잘못되었습니다.",
 										},
+										onChange: () => {
+											setIsEmailAvailable(false);
+											setEmailCheckStatus("");
+										},
 									}}
-									error={errors.email}
-									checkDuplication={
-										<button
-											type="button"
-											onClick={() => console.log("email check")}
-											className="px-3 py-1 rounded-lg bg-primary-green-400 active:bg-primary-green-500 cursor-pointer text-white text-sm"
-										>
-											이메일 중복 확인
-										</button>
+									error={
+										isEmailAvailable === false && emailCheckStatus
+											? { message: emailCheckStatus }
+											: errors.email ||
+												(isEmailChanged && !isEmailAvailable
+													? { message: "이메일 중복 확인을 해주세요." }
+													: undefined)
 									}
+									checkDuplication={
+										isSocialLoginUser ? (
+											<></>
+										) : (
+											<BaseButton
+												title="이메일 중복 확인"
+												className="!px-3 !py-1 !rounded-lg !cursor-pointer !text-sm"
+												onClick={handleEmailCheck}
+												disabled={
+													!!errors.email ||
+													!email ||
+													email.length < 2 ||
+													email === userInfo?.email
+												}
+											/>
+										)
+									}
+									success={isEmailAvailable !== null ? emailCheckStatus : ""}
+									status={
+										isEmailAvailable === null
+											? undefined
+											: isEmailAvailable
+												? "success"
+												: "error"
+									}
+									disabled={isSocialLoginUser}
 								/>
 								<PasswordInput
 									label="현재 비밀번호"
@@ -187,30 +402,41 @@ function MyPageProfile() {
 										required: "",
 										pattern: {
 											value: passwordReg,
-											message: "비밀번호 형식이 잘못되었습니다.",
+											message:
+												"영문/숫자/특수문자를 포함한 8~20자 이내로 입력해주세요.",
 										},
 									}}
 									error={errors.password}
+									disabled={isSocialLoginUser}
 								/>
 								<PasswordConfirmInput
+									type="change"
 									label="변경할 비밀번호"
 									name="changedPassword"
-									confirmPasswordName={getValues("password")}
+									confirmPasswordName={password}
 									register={register}
 									validation={{
 										required: "",
 										pattern: {
 											value: passwordReg,
-											message: "비밀번호 형식이 잘못되었습니다.",
+											message:
+												"영문/숫자/특수문자를 포함한 8~20자 이내로 입력해주세요.",
+										},
+										validate: (value: string) => {
+											if (value === password) {
+												return "현재 비밀번호와 다르게 입력해주세요.";
+											}
+											return true;
 										},
 									}}
-									error={errors.password}
+									error={errors.changedPassword}
+									disabled={isSocialLoginUser}
 								/>
 								<div className="mt-10 w-full">
 									<BaseButton
 										title="수정하기"
-										onClick={onSaveProfileInfo}
-										disabled={!isValid}
+										onClick={handleSubmit(onSaveProfileInfo)}
+										disabled={!!isSaveDisabled}
 									/>
 								</div>
 							</form>
@@ -219,16 +445,18 @@ function MyPageProfile() {
 				</>
 			) : (
 				<>
-					<Image
-						src={
-							userInfo?.thumbnailUrl ? userInfo.thumbnailUrl : "/profile.svg"
-						}
-						width={128}
-						height={128}
-						alt="프로필 사진"
-						style={{ objectFit: "cover", width: "128px", height: "128px" }}
-						className="rounded-full"
-					/>
+					<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
+						<Image
+							src={
+								userInfo?.thumbnailUrl ? userInfo.thumbnailUrl : "/profile.svg"
+							}
+							width={128}
+							height={128}
+							alt="프로필 사진"
+							className="rounded-full object-cover"
+							style={{ width: "128px", height: "128px" }}
+						/>
+					</div>
 					<div className="flex flex-col gap-10">
 						{[
 							{ label: "닉네임", value: userInfo?.nickname },

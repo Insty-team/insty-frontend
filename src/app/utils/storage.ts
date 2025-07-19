@@ -32,7 +32,23 @@ export const removeAccessToken = () => {
  */
 export const getRefreshToken = () => {
 	if (typeof window === "undefined") return null;
-	return localStorage.getItem(INSTY_REFRESH_TOKEN_KEY);
+	return sessionStorage.getItem(INSTY_REFRESH_TOKEN_KEY);
+};
+
+export const setRefreshToken = (token: string) => {
+	if (typeof window === "undefined") return null;
+	sessionStorage.setItem(INSTY_REFRESH_TOKEN_KEY, token);
+};
+
+export const removeRefreshToken = () => {
+	if (typeof window === "undefined") return null;
+	sessionStorage.removeItem(INSTY_REFRESH_TOKEN_KEY);
+};
+
+export const clearAllTokens = () => {
+	if (typeof window === "undefined") return;
+	localStorage.removeItem(INSTY_ACCESS_TOKEN_KEY);
+	sessionStorage.removeItem(INSTY_REFRESH_TOKEN_KEY);
 };
 
 /**

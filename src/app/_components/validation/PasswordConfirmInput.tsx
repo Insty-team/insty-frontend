@@ -4,12 +4,14 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { PasswordConfirmInputProps } from "@/app/types";
 
 export default function PasswordConfirmInput<TFieldValues>({
+	type,
 	label,
 	name,
 	confirmPasswordName,
 	register,
 	validation,
 	error,
+	disabled,
 	placeholder = "비밀번호를 입력해주세요.",
 }: PasswordConfirmInputProps<TFieldValues>) {
 	const [confirmPassword, setConfirmPassword] = useState(false);
@@ -28,20 +30,29 @@ export default function PasswordConfirmInput<TFieldValues>({
 				placeholder={placeholder}
 				className={`w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none ${
 					error ? "border !border-secondary-red-300" : ""
-				}`}
+				} ${disabled ? "bg-gray-scale-200 cursor-not-allowed" : ""}`}
 				{...register(name, {
 					...validation,
 					validate: (value: string) => {
-						if (value !== confirmPasswordName) {
-							return "비밀번호가 일치하지 않습니다.";
+						if (type === "signup") {
+							if (value !== confirmPasswordName && confirmPasswordName !== "") {
+								return "비밀번호가 일치하지 않습니다.";
+							}
+						}
+						if (type === "change") {
+							if (value === confirmPasswordName && confirmPasswordName !== "") {
+								return "현재 비밀번호와 다르게 입력해주세요.";
+							}
 						}
 					},
 				})}
+				disabled={disabled}
 			/>
 			<button
 				type="button"
-				className="absolute right-3 top-11.5 cursor-pointer"
+				className={`absolute right-3 top-11.5 ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
 				onClick={onChangeConfirmPassword}
+				disabled={disabled}
 			>
 				<div className="text-gray-400 flex items-center">
 					{confirmPassword ? (

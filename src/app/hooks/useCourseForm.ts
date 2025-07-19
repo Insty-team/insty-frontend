@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { useTags } from "./useTags";
 
 export interface CourseData {
 	title?: string;
@@ -29,20 +31,36 @@ export const useCourseForm = (initialData?: CourseData) => {
 	const [keyPoints, setKeyPoints] = useState<string[]>(
 		initialData?.keyPoints?.length ? initialData.keyPoints : [""],
 	);
-	const [tags, setTags] = useState<string[]>(initialData?.tags || []);
-	const [tagInput, setTagInput] = useState("");
 
-	const handleAddTag = () => {
-		const val = tagInput.trim();
-		if (val && !tags.includes(val)) {
-			setTags([...tags, val]);
-			setTagInput("");
+	const {
+		tags,
+		setTags,
+		tagInput,
+		setTagInput,
+		handleAddTag,
+		handleRemoveTag,
+		handleTagInputChange,
+		handleTagKeyDown,
+	} = useTags({ initialTags: initialData?.tags || [] });
+
+	// initialData가 변경될 때마다 상태 업데이트
+	useEffect(() => {
+		if (initialData) {
+			setTitle(initialData.title || "");
+			setDescription(initialData.description || "");
+			setTargetAudience(initialData.targetAudience || "");
+			setPrice(initialData.price || 0);
+			setInstallEnvChecklist(
+				initialData.installEnvChecklist?.length
+					? initialData.installEnvChecklist
+					: [{ content: "", isSupported: true }],
+			);
+			setKeyPoints(
+				initialData.keyPoints?.length ? initialData.keyPoints : [""],
+			);
+			setTags(initialData.tags || []);
 		}
-	};
-
-	const handleRemoveTag = (idx: number) => {
-		setTags(tags.filter((_, i) => i !== idx));
-	};
+	}, [initialData, setTags]);
 
 	const handleAddEnv = () => {
 		setInstallEnvChecklist([
@@ -58,7 +76,7 @@ export const useCourseForm = (initialData?: CourseData) => {
 	) => {
 		const newChecklist = [...installEnvChecklist];
 		if (field === "content") {
-			newChecklist[idx] = { ...newChecklist[idx], content: value };
+			newChecklist[idx] = { ...newChecklist[idx], content: value.trim() };
 		} else {
 			newChecklist[idx] = {
 				...newChecklist[idx],
@@ -74,7 +92,7 @@ export const useCourseForm = (initialData?: CourseData) => {
 
 	const handleCoreChange = (idx: number, value: string) => {
 		const arr = [...keyPoints];
-		arr[idx] = value;
+		arr[idx] = value.trim();
 		setKeyPoints(arr);
 	};
 
@@ -105,6 +123,8 @@ export const useCourseForm = (initialData?: CourseData) => {
 		setTagInput,
 		handleAddTag,
 		handleRemoveTag,
+		handleTagInputChange,
+		handleTagKeyDown,
 		handleAddEnv,
 		handleEnvChange,
 		handleRemoveEnv,
