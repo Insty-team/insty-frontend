@@ -8,6 +8,7 @@ import {
 	BaseSearchBar,
 	BaseSelect,
 } from "@/app/_components/common";
+import Loading from "@/app/_components/common/Loading";
 import { useFormatAssistantText } from "@/app/hooks";
 import {
 	useGetAIChatHistoryQuery,
@@ -47,7 +48,7 @@ function MyPageAIChat() {
 		useState<SelectedHistory | null>(null);
 
 	// 히스토리 데이터 조회	쿼리
-	const { data: originHistory } = useGetAIChatHistoryQuery({
+	const { data: originHistory, isLoading } = useGetAIChatHistoryQuery({
 		relativeDate: applyDateOption,
 		keyword: applySearchQuery,
 		enabled: isHistoryVisible,
@@ -55,8 +56,15 @@ function MyPageAIChat() {
 
 	useEffect(() => {
 		if (!originHistory) return;
+
+		console.log("API 응답 받음:", {
+			검색어: applySearchQuery,
+			날짜옵션: applyDateOption,
+			응답데이터: originHistory,
+		});
+
 		setHistory(originHistory);
-	}, [originHistory]);
+	}, [originHistory, applySearchQuery, applyDateOption]);
 
 	// 하나의 세션에 대한 메세지 조회 쿼리
 	const { data: originMessages } = useGetAIMessageListQuery(
@@ -91,12 +99,27 @@ function MyPageAIChat() {
 		setSearchText(e.target.value);
 	};
 
+	// 엔터 키 핸들러
+	const onKeyDownSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			onClickApplyButton();
+		}
+	};
+
 	// 적용 버튼 클릭 핸들러
 	const onClickApplyButton = () => {
-		setApplySearchQuery(searchText);
-		setApplyDateOption(
-			selectedDateOption.value === "all" ? "" : selectedDateOption.value,
-		);
+		const trimmedSearchText = searchText.trim();
+		const dateOption =
+			selectedDateOption.value === "all" ? "" : selectedDateOption.value;
+
+		// 검색어와 날짜 옵션이 둘 다 없으면 검색하지 않음
+		if (!trimmedSearchText && dateOption === "") {
+			console.log("검색 조건이 없어서 검색하지 않음");
+			return;
+		}
+
+		setApplySearchQuery(trimmedSearchText);
+		setApplyDateOption(dateOption);
 		setIsHistoryVisible(true);
 	};
 
@@ -138,6 +161,7 @@ function MyPageAIChat() {
 					<BaseSearchBar
 						value={searchText}
 						onChange={(e) => onChangeSearch(e)}
+						onKeyDown={onKeyDownSearch}
 						placeholder="설치 환경(OS), 소프트웨어 이름을 입력해보세요!"
 					/>
 				</div>
@@ -171,130 +195,161 @@ function MyPageAIChat() {
 				</div>
 				<div className="w-[142px]">
 					<BaseButton
-						title="적용"
+						title={isLoading ? "검색 중..." : "적용"}
 						userType="LEARNER"
 						onClick={() => onClickApplyButton()}
+						disabled={isLoading}
 					/>
 				</div>
 			</div>
 
 			{/* 히스토리 검색 결과 */}
-			{isHistoryVisible && history && (
+			{isHistoryVisible && (
 				<div className="w-full flex flex-col mb-10">
 					{/* 헤더 */}
 					<div className="w-full border-b px-6 py-4 flex justify-between bg-gradient-to-r from-[#72C380] to-[#479B5D] rounded-t-lg">
 						<div className="flex flex-col items-start gap-2">
 							<h2 className="text-xl font-semibold text-[#F9F9F9]">
-								{selectedHistoryItem?.course_title || "선택된 세션이 없습니다."}
+								{isLoading
+									? "검색 중..."
+									: uniqueSessionList.length > 0
+										? selectedHistoryItem?.course_title ||
+											"선택된 세션이 없습니다."
+										: "검색 결과가 없습니다."}
 							</h2>
-							<div className="text-sm text-[#F9F9F9]">
-								{`📅 ${getFormattedDate(
-									selectedHistoryItem?.date || new Date().toDateString(),
-									"YYYY년 MM월 DD일",
-								)}`}
-							</div>
+							{!isLoading &&
+								uniqueSessionList.length > 0 &&
+								selectedHistoryItem && (
+									<div className="text-sm text-[#F9F9F9]">
+										{`📅 ${getFormattedDate(
+											selectedHistoryItem?.date || new Date().toDateString(),
+											"YYYY년 MM월 DD일",
+										)}`}
+									</div>
+								)}
 						</div>
 					</div>
 					{/* 세션 목록 + 대화 내용 */}
-					<div className="flex border border-[#E6E6E6] rounded-b-lg overflow-hidden">
-						<div
-							className={`flex flex-col flex-none bg-[#ffffff] transition-all duration-300 ease-in-out h-[800px] ${
-								isPanelClosed ? "w-[80px]" : "w-[324px]"
-							}`}
-						>
-							<div className="px-[30px] py-[20px] border-b border-[#E6E6E6] flex justify-between items-center">
-								{!isPanelClosed && (
-									<span className="text-xl font-bold text-[#1F1F1F]">
-										📝 질문 이력 {uniqueSessionList.length}건
-									</span>
-								)}
-								<button
-									className="cursor-pointer"
-									onClick={() => setIsPanelClosed(!isPanelClosed)}
-								>
-									{isPanelClosed ? (
-										<LuPanelLeftOpen size={24} color="#6EAD79" />
-									) : (
-										<LuPanelLeftClose size={24} color="#6EAD79" />
-									)}
-								</button>
+					{isLoading ? (
+						<div className="border border-[#E6E6E6] rounded-b-lg p-20 text-center">
+							<div className="flex flex-col items-center gap-4">
+								<Loading width={48} height={48} />
+								<p className="text-gray-600">검색 중입니다...</p>
 							</div>
-							{!isPanelClosed && (
-								<div className="flex flex-col overflow-y-auto max-h-[800px]">
-									{uniqueSessionList.map((q) => (
-										<li
-											key={q.session_id}
-											className={`list-none cursor-pointer px-[30px] py-2 mx-3 my-2 text-sm text-black hover:bg-gray-100 rounded-xl transition duration-200 ${
-												selectedHistoryItem?.session_id === q.session_id &&
-												selectedHistoryItem?.date === q.date
-													? "bg-[#E5F9E0] text-[#479B5D]"
-													: "text-black"
-											}`}
-											onClick={() => setSelectedHistoryItem(q)}
-										>
-											<div className="font-semibold">{q.course_title}</div>
-											<div className="text-xs text-gray-400">
-												{getFormattedDate(q.date, "YYYY년 MM월 DD일")}
-											</div>
-										</li>
-									))}
-								</div>
-							)}
 						</div>
-						<div className="bg-[#EFEFEF] w-full overflow-y-auto max-h-[800px] px-14 py-10">
-							{originMessages?.messages ? (
-								<div className="flex flex-col gap-4">
-									{[...originMessages?.messages]
-										.sort(
-											(a, b) =>
-												new Date(a.created_at).getTime() -
-												new Date(b.created_at).getTime(),
-										)
-										.map((msg: AIMessage) => (
-											<div
-												key={msg.message_id}
-												className={`flex w-full ${msg.sender === "assistant" ? "justify-start" : "justify-end"}`}
+					) : uniqueSessionList.length > 0 ? (
+						<div className="flex border border-[#E6E6E6] rounded-b-lg overflow-hidden">
+							<div
+								className={`flex flex-col flex-none bg-[#ffffff] transition-all duration-300 ease-in-out h-[800px] ${
+									isPanelClosed ? "w-[80px]" : "w-[324px]"
+								}`}
+							>
+								<div className="px-[30px] py-[20px] border-b border-[#E6E6E6] flex justify-between items-center">
+									{!isPanelClosed && (
+										<span className="text-xl font-bold text-[#1F1F1F]">
+											📝 질문 이력 {uniqueSessionList.length}건
+										</span>
+									)}
+									<button
+										className="cursor-pointer"
+										onClick={() => setIsPanelClosed(!isPanelClosed)}
+									>
+										{isPanelClosed ? (
+											<LuPanelLeftOpen size={24} color="#6EAD79" />
+										) : (
+											<LuPanelLeftClose size={24} color="#6EAD79" />
+										)}
+									</button>
+								</div>
+								{!isPanelClosed && (
+									<div className="flex flex-col overflow-y-auto max-h-[800px]">
+										{uniqueSessionList.map((q) => (
+											<li
+												key={q.session_id}
+												className={`list-none cursor-pointer px-[30px] py-2 mx-3 my-2 text-sm text-black hover:bg-gray-100 rounded-xl transition duration-200 ${
+													selectedHistoryItem?.session_id === q.session_id &&
+													selectedHistoryItem?.date === q.date
+														? "bg-[#E5F9E0] text-[#479B5D]"
+														: "text-black"
+												}`}
+												onClick={() => setSelectedHistoryItem(q)}
 											>
+												<div className="font-semibold">{q.course_title}</div>
+												<div className="text-xs text-gray-400">
+													{getFormattedDate(q.date, "YYYY년 MM월 DD일")}
+												</div>
+											</li>
+										))}
+									</div>
+								)}
+							</div>
+							<div className="bg-[#EFEFEF] w-full overflow-y-auto max-h-[800px] px-14 py-10">
+								{originMessages?.messages ? (
+									<div className="flex flex-col gap-4">
+										{[...originMessages?.messages]
+											.sort(
+												(a, b) =>
+													new Date(a.created_at).getTime() -
+													new Date(b.created_at).getTime(),
+											)
+											.map((msg: AIMessage) => (
 												<div
-													className={`mb-3 min-w-auto max-w-[60%] ${msg.sender === "assistant" ? "mr-auto" : "ml-auto"}`}
+													key={msg.message_id}
+													className={`flex w-full ${msg.sender === "assistant" ? "justify-start" : "justify-end"}`}
 												>
 													<div
-														className={`px-4 py-2 rounded-2xl text-lg ${
-															msg.sender === "assistant"
-																? "bg-white border border-gray-scale-200 text-black rounded-tr-2xl rounded-tl-md rounded-br-2xl"
-																: "bg-primary-green-400 text-white rounded-tl-2xl rounded-tr-md rounded-bl-2xl"
-														}`}
+														className={`mb-3 min-w-auto max-w-[60%] ${msg.sender === "assistant" ? "mr-auto" : "ml-auto"}`}
 													>
-														{msg.sender === "assistant" ? (
-															<span
-																dangerouslySetInnerHTML={{
-																	__html: formatAssistantText(msg.content),
-																}}
-															/>
-														) : (
-															<span>{msg.content}</span>
-														)}
-													</div>
-													<div
-														className={`text-xs text-gray-400 mt-1 ${msg.sender === "assistant" ? "ml-2 text-left" : "mr-2 text-right"}`}
-													>
-														{getFormattedDate(
-															msg.created_at,
-															"YYYY/MM/DD HH:mm",
-														)}
+														<div
+															className={`px-4 py-2 rounded-2xl text-lg ${
+																msg.sender === "assistant"
+																	? "bg-white border border-gray-scale-200 text-black rounded-tr-2xl rounded-tl-md rounded-br-2xl"
+																	: "bg-primary-green-400 text-white rounded-tl-2xl rounded-tr-md rounded-bl-2xl"
+															}`}
+														>
+															{msg.sender === "assistant" ? (
+																<span
+																	dangerouslySetInnerHTML={{
+																		__html: formatAssistantText(msg.content),
+																	}}
+																/>
+															) : (
+																<span>{msg.content}</span>
+															)}
+														</div>
+														<div
+															className={`text-xs text-gray-400 mt-1 ${msg.sender === "assistant" ? "ml-2 text-left" : "mr-2 text-right"}`}
+														>
+															{getFormattedDate(
+																msg.created_at,
+																"YYYY/MM/DD HH:mm",
+															)}
+														</div>
 													</div>
 												</div>
-											</div>
-										))}
-									<div ref={bottomRef} />
-								</div>
-							) : (
-								<p className="text-gray-400">
-									해당 세션의 대화 내역이 없습니다.
-								</p>
-							)}
+											))}
+										<div ref={bottomRef} />
+									</div>
+								) : (
+									<p className="text-gray-400">
+										해당 세션의 대화 내역이 없습니다.
+									</p>
+								)}
+							</div>
 						</div>
-					</div>
+					) : (
+						<div className="border border-[#E6E6E6] rounded-b-lg p-20 text-center">
+							<div className="flex flex-col items-center gap-4">
+								<div className="text-6xl">🔍</div>
+								<h3 className="text-xl font-semibold text-gray-600">
+									검색 결과가 없습니다
+								</h3>
+								<p className="text-gray-400">
+									다른 검색어를 입력하거나 날짜 범위를 변경해보세요.
+								</p>
+							</div>
+						</div>
+					)}
 				</div>
 			)}
 		</div>
