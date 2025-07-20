@@ -15,7 +15,7 @@ import {
 	useGetAIMessageListQuery,
 } from "@/app/queries";
 import { AIHistoryByDate, AIHistoryItem, AIMessage } from "@/app/types/ai";
-import { getFormattedDate } from "@/app/utils";
+import { getFormattedDate, getHighlightedHTML } from "@/app/utils";
 
 function MyPageAIChat() {
 	const DATE_OPTIONS = [
@@ -274,7 +274,13 @@ function MyPageAIChat() {
 												}`}
 												onClick={() => setSelectedHistoryItem(q)}
 											>
-												<div className="font-semibold">{q.course_title}</div>
+												<div
+													className="font-semibold"
+													dangerouslySetInnerHTML={getHighlightedHTML(
+														q.course_title,
+														applySearchQuery,
+													)}
+												/>
 												<div className="text-xs text-gray-400">
 													{getFormattedDate(q.date, "YYYY년 MM월 DD일")}
 												</div>
@@ -310,11 +316,21 @@ function MyPageAIChat() {
 															{msg.sender === "assistant" ? (
 																<span
 																	dangerouslySetInnerHTML={{
-																		__html: formatAssistantText(msg.content),
+																		__html: applySearchQuery
+																			? getHighlightedHTML(
+																					formatAssistantText(msg.content),
+																					applySearchQuery,
+																				).__html
+																			: formatAssistantText(msg.content),
 																	}}
 																/>
 															) : (
-																<span>{msg.content}</span>
+																<span
+																	dangerouslySetInnerHTML={getHighlightedHTML(
+																		msg.content,
+																		applySearchQuery,
+																	)}
+																/>
 															)}
 														</div>
 														<div
