@@ -11,10 +11,10 @@ import Loading from "@/app/_components/common/Loading";
 import { getPurchaseAssistantUsageCount } from "@/app/api/ai";
 import { getCourseVideoPreview, postPreviewVideo } from "@/app/api/backend";
 import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssistantChatbotModal";
+import { useUserStore } from "@/app/stores";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
-import { useUserStore } from "@/app/stores";
 
 import HLSPlayer from "./HLSPlayer";
 
