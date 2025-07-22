@@ -17,11 +17,11 @@ function CourseDetail() {
 			try {
 				const res = await getCourseDetail(Number(params.id));
 				if (res && res.data) {
-					console.log(res.data);
+					//console.log(res.data);
 					setCourseData(res.data);
 				}
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		};
 

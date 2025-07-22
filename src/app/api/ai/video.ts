@@ -8,7 +8,7 @@ import axiosInstance from "../interceptor";
 const AI_BASE_URL = process.env.NEXT_PUBLIC_BACK_AI_URL;
 
 const postSuggestMetadata = async (video_uuid: string) => {
-	console.log(video_uuid);
+	//console.log(video_uuid);
 	try {
 		const res = await axiosInstance.post<ApiResponse<string>>(
 			`${AI_BASE_URL}/videos/${video_uuid}/metadata-suggestion`,

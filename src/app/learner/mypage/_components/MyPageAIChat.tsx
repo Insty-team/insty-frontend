@@ -16,6 +16,7 @@ import {
 } from "@/app/queries";
 import { AIHistoryByDate, AIHistoryItem, AIMessage } from "@/app/types/ai";
 import { getFormattedDate, getHighlightedHTML } from "@/app/utils";
+import Swal from "sweetalert2";
 
 function MyPageAIChat() {
 	const DATE_OPTIONS = [
@@ -57,11 +58,11 @@ function MyPageAIChat() {
 	useEffect(() => {
 		if (!originHistory) return;
 
-		console.log("API 응답 받음:", {
-			검색어: applySearchQuery,
-			날짜옵션: applyDateOption,
-			응답데이터: originHistory,
-		});
+		//console.log("API 응답 받음:", {
+		//	검색어: applySearchQuery,
+		//	날짜옵션: applyDateOption,
+		//	응답데이터: originHistory,
+		//});
 
 		setHistory(originHistory);
 	}, [originHistory, applySearchQuery, applyDateOption]);
@@ -114,7 +115,10 @@ function MyPageAIChat() {
 
 		// 검색어와 날짜 옵션이 둘 다 없으면 검색하지 않음
 		if (!trimmedSearchText && dateOption === "") {
-			console.log("검색 조건이 없어서 검색하지 않음");
+			Swal.fire({
+				title: "검색 조건을 입력해주세요.",
+				icon: "warning",
+			});
 			return;
 		}
 

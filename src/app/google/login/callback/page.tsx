@@ -20,29 +20,29 @@ function GoogleCallbackClient() {
 
 	useEffect(() => {
 		if (!code || !state) {
-			console.log("구글 콜백: code 또는 state가 없음", { code, state });
+			//console.log("구글 콜백: code 또는 state가 없음", { code, state });
 			return;
 		}
 
-		console.log("구글 콜백 시작:", {
-			code: `${code?.substring(0, 20)}...`, // 보안상 일부만 표시
-			state,
-			fullUrl: window.location.href,
-		});
+		//console.log("구글 콜백 시작:", {
+		//	code: `${code?.substring(0, 20)}...`, // 보안상 일부만 표시
+		//	state,
+		//	fullUrl: window.location.href,
+		//});
 
 		const sendCodeToBackend = async () => {
 			try {
-				console.log("백엔드 API 호출 전 - Google");
+				//console.log("백엔드 API 호출 전 - Google");
 
 				const requestData = {
 					code: code,
 					userType: state as UserType,
 				};
-				console.log("전송할 데이터:", requestData);
+				//console.log("전송할 데이터:", requestData);
 
 				const res = await postSocialLogin("GOOGLE", requestData);
 
-				console.log("구글 백엔드 API 응답 성공:", res);
+				//console.log("구글 백엔드 API 응답 성공:", res);
 
 				setAccessToken(res.token.accessToken);
 				setRefreshToken(res.token.refreshToken);

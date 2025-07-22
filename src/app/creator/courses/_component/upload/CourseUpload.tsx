@@ -47,8 +47,8 @@ function CourseUpload() {
 	};
 
 	const handleEdit = () => {
-		console.log("편집 시 store 데이터:", data);
-		console.log("thumbnailUrl:", data?.thumbnailUrl);
+		//console.log("편집 시 store 데이터:", data);
+		//console.log("thumbnailUrl:", data?.thumbnailUrl);
 		setStep("edit");
 	};
 

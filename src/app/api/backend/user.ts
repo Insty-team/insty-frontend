@@ -94,7 +94,6 @@ export const patchUserType = async (
 
 /**
  * OAuth 로그인
- * (현재는 카카오/네이버만 가능합니다.)
  */
 export const getSocialAuthCode = async (
 	socialName: SocialLogin,

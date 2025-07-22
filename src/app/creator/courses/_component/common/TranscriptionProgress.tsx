@@ -20,7 +20,7 @@ export const useTranscriptionProgress = (videoUuid: string | null) => {
 		const poll = async () => {
 			try {
 				const statusRes = await getTranscriptionStatus(videoUuid);
-				console.log(statusRes);
+				//console.log(statusRes);
 				if (statusRes?.success && statusRes.data) {
 					setTranscriptionStatus(statusRes.data.status);
 					setTranscriptionProgress(statusRes.data.progress);
