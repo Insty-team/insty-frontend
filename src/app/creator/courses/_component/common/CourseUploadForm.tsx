@@ -241,10 +241,21 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		if (!file) return;
 		const duration = await getVideoDuration(file);
 
-		if (duration > 20 * 60) {
+		if (duration > 30 * 60) {
 			Swal.fire({
 				title: "영상이 너무 길어요.",
 				text: "20분 이하의 영상만 업로드 가능합니다.",
+				icon: "error",
+				confirmButtonText: "확인",
+			}).then(() => {
+				return;
+			});
+			return;
+		}
+
+		if (duration < 3) {
+			Swal.fire({
+				title: "영상이 너무 짧아요.",
 				icon: "error",
 				confirmButtonText: "확인",
 			}).then(() => {

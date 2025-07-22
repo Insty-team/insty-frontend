@@ -22,7 +22,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 		const chatRoad = async () => {
 			try {
 				const res = await getAISearchRecommend();
-				console.log(res);
+				//console.log(res);
 				if (res && res.data && res.data.messages.length > 0) {
 					const messages = res.data.messages.map(
 						(message: RecommendMessage) => ({
@@ -183,7 +183,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 			]);
 			try {
 				const res = await postAISearchRecommend(searchQuery);
-				console.log(res);
+				//console.log(res);
 				if (res && res.data) {
 					setMessages((prev) => [
 						...prev,
@@ -209,7 +209,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 
 				setIsRecommendLoading(false);
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		}
 	};
@@ -229,7 +229,6 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							width={100}
 							height={100}
 							className="object-contain"
-							priority
 						/>
 					</div>
 					<div className="flex flex-col ml-8">
@@ -259,7 +258,6 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 									width={50}
 									height={50}
 									className="object-contain"
-									priority
 								/>
 							</div>
 							<div className="flex flex-row text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200 bg-white rounded-tr-2xl rounded-tl-md">

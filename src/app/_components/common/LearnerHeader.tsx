@@ -79,7 +79,7 @@ function LearnerHeader() {
 							const tokenRes = await postReissueToken(refreshToken);
 							setAccessToken(tokenRes.token.accessToken);
 							setRefreshToken(tokenRes.token.refreshToken);
-							console.log("토큰 재발급 완료:", tokenRes.token.accessToken);
+							//console.log("토큰 재발급 완료:", tokenRes.token.accessToken);
 						} catch (tokenError) {
 							console.error("토큰 재발급 실패:", tokenError);
 							Swal.fire({

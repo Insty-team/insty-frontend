@@ -40,7 +40,7 @@ const HLSPlayer: React.FC<HLSPlayerProps> = ({
 		});
 
 		hls.on(Hls.Events.MANIFEST_PARSED, () => {
-			console.log("HLS manifest parsed");
+			//console.log("HLS manifest parsed");
 			setError(null);
 		});
 
@@ -66,7 +66,7 @@ const HLSPlayer: React.FC<HLSPlayerProps> = ({
 
 	// src가 변경될 때만 HLS 초기화
 	useEffect(() => {
-		console.log("HLSPlayer src:", src);
+		//console.log("HLSPlayer src:", src);
 		setError(null);
 		initializeHLS();
 

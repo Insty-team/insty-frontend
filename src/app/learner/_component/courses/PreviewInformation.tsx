@@ -11,10 +11,10 @@ import Loading from "@/app/_components/common/Loading";
 import { getPurchaseAssistantUsageCount } from "@/app/api/ai";
 import { getCourseVideoPreview, postPreviewVideo } from "@/app/api/backend";
 import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssistantChatbotModal";
+import { useUserStore } from "@/app/stores";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
-import { useUserStore } from "@/app/stores";
 
 import HLSPlayer from "./HLSPlayer";
 
@@ -31,7 +31,7 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	const [videoDuration, setVideoDuration] = useState<number>(0);
 	const { user: userInfo } = useUserStore();
 
-	console.log(data);
+	//console.log(data);
 
 	const baseMessages = [
 		{
@@ -66,30 +66,30 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 				data.courseId,
 			);
 			if (res && res.data) {
-				console.log(res.data.signedUrl, "이거에요");
+				//console.log(res.data.signedUrl, "이거에요");
 				try {
 					const previewResponse = await getCourseVideoPreview(
 						res.data.signedUrl,
 					);
-					console.log(typeof previewResponse);
-					console.log(previewResponse);
+					//console.log(typeof previewResponse);
+					//console.log(previewResponse);
 
 					const masterUrl = res.data.signedUrl;
 					const lines = previewResponse.trim().split("\n");
 					const variantM3u8 = lines.find(
 						(line: string) => line.endsWith(".m3u8") && !line.startsWith("#"),
 					);
-					console.log(variantM3u8);
+					//console.log(variantM3u8);
 
 					const baseUrl = masterUrl.substring(
 						0,
 						masterUrl.lastIndexOf("/") + 1,
 					);
 					const m3u8Url = baseUrl + variantM3u8;
-					console.log(m3u8Url);
+					//console.log(m3u8Url);
 					setM3u8Url(m3u8Url);
 				} catch (error) {
-					console.log(error);
+					console.error(error);
 				}
 			}
 		};

@@ -70,7 +70,7 @@ function PurchaseAssistantChatbotModal({
 				const res = await postPurchaseAssistantChatbot(courseId, input);
 
 				if (res && res.data) {
-					console.log(res.data);
+					//console.log(res.data);
 					const { recommendation, judgment, reasons } = res.data;
 					let assistantMessage = "";
 

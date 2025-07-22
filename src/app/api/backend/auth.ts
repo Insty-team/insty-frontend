@@ -12,7 +12,7 @@ export const postLogin = async (
 ): Promise<ApiResponse<LoginResponse>> => {
 	try {
 		//테스트 코드 추가
-		console.log(BASE_URL);
+		//console.log(BASE_URL);
 		const res = await axios.post(`${BASE_URL}/auth/login`, data);
 		return res.data;
 	} catch (error) {
