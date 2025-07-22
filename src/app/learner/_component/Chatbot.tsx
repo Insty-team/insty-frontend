@@ -229,7 +229,6 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 							width={100}
 							height={100}
 							className="object-contain"
-							priority
 						/>
 					</div>
 					<div className="flex flex-col ml-8">
@@ -259,7 +258,6 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 									width={50}
 									height={50}
 									className="object-contain"
-									priority
 								/>
 							</div>
 							<div className="flex flex-row text-primary-blue-500 rounded-2xl px-4 py-3 text-xl max-w-[600px] shadow-sm border border-gray-scale-200 bg-white rounded-tr-2xl rounded-tl-md">
