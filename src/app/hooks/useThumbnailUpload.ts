@@ -50,7 +50,7 @@ export const useThumbnailUpload = (): UseThumbnailUploadReturn => {
 		}
 
 		thumbnailRequestCountRef.current += 1;
-		console.log(thumbnailRequestCountRef.current, "썸네일 요청 횟수");
+		//console.log(thumbnailRequestCountRef.current, "썸네일 요청 횟수");
 
 		if (thumbnailRequestCountRef.current > MAX_THUMBNAIL_REQUESTS) {
 			isActiveRef.current = false;
@@ -71,7 +71,7 @@ export const useThumbnailUpload = (): UseThumbnailUploadReturn => {
 		try {
 			const thumbnailResponse = await getVideoThumbnail(uuid);
 			if (thumbnailResponse && thumbnailResponse.data) {
-				console.log(thumbnailResponse, "썸네일 요청 성공");
+				//console.log(thumbnailResponse, "썸네일 요청 성공");
 				setThumbnailUrl(thumbnailResponse.data.thumbnailUrl);
 				isActiveRef.current = false;
 				setIsThumbnailLoading(false);
@@ -83,7 +83,7 @@ export const useThumbnailUpload = (): UseThumbnailUploadReturn => {
 				return true;
 			}
 		} catch (error) {
-			console.log("썸네일 요청 실패:", error);
+			console.error("썸네일 요청 실패:", error);
 			if (error && typeof error === "object" && "response" in error) {
 				const errorResponse = error as { response?: { status?: number } };
 				if (errorResponse.response?.status !== 403) {
@@ -101,7 +101,7 @@ export const useThumbnailUpload = (): UseThumbnailUploadReturn => {
 
 	const startThumbnailRequest = (uuid: string) => {
 		if (thumbnailUrlRef.current) {
-			console.log("이미 썸네일이 존재하므로 요청을 시작하지 않습니다.");
+			//console.log("이미 썸네일이 존재하므로 요청을 시작하지 않습니다.");
 			return;
 		}
 

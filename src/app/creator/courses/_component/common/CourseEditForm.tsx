@@ -166,8 +166,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		);
 
 		//디버깅용 코드
-		console.log("파일 형식 비교(설정한 확장자)", validFiles);
-		console.log("파일 형식 비교(내가 올린 파일)", files);
+		//console.log("파일 형식 비교(설정한 확장자)", validFiles);
+		//console.log("파일 형식 비교(내가 올린 파일)", files);
 
 		if (validFiles.length !== files.length) {
 			alert(
@@ -227,7 +227,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		setVideoFile(file);
 		setVideoFileName(file.name);
 		setIsNewVideo(true);
-		console.log("선택된 비디오:", file);
+		//console.log("선택된 비디오:", file);
 
 		try {
 			const videoInfo = {
@@ -235,16 +235,16 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				contentType: file.type,
 			};
 			const res = await postCourseVideo(videoInfo);
-			console.log(res);
+			//console.log(res);
 			setVideoUuid(res.data.uuid);
 			try {
-				const response = await putCourseVideoUpload(res.data.uploadUrl, file);
-				console.log(response, "비디오 업로드요청 성공");
+				await putCourseVideoUpload(res.data.uploadUrl, file);
+				//console.log(response, "비디오 업로드요청 성공");
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	};
 
@@ -272,13 +272,13 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	};
 
 	const handleSuggestTitle = async () => {
-		console.log(videoUuid, title);
+		//console.log(videoUuid, title);
 		try {
 			if (videoUuid) {
-				console.log(videoUuid, title);
+				//console.log(videoUuid, title);
 				const res = await postSuggestTitle(videoUuid, title);
 				if (res && res.data) {
-					console.log(res);
+					//console.log(res);
 					setTitle(res.data.title);
 				} else {
 					Swal.fire({
@@ -291,17 +291,17 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	};
 
 	const handleSuggestDescription = async () => {
 		try {
 			if (videoUuid) {
-				console.log(videoUuid, description);
+				//console.log(videoUuid, description);
 				const res = await postSuggestDescription(videoUuid, description);
 				if (res && res.data) {
-					console.log(res);
+					//console.log(res);
 					setDescription(res.data.description);
 				} else {
 					Swal.fire({
@@ -316,7 +316,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				alert("비디오 정보가 존재하지 않습니다. 다시 확인해주세요.");
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	};
 
@@ -391,10 +391,10 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		};
 		const thumbnailData = thumbnailFile;
 		const practiceFileData = practiceFiles;
-		console.log("폼 데이터:", formData);
-		console.log("썸네일 데이터:", thumbnailData);
-		console.log("실습 파일 데이터:", practiceFileData);
-		console.log("비디오 업로드 요청 데이터:", isNewVideo ? videoUuid : null);
+		//console.log("폼 데이터:", formData);
+		//console.log("썸네일 데이터:", thumbnailData);
+		//console.log("실습 파일 데이터:", practiceFileData);
+		//console.log("비디오 업로드 요청 데이터:", isNewVideo ? videoUuid : null);
 
 		try {
 			if (!courseId) {
@@ -412,7 +412,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				thumbnailData,
 				practiceFileData,
 			);
-			console.log(res);
+			//console.log(res);
 
 			if (res && !res.error) {
 				Swal.fire({

@@ -32,7 +32,7 @@ function PreviewUploadInfomation({
 	const { data: userProfileInfo } = useGetUserProfileInfoQuery();
 
 	const router = useRouter();
-	console.log(data);
+	//console.log(data);
 
 	const handleSubmitCourseForm = async () => {
 		setIsUploading(true);
@@ -54,9 +54,9 @@ function PreviewUploadInfomation({
 			delete courseData.videoFile;
 			formData.append("courseData", JSON.stringify(courseData));
 
-			console.log("썸네일 파일:", thumbnailFile);
-			console.log("실습 파일들:", practiceFiles);
-			console.log("나머지 데이터:", courseData);
+			//console.log("썸네일 파일:", thumbnailFile);
+			//console.log("실습 파일들:", practiceFiles);
+			//console.log("나머지 데이터:", courseData);
 
 			await postCourse(
 				courseData,
@@ -83,7 +83,7 @@ function PreviewUploadInfomation({
 					}
 				}
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 				Swal.fire({
 					title: "서버 내부 오류가 발생했습니다.",
 					icon: "error",
@@ -96,7 +96,7 @@ function PreviewUploadInfomation({
 				});
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 			Swal.fire({
 				title: "업로드 실패",
 				icon: "error",

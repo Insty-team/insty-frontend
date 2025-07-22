@@ -25,7 +25,7 @@ function KaKaoCallbackClient() {
 
 		const sendCodeToBackend = async () => {
 			try {
-				console.log("실행 됨", code, state);
+				//console.log("실행 됨", code, state);
 				const res = await postSocialLogin("KAKAO", {
 					code: code,
 					userType: state as UserType,

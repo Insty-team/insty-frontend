@@ -22,7 +22,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 		const chatRoad = async () => {
 			try {
 				const res = await getAISearchRecommend();
-				console.log(res);
+				//console.log(res);
 				if (res && res.data && res.data.messages.length > 0) {
 					const messages = res.data.messages.map(
 						(message: RecommendMessage) => ({
@@ -183,7 +183,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 			]);
 			try {
 				const res = await postAISearchRecommend(searchQuery);
-				console.log(res);
+				//console.log(res);
 				if (res && res.data) {
 					setMessages((prev) => [
 						...prev,
@@ -209,7 +209,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 
 				setIsRecommendLoading(false);
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		}
 	};

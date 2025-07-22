@@ -58,7 +58,7 @@ function CourseList({
 		return pages;
 	};
 
-	console.log(myCoursesItems);
+	//console.log(myCoursesItems);
 	return (
 		<>
 			{currentCourses?.map((course: MyCoursesItems) => (

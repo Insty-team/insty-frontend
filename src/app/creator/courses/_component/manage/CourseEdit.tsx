@@ -13,11 +13,11 @@ function CourseEdit({
 	const {
 		data: courseDetail,
 		isLoading,
-		error,
+		//error,
 	} = useGetCourseDetailQuery(courseId);
 
-	console.log("CourseDetail Response:", courseDetail);
-	console.log("CourseDetail Error:", error);
+	//console.log("CourseDetail Response:", courseDetail);
+	//console.log("CourseDetail Error:", error);
 
 	if (isLoading) {
 		return (

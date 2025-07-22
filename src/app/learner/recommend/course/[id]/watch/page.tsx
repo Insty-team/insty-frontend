@@ -41,12 +41,6 @@ function WatchCoursePage() {
 		setOpenChatbot((prev) => !prev);
 	}, []);
 
-	useEffect(() => {
-		if (sessionId) {
-			console.log("sessionId가 설정되었습니다:", sessionId);
-		}
-	}, [sessionId]);
-
 	// 강의 데이터 가져오기 함수를 useCallback으로 메모이제이션
 	const getCourseData = useCallback(async () => {
 		try {
@@ -60,17 +54,17 @@ function WatchCoursePage() {
 				//console.log(response);
 				const masterUrl = response.data.signedUrl;
 				const playlistResponse = await getPlaylistVideo(masterUrl);
-				console.log(typeof playlistResponse);
+				//console.log(typeof playlistResponse);
 
 				const lines = playlistResponse.trim().split("\n");
 				const variantM3u8 = lines.find(
 					(line: string) => line.endsWith(".m3u8") && !line.startsWith("#"),
 				);
-				console.log(variantM3u8);
+				//console.log(variantM3u8);
 
 				const baseUrl = masterUrl.substring(0, masterUrl.lastIndexOf("/") + 1);
 				const m3u8Url = baseUrl + variantM3u8;
-				console.log(m3u8Url);
+				//console.log(m3u8Url);
 				setM3u8Url(m3u8Url);
 			}
 		} catch (error) {
@@ -81,18 +75,18 @@ function WatchCoursePage() {
 	const createSession = useCallback(async () => {
 		try {
 			const res = await postChatSession(Number(id));
-			console.log("postChatSession 응답:", res);
+			//console.log("postChatSession 응답:", res);
 
 			if (res && res.data) {
 				setSessionId(res.data.session_id);
-				console.log("설정된 sessionId:", res.data.session_id);
+				//console.log("설정된 sessionId:", res.data.session_id);
 
 				if (!res.data.is_new) {
-					console.log("기존 세션입니다. 메시지를 가져옵니다.");
+					//console.log("기존 세션입니다. 메시지를 가져옵니다.");
 					const getSessionMessagesRes = await getSessionMessages(
 						res.data.session_id,
 					);
-					console.log("기존 메시지:", getSessionMessagesRes);
+					//console.log("기존 메시지:", getSessionMessagesRes);
 
 					setMessages((prev) => [
 						...prev,
