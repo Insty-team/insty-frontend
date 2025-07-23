@@ -20,8 +20,8 @@ const eslintConfig = [
 		},
 		rules: {
 			"prettier/prettier": ["warn", { useTabs: true, endOfLine: "auto" }],
-			"simple-import-sort/imports": "warn",
-			"simple-import-sort/exports": "warn",
+			"simple-import-sort/imports": "error",
+			"simple-import-sort/exports": "error",
 			"import/order": "off",
 			"@typescript-eslint/no-unused-vars": ["error"],
 			"@typescript-eslint/no-unused-expressions": "off",

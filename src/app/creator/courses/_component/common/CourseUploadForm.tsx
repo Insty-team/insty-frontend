@@ -156,7 +156,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			};
 			reader.readAsDataURL(file);
 			setThumbnailFile(file); // 로컬 상태로 원본 파일 저장
-			console.log(file, "썸네일 파일 및 URL 설정됨");
+			//console.log(file, "썸네일 파일 및 URL 설정됨");
 		}
 	};
 
@@ -193,8 +193,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		);
 
 		//파일 형식 디버깅용
-		console.log("파일 형식 비교(설정한 확장자)", validFiles);
-		console.log("파일 형식 비교(내가 올린 파일)", files);
+		//console.log("파일 형식 비교(설정한 확장자)", validFiles);
+		//console.log("파일 형식 비교(내가 올린 파일)", files);
 
 		if (validFiles.length !== files.length) {
 			alert(
@@ -278,7 +278,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 		setVideoFile(file);
 		setIsExistingVideo(false); // 새 비디오 업로드 시 기존 비디오 상태 초기화
-		console.log("선택된 비디오:", file);
+		//console.log("선택된 비디오:", file);
 
 		try {
 			const videoInfo = {
@@ -286,20 +286,17 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				contentType: file.type,
 			};
 			const res = await postCourseVideo(videoInfo);
-			console.log(res);
+			//console.log(res);
 			setVideoUuid(res.data.uuid);
 			try {
 				//비디오 분석 요청
-				const videoUploadResponse = await putCourseVideoUpload(
-					res.data.uploadUrl,
-					file,
-				);
-				console.log(videoUploadResponse, "비디오 업로드요청 성공");
+				await putCourseVideoUpload(res.data.uploadUrl, file);
+				//console.log(videoUploadResponse, "비디오 업로드요청 성공");
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	};
 
@@ -442,13 +439,13 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			) {
 				try {
 					finalThumbnailFile = base64ToFile(thumbnailUrl, "thumbnail.jpg");
-					console.log("Base64를 File로 변환 성공:", finalThumbnailFile);
+					//console.log("Base64를 File로 변환 성공:", finalThumbnailFile);
 				} catch (error) {
 					console.error("Base64를 File로 변환 실패:", error);
 				}
 			}
 
-			console.log("제출할 thumbnailFile:", finalThumbnailFile);
+			//console.log("제출할 thumbnailFile:", finalThumbnailFile);
 
 			const uploadFormData: UploadformData = {
 				title: formData.title.trim(),
@@ -484,7 +481,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		try {
 			const res = await postSuggestMetadata(videoUuid);
 			if (res && res.data) {
-				console.log(res);
+				//console.log(res);
 				setValue("title", res.data.title);
 				setValue("description", res.data.description);
 				setValue("targetAudience", res.data.target);
@@ -511,7 +508,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				});
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	};
 
