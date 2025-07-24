@@ -1,4 +1,4 @@
-import { CreatorHeader } from "@/app/_components/common";
+import { CreatorHeader, Footer } from "@/app/_components/common";
 
 function CreatorLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -11,6 +11,7 @@ function CreatorLayout({ children }: { children: React.ReactNode }) {
 			<main className="flex-1 flex justify-center">
 				<div className="w-full max-w-[1400px]">{children}</div>
 			</main>
+			<Footer />
 		</div>
 	);
 }
