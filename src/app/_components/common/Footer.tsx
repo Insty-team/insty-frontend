@@ -15,7 +15,7 @@ function Footer() {
 							rel="noopener noreferrer"
 							className="hover:text-primary-green-600 hover:underline"
 						>
-							서비스 문의
+							서비스 문의하러 가기
 						</a>
 					</li>
 					<li>
@@ -25,7 +25,7 @@ function Footer() {
 							rel="noopener noreferrer"
 							className="hover:text-primary-green-600 hover:underline"
 						>
-							강의 요청
+							강의 요청하러 가기
 						</a>
 					</li>
 				</ul>
