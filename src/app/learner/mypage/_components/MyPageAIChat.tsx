@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LuPanelLeftClose, LuPanelLeftOpen } from "react-icons/lu";
+import Swal from "sweetalert2";
 
 import {
 	BaseButton,
@@ -16,7 +17,6 @@ import {
 } from "@/app/queries";
 import { AIHistoryByDate, AIHistoryItem, AIMessage } from "@/app/types/ai";
 import { getFormattedDate, getHighlightedHTML } from "@/app/utils";
-import Swal from "sweetalert2";
 
 function MyPageAIChat() {
 	const DATE_OPTIONS = [
