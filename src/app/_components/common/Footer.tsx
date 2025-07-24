@@ -6,7 +6,7 @@ function Footer() {
 			<Image src="/insty.png" alt="logo" width={72} height={63} />
 			<div className="flex flex-col gap-1">
 				<h2 className="text-lg font-semibold">문의하기</h2>
-				<ul className="flex flex-col gap-1 text-gray-scale-500 text-base">
+				<ul className="flex flex-col gap-1 text-gray-scale-500 text-md">
 					<li>Email : instyhelp@gmail.com</li>
 					<li>
 						<a
