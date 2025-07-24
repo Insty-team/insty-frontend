@@ -5,8 +5,14 @@ import ScrollAnimations from "./_components/landing/ScrollAnimations";
 
 function Home() {
 	return (
-		<div className="bg-white">
+		<div className="bg-white relative">
 			<ScrollAnimations />
+			<Link
+				href="/login"
+				className="fixed-login-button fixed top-2 right-2 bg-primary-green-500 text-white hover:bg-primary-green-600 font-bold py-2 px-6 rounded-xl transition-all duration-300 z-50"
+			>
+				로그인
+			</Link>
 
 			<section
 				id="problem"
@@ -15,14 +21,13 @@ function Home() {
 			>
 				<div className="max-w-4xl mx-auto text-center">
 					<h1 className="text-5xl font-bold text-black-500 mb-8">
-						오픈소스 설치 방법, 찾기 참 어렵죠?
+						처음에 뭐든 설치하고 세팅하고 참 어렵죠?
 					</h1>
 					<p className="text-3xl md:text-2xl text-black-200 mb-6">
-						오픈소스 설치 방법부터 복잡한 환경 설정까지...
+						설치 방법부터 복잡한 환경 설정까지...
 					</p>
 					<p className="text-2xl text-black-100 mb-12">
-						뭐부터 시작해야하지? 다른 필요한게 있나? 혼자 고민은 이제 그만! 모두
-						해결해드릴게요.
+						복잡한 설치, 저희 Insty가 해결해드릴게요!
 					</p>
 					<div className="text-gray-scale-400 animate-bounce">
 						<svg

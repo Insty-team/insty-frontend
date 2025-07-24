@@ -19,10 +19,41 @@ export default function ScrollAnimations() {
 			},
 		);
 
+		const ctaObserver = new IntersectionObserver(
+			(entries) => {
+				const loginButton = document.querySelector(
+					".fixed-login-button",
+				) as HTMLElement;
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						if (loginButton) {
+							loginButton.classList.add("opacity-0", "pointer-events-none");
+						}
+					} else {
+						if (loginButton) {
+							loginButton.classList.remove("opacity-0", "pointer-events-none");
+						}
+					}
+				});
+			},
+			{
+				threshold: 0.1,
+			},
+		);
+
 		const sections = document.querySelectorAll("[data-section]");
 		sections.forEach((section) => observer.observe(section));
 
-		return () => observer.disconnect();
+		// CTA 섹션 감지
+		const ctaSection = document.querySelector("#cta");
+		if (ctaSection) {
+			ctaObserver.observe(ctaSection);
+		}
+
+		return () => {
+			observer.disconnect();
+			ctaObserver.disconnect();
+		};
 	}, []);
 	return null;
 }
