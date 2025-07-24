@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { Markdown } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { getAISearchRecommend, postAISearchRecommend } from "@/app/api/ai";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
@@ -155,7 +156,7 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 						}
 					`}
 					>
-						{currentMessage.text}
+						<Markdown text={currentMessage.text} />
 					</div>
 				</div>,
 			);
