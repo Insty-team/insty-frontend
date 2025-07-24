@@ -3,10 +3,10 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 import {
+	clearAllTokens,
 	getAccessToken,
 	getRefreshToken,
 	setAccessToken,
-	clearAllTokens,
 } from "@/app/utils";
 
 import { postLogout, postReissueToken } from "./backend";

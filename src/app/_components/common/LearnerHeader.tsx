@@ -16,11 +16,7 @@ import {
 } from "@/app/queries";
 import { queryClient } from "@/app/queries/queryClient";
 import { useAuthStore, useUserStore } from "@/app/stores";
-import {
-	getRefreshToken,
-	setAccessToken,
-	setRefreshToken,
-} from "@/app/utils";
+import { getRefreshToken, setAccessToken, setRefreshToken } from "@/app/utils";
 
 import BaseDropdown from "./BaseDropdown";
 
