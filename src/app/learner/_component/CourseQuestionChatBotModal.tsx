@@ -109,7 +109,8 @@ function CourseQuestionChatBotModal({
 				if (file) {
 					formData.append("file", file);
 				}
-
+				setInput("");
+				setFile(null);
 				await postMessageStream(sessionId, formData, (chunk) => {
 					// 실시간으로 assistant 메시지 업데이트
 					setMessages((prev) => {
@@ -122,8 +123,6 @@ function CourseQuestionChatBotModal({
 					});
 				});
 
-				setInput("");
-				setFile(null);
 				if (fileInputRef.current) {
 					fileInputRef.current.value = "";
 				}
