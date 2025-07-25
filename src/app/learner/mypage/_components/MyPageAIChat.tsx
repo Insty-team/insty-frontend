@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LuPanelLeftClose, LuPanelLeftOpen } from "react-icons/lu";
+import Swal from "sweetalert2";
 
 import {
 	BaseButton,
@@ -16,7 +17,6 @@ import {
 } from "@/app/queries";
 import { AIHistoryByDate, AIHistoryItem, AIMessage } from "@/app/types/ai";
 import { getFormattedDate, getHighlightedHTML } from "@/app/utils";
-import Swal from "sweetalert2";
 
 function MyPageAIChat() {
 	const DATE_OPTIONS = [
@@ -308,7 +308,7 @@ function MyPageAIChat() {
 													className={`flex w-full ${msg.sender === "assistant" ? "justify-start" : "justify-end"}`}
 												>
 													<div
-														className={`mb-3 min-w-auto max-w-[60%] ${msg.sender === "assistant" ? "mr-auto" : "ml-auto"}`}
+														className={`mb-3 min-w-auto max-w-[80%] ${msg.sender === "assistant" ? "mr-auto" : "ml-auto"}`}
 													>
 														<div
 															className={`px-4 py-2 rounded-2xl text-lg ${

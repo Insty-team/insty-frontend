@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 import { PUBLIC_PAGE_PATH } from "./constants";
-import { useAuthStore } from "./stores";
 import Providers from "./Providers";
+import { useAuthStore } from "./stores";
 
 function RootLayout({
 	children,

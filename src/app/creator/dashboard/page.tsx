@@ -8,7 +8,7 @@ import { LiaWonSignSolid } from "react-icons/lia";
 import { MdDriveFolderUpload } from "react-icons/md";
 
 import { BaseButton } from "@/app/_components/common";
-import { useUserStore } from "@/app/stores/user";
+//import { useUserStore } from "@/app/stores/user";
 import { getLabels } from "@/app/utils";
 
 import CommonLineChart from "../_component/CommonLineChart";
@@ -16,8 +16,8 @@ import CommonLineChart from "../_component/CommonLineChart";
 function CreatorDashboard() {
 	const [period, setPeriod] = useState("1개월");
 	const labels = getLabels(period as "1개월" | "6개월" | "1년");
-	const { user } = useUserStore();
-	console.log(user);
+	//const { user } = useUserStore();
+	//console.log(user);
 
 	//임시방편, 라우트 튕기게
 	const router = useRouter();

@@ -5,7 +5,9 @@ import BaseTab from "./BaseTab";
 import BaseTag from "./BaseTag";
 import CommunityVideo from "./CommunityVideo";
 import CreatorHeader from "./CreatorHeader";
+import Footer from "./Footer";
 import LearnerHeader from "./LearnerHeader";
+import Markdown from "./Markdown";
 
 export {
 	BaseButton,
@@ -15,5 +17,7 @@ export {
 	BaseTag,
 	CommunityVideo,
 	CreatorHeader,
+	Footer,
 	LearnerHeader,
+	Markdown,
 };
