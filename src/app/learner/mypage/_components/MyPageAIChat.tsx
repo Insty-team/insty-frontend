@@ -308,7 +308,7 @@ function MyPageAIChat() {
 													className={`flex w-full ${msg.sender === "assistant" ? "justify-start" : "justify-end"}`}
 												>
 													<div
-														className={`mb-3 min-w-auto max-w-[60%] ${msg.sender === "assistant" ? "mr-auto" : "ml-auto"}`}
+														className={`mb-3 min-w-auto max-w-[80%] ${msg.sender === "assistant" ? "mr-auto" : "ml-auto"}`}
 													>
 														<div
 															className={`px-4 py-2 rounded-2xl text-lg ${
