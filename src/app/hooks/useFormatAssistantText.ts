@@ -7,8 +7,6 @@ export function useFormatAssistantText() {
 		if (!raw) return "";
 		let text = raw;
 
-		console.log("원본 텍스트:", JSON.stringify(raw));
-
 		// 마크다운 링크 변환 [텍스트](URL) → 굵은 초록색 텍스트 링크
 		text = text.replace(
 			/\[([^\]]+)\]\(([^)]+)\)/g,
