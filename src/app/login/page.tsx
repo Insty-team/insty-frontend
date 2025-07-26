@@ -22,11 +22,11 @@ function Select() {
 							<div className="text-center text-black-200 text-2xl">
 								<div>
 									<p>설치 가이드를 보고</p>
-									<p>전문가처럼 설치해보세요!</p>
+									<p>전문가처럼 설치해 보세요!</p>
 								</div>
 								<div className="mt-2">
 									<p>영상과 문서로</p>
-									<p>따라하기 쉬운 가이드 제공</p>
+									<p>따라 하기 쉬운 가이드 제공</p>
 								</div>
 							</div>
 							<Link
