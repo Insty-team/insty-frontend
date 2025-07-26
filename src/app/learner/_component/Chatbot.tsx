@@ -216,7 +216,12 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 	};
 
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		messagesEndRef.current?.scrollIntoView({
+			behavior: "smooth",
+			//채팅 내역 안에서만 스크롤 되도록 옵션 변경~
+			block: "nearest",
+			inline: "nearest",
+		});
 	}, [messages, recommendations]);
 
 	return (
