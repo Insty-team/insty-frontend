@@ -27,7 +27,7 @@ function Home() {
 						설치 방법부터 복잡한 환경 설정까지...
 					</p>
 					<p className="text-2xl text-black-100 mb-12">
-						복잡한 설치, 저희 Insty가 해결해드릴게요!
+						복잡한 설치, 저희 Insty가 해결해 드릴게요!
 					</p>
 					<div className="text-gray-scale-400 animate-bounce">
 						<svg
@@ -88,7 +88,7 @@ function Home() {
 										📚 강의 추천
 									</h3>
 									<p className="text-black-200">
-										내 목표에 맞는 강의를 AI가 추천해드립니다.
+										내 목표에 맞는 강의를 AI가 추천해 드립니다.
 									</p>
 								</div>
 
@@ -118,7 +118,7 @@ function Home() {
 							크리에이터라면 불필요한 시간을 줄이세요
 						</h2>
 						<p className="text-xl text-black-200">
-							Insty AI가 영상을 분석하여 초안을 완성해드립니다.
+							Insty AI가 영상을 분석하여 초안을 완성해 드립니다.
 						</p>
 					</div>
 
@@ -154,7 +154,7 @@ function Home() {
 											AI 초안 분석
 										</h3>
 										<p className="text-black-200">
-											제목 부터 핵심 내용까지, 자동으로 완성해드립니다.
+											제목부터 핵심 내용까지, 자동으로 완성해 드립니다.
 										</p>
 									</div>
 								</div>
@@ -182,7 +182,7 @@ function Home() {
 							<div className="flex items-center space-x-2">
 								<span className="text-2xl">⚡</span>
 								<span className="font-semibold text-black-300">
-									강의 준비 시간이 엄청 줄어들거에요!
+									강의 준비 시간이 엄청 줄어들 거예요!
 								</span>
 							</div>
 						</div>
@@ -198,7 +198,7 @@ function Home() {
 			>
 				<div className="max-w-4xl mx-auto text-center px-6">
 					<h2 className="text-4xl font-bold mb-8 text-gray-scale-50">
-						지금 바로 경험 해보세요!
+						지금 바로 경험해 보세요!
 					</h2>
 					<div className="flex flex-col sm:flex-row gap-4 justify-center">
 						<Link
