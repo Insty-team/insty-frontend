@@ -44,7 +44,7 @@ export const LEARNER_MENU_LIST = [
 export const LEARNER_MYPAGE_MENU_LIST = [
 	{ id: 1, title: "나의 정보 관리" },
 	{ id: 2, title: "내 활동" },
-	{ id: 3, title: "AI 챗봇 질문 이력" },
+	{ id: 3, title: "강의중 AI 챗봇 질문 이력" },
 	{ id: 4, title: "구매 내역" },
 	{ id: 5, title: "설정" },
 ];
