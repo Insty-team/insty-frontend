@@ -2,7 +2,6 @@
 
 import dayjs from "dayjs";
 import Image from "next/image";
-import { useState } from "react";
 import { GoCalendar } from "react-icons/go";
 import { GoGraph } from "react-icons/go";
 import { IoClipboardOutline } from "react-icons/io5";
@@ -13,22 +12,20 @@ import { MyCoursesItems } from "@/app/types/course";
 
 function CourseList({
 	myCoursesItems,
+	currentPage,
+	setCurrentPage,
+	totalPages,
 	onEdit,
 	onDetail,
 }: {
 	myCoursesItems: MyCoursesItems[];
+	currentPage: number;
+	setCurrentPage: (page: number) => void;
+	totalPages: number;
 	onEdit: (courseId: number) => void;
 	onDetail: (courseId: number) => void;
 }) {
-	const [currentPage, setCurrentPage] = useState(1);
-	const itemsPerPage = 5;
-
-	const totalPages = Math.ceil(myCoursesItems.length / itemsPerPage);
-
-	const currentCourses = myCoursesItems.slice(
-		(currentPage - 1) * itemsPerPage,
-		currentPage * itemsPerPage,
-	);
+	const currentCourses = myCoursesItems;
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
@@ -61,7 +58,7 @@ function CourseList({
 	//console.log(myCoursesItems);
 	return (
 		<>
-			{currentCourses?.map((course: MyCoursesItems) => (
+			{currentCourses?.map((course: MyCoursesItems, index: number) => (
 				<div
 					key={course.courseId}
 					className="flex bg-white p-4 items-center gap-6"
@@ -78,6 +75,8 @@ function CourseList({
 									console.error("이미지 로딩 실패:", course.thumbnailUrl);
 									e.currentTarget.src = "/dog.png";
 								}}
+								priority={index < 2} // 첫 번째만 우선순위
+								loading={index < 2 ? "eager" : "lazy"} // 명시적 로딩 설정
 							/>
 						) : (
 							<Image
@@ -86,6 +85,8 @@ function CourseList({
 								width={390}
 								height={220}
 								className="object-contain w-full h-full border border-black-300"
+								priority={index < 2} // 첫 번째만 우선순위
+								loading={index < 2 ? "eager" : "lazy"} // 명시적 로딩 설정
 							/>
 						)}
 					</div>
