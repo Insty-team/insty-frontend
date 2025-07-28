@@ -17,6 +17,7 @@ import {
 	putCourse,
 	putCourseVideoUpload,
 } from "@/app/api/backend";
+import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useThumbnailUpload } from "@/app/hooks/useThumbnailUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { CourseFormProps } from "@/app/types/course";
@@ -87,6 +88,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const [videoFileName, setVideoFileName] = useState<string | null>(null);
 	const [videoUuid, setVideoUuid] = useState<string | null>(null);
 	const [isNewVideo, setIsNewVideo] = useState<boolean>(false);
+	const [isTitleSuggesting, setIsTitleSuggesting] = useState<boolean>(false);
+	const [isDescriptionSuggesting, setIsDescriptionSuggesting] =
+		useState<boolean>(false);
 
 	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
 		useTranscriptionProgress(isNewVideo ? videoUuid : null);
@@ -209,6 +213,15 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		if (file.name.length > 150) {
+			Swal.fire({
+				title: "파일 이름이 너무 길어요.",
+				text: "150자 이하의 이름으로 업로드 해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+			return;
+		}
 
 		if (!ALLOWED_FILE_TYPES.video.types.includes(file.type)) {
 			alert(
@@ -272,6 +285,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	};
 
 	const handleSuggestTitle = async () => {
+		setIsTitleSuggesting(true);
 		//console.log(videoUuid, title);
 		try {
 			if (videoUuid) {
@@ -292,10 +306,13 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			}
 		} catch (error) {
 			console.error(error);
+		} finally {
+			setIsTitleSuggesting(false);
 		}
 	};
 
 	const handleSuggestDescription = async () => {
+		setIsDescriptionSuggesting(true);
 		try {
 			if (videoUuid) {
 				//console.log(videoUuid, description);
@@ -317,6 +334,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			}
 		} catch (error) {
 			console.error(error);
+		} finally {
+			setIsDescriptionSuggesting(false);
 		}
 	};
 
@@ -612,6 +631,11 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 						</button>
 					</div>
 				</div>
+				{(isTitleSuggesting || isDescriptionSuggesting) && (
+					<div className="fixed inset-0 w-full h-full bg-black-100/50 z-[1000] flex justify-center items-center cursor-wait">
+						<SuggestionLoading />
+					</div>
+				)}
 
 				<div className="flex-1 flex flex-col gap-4">
 					<div>

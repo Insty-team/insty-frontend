@@ -13,6 +13,7 @@ import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { postSuggestMetadata } from "@/app/api/ai";
 import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
+import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UploadformData } from "@/app/types/course";
@@ -86,6 +87,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const videoInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
+	const [isSuggesting, setIsSuggesting] = useState<boolean>(false);
 
 	// 전사 진행률 커스텀 훅 사용
 	const {
@@ -239,6 +241,15 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		if (file.name.length > 150) {
+			Swal.fire({
+				title: "파일 이름이 너무 길어요.",
+				text: "150자 이하의 이름으로 업로드 해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+			return;
+		}
 		const duration = await getVideoDuration(file);
 
 		if (duration > 30 * 60) {
@@ -469,6 +480,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	};
 
 	const handleSuggestMetadata = async () => {
+		setIsSuggesting(true);
 		if (!videoUuid) {
 			Swal.fire({
 				title: "먼저 비디오를 업로드 해주세요.",
@@ -509,6 +521,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			}
 		} catch (error) {
 			console.error(error);
+		} finally {
+			setIsSuggesting(false);
 		}
 	};
 
@@ -605,6 +619,16 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					}
 				/>
 			</div>
+			{isSuggesting && (
+				<div
+					className="fixed inset-0 w-full h-full bg-black-100/50 z-[1000] flex justify-center items-center cursor-wait"
+					onClick={(e) => e.preventDefault()}
+					onMouseDown={(e) => e.preventDefault()}
+					style={{ pointerEvents: "auto" }}
+				>
+					<SuggestionLoading />
+				</div>
+			)}
 			{/* 전사 진행률 표시 (새 비디오이고 분석이 진행 중일 때만) */}
 			{videoUuid !== "" && !isExistingVideo && (
 				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
@@ -644,7 +668,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 							<Image
 								src={thumbnailUrl}
 								alt="썸네일"
-								className="w-full h-full object-cover rounded-2xl aspect-auto"
+								className="w-full h-full object-cover rounded-2xl aspect-square"
 								width={250}
 								height={250}
 							/>
