@@ -20,6 +20,7 @@ import { getFormattedDate, getHighlightedHTML } from "@/app/utils";
 
 function MyPageAIChat() {
 	const DATE_OPTIONS = [
+		{ value: "none", label: "--선택--" },
 		{ value: "all", label: "모든 날짜" },
 		{ value: "1d", label: "지난 1일" },
 		{ value: "1w", label: "지난 1주" },
@@ -58,11 +59,11 @@ function MyPageAIChat() {
 	useEffect(() => {
 		if (!originHistory) return;
 
-		//console.log("API 응답 받음:", {
-		//	검색어: applySearchQuery,
-		//	날짜옵션: applyDateOption,
-		//	응답데이터: originHistory,
-		//});
+		// console.log("API 응답 받음:", {
+		// 	검색어: applySearchQuery,
+		// 	날짜옵션: applyDateOption,
+		// 	응답데이터: originHistory,
+		// });
 
 		setHistory(originHistory);
 	}, [originHistory, applySearchQuery, applyDateOption]);
@@ -114,7 +115,7 @@ function MyPageAIChat() {
 			selectedDateOption.value === "all" ? "" : selectedDateOption.value;
 
 		// 검색어와 날짜 옵션이 둘 다 없으면 검색하지 않음
-		if (!trimmedSearchText && dateOption === "") {
+		if (!trimmedSearchText && dateOption === "none") {
 			Swal.fire({
 				title: "검색 조건을 입력해주세요.",
 				icon: "warning",
@@ -148,7 +149,7 @@ function MyPageAIChat() {
 	return (
 		<div className="w-full flex flex-col gap-10">
 			<div className="flex flex-col gap-6">
-				<h3 className="text-2xl">AI 챗봇 질문 내역</h3>
+				<h3 className="text-2xl">강의중 AI 챗봇 질문 이력</h3>
 				<div className="flex gap-10">
 					<div className="min-w-[120px] h-full">
 						<BaseSelect
@@ -294,9 +295,9 @@ function MyPageAIChat() {
 								)}
 							</div>
 							<div className="bg-[#EFEFEF] w-full overflow-y-auto max-h-[800px] px-14 py-10">
-								{originMessages?.messages ? (
+								{originMessages && originMessages.messages ? (
 									<div className="flex flex-col gap-4">
-										{[...originMessages?.messages]
+										{[...originMessages.messages]
 											.sort(
 												(a, b) =>
 													new Date(a.created_at).getTime() -
