@@ -43,9 +43,11 @@ function RootLayout({
 	return (
 		<html lang="ko">
 			<head>
-				<title>
-					Insty - AI가 도와주는 프로그래밍 설치/설정 온라인 강의 플랫폼
-				</title>
+				<title>Insty</title>
+				<meta
+					name="title"
+					content="AI가 도와주는 프로그래밍 설치/설정 온라인 강의 플랫폼"
+				/>
 				<meta
 					name="description"
 					content="복잡한 프로그래밍 설치와 환경 설정을 AI가 도와드립니다. 맞춤형 강의 추천과 실시간 AI 학습 도우미로 더 쉽게 배우세요."
