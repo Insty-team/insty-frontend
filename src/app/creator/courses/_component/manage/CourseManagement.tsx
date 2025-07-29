@@ -7,7 +7,6 @@ import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
-//import { getMyCourses } from "@/app/api/backend";
 import { useGetMyCoursesQuery } from "@/app/queries";
 
 import CourseDetail from "./CourseDetail";
@@ -25,26 +24,6 @@ function CourseManagement() {
 		isLoading,
 		error,
 	} = useGetMyCoursesQuery(currentPage, 5); // 페이지별 5개씩
-
-	// 일반 API 버전 (비교용 - 주석 해제하여 사용)
-	// const [myCoursesItems, setMyCoursesItems] = useState<any>(null);
-	// const [isLoading, setIsLoading] = useState(true);
-	// const [error, setError] = useState<any>(null);
-
-	// useEffect(() => {
-	// 	const fetchMyCourses = async () => {
-	// 		try {
-	// 			setIsLoading(true);
-	// 			const response = await getMyCourses(1, 100);
-	// 			setMyCoursesItems(response);
-	// 		} catch (err) {
-	// 			setError(err);
-	// 		} finally {
-	// 			setIsLoading(false);
-	// 		}
-	// 	};
-	// 	fetchMyCourses();
-	// }, []);
 
 	const mode =
 		(searchParams.get("mode") as "list" | "edit" | "detail") || "list";
