@@ -62,7 +62,7 @@ function RootLayout({
 
 				{/* Open Graph / Facebook */}
 				<meta property="og:type" content="website" />
-				<meta property="og:url" content="https://insty.co.kr" />
+				<meta property="og:url" content="https://insty.ai.kr" />
 				<meta
 					property="og:title"
 					content="Insty - AI가 도와주는 프로그래밍 설치/설정 온라인 강의 플랫폼"
