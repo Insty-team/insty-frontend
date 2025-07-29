@@ -208,6 +208,18 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		videoInputRef.current?.click();
 	};
 
+	const getVideoDuration = async (file: File): Promise<number> => {
+		return new Promise((resolve) => {
+			const video = document.createElement("video");
+			video.preload = "metadata";
+			video.onloadedmetadata = () => {
+				resolve(video.duration);
+			};
+
+			video.src = URL.createObjectURL(file);
+		});
+	};
+
 	const handleVideoFileChange = async (
 		e: React.ChangeEvent<HTMLInputElement>,
 	) => {
@@ -219,6 +231,20 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				text: "150자 이하의 이름으로 업로드 해주세요.",
 				icon: "error",
 				confirmButtonText: "확인",
+			});
+			return;
+		}
+
+		const duration = await getVideoDuration(file);
+
+		if (duration > 15 * 60) {
+			Swal.fire({
+				title: "영상이 너무 길어요.",
+				text: "15분 이하의 영상만 업로드 가능합니다.",
+				icon: "error",
+				confirmButtonText: "확인",
+			}).then(() => {
+				return;
 			});
 			return;
 		}
