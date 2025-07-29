@@ -13,6 +13,7 @@ import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { postSuggestMetadata } from "@/app/api/ai";
 import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
+import { MAX_FILE_NAME, MAX_VIDEO_DURATION } from "@/app/constants";
 import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
@@ -241,7 +242,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		if (file.name.length > 150) {
+		if (file.name.length > MAX_FILE_NAME) {
 			Swal.fire({
 				title: "파일 이름이 너무 길어요.",
 				text: "150자 이하의 이름으로 업로드 해주세요.",
@@ -252,10 +253,10 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		}
 		const duration = await getVideoDuration(file);
 
-		if (duration > 15 * 60) {
+		if (duration > MAX_VIDEO_DURATION) {
 			Swal.fire({
 				title: "영상이 너무 길어요.",
-				text: "15분 이하의 영상만 업로드 가능합니다.",
+				text: `${MAX_VIDEO_DURATION / 60}분 이하의 영상만 업로드 가능합니다.`,
 				icon: "error",
 				confirmButtonText: "확인",
 			}).then(() => {

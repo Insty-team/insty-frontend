@@ -143,3 +143,6 @@ export const REFUND_POLICY = [
 		text: "일부 시청 또는 실습 자료 다운로드 후에는 환불이 불가능 합니다.",
 	},
 ];
+
+export const MAX_FILE_NAME = 150;
+export const MAX_VIDEO_DURATION = 15 * 60;
