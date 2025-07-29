@@ -8,24 +8,27 @@ import { IoChatbubbleEllipses } from "react-icons/io5";
 
 import Loading from "@/app/_components/common/Loading";
 import { getSessionMessages, postChatSession } from "@/app/api/ai";
-import {
-	getCourseDetail,
-	getPlaylistVideo,
-	postPlayListVideo,
-} from "@/app/api/backend";
+import { getPlaylistVideo, postPlayListVideo } from "@/app/api/backend";
 import CourseQuestionChatBotModal from "@/app/learner/_component/CourseQuestionChatBotModal";
 import HLSPlayer from "@/app/learner/_component/courses/HLSPlayer";
+import { useGetCourseDetailQuery } from "@/app/queries";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
-import { CourseDetail, CourserChatbotMessage } from "@/app/types/course";
+import { CourserChatbotMessage } from "@/app/types/course";
 import { formatTime } from "@/app/utils/date";
 
 function WatchCoursePage() {
 	const [openChatbot, setOpenChatbot] = useState(false);
-	const [data, setData] = useState<CourseDetail | null>(null);
 	const [m3u8Url, setM3u8Url] = useState<string | null>(null);
 	const { id } = useParams();
 	const [sessionId, setSessionId] = useState<number | null>(null);
 	const [videoDuration, setVideoDuration] = useState<number>(0);
+
+	// React Query로 강의 데이터 가져오기
+	const {
+		data: courseData,
+		isLoading: isCourseLoading,
+		error: courseError,
+	} = useGetCourseDetailQuery(Number(id));
 
 	const baseMessages: CourserChatbotMessage[] = [
 		{
@@ -41,52 +44,47 @@ function WatchCoursePage() {
 		setOpenChatbot((prev) => !prev);
 	}, []);
 
-	// 강의 데이터 가져오기 함수를 useCallback으로 메모이제이션
-	const getCourseData = useCallback(async () => {
-		try {
-			const res = await getCourseDetail(Number(id));
-			if (res && res.data) {
-				setData(res.data);
+	// 영상 처리만 담당하는 useEffect
+	useEffect(() => {
+		const processVideo = async () => {
+			if (!courseData?.data) return;
+
+			try {
 				const response = await postPlayListVideo(
-					res.data.videoInfo.videoType,
-					res.data.courseId,
+					courseData.data.videoInfo.videoType,
+					courseData.data.courseId,
 				);
-				//console.log(response);
+
 				const masterUrl = response.data.signedUrl;
 				const playlistResponse = await getPlaylistVideo(masterUrl);
-				//console.log(typeof playlistResponse);
 
 				const lines = playlistResponse.trim().split("\n");
 				const variantM3u8 = lines.find(
 					(line: string) => line.endsWith(".m3u8") && !line.startsWith("#"),
 				);
-				//console.log(variantM3u8);
 
 				const baseUrl = masterUrl.substring(0, masterUrl.lastIndexOf("/") + 1);
 				const m3u8Url = baseUrl + variantM3u8;
-				//console.log(m3u8Url);
 				setM3u8Url(m3u8Url);
+			} catch (error) {
+				console.error("영상 처리 중 오류:", error);
 			}
-		} catch (error) {
-			console.error(error);
-		}
-	}, [id]);
+		};
+
+		processVideo();
+	}, [courseData?.data]);
 
 	const createSession = useCallback(async () => {
 		try {
 			const res = await postChatSession(Number(id));
-			//console.log("postChatSession 응답:", res);
 
 			if (res && res.data) {
 				setSessionId(res.data.session_id);
-				//console.log("설정된 sessionId:", res.data.session_id);
 
 				if (!res.data.is_new) {
-					//console.log("기존 세션입니다. 메시지를 가져옵니다.");
 					const getSessionMessagesRes = await getSessionMessages(
 						res.data.session_id,
 					);
-					//console.log("기존 메시지:", getSessionMessagesRes);
 
 					setMessages((prev) => [
 						...prev,
@@ -106,19 +104,31 @@ function WatchCoursePage() {
 		}
 	}, [id]);
 
-	// id가 변경될 때만 강의 데이터 가져오기
+	// 채팅 세션 생성
 	useEffect(() => {
-		getCourseData();
 		createSession();
-	}, [getCourseData, createSession]);
+	}, [createSession]);
 
-	if (!data)
+	// 로딩 상태 처리
+	if (isCourseLoading) {
 		return (
-			<div className="flex flex-row w-full justify-center items-center h-screen">
-				데이터 불러오는 중...
-				<Loading width={60} height={60} />
+			<div className="flex flex-row w-full justify-center items-center h-screen gap-2">
+				<p className="text-primary-green-500">데이터 불러오는 중...</p>
+				<Loading width={30} height={30} />
 			</div>
 		);
+	}
+
+	// 에러 또는 데이터 없음 처리
+	if (courseError || !courseData?.data) {
+		return (
+			<div className="flex flex-row w-full justify-center items-center h-screen">
+				<p className="text-red-500">강의 데이터를 불러올 수 없습니다.</p>
+			</div>
+		);
+	}
+
+	const data = courseData.data;
 
 	return (
 		<div className="flex flex-col gap-8 items-stretch relative">

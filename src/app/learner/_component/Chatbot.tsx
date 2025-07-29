@@ -5,8 +5,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { Markdown } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
-import { getAISearchRecommend, postAISearchRecommend } from "@/app/api/ai";
-import { useGetUserProfileInfoQuery } from "@/app/queries";
+import { postAISearchRecommend } from "@/app/api/ai";
+import {
+	useGetAISearchRecommendQuery,
+	useGetUserProfileInfoQuery,
+} from "@/app/queries";
 import { CourseRecommend, RecommendMessage } from "@/app/types/recommend";
 
 function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
@@ -19,59 +22,68 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 		}[]
 	>([]);
 
+	const {
+		data: aiSearchRecommend,
+		isLoading,
+		error,
+	} = useGetAISearchRecommendQuery();
+
 	useEffect(() => {
-		const chatRoad = async () => {
-			try {
-				const res = await getAISearchRecommend();
-				//console.log(res);
-				if (res && res.data && res.data.messages.length > 0) {
-					const messages = res.data.messages.map(
-						(message: RecommendMessage) => ({
-							type: message.sender,
-							text: message.content,
-							created_at: message.created_at,
-						}),
-					);
+		if (isLoading) return;
 
-					const defaultMessage = {
-						type: "assistant" as const,
-						text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
-						created_at: messages[0].created_at,
-					};
+		if (error) {
+			setMessages([
+				{
+					type: "assistant",
+					text: "페이지 로딩에 문제가 있습니다. 다시 로그인해주세요.",
+					created_at: new Date().toISOString(),
+				},
+			]);
+			return;
+		}
 
-					setMessages([defaultMessage, ...messages]);
+		if (
+			aiSearchRecommend &&
+			aiSearchRecommend.data &&
+			aiSearchRecommend.data.messages.length > 0
+		) {
+			const messages = aiSearchRecommend.data.messages.map(
+				(message: RecommendMessage) => ({
+					type: message.sender,
+					text: message.content,
+					created_at: message.created_at,
+				}),
+			);
 
-					const lastMessage = res.data.messages[res.data.messages.length - 1];
-					if (
-						lastMessage &&
-						lastMessage.courses &&
-						lastMessage.courses.length > 0
-					) {
-						setRecommendations(lastMessage.courses);
-					}
-				} else {
-					setMessages([
-						{
-							type: "assistant",
-							text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
-							created_at: new Date().toISOString(),
-						},
-					]);
-				}
-			} catch (error) {
-				console.log(error);
-				setMessages([
-					{
-						type: "assistant",
-						text: "페이지 로딩에 문제가 있습니다. 다시 로그인해주세요.",
-						created_at: new Date().toISOString(),
-					},
-				]);
+			const defaultMessage = {
+				type: "assistant" as const,
+				text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
+				created_at: messages[0].created_at,
+			};
+
+			setMessages([defaultMessage, ...messages]);
+
+			const lastMessage =
+				aiSearchRecommend.data.messages[
+					aiSearchRecommend.data.messages.length - 1
+				];
+			if (
+				lastMessage &&
+				lastMessage.courses &&
+				lastMessage.courses.length > 0
+			) {
+				setRecommendations(lastMessage.courses);
 			}
-		};
-
-		chatRoad();
-	}, []);
+		} else {
+			setMessages([
+				{
+					type: "assistant",
+					text: "어떤 것을 도와드릴까요?\n저는 세팅과 설치 방법에 대해 도움을 드릴 수 있어요.\n설치 환경 (OS 등), 소프트웨어 이름, 목적 등을 작성해주시면 도와드릴게요!",
+					created_at: new Date().toISOString(),
+				},
+			]);
+		}
+	}, [aiSearchRecommend, isLoading, error]); // 의존성 배열 변경
 
 	const [recommendations, setRecommendations] = useState<CourseRecommend[]>([]);
 	const [searchQuery, setSearchQuery] = useState<string>("");
@@ -253,7 +265,16 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 				</div>
 
 				<div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 h-[100vh] min-h-0">
-					{renderMessagesWithDateDividers()}
+					{isLoading ? (
+						<div className="flex flex-row items-center justify-center">
+							<p className="text-primary-blue-500">
+								기존 채팅을 불러오는 중입니다.
+							</p>
+							<Loading width={30} height={30} />
+						</div>
+					) : (
+						renderMessagesWithDateDividers()
+					)}
 
 					{isRecommendLoading && (
 						<div className="flex items-end justify-start flex-row">
