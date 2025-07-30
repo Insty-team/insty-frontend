@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -32,6 +33,9 @@ function Login() {
 	const password = watch("password");
 
 	const onSubmit = async (data: LoginForm) => {
+		// Amplitude 추적
+		Amplitude.track("Login Submitted");
+
 		try {
 			const submitData = {
 				...data,
@@ -39,6 +43,9 @@ function Login() {
 			};
 			const res = await postLogin(submitData);
 			if (res && res.success) {
+				// 로그인 성공 추적
+				Amplitude.track("Login Completed");
+
 				setAccessToken(res.data.token.accessToken);
 				setRefreshToken(res.data.token.refreshToken);
 
@@ -56,6 +63,8 @@ function Login() {
 					router.push("/learner/recommend");
 				}
 			} else {
+				// 로그인 실패 추적
+				Amplitude.track("Login Failed");
 				Swal.fire({
 					title: "로그인 실패!",
 					text:
@@ -69,6 +78,8 @@ function Login() {
 				});
 			}
 		} catch (error) {
+			// 로그인 에러 추적
+			Amplitude.track("Login Error");
 			console.error("로그인 실패:", error);
 		}
 	};

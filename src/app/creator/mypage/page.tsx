@@ -20,7 +20,7 @@ function CreatorMyPage() {
 			<section className="flex justify-center w-3/4">
 				{activeMenu === "나의 정보 관리" && <MyPageProfile />}
 				{activeMenu === "내 계좌 정보" && <MyPageAccount />}
-				{activeMenu === "설정" && <MyPageSetting />}
+				{activeMenu === "이메일 수신 여부" && <MyPageSetting />}
 			</section>
 		</div>
 	);

@@ -1,11 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 export default function CoursesPage() {
 	const router = useRouter();
-	useEffect(() => {
+	useLayoutEffect(() => {
 		router.replace("/creator/courses/course-management");
 	}, [router]);
 	return null;

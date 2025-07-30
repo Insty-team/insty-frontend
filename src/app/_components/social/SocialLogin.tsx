@@ -1,4 +1,5 @@
 "use client";
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import Swal from "sweetalert2";
@@ -16,6 +17,11 @@ function SocialLogin() {
 	const userType = params.userType as string;
 
 	const handleSocialLogin = async (socialName: SocialLoginType) => {
+		// Amplitude 추적
+		Amplitude.track("Social Login Clicked", {
+			social_name: socialName,
+		});
+
 		try {
 			if (isSignupPage) {
 				await Swal.fire({
