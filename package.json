@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@amplitude/analytics-browser": "^2.21.0",
+		"@amplitude/plugin-session-replay-browser": "^1.22.0",
 		"@chakra-ui/next-js": "^2.1.5",
 		"@chakra-ui/react": "^2.8.2",
 		"@emotion/react": "^11.14.0",
