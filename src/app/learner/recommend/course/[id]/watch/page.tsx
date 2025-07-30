@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -41,6 +42,8 @@ function WatchCoursePage() {
 
 	// 챗봇 토글 함수를 useCallback으로 메모이제이션
 	const toggleChatbot = useCallback(() => {
+		// Amplitude 추적
+		Amplitude.track("Course Chatbot Toggle Clicked");
 		setOpenChatbot((prev) => !prev);
 	}, []);
 

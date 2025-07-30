@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LuPanelLeftClose, LuPanelLeftOpen } from "react-icons/lu";
 import Swal from "sweetalert2";
@@ -122,6 +123,9 @@ function MyPageAIChat() {
 			});
 			return;
 		}
+
+		// Amplitude 추적
+		Amplitude.track("AI Chat History Search Used");
 
 		setApplySearchQuery(trimmedSearchText);
 		setApplyDateOption(dateOption);
@@ -277,7 +281,10 @@ function MyPageAIChat() {
 														? "bg-[#E5F9E0] text-[#479B5D]"
 														: "text-black"
 												}`}
-												onClick={() => setSelectedHistoryItem(q)}
+												onClick={() => {
+													Amplitude.track("AI Chat Session Selected");
+													setSelectedHistoryItem(q);
+												}}
 											>
 												<div
 													className="font-semibold"

@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -481,6 +482,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	};
 
 	const handleSuggestMetadata = async () => {
+		// Amplitude 추적
+		Amplitude.track("AI Metadata Suggestion Clicked");
+
 		setIsSuggesting(true);
 		if (!videoUuid) {
 			Swal.fire({
@@ -494,6 +498,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		try {
 			const res = await postSuggestMetadata(videoUuid);
 			if (res && res.data) {
+				// AI 메타데이터 성공 추적
+				Amplitude.track("AI Metadata Suggestion Completed");
+
 				//console.log(res);
 				setValue("title", res.data.title);
 				setValue("description", res.data.description);
@@ -521,6 +528,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				});
 			}
 		} catch (error) {
+			// AI 메타데이터 실패 추적
+			Amplitude.track("AI Metadata Suggestion Failed");
 			console.error(error);
 		} finally {
 			setIsSuggesting(false);

@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -67,11 +68,13 @@ function Signup() {
 	};
 
 	const onSubmit = async (data: SignupForm) => {
+		Amplitude.track("Signup Submitted");
 		const submitData = { ...data };
 		delete submitData.confirmPassword;
 
 		try {
 			const res = await postSignup(submitData);
+			Amplitude.track("Signup Completed");
 			Swal.fire({
 				icon: "success",
 				iconColor: "#6ead79",
@@ -84,6 +87,7 @@ function Signup() {
 			});
 		} catch (error) {
 			console.error(error);
+			Amplitude.track("Signup Failed");
 			Swal.fire({
 				icon: "error",
 				iconColor: "#ff4f64",

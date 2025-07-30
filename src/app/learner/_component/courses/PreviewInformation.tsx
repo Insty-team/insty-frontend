@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -98,6 +99,9 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	}, [data.courseId, data.videoInfo.videoType]);
 
 	const handleWatchCourse = () => {
+		// Amplitude 추적
+		Amplitude.track("Course Watch Clicked");
+
 		Swal.fire({
 			title: "강의를 수강하시겠습니까?",
 			html: "수강하기 버튼을 누르면 강의를 수강할 수 있습니다.",
@@ -108,6 +112,8 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 			confirmButtonColor: "#6ead79",
 		}).then((result) => {
 			if (result.isConfirmed) {
+				// 강의 수강 시작 추적
+				Amplitude.track("Course Watch Started");
 				router.push(`/learner/recommend/course/${data.courseId}/watch`);
 			}
 		});

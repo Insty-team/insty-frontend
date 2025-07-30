@@ -1,3 +1,4 @@
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { IoSend } from "react-icons/io5";
@@ -72,6 +73,9 @@ function CourseQuestionChatBotModal({
 				return;
 			}
 			if (!input.trim() && !file) return;
+
+			// Amplitude 추적
+			Amplitude.track("Course Question Chatbot Used");
 
 			setIsResponseLoading(true);
 

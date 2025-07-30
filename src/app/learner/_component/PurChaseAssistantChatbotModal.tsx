@@ -1,3 +1,4 @@
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { IoSend } from "react-icons/io5";
@@ -53,6 +54,7 @@ function PurchaseAssistantChatbotModal({
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent) => {
 			e.preventDefault();
+
 			if (currentRemainCount === 0) {
 				Swal.fire({
 					title: "구매 결정 도움 횟수를 초과했습니다. (최대 2회)",
@@ -61,6 +63,10 @@ function PurchaseAssistantChatbotModal({
 				});
 				return;
 			}
+
+			// Amplitude 추적
+			Amplitude.track("Purchase Assistant Chatbot Used");
+
 			if (!input.trim()) return;
 			setIsResponseLoading(true);
 			setMessages((prev) => [...prev, { type: "user", text: input }]);

@@ -1,4 +1,5 @@
 "use client";
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -181,6 +182,9 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 		e: React.KeyboardEvent<HTMLInputElement>,
 	) => {
 		if (e.key === "Enter" && searchQuery.trim() && !isComposing) {
+			// Amplitude 추적
+			Amplitude.track("AI Recommend Chatbot Used");
+
 			setIsRecommendLoading(true);
 			setSearchQuery("");
 
@@ -301,6 +305,9 @@ function Chatbot({ changeDirectSearch }: { changeDirectSearch: () => void }) {
 									key={course.course_id}
 									href={`/learner/recommend/course/${course.course_id}`}
 									className="flex flex-col w-[400px] h-auto bg-white rounded-xl shadow p-4 text-lg text-black-100 border border-gray-scale-100 flex-shrink-0 mb-2 cursor-pointer"
+									onClick={() => {
+										Amplitude.track("Recommended Course Clicked");
+									}}
 								>
 									<div className="w-full h-[160px] bg-gray-scale-100 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
 										<Image
