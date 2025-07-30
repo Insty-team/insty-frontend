@@ -3,6 +3,7 @@
 import "./globals.css";
 
 import * as Amplitude from "@amplitude/analytics-browser";
+import { sessionReplayPlugin } from "@amplitude/plugin-session-replay-browser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -24,13 +25,26 @@ function RootLayout({
 	const { validateTokens } = useAuthStore();
 
 	useEffect(() => {
-		Amplitude.init("96956b141cb227bb60c1538af1da14f0", {
-			autocapture: true,
-			trackingOptions: {
-				language: true,
-				platform: true,
-			},
-		});
+		const currentUrl = window.location.href;
+		const isDev =
+			currentUrl.includes("localhost") || currentUrl.includes("dev");
+
+		if (!isDev) {
+			const sessionReplayTracking = sessionReplayPlugin({
+				sampleRate: 0.5,
+				debugMode: false,
+			});
+
+			Amplitude.add(sessionReplayTracking);
+
+			Amplitude.init("96956b141cb227bb60c1538af1da14f0", {
+				autocapture: true,
+				trackingOptions: {
+					language: true,
+					platform: true,
+				},
+			});
+		}
 	}, []);
 
 	//토큰 검증
