@@ -2,6 +2,7 @@
 
 import "./globals.css";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,7 +24,17 @@ function RootLayout({
 	const { validateTokens } = useAuthStore();
 
 	useEffect(() => {
-		// 토큰 유효성 검증
+		Amplitude.init("96956b141cb227bb60c1538af1da14f0", {
+			autocapture: true,
+			trackingOptions: {
+				language: true,
+				platform: true,
+			},
+		});
+	}, []);
+
+	//토큰 검증
+	useEffect(() => {
 		const isValidToken = validateTokens();
 
 		const isPublicPage = PUBLIC_PAGE_PATH.includes(pathname);
@@ -50,11 +61,11 @@ function RootLayout({
 				/>
 				<meta
 					name="description"
-					content="복잡한 프로그래밍 설치와 환경 설정을 AI가 도와드립니다. 맞춤형 강의 추천과 실시간 AI 학습 도우미로 더 쉽게 배우세요."
+					content="Insty는 설치와 세팅이 막막한 모든 사람을 위한 영상 플랫폼입니다. 누구나 크리에이터가 되어 도구 설치 방법을 공유하고, 러너로서 따라하며 배울 수 있어요."
 				/>
 				<meta
 					name="keywords"
-					content="프로그래밍, 설치, 설정, AI 학습, 온라인 강의, 개발자, 코딩, 환경설정, 인스티, 크리에이터, 러너"
+					content="크리에이터, 러너, 설치 방법, 사용법, 환경 구축, 사용법 강의, 프로그램 설치, 설정 가이드, 셋업 가이드, 튜토리얼, 매뉴얼, 초기 세팅, 설치 오류 해결, 설치 도우미, AI 설치 도우미, AI 설치 가이드"
 				/>
 				<meta name="author" content="Insty" />
 				<meta name="robots" content="index, nofollow" />
@@ -69,7 +80,7 @@ function RootLayout({
 				/>
 				<meta
 					property="og:description"
-					content="복잡한 프로그래밍 설치와 환경 설정을 AI가 도와드립니다. 맞춤형 강의 추천과 실시간 AI 학습 도우미로 더 쉽게 배우세요."
+					content="Insty는 설치와 세팅이 막막한 모든 사람을 위한 영상 플랫폼입니다. 누구나 크리에이터가 되어 도구 설치 방법을 공유하고, 러너로서 따라하며 배울 수 있어요."
 				/>
 				<meta property="og:image" content="/insty.png" />
 				<meta property="og:site_name" content="Insty" />
@@ -84,7 +95,7 @@ function RootLayout({
 				/>
 				<meta
 					property="twitter:description"
-					content="복잡한 프로그래밍 설치와 환경 설정을 AI가 도와드립니다. 맞춤형 강의 추천과 실시간 AI 학습 도우미로 더 쉽게 배우세요."
+					content="Insty는 설치와 세팅이 막막한 모든 사람을 위한 영상 플랫폼입니다. 누구나 크리에이터가 되어 도구 설치 방법을 공유하고, 러너로서 따라하며 배울 수 있어요."
 				/>
 				<meta property="twitter:image" content="/insty.png" />
 
