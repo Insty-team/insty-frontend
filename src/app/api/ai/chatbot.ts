@@ -146,7 +146,7 @@ const postMessageStream = async (
 	}
 };
 
-// AI 챗봇 질문 이력 (마이페이지)
+// 강의중 AI 챗봇 질문 이력 (마이페이지)
 const getAIChatHistory = async ({
 	relativeDate = "",
 	keyword = "",

@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -129,6 +130,9 @@ function MyPageProfile() {
 		isChangedPasswordSame;
 
 	const onSaveProfileInfo = (data: ChangeProfileForm) => {
+		// Amplitude 추적
+		Amplitude.track("Profile Edit Submitted");
+
 		if (isSocialLoginUser) {
 			if (isNicknameChanged && !isNicknameAvailable) {
 				Swal.fire({
@@ -190,6 +194,9 @@ function MyPageProfile() {
 
 		editProfile(formData, {
 			onSuccess: () => {
+				// 프로필 수정 성공 추적
+				Amplitude.track("Profile Edit Completed");
+
 				Swal.fire({
 					icon: "success",
 					title: "수정에 성공했습니다.",
@@ -201,6 +208,9 @@ function MyPageProfile() {
 				});
 			},
 			onError: () => {
+				// 프로필 수정 실패 추적
+				Amplitude.track("Profile Edit Failed");
+
 				Swal.fire({
 					icon: "error",
 					title: "수정에 실패하였습니다.",

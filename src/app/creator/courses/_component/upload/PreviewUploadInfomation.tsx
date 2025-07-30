@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -35,6 +36,9 @@ function PreviewUploadInfomation({
 	//console.log(data);
 
 	const handleSubmitCourseForm = async () => {
+		// Amplitude 추적
+		Amplitude.track("Course Upload Submitted");
+
 		setIsUploading(true);
 		try {
 			const { thumbnailFile, practiceFiles, ...rest } = data;
@@ -68,6 +72,9 @@ function PreviewUploadInfomation({
 				if (courseData.videoUuid) {
 					const res = await postVectorStatus(courseData.videoUuid);
 					if (res && res.data) {
+						// 업로드 성공 추적
+						Amplitude.track("Course Upload Completed");
+
 						Swal.fire({
 							title: "강의 업로드 완료",
 							icon: "success",
@@ -83,6 +90,9 @@ function PreviewUploadInfomation({
 					}
 				}
 			} catch (error) {
+				// 업로드 실패 추적
+				Amplitude.track("Course Upload Failed");
+
 				console.error(error);
 				Swal.fire({
 					title: "서버 내부 오류가 발생했습니다.",

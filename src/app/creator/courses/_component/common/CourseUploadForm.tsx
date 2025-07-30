@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -13,6 +14,8 @@ import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { postSuggestMetadata } from "@/app/api/ai";
 import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
+import { MAX_FILE_NAME, MAX_VIDEO_DURATION } from "@/app/constants";
+import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UploadformData } from "@/app/types/course";
@@ -86,6 +89,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const videoInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
+	const [isSuggesting, setIsSuggesting] = useState<boolean>(false);
 
 	// 전사 진행률 커스텀 훅 사용
 	const {
@@ -239,12 +243,21 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		if (file.name.length > MAX_FILE_NAME) {
+			Swal.fire({
+				title: "파일 이름이 너무 길어요.",
+				text: "150자 이하의 이름으로 업로드 해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+			return;
+		}
 		const duration = await getVideoDuration(file);
 
-		if (duration > 30 * 60) {
+		if (duration > MAX_VIDEO_DURATION) {
 			Swal.fire({
 				title: "영상이 너무 길어요.",
-				text: "20분 이하의 영상만 업로드 가능합니다.",
+				text: `${MAX_VIDEO_DURATION / 60}분 이하의 영상만 업로드 가능합니다.`,
 				icon: "error",
 				confirmButtonText: "확인",
 			}).then(() => {
@@ -469,6 +482,10 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	};
 
 	const handleSuggestMetadata = async () => {
+		// Amplitude 추적
+		Amplitude.track("AI Metadata Suggestion Clicked");
+
+		setIsSuggesting(true);
 		if (!videoUuid) {
 			Swal.fire({
 				title: "먼저 비디오를 업로드 해주세요.",
@@ -481,6 +498,9 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		try {
 			const res = await postSuggestMetadata(videoUuid);
 			if (res && res.data) {
+				// AI 메타데이터 성공 추적
+				Amplitude.track("AI Metadata Suggestion Completed");
+
 				//console.log(res);
 				setValue("title", res.data.title);
 				setValue("description", res.data.description);
@@ -508,7 +528,11 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				});
 			}
 		} catch (error) {
+			// AI 메타데이터 실패 추적
+			Amplitude.track("AI Metadata Suggestion Failed");
 			console.error(error);
+		} finally {
+			setIsSuggesting(false);
 		}
 	};
 
@@ -605,6 +629,16 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					}
 				/>
 			</div>
+			{isSuggesting && (
+				<div
+					className="fixed inset-0 w-full h-full bg-black-100/50 z-[1000] flex justify-center items-center cursor-wait"
+					onClick={(e) => e.preventDefault()}
+					onMouseDown={(e) => e.preventDefault()}
+					style={{ pointerEvents: "auto" }}
+				>
+					<SuggestionLoading />
+				</div>
+			)}
 			{/* 전사 진행률 표시 (새 비디오이고 분석이 진행 중일 때만) */}
 			{videoUuid !== "" && !isExistingVideo && (
 				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
@@ -644,7 +678,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 							<Image
 								src={thumbnailUrl}
 								alt="썸네일"
-								className="w-full h-full object-cover rounded-2xl aspect-auto"
+								className="w-full h-full object-cover rounded-2xl aspect-square"
 								width={250}
 								height={250}
 							/>

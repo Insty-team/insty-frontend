@@ -31,7 +31,7 @@ export const CREATOR_MENU_LIST = [
 export const CREATOR_MYPAGE_MENU_LIST = [
 	{ id: 1, title: "나의 정보 관리" },
 	{ id: 2, title: "내 계좌 정보" },
-	{ id: 3, title: "설정" },
+	{ id: 3, title: "이메일 수신 여부" },
 ];
 
 // Learner 러너 관련
@@ -44,7 +44,7 @@ export const LEARNER_MENU_LIST = [
 export const LEARNER_MYPAGE_MENU_LIST = [
 	{ id: 1, title: "나의 정보 관리" },
 	{ id: 2, title: "내 활동" },
-	{ id: 3, title: "AI 챗봇 질문 이력" },
+	{ id: 3, title: "강의중 AI 챗봇 질문 이력" },
 	{ id: 4, title: "구매 내역" },
 	{ id: 5, title: "설정" },
 ];
@@ -143,3 +143,6 @@ export const REFUND_POLICY = [
 		text: "일부 시청 또는 실습 자료 다운로드 후에는 환불이 불가능 합니다.",
 	},
 ];
+
+export const MAX_FILE_NAME = 150;
+export const MAX_VIDEO_DURATION = 15 * 60;

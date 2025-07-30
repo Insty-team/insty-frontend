@@ -38,7 +38,7 @@ function LearnerMyPage() {
 					activeSubMenu === "내가 북마크한 게시글" && (
 						<MyPageActivityBookmark />
 					)}
-				{activeMenu === "AI 챗봇 질문 이력" && <MyPageAIChat />}
+				{activeMenu === "강의중 AI 챗봇 질문 이력" && <MyPageAIChat />}
 				{activeMenu === "구매 내역" && <MyPageBuy />}
 				{activeMenu === "찜한 영상" && <MyPageLike />}
 				{activeMenu === "설정" && <MyPageSetting />}

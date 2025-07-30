@@ -1,5 +1,6 @@
 "use client";
 
+import * as Amplitude from "@amplitude/analytics-browser";
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -17,6 +18,8 @@ import {
 	putCourse,
 	putCourseVideoUpload,
 } from "@/app/api/backend";
+import { MAX_FILE_NAME, MAX_VIDEO_DURATION } from "@/app/constants";
+import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useThumbnailUpload } from "@/app/hooks/useThumbnailUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { CourseFormProps } from "@/app/types/course";
@@ -87,6 +90,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const [videoFileName, setVideoFileName] = useState<string | null>(null);
 	const [videoUuid, setVideoUuid] = useState<string | null>(null);
 	const [isNewVideo, setIsNewVideo] = useState<boolean>(false);
+	const [isTitleSuggesting, setIsTitleSuggesting] = useState<boolean>(false);
+	const [isDescriptionSuggesting, setIsDescriptionSuggesting] =
+		useState<boolean>(false);
 
 	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
 		useTranscriptionProgress(isNewVideo ? videoUuid : null);
@@ -129,6 +135,12 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
+
+		if (file) {
+			// Amplitude 추적
+			Amplitude.track("Thumbnail Upload Started");
+		}
+
 		if (file && !ALLOWED_FILE_TYPES.image.types.includes(file.type)) {
 			alert("이미지 관련 파일만 업로드 가능합니다.(jpg, jpeg, png, webp)");
 			return;
@@ -161,6 +173,12 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 	const handleUploadPracticeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(e.target.files || []);
+
+		// Amplitude 추적
+		if (files.length > 0) {
+			Amplitude.track("Practice File Upload Started");
+		}
+
 		const validFiles = files.filter((file) =>
 			ALLOWED_FILE_TYPES.document.types.includes(file.type),
 		);
@@ -204,11 +222,49 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		videoInputRef.current?.click();
 	};
 
+	const getVideoDuration = async (file: File): Promise<number> => {
+		return new Promise((resolve) => {
+			const video = document.createElement("video");
+			video.preload = "metadata";
+			video.onloadedmetadata = () => {
+				resolve(video.duration);
+			};
+
+			video.src = URL.createObjectURL(file);
+		});
+	};
+
 	const handleVideoFileChange = async (
 		e: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+
+		// Amplitude 추적
+		Amplitude.track("Video Upload Started");
+		if (file.name.length > MAX_FILE_NAME) {
+			Swal.fire({
+				title: "파일 이름이 너무 길어요.",
+				text: `${MAX_FILE_NAME}자 이하의 이름으로 업로드 해주세요.`,
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+			return;
+		}
+
+		const duration = await getVideoDuration(file);
+
+		if (duration > MAX_VIDEO_DURATION) {
+			Swal.fire({
+				title: "영상이 너무 길어요.",
+				text: `${MAX_VIDEO_DURATION / 60}분 이하의 영상만 업로드 가능합니다.`,
+				icon: "error",
+				confirmButtonText: "확인",
+			}).then(() => {
+				return;
+			});
+			return;
+		}
 
 		if (!ALLOWED_FILE_TYPES.video.types.includes(file.type)) {
 			alert(
@@ -249,6 +305,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	};
 
 	const handleRemoveVideoFile = () => {
+		// Amplitude 추적
+		Amplitude.track("Video Remove Clicked");
+
 		Swal.fire({
 			title: "업로드한 영상을 삭제하시겠어요?",
 			text: "재업로드시, 영상 분석이 다시 진행됩니다.",
@@ -258,6 +317,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			cancelButtonText: "취소",
 		}).then((result) => {
 			if (result.isConfirmed) {
+				// 실제 삭제시 추적
+				Amplitude.track("Video Remove Confirmed");
 				setVideoFile(null);
 				setVideoFileName(null);
 				setVideoUuid("");
@@ -272,6 +333,10 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	};
 
 	const handleSuggestTitle = async () => {
+		// Amplitude 추적
+		Amplitude.track("AI Title Suggestion Clicked");
+
+		setIsTitleSuggesting(true);
 		//console.log(videoUuid, title);
 		try {
 			if (videoUuid) {
@@ -292,10 +357,16 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			}
 		} catch (error) {
 			console.error(error);
+		} finally {
+			setIsTitleSuggesting(false);
 		}
 	};
 
 	const handleSuggestDescription = async () => {
+		// Amplitude 추적
+		Amplitude.track("AI Description Suggestion Clicked");
+
+		setIsDescriptionSuggesting(true);
 		try {
 			if (videoUuid) {
 				//console.log(videoUuid, description);
@@ -317,11 +388,16 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			}
 		} catch (error) {
 			console.error(error);
+		} finally {
+			setIsDescriptionSuggesting(false);
 		}
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+
+		// Amplitude 추적
+		Amplitude.track("Course Edit Submitted");
 		if (!videoFileName) {
 			Swal.fire({
 				title: "강의 비디오를 업로드해주세요.",
@@ -415,6 +491,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			//console.log(res);
 
 			if (res && !res.error) {
+				// 성공 추적
+				Amplitude.track("Course Edit Completed");
+
 				Swal.fire({
 					title: "강의가 수정 되었습니다.",
 					icon: "success",
@@ -438,6 +517,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 					}, 100);
 				});
 			} else {
+				// 실패 추적
+				Amplitude.track("Course Edit Failed");
+
 				Swal.fire({
 					title: "강의 수정 실패",
 					text: res?.error?.message || "알 수 없는 오류가 발생했습니다.",
@@ -447,6 +529,9 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				});
 			}
 		} catch (error) {
+			// 예외 발생 추적
+			Amplitude.track("Course Edit Error");
+
 			console.error("강의 수정 중 오류 발생:", error);
 		}
 	};
@@ -612,6 +697,11 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 						</button>
 					</div>
 				</div>
+				{(isTitleSuggesting || isDescriptionSuggesting) && (
+					<div className="fixed inset-0 w-full h-full bg-black-100/50 z-[1000] flex justify-center items-center cursor-wait">
+						<SuggestionLoading />
+					</div>
+				)}
 
 				<div className="flex-1 flex flex-col gap-4">
 					<div>
