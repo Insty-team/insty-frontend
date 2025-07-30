@@ -31,7 +31,7 @@ export const CREATOR_MENU_LIST = [
 export const CREATOR_MYPAGE_MENU_LIST = [
 	{ id: 1, title: "나의 정보 관리" },
 	{ id: 2, title: "내 계좌 정보" },
-	{ id: 3, title: "설정" },
+	{ id: 3, title: "이메일 수신 여부" },
 ];
 
 // Learner 러너 관련

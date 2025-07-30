@@ -20,7 +20,16 @@ function MyPageCreatorSide({
 						<button
 							key={menu.id}
 							onClick={() => setActiveMenu(menu.title)}
-							className="flex justify-start cursor-pointer"
+							disabled={
+								menu.title === "이메일 수신 여부" ||
+								menu.title === "내 계좌 정보"
+							}
+							className={`flex justify-start ${
+								menu.title === "이메일 수신 여부" ||
+								menu.title === "내 계좌 정보"
+									? "cursor-not-allowed text-gray-300"
+									: "cursor-pointer"
+							}`}
 						>
 							<span
 								className={activeMenu === menu.title ? "font-semibold" : ""}
