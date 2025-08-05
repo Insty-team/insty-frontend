@@ -15,6 +15,7 @@ import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssi
 import { useUserStore } from "@/app/stores";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourseDetail } from "@/app/types/course";
+import { trackEvent } from "@/app/utils";
 import { formatTime } from "@/app/utils/date";
 
 import HLSPlayer from "./HLSPlayer";
@@ -101,6 +102,8 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	const handleWatchCourse = () => {
 		// Amplitude 추적
 		Amplitude.track("Course Watch Clicked");
+		// Mixpanel 추적
+		trackEvent("강의_시청_클릭");
 
 		Swal.fire({
 			title: "강의를 수강하시겠습니까?",
@@ -114,6 +117,7 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 			if (result.isConfirmed) {
 				// 강의 수강 시작 추적
 				Amplitude.track("Course Watch Started");
+				trackEvent("강의_시청_시작");
 				router.push(`/learner/recommend/course/${data.courseId}/watch`);
 			}
 		});

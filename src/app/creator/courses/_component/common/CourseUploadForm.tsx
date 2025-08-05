@@ -19,6 +19,7 @@ import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UploadformData } from "@/app/types/course";
+import { trackEvent } from "@/app/utils";
 
 import { useThumbnailUpload } from "../../../../hooks/useThumbnailUpload";
 import { useTranscriptionProgress } from "./TranscriptionProgress";
@@ -484,6 +485,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const handleSuggestMetadata = async () => {
 		// Amplitude 추적
 		Amplitude.track("AI Metadata Suggestion Clicked");
+		// Mixpanel 추적
+		trackEvent("AI_메타데이터_제안_클릭");
 
 		setIsSuggesting(true);
 		if (!videoUuid) {
@@ -500,6 +503,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			if (res && res.data) {
 				// AI 메타데이터 성공 추적
 				Amplitude.track("AI Metadata Suggestion Completed");
+				trackEvent("AI_메타데이터_제안_완료");
 
 				//console.log(res);
 				setValue("title", res.data.title);
@@ -530,6 +534,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		} catch (error) {
 			// AI 메타데이터 실패 추적
 			Amplitude.track("AI Metadata Suggestion Failed");
+			trackEvent("AI_메타데이터_제안_실패");
 			console.error(error);
 		} finally {
 			setIsSuggesting(false);

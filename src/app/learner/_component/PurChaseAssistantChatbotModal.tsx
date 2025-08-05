@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 
 import Loading from "@/app/_components/common/Loading";
 import { postPurchaseAssistantChatbot } from "@/app/api/ai";
+import { trackEvent } from "@/app/utils";
 
 interface PurchaseAssistantChatbotModalProps {
 	open: boolean;
@@ -66,6 +67,8 @@ function PurchaseAssistantChatbotModal({
 
 			// Amplitude 추적
 			Amplitude.track("Purchase Assistant Chatbot Used");
+			// Mixpanel 추적
+			trackEvent("구매_도우미_챗봇_사용");
 
 			if (!input.trim()) return;
 			setIsResponseLoading(true);

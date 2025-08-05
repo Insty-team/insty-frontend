@@ -16,7 +16,7 @@ import {
 } from "@/app/_components/validation";
 import { getEmailCheck, getNicknameCheck, postSignup } from "@/app/api/backend";
 import { SignupForm } from "@/app/types";
-import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
+import { emailReg, nicknameReg, passwordReg, trackEvent } from "@/app/utils";
 
 function Signup() {
 	const [isNicknameAvailable, setIsNicknameAvailable] = useState<
@@ -69,12 +69,14 @@ function Signup() {
 
 	const onSubmit = async (data: SignupForm) => {
 		Amplitude.track("Signup Submitted");
+		trackEvent("회원가입_시도");
 		const submitData = { ...data };
 		delete submitData.confirmPassword;
 
 		try {
 			const res = await postSignup(submitData);
 			Amplitude.track("Signup Completed");
+			trackEvent("회원가입_완료");
 			Swal.fire({
 				icon: "success",
 				iconColor: "#6ead79",
@@ -88,6 +90,7 @@ function Signup() {
 		} catch (error) {
 			console.error(error);
 			Amplitude.track("Signup Failed");
+			trackEvent("회원가입_실패");
 			Swal.fire({
 				icon: "error",
 				iconColor: "#ff4f64",

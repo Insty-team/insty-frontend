@@ -23,6 +23,7 @@ import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useThumbnailUpload } from "@/app/hooks/useThumbnailUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { CourseFormProps } from "@/app/types/course";
+import { trackEvent } from "@/app/utils";
 
 import { useCourseForm } from "../../../../hooks/useCourseForm";
 import { useTranscriptionProgress } from "./TranscriptionProgress";
@@ -139,6 +140,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		if (file) {
 			// Amplitude 추적
 			Amplitude.track("Thumbnail Upload Started");
+			// Mixpanel 추적
+			trackEvent("썸네일_업로드_시작");
 		}
 
 		if (file && !ALLOWED_FILE_TYPES.image.types.includes(file.type)) {
@@ -177,6 +180,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		// Amplitude 추적
 		if (files.length > 0) {
 			Amplitude.track("Practice File Upload Started");
+			// Mixpanel 추적
+			trackEvent("실습파일_업로드_시작");
 		}
 
 		const validFiles = files.filter((file) =>
@@ -242,6 +247,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 		// Amplitude 추적
 		Amplitude.track("Video Upload Started");
+		// Mixpanel 추적
+		trackEvent("비디오_업로드_시작");
 		if (file.name.length > MAX_FILE_NAME) {
 			Swal.fire({
 				title: "파일 이름이 너무 길어요.",
@@ -307,6 +314,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const handleRemoveVideoFile = () => {
 		// Amplitude 추적
 		Amplitude.track("Video Remove Clicked");
+		// Mixpanel 추적
+		trackEvent("비디오_삭제_클릭");
 
 		Swal.fire({
 			title: "업로드한 영상을 삭제하시겠어요?",
@@ -319,6 +328,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			if (result.isConfirmed) {
 				// 실제 삭제시 추적
 				Amplitude.track("Video Remove Confirmed");
+				trackEvent("비디오_삭제_확인");
 				setVideoFile(null);
 				setVideoFileName(null);
 				setVideoUuid("");
@@ -335,6 +345,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const handleSuggestTitle = async () => {
 		// Amplitude 추적
 		Amplitude.track("AI Title Suggestion Clicked");
+		// Mixpanel 추적
+		trackEvent("AI_제목_제안_클릭");
 
 		setIsTitleSuggesting(true);
 		//console.log(videoUuid, title);
@@ -365,6 +377,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const handleSuggestDescription = async () => {
 		// Amplitude 추적
 		Amplitude.track("AI Description Suggestion Clicked");
+		// Mixpanel 추적
+		trackEvent("AI_설명_제안_클릭");
 
 		setIsDescriptionSuggesting(true);
 		try {
@@ -398,6 +412,8 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 		// Amplitude 추적
 		Amplitude.track("Course Edit Submitted");
+		// Mixpanel 추적
+		trackEvent("강의_편집_시도");
 		if (!videoFileName) {
 			Swal.fire({
 				title: "강의 비디오를 업로드해주세요.",
@@ -493,6 +509,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			if (res && !res.error) {
 				// 성공 추적
 				Amplitude.track("Course Edit Completed");
+				trackEvent("강의_편집_완료");
 
 				Swal.fire({
 					title: "강의가 수정 되었습니다.",
@@ -519,6 +536,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 			} else {
 				// 실패 추적
 				Amplitude.track("Course Edit Failed");
+				trackEvent("강의_편집_실패");
 
 				Swal.fire({
 					title: "강의 수정 실패",
@@ -531,6 +549,7 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 		} catch (error) {
 			// 예외 발생 추적
 			Amplitude.track("Course Edit Error");
+			trackEvent("강의_편집_에러");
 
 			console.error("강의 수정 중 오류 발생:", error);
 		}
