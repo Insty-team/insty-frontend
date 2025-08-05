@@ -5,6 +5,7 @@ import "./globals.css";
 import * as Amplitude from "@amplitude/analytics-browser";
 import { sessionReplayPlugin } from "@amplitude/plugin-session-replay-browser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import mixpanel from "mixpanel-browser";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -30,6 +31,7 @@ function RootLayout({
 			currentUrl.includes("localhost") || currentUrl.includes("dev");
 
 		if (!isDev) {
+			// Amplitude 초기화
 			const sessionReplayTracking = sessionReplayPlugin({
 				sampleRate: 0.5,
 				debugMode: false,
@@ -44,6 +46,16 @@ function RootLayout({
 					platform: true,
 				},
 			});
+
+			// Mixpanel 초기화
+			const mixpanelKey = process.env.NEXT_PUBLIC_MIX_PANEL_KEY;
+			if (mixpanelKey) {
+				mixpanel.init(mixpanelKey, {
+					debug: false,
+					track_pageview: true,
+					persistence: "localStorage",
+				});
+			}
 		}
 	}, []);
 

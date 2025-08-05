@@ -15,6 +15,7 @@ import HLSPlayer from "@/app/learner/_component/courses/HLSPlayer";
 import { useGetCourseDetailQuery } from "@/app/queries";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourserChatbotMessage } from "@/app/types/course";
+import { trackEvent } from "@/app/utils";
 import { formatTime } from "@/app/utils/date";
 
 function WatchCoursePage() {
@@ -44,6 +45,8 @@ function WatchCoursePage() {
 	const toggleChatbot = useCallback(() => {
 		// Amplitude 추적
 		Amplitude.track("Course Chatbot Toggle Clicked");
+		// Mixpanel 추적
+		trackEvent("강의_챗봇_토글_클릭");
 		setOpenChatbot((prev) => !prev);
 	}, []);
 
