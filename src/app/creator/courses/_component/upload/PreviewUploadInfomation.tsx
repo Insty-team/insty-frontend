@@ -15,6 +15,7 @@ import { postCourse } from "@/app/api/backend";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { useUserStore, useVideoUploadStore } from "@/app/stores";
 import { UploadformData } from "@/app/types/course";
+import { trackEvent } from "@/app/utils";
 import { formatTime } from "@/app/utils/date";
 
 interface PreviewUploadInfomationProps {
@@ -38,6 +39,8 @@ function PreviewUploadInfomation({
 	const handleSubmitCourseForm = async () => {
 		// Amplitude 추적
 		Amplitude.track("Course Upload Submitted");
+		// Mixpanel 추적
+		trackEvent("강의_업로드_시도");
 
 		setIsUploading(true);
 		try {
@@ -74,6 +77,7 @@ function PreviewUploadInfomation({
 					if (res && res.data) {
 						// 업로드 성공 추적
 						Amplitude.track("Course Upload Completed");
+						trackEvent("강의_업로드_완료");
 
 						Swal.fire({
 							title: "강의 업로드 완료",
@@ -92,6 +96,7 @@ function PreviewUploadInfomation({
 			} catch (error) {
 				// 업로드 실패 추적
 				Amplitude.track("Course Upload Failed");
+				trackEvent("강의_업로드_실패");
 
 				console.error(error);
 				Swal.fire({

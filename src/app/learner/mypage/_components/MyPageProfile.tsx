@@ -21,7 +21,7 @@ import {
 import { ChangeProfileForm } from "@/app/types";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
-import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
+import { emailReg, nicknameReg, passwordReg, trackEvent } from "@/app/utils";
 
 function MyPageProfile() {
 	const [isEditing, setIsEditing] = useState(false);
@@ -132,6 +132,8 @@ function MyPageProfile() {
 	const onSaveProfileInfo = (data: ChangeProfileForm) => {
 		// Amplitude 추적
 		Amplitude.track("Profile Edit Submitted");
+		// Mixpanel 추적
+		trackEvent("프로필_편집_시도");
 
 		if (isSocialLoginUser) {
 			if (isNicknameChanged && !isNicknameAvailable) {
@@ -196,6 +198,7 @@ function MyPageProfile() {
 			onSuccess: () => {
 				// 프로필 수정 성공 추적
 				Amplitude.track("Profile Edit Completed");
+				trackEvent("프로필_편집_완료");
 
 				Swal.fire({
 					icon: "success",
@@ -210,6 +213,7 @@ function MyPageProfile() {
 			onError: () => {
 				// 프로필 수정 실패 추적
 				Amplitude.track("Profile Edit Failed");
+				trackEvent("프로필_편집_실패");
 
 				Swal.fire({
 					icon: "error",

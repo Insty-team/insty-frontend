@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 
 import { getSocialAuthCode } from "@/app/api/backend";
 import { SocialLogin as SocialLoginType } from "@/app/types";
+import { trackEvent } from "@/app/utils";
 
 function SocialLogin() {
 	const params = useParams();
@@ -21,6 +22,8 @@ function SocialLogin() {
 		Amplitude.track("Social Login Clicked", {
 			social_name: socialName,
 		});
+		// Mixpanel 추적
+		trackEvent("소셜로그인_클릭");
 
 		try {
 			if (isSignupPage) {

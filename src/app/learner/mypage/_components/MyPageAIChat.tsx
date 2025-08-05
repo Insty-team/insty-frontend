@@ -17,7 +17,7 @@ import {
 	useGetAIMessageListQuery,
 } from "@/app/queries";
 import { AIHistoryByDate, AIHistoryItem, AIMessage } from "@/app/types/ai";
-import { getFormattedDate, getHighlightedHTML } from "@/app/utils";
+import { getFormattedDate, getHighlightedHTML, trackEvent } from "@/app/utils";
 
 function MyPageAIChat() {
 	const DATE_OPTIONS = [
@@ -126,6 +126,8 @@ function MyPageAIChat() {
 
 		// Amplitude 추적
 		Amplitude.track("AI Chat History Search Used");
+		// Mixpanel 추적
+		trackEvent("AI채팅_기록_검색");
 
 		setApplySearchQuery(trimmedSearchText);
 		setApplyDateOption(dateOption);
@@ -283,6 +285,7 @@ function MyPageAIChat() {
 												}`}
 												onClick={() => {
 													Amplitude.track("AI Chat Session Selected");
+													trackEvent("AI채팅_세션_선택");
 													setSelectedHistoryItem(q);
 												}}
 											>
