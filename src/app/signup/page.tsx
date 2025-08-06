@@ -128,7 +128,13 @@ function Signup() {
 		<>
 			<div className="flex flex-col justify-center p-8 w-full">
 				<div className="flex flex-col items-center">
-					<Image src="/insty.png" alt="logo" width={208} height={181} />
+					<Image
+						src="/insty.png"
+						alt="logo"
+						width={208}
+						height={181}
+						priority
+					/>
 					<p className="mt-12 text-3xl font-semibold"> 회원가입하기</p>
 				</div>
 			</div>
