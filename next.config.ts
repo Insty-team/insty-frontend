@@ -3,7 +3,16 @@ import path from "path";
 
 const nextConfig: NextConfig = {
 	images: {
-		domains: ["dev.insty.ai.kr", "insty.ai.kr"],
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "dev.insty.ai.kr",
+			},
+			{
+				protocol: "https",
+				hostname: "insty.ai.kr",
+			},
+		],
 	},
 	optimizePackageImports: ["@chakra-ui/react"],
 	webpack: (config) => {
