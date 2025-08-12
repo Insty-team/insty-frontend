@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { ChangeEvent, useEffect, useState } from "react";
+import { IoChatbubbleEllipses } from "react-icons/io5";
 
 import { BaseSearchBar } from "@/app/_components/common";
 import { EMPTY_QUESTION, EMPTY_UPLOAD_COURSE } from "@/app/constants";
@@ -189,6 +190,13 @@ function CommunityMain({ courses, questions }: Props) {
 					)}
 				</div>
 			</div>
+
+			{userType === "LEARNER" && (
+				<button className="fixed bottom-8 right-8 z-50 flex items-center bg-primary-green-400 hover:bg-primary-green-500 text-white font-semibold px-6 py-2 rounded-full shadow-none">
+					<span>AI 챗봇에게 질문하기</span>
+					<IoChatbubbleEllipses className="w-7 h-7 ml-2" />
+				</button>
+			)}
 		</div>
 	);
 }
