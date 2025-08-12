@@ -8,6 +8,7 @@ import CreatorHeader from "./CreatorHeader";
 import Footer from "./Footer";
 import LearnerHeader from "./LearnerHeader";
 import Markdown from "./Markdown";
+import Pagination from "./Pagination";
 
 export {
 	BaseButton,
@@ -20,4 +21,5 @@ export {
 	Footer,
 	LearnerHeader,
 	Markdown,
+	Pagination,
 };
