@@ -4,7 +4,7 @@ import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
@@ -14,7 +14,13 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
-import { getEmailCheck, getNicknameCheck, postSignup } from "@/app/api/backend";
+import {
+	getEmailCheck,
+	getNicknameCheck,
+	postEmailVerification,
+	postEmailVerificationCheck,
+	postSignup,
+} from "@/app/api/backend";
 import { SignupForm } from "@/app/types";
 import { emailReg, nicknameReg, passwordReg, trackEvent } from "@/app/utils";
 
@@ -27,6 +33,15 @@ function Signup() {
 		null,
 	);
 	const [emailCheckStatus, setEmailCheckStatus] = useState<string>("");
+	const [isEmailVarification, setIsEmailVarification] = useState<
+		boolean | null
+	>(null);
+	const [emailVerificationTime, setEmailVerificationTime] =
+		useState<number>(300);
+	const [emailVerificationCode, setEmailVerificationCode] =
+		useState<string>("");
+	const timerRef = useRef<NodeJS.Timeout | null>(null);
+	const timeRef = useRef<number>(300);
 	const {
 		register,
 		handleSubmit,
@@ -120,7 +135,106 @@ function Signup() {
 			setEmailCheckStatus(res.error.message);
 		} else {
 			setIsEmailAvailable(true);
-			setEmailCheckStatus("사용 가능한 이메일입니다.");
+			setEmailCheckStatus(
+				"사용 가능한 이메일입니다. 이메일 인증을 수행해주세요.",
+			);
+			try {
+				const emailVerificationRes = await postEmailVerification(
+					getValues("email"),
+				);
+				if (emailVerificationRes.error) {
+					throw new Error(emailVerificationRes.error.message);
+				} else {
+					setIsEmailVarification(false);
+					startEmailVerificationTimer();
+				}
+			} catch (error) {
+				console.error(error);
+				Swal.fire({
+					icon: "error",
+					iconColor: "#ff4f64",
+					title: "오류",
+					text: "이메일 인증 요청에 실패했습니다.",
+				});
+			}
+		}
+	};
+
+	const startEmailVerificationTimer = () => {
+		// 기존 타이머가 있다면 정리
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+		}
+
+		// 타이머 초기화
+		timeRef.current = 300;
+		setEmailVerificationTime(300);
+
+		// 1초마다 실행되는 타이머 시작
+		timerRef.current = setInterval(() => {
+			timeRef.current -= 1;
+			setEmailVerificationTime(timeRef.current);
+
+			// 시간이 0이 되면 타이머 정지
+			if (timeRef.current <= 0) {
+				if (timerRef.current) {
+					clearInterval(timerRef.current);
+					timerRef.current = null;
+				}
+			}
+		}, 1000);
+	};
+
+	// 컴포넌트 언마운트 시 타이머 정리
+	useEffect(() => {
+		return () => {
+			if (timerRef.current) {
+				clearInterval(timerRef.current);
+			}
+		};
+	}, []);
+
+	const handleEmailVerificationCheck = async () => {
+		if (!emailVerificationCode.trim()) {
+			Swal.fire({
+				icon: "warning",
+				iconColor: "#f59e0b",
+				title: "인증코드 입력",
+				text: "인증코드를 입력해주세요.",
+			});
+			return;
+		}
+
+		try {
+			const res = await postEmailVerificationCheck(
+				getValues("email"),
+				emailVerificationCode,
+			);
+
+			if (res.error) {
+				Swal.fire({
+					icon: "error",
+					iconColor: "#ff4f64",
+					title: "인증 실패",
+					text: res.error.message || "인증코드가 올바르지 않습니다.",
+				});
+			} else {
+				setIsEmailVarification(true);
+				setEmailVerificationCode("");
+				if (timerRef.current) {
+					clearInterval(timerRef.current);
+					timerRef.current = null;
+				}
+				setEmailCheckStatus("이메일 인증이 완료되었습니다.");
+			}
+		} catch (error) {
+			console.error(error);
+			Swal.fire({
+				icon: "error",
+				iconColor: "#ff4f64",
+				title: "오류",
+				text: "인증 확인 중 오류가 발생했습니다.",
+			});
 		}
 	};
 
@@ -236,6 +350,47 @@ function Signup() {
 										: "error"
 							}
 						/>
+						{isEmailVarification === false && (
+							<div className="mt-3">
+								<div className="w-full relative">
+									<input
+										type="text"
+										value={emailVerificationCode}
+										onChange={(e) => setEmailVerificationCode(e.target.value)}
+										placeholder="이메일로 발송된 인증 코드를 입력해주세요."
+										className="w-full px-4 py-2 pr-20 rounded-lg bg-gray-50 focus:outline-none border border-gray-300 focus:border-primary-green-300 text-sm"
+										disabled={emailVerificationTime <= 0}
+									/>
+									<button
+										type="button"
+										disabled={
+											emailVerificationTime <= 0 ||
+											!emailVerificationCode.trim()
+										}
+										className={`absolute top-1/2 -translate-y-1/2 right-2 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+											emailVerificationTime <= 0 ||
+											!emailVerificationCode.trim()
+												? "bg-gray-300 cursor-not-allowed text-gray-500"
+												: "bg-primary-green-400 hover:bg-primary-green-500 cursor-pointer text-white"
+										}`}
+										onClick={() => handleEmailVerificationCheck()}
+									>
+										인증 확인
+									</button>
+								</div>
+								<div
+									className={`text-end mr-2 text-sm ${emailVerificationTime < 60 ? "text-secondary-red-300" : "text-black-300"}`}
+								>
+									{emailVerificationTime > 0 ? (
+										`${Math.floor(emailVerificationTime / 60)}:${String(emailVerificationTime % 60).padStart(2, "0")}`
+									) : (
+										<span className="text-secondary-red-300">
+											인증 시간이 만료되었습니다. 다시 요청해주세요.
+										</span>
+									)}
+								</div>
+							</div>
+						)}
 					</div>
 
 					<PasswordInput

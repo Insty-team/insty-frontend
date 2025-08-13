@@ -7,7 +7,7 @@ import axiosInstance from "../interceptor";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
-export const postLogin = async (
+const postLogin = async (
 	data: LoginForm,
 ): Promise<ApiResponse<LoginResponse>> => {
 	try {
@@ -23,12 +23,12 @@ export const postLogin = async (
 	}
 };
 
-export const postLogout = async () => {
+const postLogout = async () => {
 	const res = await axiosInstance.post(`${BASE_URL}/auth/logout`);
 	return res.data.data;
 };
 
-export const postReissueToken = async (
+const postReissueToken = async (
 	refreshToken: string,
 ): Promise<LoginResponse> => {
 	const res = await axiosInstance.post(
@@ -41,4 +41,39 @@ export const postReissueToken = async (
 		},
 	);
 	return res.data.data;
+};
+
+const postEmailVerification = async (email: string) => {
+	try {
+		const res = await axiosInstance.post(
+			`${BASE_URL}/auth/email-verification/send`,
+			{
+				email: email,
+			},
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		return { error: "이메일 인증 요청에 실패했습니다." };
+	}
+};
+
+const postEmailVerificationCheck = async (email: string, code: string) => {
+	const res = await axiosInstance.post(
+		`${BASE_URL}/auth/email-verification/verify`,
+		{
+			email: email,
+			code: code,
+		},
+	);
+	return res.data;
+};
+export {
+	postEmailVerification,
+	postEmailVerificationCheck,
+	postLogin,
+	postLogout,
+	postReissueToken,
 };
