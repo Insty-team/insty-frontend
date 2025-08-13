@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
-import SocialLogin from "@/app/_components/social/SocialLogin";
+import { SocialLogin } from "@/app/_components/social";
 import { PasswordInput, TextInput } from "@/app/_components/validation";
 import { postLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";

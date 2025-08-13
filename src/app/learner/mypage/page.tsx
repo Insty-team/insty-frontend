@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { MypageProfile } from "@/app/_components/mypage";
+
 import MyPageActivityBookmark from "./_components/MyPageActivityBookmark";
 import MyPageActivityReply from "./_components/MyPageActivityReply";
 import MyPageActivityWriting from "./_components/MyPageActivityWriting";
@@ -9,7 +11,6 @@ import MyPageAIChat from "./_components/MyPageAIChat";
 import MyPageBuy from "./_components/MyPageBuy";
 import MyPageLearnerSide from "./_components/MyPageLearnerSide";
 import MyPageLike from "./_components/MyPageLike";
-import MyPageProfile from "./_components/MyPageProfile";
 import MyPageSetting from "./_components/MyPageSetting";
 
 function LearnerMyPage() {
@@ -26,7 +27,7 @@ function LearnerMyPage() {
 				/>
 			</aside>
 			<section className="flex justify-center w-3/4">
-				{activeMenu === "나의 정보 관리" && <MyPageProfile />}
+				{activeMenu === "나의 정보 관리" && <MypageProfile mode="LEARNER" />}
 				{activeMenu === "내 활동" && activeSubMenu === "내가 쓴 글" && (
 					<MyPageActivityWriting />
 				)}
