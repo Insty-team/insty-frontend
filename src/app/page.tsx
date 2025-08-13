@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import ScrollAnimations from "./_components/landing/ScrollAnimations";
+import { ScrollAnimations } from "./_components/landing";
 
 function Home() {
 	return (

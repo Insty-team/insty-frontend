@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
-import SocialLogin from "@/app/_components/social/SocialLogin";
+import { SocialLogin } from "@/app/_components/social";
 import {
 	PasswordConfirmInput,
 	PasswordInput,
