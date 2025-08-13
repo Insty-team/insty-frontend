@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import ScrollAnimations from "./_components/landing/ScrollAnimations";
+import { ScrollAnimations } from "./_components/landing";
 
 function Home() {
 	return (
@@ -47,7 +47,6 @@ function Home() {
 				</div>
 			</section>
 
-			{/* 두 번째 섹션: 러너 기능 */}
 			<section
 				id="learner"
 				data-section
@@ -69,8 +68,8 @@ function Home() {
 							alt="learnerfunc"
 							width={500}
 							height={500}
+							unoptimized
 						/>
-						{/* 기능 설명 */}
 						<div>
 							<div className="space-y-8">
 								<div className="bg-white rounded-xl p-6 shadow-lg">
@@ -106,7 +105,6 @@ function Home() {
 				</div>
 			</section>
 
-			{/* 세 번째 섹션: 크리에이터 기능 */}
 			<section
 				id="creator"
 				data-section
@@ -128,9 +126,9 @@ function Home() {
 							alt="creatorfunc"
 							width={500}
 							height={500}
+							unoptimized
 						/>
 
-						{/* 기능 설명 */}
 						<div className="order-1 md:order-2">
 							<div className="space-y-8">
 								<div className="flex items-start space-x-4">
@@ -176,7 +174,6 @@ function Home() {
 						</div>
 					</div>
 
-					{/* 혜택 강조 */}
 					<div className="mt-16 text-center">
 						<div className="inline-flex items-center space-x-6 bg-white rounded-full px-8 py-4 shadow-lg">
 							<div className="flex items-center space-x-2">
@@ -190,7 +187,6 @@ function Home() {
 				</div>
 			</section>
 
-			{/* CTA 섹션 */}
 			<section
 				id="cta"
 				data-section

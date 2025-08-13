@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { IoArrowBack } from "react-icons/io5";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
@@ -20,7 +21,7 @@ import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
-function MyPageProfile() {
+function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 	const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -165,14 +166,16 @@ function MyPageProfile() {
 					nickname: data.nickname,
 					email: data.email,
 					currentPassword: "",
-					introduce: data.introduce,
 				}
 			: {
 					nickname: data.nickname,
 					email: data.email,
 					currentPassword: data.password,
-					introduce: data.introduce,
 				};
+
+		if (!isSocialLoginUser && mode === "CREATOR") {
+			body.introduce = data.introduce;
+		}
 
 		if (!isSocialLoginUser && data.changedPassword) {
 			body.newPassword = data.changedPassword;
@@ -238,7 +241,16 @@ function MyPageProfile() {
 			{isEditing ? (
 				<>
 					<div className="flex flex-col w-[700px] gap-10">
-						<div className="flex gap-10">
+						<div className="flex justify-start">
+							<IoArrowBack
+								size={24}
+								className="cursor-pointer hover:bg-gray-scale-100 rounded-full"
+								onClick={() => setIsEditing(false)}
+							/>
+						</div>
+						<div
+							className={`flex gap-10 ${mode === "LEARNER" ? "justify-center" : ""}`}
+						>
 							<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
 								<Image
 									src={
@@ -284,22 +296,24 @@ function MyPageProfile() {
 									프로필 사진 수정
 								</label>
 							</div>
-							<div className="h-full w-full">
-								<div className="flex flex-col gap-1 h-full">
-									<label className="block text-lg font-medium mb-1 text-black-300">
-										소개글
-									</label>
-									<textarea
-										{...register("introduce")}
-										placeholder={
-											userInfo?.introduce
-												? userInfo.introduce
-												: "소개글을 입력해주세요."
-										}
-										className="w-full h-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none resize-none"
-									/>
+							{mode === "CREATOR" && (
+								<div className="h-full w-full">
+									<div className="flex flex-col gap-1 h-full">
+										<label className="block text-lg font-medium mb-1 text-black-300">
+											소개글
+										</label>
+										<textarea
+											{...register("introduce")}
+											placeholder={
+												userInfo?.introduce
+													? userInfo.introduce
+													: "소개글을 입력해주세요."
+											}
+											className="w-full h-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none resize-none"
+										/>
+									</div>
 								</div>
-							</div>
+							)}
 						</div>
 						{/* Form */}
 						<div className="flex items-center justify-center">
@@ -478,10 +492,14 @@ function MyPageProfile() {
 						{[
 							{ label: "닉네임", value: userInfo?.nickname },
 							{ label: "이메일", value: userInfo?.email },
-							{
-								label: "소개글",
-								value: userInfo?.introduce || "소개글이 없습니다.",
-							},
+							...(mode === "CREATOR"
+								? [
+										{
+											label: "소개글",
+											value: userInfo?.introduce || "소개글이 없습니다.",
+										},
+									]
+								: []),
 						].map((item) => (
 							<div key={item.label} className="flex flex-col gap-2">
 								<span className="text-xl font-semibold">{item.label}</span>

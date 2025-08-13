@@ -14,6 +14,9 @@ import { PUBLIC_PAGE_PATH } from "./constants";
 import Providers from "./Providers";
 import { useAuthStore } from "./stores";
 
+// 환경변수 상수
+const mixpanelKey = process.env.NEXT_PUBLIC_MIX_PANEL_KEY;
+
 function RootLayout({
 	children,
 }: Readonly<{
@@ -48,7 +51,6 @@ function RootLayout({
 			});
 
 			// Mixpanel 초기화
-			const mixpanelKey = process.env.NEXT_PUBLIC_MIX_PANEL_KEY;
 			if (mixpanelKey) {
 				mixpanel.init(mixpanelKey, {
 					debug: false,
