@@ -7,7 +7,13 @@ function Select() {
 		<>
 			<div className="flex justify-center p-8 w-full">
 				<div className="flex flex-col items-center">
-					<Image src="/insty.png" alt="logo" width={208} height={181} />
+					<Image
+						src="/insty.png"
+						alt="logo"
+						width={208}
+						height={181}
+						priority
+					/>
 					<div className="text-center mt-12">
 						<p className="text-2xl text-black-200">
 							어떤 활동을 시작하시겠어요?

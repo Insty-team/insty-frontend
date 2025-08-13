@@ -30,10 +30,10 @@ function BaseButton({
 	const bgColorClass = fill
 		? userType === "LEARNER"
 			? "bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 text-white"
-			: "bg-primary-blue-300 hover:bg-primary-blue-500 active:bg-primary-blue-600 text-white"
+			: "bg-primary-green-300 hover:bg-primary-green-500 active:bg-primary-green-600 text-white"
 		: userType === "LEARNER"
 			? "border border-primary-green-400 text-primary-green-400 hover:bg-primary-green-500 hover:text-white active:bg-primary-green-600 active:text-white"
-			: "border border-primary-blue-400 text-primary-blue-400 hover:bg-primary-blue-500 hover:text-white active:bg-primary-purple-600 active:text-white";
+			: "border border-primary-green-400 text-primary-green-400 hover:bg-primary-green-500 hover:text-white active:bg-primary-green-600 active:text-white";
 
 	return (
 		<button

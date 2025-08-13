@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
-import SocialLogin from "@/app/_components/social/SocialLogin";
+import { SocialLogin } from "@/app/_components/social";
 import { PasswordInput, TextInput } from "@/app/_components/validation";
 import { postLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
@@ -93,7 +93,13 @@ function Login() {
 		<>
 			<div className="flex flex-col justify-center p-8 w-full">
 				<div className="flex flex-col items-center">
-					<Image src="/insty.png" alt="logo" width={208} height={181} />
+					<Image
+						src="/insty.png"
+						alt="logo"
+						width={208}
+						height={181}
+						priority
+					/>
 					<p className="mt-12 text-3xl font-semibold"> {type}로 로그인하기</p>
 				</div>
 			</div>
