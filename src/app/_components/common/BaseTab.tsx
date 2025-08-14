@@ -21,7 +21,11 @@ function BaseTab({ items }: BaseTabProps) {
 				return (
 					<button
 						key={tab.path}
-						onClick={() => router.push(tab.path)}
+						onClick={
+							tab.label === "수익 확인하기"
+								? () => {}
+								: () => router.push(tab.path)
+						}
 						className={`
   						px-6 py-3
               ${tab.label === "수익 확인하기" ? "cursor-not-allowed text-gray-scale-300" : "cursor-pointer"}
