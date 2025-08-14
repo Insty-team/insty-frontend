@@ -145,4 +145,4 @@ export const REFUND_POLICY = [
 ];
 
 export const MAX_FILE_NAME = 150;
-export const MAX_VIDEO_DURATION = 15 * 60;
+export const MAX_VIDEO_DURATION = 120;
