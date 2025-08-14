@@ -474,6 +474,7 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 										},
 									}}
 									error={errors.changedPassword}
+									disabled={isSocialLoginUser}
 								/>
 								<div className="mt-10 w-full">
 									<BaseButton
