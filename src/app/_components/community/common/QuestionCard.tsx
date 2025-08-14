@@ -1,10 +1,10 @@
 "use client";
 
-import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { FaMessage, FaRegMessage } from "react-icons/fa6";
 
 import { useUserStore } from "@/app/stores";
+import { getFormattedDate } from "@/app/utils/";
 
 interface QuestionCardProps {
 	question: {
@@ -16,7 +16,7 @@ interface QuestionCardProps {
 	};
 }
 
-// TODO: 임시로 NONE, HAS_COMMENT, COMPLETE 를 반환받았다 생각하고 (논의 필요)
+// TODO: 임시로 NONE, HAS_COMMENT, COMPLETE 를 반환받았다 생각하고 (논의 완료 API 연동시 적용)
 const answerStatusInfo = {
 	NONE: {
 		label: "댓글 대기중",
@@ -78,7 +78,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
 					</div>
 				</div>
 				<div className="text-sm text-gray-500">
-					{dayjs(question.createdAt).format("YYYY.MM.DD")}
+					{getFormattedDate(question.createdAt)}
 				</div>
 			</div>
 			<div className="absolute left-0 top-0 w-1 h-full bg-primary-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
