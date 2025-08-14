@@ -4,6 +4,8 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { FaMessage, FaRegMessage } from "react-icons/fa6";
 
+import { useUserStore } from "@/app/stores";
+
 interface QuestionCardProps {
 	question: {
 		questionId: number;
@@ -37,10 +39,18 @@ const answerStatusInfo = {
 } as const;
 
 export default function QuestionCard({ question }: QuestionCardProps) {
+	const userType = useUserStore((state) => state.user.userType);
+
 	const router = useRouter();
 	const status =
 		answerStatusInfo[question.isAnswered as keyof typeof answerStatusInfo] ??
 		answerStatusInfo.NONE;
+
+	const handleClick = () => {
+		userType === "CREATOR"
+			? router.push(`/creator/community/question/${question.questionId}`)
+			: router.push(`/learner/community/question/${question.questionId}`);
+	};
 
 	return (
 		<div
@@ -49,9 +59,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
 				border-b last:border-b-0
 				hover:bg-primary-green-50/30 hover:px-4
 				transition-all duration-300 ease-out"
-			onClick={() =>
-				router.push(`/creator/community/question/${question.questionId}`)
-			}
+			onClick={handleClick}
 		>
 			<h4 className="font-semibold text-xl text-gray-900 mb-3 transition-colors line-clamp-2 leading-relaxed">
 				{question.title}
