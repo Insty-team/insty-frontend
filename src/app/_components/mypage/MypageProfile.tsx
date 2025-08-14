@@ -21,6 +21,8 @@ import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
+import Modal from "../common/Modal";
+
 function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
@@ -55,6 +57,9 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 	const [nicknameCheckStatus, setNicknameCheckStatus] = useState<string>("");
 	const [isEmailAvailable, setIsEmailAvailable] = useState<boolean>(true);
 	const [emailCheckStatus, setEmailCheckStatus] = useState<string>("");
+	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] =
+		useState<boolean>(false);
+	const [isChecked, setIsChecked] = useState<boolean>(false);
 	const password = watch("password");
 	const changedPassword = watch("changedPassword");
 	const nickname = watch("nickname");
@@ -234,6 +239,14 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 			setIsEmailAvailable(true);
 			setEmailCheckStatus("사용 가능한 이메일입니다.");
 		}
+	};
+
+	const handleWithdrawalModalOpen = () => {
+		setIsWithdrawalModalOpen(true);
+	};
+
+	const handleWithdrawal = () => {
+		console.log("탈퇴");
 	};
 
 	return (
@@ -513,9 +526,53 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 							userType="CREATOR"
 							onClick={onClickProfileEditButton}
 						/>
+						<div className="flex justify-end mt-2 mr-2">
+							<button
+								className="text-gray-scale-200 cursor-pointer hover:text-gray-scale-300"
+								onClick={handleWithdrawalModalOpen}
+							>
+								회원탈퇴
+							</button>
+						</div>
 					</div>
 				</>
 			)}
+			<Modal
+				open={isWithdrawalModalOpen}
+				onClose={() => setIsWithdrawalModalOpen(false)}
+				title="회원탈퇴"
+				onCloseTitle="취소"
+				actionsTitle="탈퇴하기"
+				actions={handleWithdrawal}
+				disabled={!isChecked}
+			>
+				<div className="p-6">
+					<h2 className="text-xl font-bold mb-4">
+						정말 계정을 탈퇴하시겠습니까?
+					</h2>
+
+					<div className="space-y-3 mb-6">
+						<p>
+							• 계정 및 개인 정보, 업로드한 강의, 수강한 강의 기록 등 영구
+							삭제됩니다.
+						</p>
+						<p>
+							• 작성하신 커뮤니티 게시물/댓글은 개인정보를 제거한 후 게시물만
+							유지될 수 있습니다.
+						</p>
+						<p>• 진행 후에는 복구가 불가합니다.</p>
+					</div>
+
+					<label className="flex items-center mb-4">
+						<input
+							type="checkbox"
+							checked={isChecked}
+							onChange={(e) => setIsChecked(e.target.checked)}
+						/>
+						<span className="ml-2">위 내용을 모두 확인했습니다.</span>
+					</label>
+				</div>
+			</Modal>
 		</div>
 	);
 }
