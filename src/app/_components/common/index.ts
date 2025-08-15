@@ -1,4 +1,5 @@
 import BaseButton from "./BaseButton";
+import BaseDropdown from "./BaseDropdown";
 import BaseSearchBar from "./BaseSearchBar";
 import BaseSelect from "./BaseSelect";
 import BaseTab from "./BaseTab";
@@ -12,6 +13,7 @@ import Pagination from "./Pagination";
 
 export {
 	BaseButton,
+	BaseDropdown,
 	BaseSearchBar,
 	BaseSelect,
 	BaseTab,
