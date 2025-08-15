@@ -1,5 +1,6 @@
-// import AnswerCard from "./AnswerCard";
+import AnswerCard from "./AnswerCard";
+import AttachmentFileModal from "./AttachmentFileModal";
 import EmptyDataMessage from "./EmptyDataMessage";
 import QuestionCard from "./QuestionCard";
 
-export { EmptyDataMessage, QuestionCard };
+export { AnswerCard, AttachmentFileModal, EmptyDataMessage, QuestionCard };
