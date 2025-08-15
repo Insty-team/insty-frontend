@@ -15,12 +15,15 @@ import {
 import { getEmailCheck, getNicknameCheck } from "@/app/api/backend";
 import { useEditUserProfileInfoMutation } from "@/app/queries";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
+import { useUserStore } from "@/app/stores";
 import { ChangeProfileForm } from "@/app/types";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
 function MyPageProfile() {
+	const { setUserNickname } = useUserStore();
+
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 	const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -190,6 +193,8 @@ function MyPageProfile() {
 
 		editProfile(formData, {
 			onSuccess: () => {
+				setUserNickname(getValues("nickname"));
+
 				Swal.fire({
 					icon: "success",
 					title: "수정에 성공했습니다.",

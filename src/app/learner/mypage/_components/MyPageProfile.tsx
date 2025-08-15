@@ -18,6 +18,7 @@ import {
 	useEditUserProfileInfoMutation,
 	useGetUserProfileInfoQuery,
 } from "@/app/queries";
+import { useUserStore } from "@/app/stores";
 import { ChangeProfileForm } from "@/app/types";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
@@ -32,6 +33,7 @@ function MyPageProfile() {
 	const queryClient = useQueryClient();
 	const { data: userInfo } = useGetUserProfileInfoQuery();
 	const { mutate: editProfile } = useEditUserProfileInfoMutation();
+	const { setUserNickname } = useUserStore();
 
 	// 초기값
 	const {
@@ -196,6 +198,8 @@ function MyPageProfile() {
 			onSuccess: () => {
 				// 프로필 수정 성공 추적
 				Amplitude.track("Profile Edit Completed");
+
+				setUserNickname(getValues("nickname"));
 
 				Swal.fire({
 					icon: "success",

@@ -6,6 +6,7 @@ import { UserInfo } from "@/app/types/index.d";
 interface UserStore {
 	user: UserInfo;
 	setUser: (user: UserInfo) => void;
+	setUserNickname: (nicknamd: string) => void;
 	setUserType: (userType: string) => void;
 	setUserDescription: (description: string) => void;
 	resetUser: () => void;
@@ -22,6 +23,14 @@ export const useUserStore = create<UserStore>()(
 
 			// 유저 정보 저장
 			setUser: (user) => set({ user }),
+
+			setUserNickname: (nickname: string) =>
+				set((state) => ({
+					user: {
+						...state.user,
+						nickname,
+					},
+				})),
 
 			// 유저 타입만 설정
 			setUserType: (userType: string) =>
