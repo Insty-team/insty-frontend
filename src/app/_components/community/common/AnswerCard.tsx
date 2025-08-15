@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 
 import { getFormattedDate } from "@/app/utils/";
 
+import { BaseDropdown } from "../../common";
 interface AnswerCardProps {
 	answer: Answer;
 	questionStatus: string;
@@ -144,46 +145,26 @@ export default function AnswerCard({
 					</div>
 
 					<div className="relative">
-						<button onClick={() => setOpenDropdown((prev) => !prev)}>
-							<BsThreeDots className="cursor-pointer size-5 text-gray-500" />
-						</button>
-
-						{openDropdown && (
-							<div className="absolute right-0 mt-2 w-24 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-								{answer.user.userType === userType &&
-								answer.user.nickname === userNickname ? (
-									<ul className="py-1 text-sm text-gray-700">
-										<li>
-											<button
-												className="block w-full px-4 py-2 text-left cursor-pointer"
-												onClick={() => handleUpdateAnswer()}
-											>
-												수정
-											</button>
-										</li>
-										<li>
-											<button
-												className="block w-full px-4 py-2 text-left cursor-pointer"
-												onClick={() => handleDeleteAnswer()}
-											>
-												삭제
-											</button>
-										</li>
-									</ul>
-								) : (
-									<ul className="py-1 text-sm text-gray-300">
-										<li>
-											<button
-												className="block w-full px-4 py-2 cursor-not-allowed text-left"
-												disabled
-											>
-												신고하기
-											</button>
-										</li>
-									</ul>
-								)}
-							</div>
-						)}
+						{answer.user.userType === userType &&
+							answer.user.nickname === userNickname && (
+								<BaseDropdown
+									isOpen={openDropdown}
+									setIsOpen={setOpenDropdown}
+									trigger={
+										<button>
+											<BsThreeDots className="cursor-pointer size-5 text-gray-500" />
+										</button>
+									}
+									items={[
+										{ label: "수정", onClick: handleUpdateAnswer },
+										{
+											label: "삭제",
+											onClick: handleDeleteAnswer,
+											danger: true,
+										},
+									]}
+								/>
+							)}
 					</div>
 				</div>
 
