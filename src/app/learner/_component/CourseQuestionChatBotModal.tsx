@@ -8,6 +8,7 @@ import Loading from "@/app/_components/common/Loading";
 import { postMessageStream } from "@/app/api/ai";
 import { useFormatAssistantText } from "@/app/hooks";
 import { CourserChatbotMessage } from "@/app/types/course";
+import { trackEvent } from "@/app/utils";
 interface CourseQuestionChatBotModalProps {
 	open: boolean;
 	messages: CourserChatbotMessage[];
@@ -76,6 +77,8 @@ function CourseQuestionChatBotModal({
 
 			// Amplitude 추적
 			Amplitude.track("Course Question Chatbot Used");
+			// Mixpanel 추적
+			trackEvent("강의_질문_챗봇_사용");
 
 			setIsResponseLoading(true);
 

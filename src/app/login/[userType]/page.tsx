@@ -7,12 +7,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
-import SocialLogin from "@/app/_components/social/SocialLogin";
+import { SocialLogin } from "@/app/_components/social";
 import { PasswordInput, TextInput } from "@/app/_components/validation";
 import { postLogin } from "@/app/api/backend";
 import { useAuthStore, useUserStore } from "@/app/stores";
 import { LoginForm } from "@/app/types";
-import { emailReg, passwordReg } from "@/app/utils";
+import { emailReg, passwordReg, trackEvent } from "@/app/utils";
 
 function Login() {
 	const { userType } = useParams();
@@ -35,6 +35,8 @@ function Login() {
 	const onSubmit = async (data: LoginForm) => {
 		// Amplitude 추적
 		Amplitude.track("Login Submitted");
+		// Mixpanel 추적
+		trackEvent("로그인_시도");
 
 		try {
 			const submitData = {
@@ -45,6 +47,7 @@ function Login() {
 			if (res && res.success) {
 				// 로그인 성공 추적
 				Amplitude.track("Login Completed");
+				trackEvent("로그인_성공");
 
 				setAccessToken(res.data.token.accessToken);
 				setRefreshToken(res.data.token.refreshToken);
@@ -65,6 +68,7 @@ function Login() {
 			} else {
 				// 로그인 실패 추적
 				Amplitude.track("Login Failed");
+				trackEvent("로그인_실패");
 				Swal.fire({
 					title: "로그인 실패!",
 					text:
@@ -80,6 +84,7 @@ function Login() {
 		} catch (error) {
 			// 로그인 에러 추적
 			Amplitude.track("Login Error");
+			trackEvent("로그인_에러");
 			console.error("로그인 실패:", error);
 		}
 	};
@@ -88,7 +93,13 @@ function Login() {
 		<>
 			<div className="flex flex-col justify-center p-8 w-full">
 				<div className="flex flex-col items-center">
-					<Image src="/insty.png" alt="logo" width={208} height={181} />
+					<Image
+						src="/insty.png"
+						alt="logo"
+						width={208}
+						height={181}
+						priority
+					/>
 					<p className="mt-12 text-3xl font-semibold"> {type}로 로그인하기</p>
 				</div>
 			</div>

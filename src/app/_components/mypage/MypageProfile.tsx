@@ -2,8 +2,10 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { IoArrowBack } from "react-icons/io5";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
@@ -12,7 +14,11 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
-import { getEmailCheck, getNicknameCheck } from "@/app/api/backend";
+import {
+	deleteUserInformation,
+	getEmailCheck,
+	getNicknameCheck,
+} from "@/app/api/backend";
 import { useEditUserProfileInfoMutation } from "@/app/queries";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { useUserStore } from "@/app/stores";
@@ -21,9 +27,11 @@ import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
 import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 
-function MyPageProfile() {
-	const { setUserNickname } = useUserStore();
+import Modal from "../common/Modal";
 
+function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
+	const router = useRouter();
+	const { setUserNickname } = useUserStore();
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 	const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +65,9 @@ function MyPageProfile() {
 	const [nicknameCheckStatus, setNicknameCheckStatus] = useState<string>("");
 	const [isEmailAvailable, setIsEmailAvailable] = useState<boolean>(true);
 	const [emailCheckStatus, setEmailCheckStatus] = useState<string>("");
+	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] =
+		useState<boolean>(false);
+	const [isChecked, setIsChecked] = useState<boolean>(false);
 	const password = watch("password");
 	const changedPassword = watch("changedPassword");
 	const nickname = watch("nickname");
@@ -168,14 +179,16 @@ function MyPageProfile() {
 					nickname: data.nickname,
 					email: data.email,
 					currentPassword: "",
-					introduce: data.introduce,
 				}
 			: {
 					nickname: data.nickname,
 					email: data.email,
 					currentPassword: data.password,
-					introduce: data.introduce,
 				};
+
+		if (!isSocialLoginUser && mode === "CREATOR") {
+			body.introduce = data.introduce;
+		}
 
 		if (!isSocialLoginUser && data.changedPassword) {
 			body.newPassword = data.changedPassword;
@@ -238,12 +251,37 @@ function MyPageProfile() {
 		}
 	};
 
+	const handleWithdrawalModalOpen = () => {
+		setIsWithdrawalModalOpen(true);
+	};
+
+	const handleWithdrawal = () => {
+		deleteUserInformation().then(() => {
+			Swal.fire({
+				icon: "success",
+				title: "회원탈퇴에 성공했습니다.",
+				text: "로그인 페이지로 이동합니다.",
+			}).then(() => {
+				router.push("/");
+			});
+		});
+	};
+
 	return (
 		<div className="flex flex-col gap-12 justify-center items-center w-full">
 			{isEditing ? (
 				<>
 					<div className="flex flex-col w-[700px] gap-10">
-						<div className="flex gap-10">
+						<div className="flex justify-start">
+							<IoArrowBack
+								size={24}
+								className="cursor-pointer hover:bg-gray-scale-100 rounded-full"
+								onClick={() => setIsEditing(false)}
+							/>
+						</div>
+						<div
+							className={`flex gap-10 ${mode === "LEARNER" ? "justify-center" : ""}`}
+						>
 							<div className="flex flex-col gap-2 justify-center items-center w-[160px] aspect-square">
 								<Image
 									src={
@@ -289,22 +327,24 @@ function MyPageProfile() {
 									프로필 사진 수정
 								</label>
 							</div>
-							<div className="h-full w-full">
-								<div className="flex flex-col gap-1 h-full">
-									<label className="block text-lg font-medium mb-1 text-black-300">
-										소개글
-									</label>
-									<textarea
-										{...register("introduce")}
-										placeholder={
-											userInfo?.introduce
-												? userInfo.introduce
-												: "소개글을 입력해주세요."
-										}
-										className="w-full h-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none resize-none"
-									/>
+							{mode === "CREATOR" && (
+								<div className="h-full w-full">
+									<div className="flex flex-col gap-1 h-full">
+										<label className="block text-lg font-medium mb-1 text-black-300">
+											소개글
+										</label>
+										<textarea
+											{...register("introduce")}
+											placeholder={
+												userInfo?.introduce
+													? userInfo.introduce
+													: "소개글을 입력해주세요."
+											}
+											className="w-full h-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none resize-none"
+										/>
+									</div>
 								</div>
-							</div>
+							)}
 						</div>
 						{/* Form */}
 						<div className="flex items-center justify-center">
@@ -452,6 +492,7 @@ function MyPageProfile() {
 										},
 									}}
 									error={errors.changedPassword}
+									disabled={isSocialLoginUser}
 								/>
 								<div className="mt-10 w-full">
 									<BaseButton
@@ -483,10 +524,14 @@ function MyPageProfile() {
 						{[
 							{ label: "닉네임", value: userInfo?.nickname },
 							{ label: "이메일", value: userInfo?.email },
-							{
-								label: "소개글",
-								value: userInfo?.introduce || "소개글이 없습니다.",
-							},
+							...(mode === "CREATOR"
+								? [
+										{
+											label: "소개글",
+											value: userInfo?.introduce || "소개글이 없습니다.",
+										},
+									]
+								: []),
 						].map((item) => (
 							<div key={item.label} className="flex flex-col gap-2">
 								<span className="text-xl font-semibold">{item.label}</span>
@@ -500,9 +545,53 @@ function MyPageProfile() {
 							userType="CREATOR"
 							onClick={onClickProfileEditButton}
 						/>
+						<div className="flex justify-end mt-2 mr-2">
+							<button
+								className="text-gray-scale-200 cursor-pointer hover:text-gray-scale-300"
+								onClick={handleWithdrawalModalOpen}
+							>
+								회원탈퇴
+							</button>
+						</div>
 					</div>
 				</>
 			)}
+			<Modal
+				open={isWithdrawalModalOpen}
+				onClose={() => setIsWithdrawalModalOpen(false)}
+				title="회원탈퇴"
+				onCloseTitle="취소"
+				actionsTitle="탈퇴하기"
+				actions={handleWithdrawal}
+				disabled={!isChecked}
+			>
+				<div className="p-6">
+					<h2 className="text-xl font-bold mb-4">
+						정말 계정을 삭제하시겠습니까?
+					</h2>
+
+					<div className="space-y-3 mb-6">
+						<p>
+							• 계정 및 개인 정보, 업로드한 강의, 수강한 강의 기록 등 영구
+							삭제됩니다.
+						</p>
+						<p>
+							• 작성하신 커뮤니티 게시물/댓글은 개인정보를 제거한 후 게시물만
+							유지될 수 있습니다.
+						</p>
+						<p>• 진행 후에는 복구가 불가합니다.</p>
+					</div>
+
+					<label className="flex items-center mb-4">
+						<input
+							type="checkbox"
+							checked={isChecked}
+							onChange={(e) => setIsChecked(e.target.checked)}
+						/>
+						<span className="ml-2">위 내용을 모두 확인했습니다.</span>
+					</label>
+				</div>
+			</Modal>
 		</div>
 	);
 }
