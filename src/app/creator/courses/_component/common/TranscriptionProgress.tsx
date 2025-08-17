@@ -31,7 +31,8 @@ export const useTranscriptionProgress = (videoUuid: string | null) => {
 
 					if (
 						statusRes.data.status === "COMPLETED" ||
-						statusRes.data.status === "FAILED"
+						statusRes.data.status === "FAILED" ||
+						statusRes.data.status === "FAILED_INVALID_VIDEO_LENGTH"
 					) {
 						if (pollingRef.current) {
 							clearInterval(pollingRef.current);

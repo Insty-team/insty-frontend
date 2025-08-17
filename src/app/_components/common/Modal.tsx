@@ -8,6 +8,7 @@ interface ModalProps {
 	onClose: () => void;
 	actionsTitle: string;
 	actions: () => void;
+	disabled?: boolean;
 }
 
 function Modal({
@@ -18,6 +19,7 @@ function Modal({
 	onCloseTitle,
 	actionsTitle,
 	actions,
+	disabled,
 }: ModalProps) {
 	if (!open) return null;
 	return (
@@ -29,7 +31,11 @@ function Modal({
 				<div>{children}</div>
 				<div className="flex gap-4 mt-8">
 					<BaseButton title={onCloseTitle} fill={false} onClick={onClose} />
-					<BaseButton title={actionsTitle} onClick={actions} />
+					<BaseButton
+						title={actionsTitle}
+						onClick={actions}
+						disabled={disabled}
+					/>
 				</div>
 			</div>
 		</div>
