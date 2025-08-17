@@ -112,8 +112,39 @@ export default function AnswerCard({
 	};
 
 	const handleSaveEdit = () => {
-		// TODO: 저장 API
-		setIsEditing(false);
+		Swal.fire({
+			title: "정말 수정하시겠습니까?",
+			icon: "question",
+			showCancelButton: true,
+			confirmButtonText: "확인",
+			cancelButtonText: "취소",
+			confirmButtonColor: "#6ead79",
+			cancelButtonColor: "#ff4f64",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				console.log("수정하기");
+				setIsEditing(false);
+				// 수정 api 호출
+			}
+		});
+	};
+
+	const handleCancelEdit = () => {
+		Swal.fire({
+			title: "편집을 취소하시겠어요?",
+			text: "작성 중인 내용이 저장되지 않습니다.",
+			icon: "question",
+			showCancelButton: true,
+			confirmButtonText: "취소",
+			cancelButtonText: "돌아가기",
+			confirmButtonColor: "#6ead79",
+			cancelButtonColor: "#ff4f64",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				console.log("편집 취소");
+				setIsEditing(false);
+			}
+		});
 	};
 
 	const handleOpenImageModal = () => {
@@ -229,7 +260,6 @@ export default function AnswerCard({
 								value={editContent}
 								onChange={(e) => setEditContent(e.target.value)}
 							/>
-
 							<button
 								onClick={handleSaveEdit}
 								disabled={!editContent.trim()}
@@ -245,67 +275,80 @@ export default function AnswerCard({
 						</div>
 
 						{/* 첨부 파일 영역 */}
-						<div className="flex items-center gap-2">
-							<button
-								type="button"
-								onClick={handleOpenImageModal}
-								className="relative flex flex-col items-center justify-center w-20 h-20
+						<div className="flex gap-2 justify-between items-end">
+							<div className="flex">
+								<button
+									type="button"
+									onClick={handleOpenImageModal}
+									className="relative flex flex-col items-center justify-center w-20 h-20
                   border-2 border-dashed border-gray-400 rounded-md
                   bg-white hover:bg-gray-100 transition-colors duration-200 cursor-pointer overflow-hidden"
-							>
-								{imagePreview ? (
-									<>
-										<Image
-											src={imagePreview}
-											alt="첨부한 이미지 미리보기"
-											fill
-											className="relative object-cover"
-										/>
-										<span
-											onClick={handleRemoveImage}
-											className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
-										>
-											×
-										</span>
-									</>
-								) : (
-									<>
-										<IoImageOutline size={24} className="text-gray-600" />
-										<span className="text-sm text-gray-500">(0/1)</span>
-									</>
-								)}
-							</button>
+								>
+									{imagePreview ? (
+										<>
+											<Image
+												src={imagePreview}
+												alt="첨부한 이미지 미리보기"
+												fill
+												className="relative object-cover"
+											/>
+											<span
+												onClick={handleRemoveImage}
+												className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
+											>
+												×
+											</span>
+										</>
+									) : (
+										<>
+											<IoImageOutline size={24} className="text-gray-600" />
+											<span className="text-sm text-gray-500">(0/1)</span>
+										</>
+									)}
+								</button>
 
-							{/* 영상 업로드 */}
-							<button
-								type="button"
-								onClick={handleOpenVideoModal}
-								className="relative flex flex-col items-center justify-center w-20 h-20
+								{/* 영상 업로드 */}
+								<button
+									type="button"
+									onClick={handleOpenVideoModal}
+									className="relative flex flex-col items-center justify-center w-20 h-20
                   border-2 border-dashed border-gray-400 rounded-md
                   bg-white hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+								>
+									{videoPreview ? (
+										<>
+											<video
+												src={videoPreview}
+												className="w-20 h-20 object-cover rounded-md"
+												muted
+												autoPlay
+												loop
+											/>
+											<span
+												onClick={handleRemoveVideo}
+												className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
+											>
+												×
+											</span>
+										</>
+									) : (
+										<>
+											<HiOutlineVideoCamera
+												size={24}
+												className="text-gray-600"
+											/>
+											<span className="text-sm text-gray-500">(0/1)</span>
+										</>
+									)}
+								</button>
+							</div>
+							<button
+								className="px-4 py-2 bg-white border-2 border-gray-300 
+								hover:border-gray-400 text-gray-600 hover:text-gray-700 rounded-full text-sm 
+								font-medium transition-all duration-200 shadow-sm"
+								onClick={handleCancelEdit}
 							>
-								{videoPreview ? (
-									<>
-										<video
-											src={videoPreview}
-											className="w-20 h-20 object-cover rounded-md"
-											muted
-											autoPlay
-											loop
-										/>
-										<span
-											onClick={handleRemoveVideo}
-											className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
-										>
-											×
-										</span>
-									</>
-								) : (
-									<>
-										<HiOutlineVideoCamera size={24} className="text-gray-600" />
-										<span className="text-sm text-gray-500">(0/1)</span>
-									</>
-								)}
+								취소
 							</button>
 						</div>
 
