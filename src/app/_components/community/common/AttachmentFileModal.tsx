@@ -4,7 +4,8 @@ import { IoImageOutline } from "react-icons/io5";
 import { IoClose } from "react-icons/io5";
 import { TbUpload } from "react-icons/tb";
 
-import { MAX_IMAGE_SIZE } from "@/app/constants";
+import { MAX_ANSWER_VIDEO_SIZE, MAX_IMAGE_SIZE } from "@/app/constants";
+import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 
 interface AttachmentModalProps {
 	onClose: () => void;
@@ -12,7 +13,7 @@ interface AttachmentModalProps {
 	onFileSelect: (file: File) => void;
 }
 
-function AttachmentModal({
+function AttachmentFileModal({
 	onClose,
 	type,
 	onFileSelect,
@@ -31,10 +32,22 @@ function AttachmentModal({
 		}
 
 		const file = e.target.files[0];
-		const fileExt = file.name.split(".").pop()?.toLowerCase();
+		const fileExt = `.${file.name.split(".").pop()?.toLowerCase()}`;
+		console.log(fileExt);
 
-		if (type === "Image" && !["png", "jpg"].includes(fileExt || "")) {
-			setError("이미지는 PNG 또는 JPG만 업로드 가능합니다.");
+		const allowedFileType =
+			type === "Image"
+				? ALLOWED_FILE_TYPES.image
+				: type === "Video"
+					? ALLOWED_FILE_TYPES.video
+					: null;
+
+		if (!allowedFileType) return;
+
+		if (!allowedFileType.accept.split(",").includes(fileExt || "")) {
+			setError(
+				`${type === "Image" ? "이미지" : "영상"} 파일 형식이 올바르지 않습니다.`,
+			);
 			e.target.value = "";
 			setFileName("");
 			setSelectedFile(null);
@@ -49,15 +62,27 @@ function AttachmentModal({
 			return;
 		}
 
-		if (type === "Video" && fileExt !== "mp4") {
-			setError("영상은 MP4 파일만 업로드 가능합니다.");
-			e.target.value = "";
-			setFileName("");
-			setSelectedFile(null);
-			return;
-		}
+		if (type === "Video") {
+			const video = document.createElement("video");
+			video.preload = "metadata";
 
-		// 2분 이상 영상 처리 로직 추가
+			video.onloadedmetadata = () => {
+				URL.revokeObjectURL(video.src);
+				const duration = video.duration;
+				if (duration > MAX_ANSWER_VIDEO_SIZE) {
+					setError("영상은 2분 이하만 업로드 가능합니다.");
+					e.target.value = "";
+					setFileName("");
+					setSelectedFile(null);
+				} else {
+					setError("");
+					setFileName(file.name);
+					setSelectedFile(file);
+				}
+			};
+
+			video.src = URL.createObjectURL(file);
+		}
 
 		setError("");
 		setFileName(file.name);
@@ -108,7 +133,11 @@ function AttachmentModal({
 					</div>
 					<input
 						type="file"
-						accept={type === "Image" ? "image/png, image/jpg" : "video/mp4"}
+						accept={
+							type === "Image"
+								? ALLOWED_FILE_TYPES.image.accept
+								: ALLOWED_FILE_TYPES.video.accept
+						}
 						className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 						id={type === "Image" ? "image-upload" : "video-upload"}
 						onChange={handleInputChange}
@@ -130,7 +159,7 @@ function AttachmentModal({
 						<div className="flex flex-col gap-2">
 							<div className="flex items-center gap-2">
 								<div className="bg-black rounded-full w-1 h-1"></div>
-								<p>파일 형식: PNG/JPG</p>
+								<p>파일 형식: png/jpg/jpeg</p>
 							</div>
 							<div className="flex items-center gap-2">
 								<div className="bg-black rounded-full w-1 h-1"></div>
@@ -141,7 +170,7 @@ function AttachmentModal({
 						<div className="flex flex-col gap-2">
 							<div className="flex items-center gap-2">
 								<div className="bg-black rounded-full w-1 h-1"></div>
-								<p>파일 형식: MP4</p>
+								<p>파일 형식: mp4/mov/avi</p>
 							</div>
 							<div className="flex items-center gap-2">
 								<div className="bg-black rounded-full w-1 h-1"></div>
@@ -165,4 +194,4 @@ function AttachmentModal({
 	);
 }
 
-export default AttachmentModal;
+export default AttachmentFileModal;
