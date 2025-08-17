@@ -60,7 +60,11 @@ function Community() {
 
 	return (
 		<div className="flex flex-col mt-16">
-			<CommunityMain courses={enrolledCourses} questions={questions} />
+			<CommunityMain
+				courses={enrolledCourses}
+				questions={questions}
+				mode="LEARNER"
+			/>
 		</div>
 	);
 }

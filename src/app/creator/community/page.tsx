@@ -205,7 +205,11 @@ function CreatorCommunity() {
 
 	return (
 		<div className="flex flex-col mt-16">
-			<CommunityMain courses={uploadCourses} questions={myCourseQuestions} />
+			<CommunityMain
+				courses={uploadCourses}
+				questions={myCourseQuestions}
+				mode="CREATOR"
+			/>
 		</div>
 	);
 }

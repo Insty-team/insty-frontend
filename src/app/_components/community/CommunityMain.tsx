@@ -7,7 +7,6 @@ import { IoChatbubbleEllipses } from "react-icons/io5";
 
 import { BaseButton, BaseSearchBar } from "@/app/_components/common";
 import { EMPTY_QUESTION } from "@/app/constants";
-import { useUserStore } from "@/app/stores";
 
 import { Pagination } from "../common";
 import { EmptyDataMessage, QuestionCard } from "./common";
@@ -42,6 +41,7 @@ interface Props {
 		createdAt: string;
 		updatedAt: string;
 	}[];
+	mode: "CREATOR" | "LEARNER";
 }
 
 interface PaginationInfo {
@@ -51,10 +51,8 @@ interface PaginationInfo {
 	perPage: number;
 }
 
-function CommunityMain({ courses, questions }: Props) {
+function CommunityMain({ courses, questions, mode }: Props) {
 	const router = useRouter();
-
-	const userType = useUserStore((state) => state.user.userType);
 
 	const [value, setValue] = useState("");
 
@@ -105,7 +103,7 @@ function CommunityMain({ courses, questions }: Props) {
 		<div className="flex flex-col gap-4">
 			<div className="flex justify-between items-start">
 				<h3 className="text-2xl font-semibold">커뮤니티</h3>
-				{hasCourses && userType === "LEARNER" && (
+				{hasCourses && mode === "LEARNER" && (
 					<button className="bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 text-white py-2 px-4 rounded-4xl transition-all duration-300 cursor-pointer">
 						질문 남기기
 					</button>
@@ -124,7 +122,7 @@ function CommunityMain({ courses, questions }: Props) {
 						<div className="flex flex-col gap-4 w-[480px]">
 							<div className="flex flex-row justify-between">
 								<span className="text-xl font-bold">
-									{userType === "CREATOR"
+									{mode === "CREATOR"
 										? "내가 업로드한 강의"
 										: "내가 수강중인 강의"}
 								</span>
@@ -189,7 +187,7 @@ function CommunityMain({ courses, questions }: Props) {
 							)}
 						</div>
 
-						{userType === "LEARNER" && (
+						{mode === "LEARNER" && (
 							<button className="fixed bottom-8 right-8 z-50 flex items-center bg-primary-green-400 hover:bg-primary-green-500 text-white font-semibold px-6 py-2 rounded-full shadow-none">
 								<span>AI 챗봇에게 질문하기</span>
 								<IoChatbubbleEllipses className="w-7 h-7 ml-2" />
@@ -197,7 +195,7 @@ function CommunityMain({ courses, questions }: Props) {
 						)}
 					</>
 				) : //  강의가 없을 경우
-				userType === "CREATOR" ? (
+				mode === "CREATOR" ? (
 					<div className="flex flex-col w-full h-[50vh] justify-center items-center text-center text-2xl text-primary-green-600">
 						<Image
 							src="/insty.png"
