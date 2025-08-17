@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { IoArrowBack } from "react-icons/io5";
@@ -13,7 +14,11 @@ import {
 	PasswordInput,
 	TextInput,
 } from "@/app/_components/validation";
-import { getEmailCheck, getNicknameCheck } from "@/app/api/backend";
+import {
+	deleteUserInformation,
+	getEmailCheck,
+	getNicknameCheck,
+} from "@/app/api/backend";
 import { useEditUserProfileInfoMutation } from "@/app/queries";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
 import { ChangeProfileForm } from "@/app/types";
@@ -24,6 +29,7 @@ import { emailReg, nicknameReg, passwordReg } from "@/app/utils";
 import Modal from "../common/Modal";
 
 function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
+	const router = useRouter();
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 	const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -246,7 +252,15 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 	};
 
 	const handleWithdrawal = () => {
-		console.log("탈퇴");
+		deleteUserInformation().then(() => {
+			Swal.fire({
+				icon: "success",
+				title: "회원탈퇴에 성공했습니다.",
+				text: "로그인 페이지로 이동합니다.",
+			}).then(() => {
+				router.push("/");
+			});
+		});
 	};
 
 	return (
@@ -549,7 +563,7 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 			>
 				<div className="p-6">
 					<h2 className="text-xl font-bold mb-4">
-						정말 계정을 탈퇴하시겠습니까?
+						정말 계정을 삭제하시겠습니까?
 					</h2>
 
 					<div className="space-y-3 mb-6">

@@ -13,7 +13,7 @@ import axiosInstance from "../interceptor";
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_BASE_URL;
 
 // 닉네임 중복 체크
-export const getNicknameCheck = async (nickname: string) => {
+const getNicknameCheck = async (nickname: string) => {
 	try {
 		const res = await axios.get(`${BASE_URL}/users/nickname/check`, {
 			params: {
@@ -30,7 +30,7 @@ export const getNicknameCheck = async (nickname: string) => {
 };
 
 // 이메일 중복 체크
-export const getEmailCheck = async (email: string) => {
+const getEmailCheck = async (email: string) => {
 	try {
 		const res = await axios.get(`${BASE_URL}/users/email/check`, {
 			params: {
@@ -47,20 +47,19 @@ export const getEmailCheck = async (email: string) => {
 };
 
 // 회원 가입
-export const postSignup = async (data: SignupForm) => {
+const postSignup = async (data: SignupForm) => {
 	const res = await axios.post(`${BASE_URL}/users`, data);
 	return res.data.data;
 };
 
 //사용자 프로필 조회
-export const getUserProfileInfo =
-	async (): Promise<UserProfileInfoResponse> => {
-		const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
-		return res.data.data;
-	};
+const getUserProfileInfo = async (): Promise<UserProfileInfoResponse> => {
+	const res = await axiosInstance.get(`${BASE_URL}/users/profile`);
+	return res.data.data;
+};
 
 // 사용자 프로필 정보 수정
-export const putUserProfileInfoEdit = async (
+const putUserProfileInfoEdit = async (
 	data: FormData,
 ): Promise<UserProfileInfoResponse> => {
 	const res = await axiosInstance.put(`${BASE_URL}/users/profile/me`, data, {
@@ -70,7 +69,7 @@ export const putUserProfileInfoEdit = async (
 };
 
 // 사용자 이메일 수신 동의 상태값 변경
-export const patchUserEmailAgree = async (
+const patchUserEmailAgree = async (
 	isEmailAgree: boolean,
 ): Promise<UserProfileInfoResponse> => {
 	const res = await axiosInstance.patch(
@@ -83,7 +82,7 @@ export const patchUserEmailAgree = async (
 };
 
 // 사용자 타입 변경
-export const patchUserType = async (
+const patchUserType = async (
 	userType: UserType,
 ): Promise<UserProfileInfoResponse> => {
 	const res = await axiosInstance.patch(`${BASE_URL}/users/profile/userType`, {
@@ -95,7 +94,7 @@ export const patchUserType = async (
 /**
  * OAuth 로그인
  */
-export const getSocialAuthCode = async (
+const getSocialAuthCode = async (
 	socialName: SocialLogin,
 	userType: UserType,
 ) => {
@@ -105,7 +104,7 @@ export const getSocialAuthCode = async (
 	return res.data.data;
 };
 
-export const postSocialLogin = async (
+const postSocialLogin = async (
 	socialName: SocialLogin,
 	data: {
 		code: string;
@@ -117,4 +116,29 @@ export const postSocialLogin = async (
 		userType: data.userType,
 	});
 	return res.data.data;
+};
+
+const deleteUserInformation = async () => {
+	try {
+		const res = await axiosInstance.delete(`${BASE_URL}/users/withdraw`);
+		return res.data.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		return { error: "회원 탈퇴에 실패했습니다." };
+	}
+};
+
+export {
+	deleteUserInformation,
+	getEmailCheck,
+	getNicknameCheck,
+	getSocialAuthCode,
+	getUserProfileInfo,
+	patchUserEmailAgree,
+	patchUserType,
+	postSignup,
+	postSocialLogin,
+	putUserProfileInfoEdit,
 };
