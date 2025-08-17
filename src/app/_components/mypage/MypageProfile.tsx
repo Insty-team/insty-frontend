@@ -21,6 +21,7 @@ import {
 } from "@/app/api/backend";
 import { useEditUserProfileInfoMutation } from "@/app/queries";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
+import { useUserStore } from "@/app/stores";
 import { ChangeProfileForm } from "@/app/types";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 import { UserUpdateRequest } from "@/app/types/user";
@@ -30,6 +31,7 @@ import Modal from "../common/Modal";
 
 function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 	const router = useRouter();
+	const { setUserNickname } = useUserStore();
 	const [isEditing, setIsEditing] = useState(false);
 	const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 	const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -204,6 +206,7 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 
 		editProfile(formData, {
 			onSuccess: () => {
+				setUserNickname(getValues("nickname"));
 				Swal.fire({
 					icon: "success",
 					title: "수정에 성공했습니다.",
