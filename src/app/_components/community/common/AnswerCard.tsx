@@ -1,11 +1,16 @@
 import Image from "next/image";
 import { useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
+import { HiOutlineVideoCamera } from "react-icons/hi";
+import { IoImageOutline } from "react-icons/io5";
+import { LuSendHorizontal } from "react-icons/lu";
 import Swal from "sweetalert2";
 
 import { getFormattedDate } from "@/app/utils/";
 
 import { BaseDropdown } from "../../common";
+import AttachmentFileModal from "./AttachmentFileModal";
+
 interface AnswerCardProps {
 	answer: Answer;
 	questionStatus: string;
@@ -23,7 +28,7 @@ interface Answer {
 	};
 	content: string;
 	attachments: Attachment[];
-	videoInfo: VideoInfo;
+	videoInfo?: VideoInfo;
 	isAccepted: boolean;
 	createdAt: string;
 	updatedAt: string;
@@ -46,13 +51,25 @@ export interface VideoInfo {
 export default function AnswerCard({
 	answer,
 	questionStatus,
-	userType, // 현재 로그인 유저 타입
-	userNickname, // 현재 로그인 유저 닉네임
-	questionUserNickname, // 해당 질문글 작성자 닉네임
+	userType,
+	userNickname,
+	questionUserNickname,
 }: AnswerCardProps) {
 	const [openDropdown, setOpenDropdown] = useState(false);
+	const [isEditing, setIsEditing] = useState(false);
 
-	const handleUpdateAnswer = () => {};
+	const [editContent, setEditContent] = useState(answer.content);
+	const [imagePreview, setImagePreview] = useState<string | null>(
+		answer.attachments[0]?.url || null,
+	);
+	const [videoPreview, setVideoPreview] = useState<string | null>(
+		answer.videoInfo?.videoUuid || null,
+	);
+
+	const [attachmentModalOpen, setAttachmentModalOpen] = useState(false);
+	const [attachmentType, setAttachmentType] = useState<"Image" | "Video">(
+		"Image",
+	);
 
 	const handleDeleteAnswer = () => {
 		setOpenDropdown(false);
@@ -76,7 +93,6 @@ export default function AnswerCard({
 	const handleAcceptAnswer = () => {
 		Swal.fire({
 			title: "해당 댓글을 채택하시겠습니까?",
-			text: "",
 			icon: "question",
 			showCancelButton: true,
 			confirmButtonText: "채택하기",
@@ -89,6 +105,35 @@ export default function AnswerCard({
 				console.log("채택");
 			}
 		});
+	};
+
+	const handleUpdateAnswer = () => {
+		setIsEditing(true);
+	};
+
+	const handleSaveEdit = () => {
+		// TODO: 저장 API
+		setIsEditing(false);
+	};
+
+	const handleOpenImageModal = () => {
+		setAttachmentType("Image");
+		setAttachmentModalOpen(true);
+	};
+
+	const handleOpenVideoModal = () => {
+		setAttachmentType("Video");
+		setAttachmentModalOpen(true);
+	};
+
+	const handleRemoveImage = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setImagePreview(null);
+	};
+
+	const handleRemoveVideo = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setVideoPreview(null);
 	};
 
 	return (
@@ -131,7 +176,7 @@ export default function AnswerCard({
 							answer.user.nickname !== questionUserNickname && (
 								<button
 									className="px-3 py-1 text-sm bg-amber-100 text-amber-700 rounded-full border border-amber-200 hover:bg-amber-200 transition-colors"
-									onClick={() => handleAcceptAnswer()}
+									onClick={handleAcceptAnswer}
 								>
 									채택하기
 								</button>
@@ -172,21 +217,129 @@ export default function AnswerCard({
 					{getFormattedDate(answer.createdAt)}
 				</span>
 
-				<div className="flex flex-col gap-12">
-					<p className="text-xl mt-3 text-gray-900">{answer.content}</p>
-					{answer.attachments?.length > 0 && (
-						<Image
-							src={answer.attachments[0].url}
-							alt={answer.attachments[0].name}
-							width={500}
-							height={300}
-							unoptimized
-						/>
-					)}
-				</div>
+				{isEditing ? (
+					<div className="flex flex-col gap-4 mt-3">
+						<div className="relative">
+							<textarea
+								className="w-full min-h-[200px] p-6 pr-20 border-2 rounded-3xl resize-none text-xl
+                placeholder:text-gray-400 text-gray-900 leading-relaxed
+                transition-all duration-300 ease-out
+                border-primary-green-400 shadow-2xl shadow-primary-green-500/10 outline-none"
+								placeholder="댓글을 남겨주세요."
+								value={editContent}
+								onChange={(e) => setEditContent(e.target.value)}
+							/>
 
-				{/* TODO: 영상 */}
+							<button
+								onClick={handleSaveEdit}
+								disabled={!editContent.trim()}
+								className={`absolute bottom-6 right-6 p-3 rounded-full text-white z-10 transition-all duration-300 cursor-pointer
+                  ${
+										editContent.trim()
+											? "bg-primary-green-500 hover:bg-primary-green-600 shadow-md active:scale-95"
+											: "bg-gray-300 text-gray-400 cursor-not-allowed"
+									}`}
+							>
+								<LuSendHorizontal size={20} />
+							</button>
+						</div>
 
+						{/* 첨부 파일 영역 */}
+						<div className="flex items-center gap-2">
+							<button
+								type="button"
+								onClick={handleOpenImageModal}
+								className="relative flex flex-col items-center justify-center w-20 h-20
+                  border-2 border-dashed border-gray-400 rounded-md
+                  bg-white hover:bg-gray-100 transition-colors duration-200 cursor-pointer overflow-hidden"
+							>
+								{imagePreview ? (
+									<>
+										<Image
+											src={imagePreview}
+											alt="첨부한 이미지 미리보기"
+											fill
+											className="relative object-cover"
+										/>
+										<span
+											onClick={handleRemoveImage}
+											className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
+										>
+											×
+										</span>
+									</>
+								) : (
+									<>
+										<IoImageOutline size={24} className="text-gray-600" />
+										<span className="text-sm text-gray-500">(0/1)</span>
+									</>
+								)}
+							</button>
+
+							{/* 영상 업로드 */}
+							<button
+								type="button"
+								onClick={handleOpenVideoModal}
+								className="relative flex flex-col items-center justify-center w-20 h-20
+                  border-2 border-dashed border-gray-400 rounded-md
+                  bg-white hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+							>
+								{videoPreview ? (
+									<>
+										<video
+											src={videoPreview}
+											className="w-20 h-20 object-cover rounded-md"
+											muted
+											autoPlay
+											loop
+										/>
+										<span
+											onClick={handleRemoveVideo}
+											className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
+										>
+											×
+										</span>
+									</>
+								) : (
+									<>
+										<HiOutlineVideoCamera size={24} className="text-gray-600" />
+										<span className="text-sm text-gray-500">(0/1)</span>
+									</>
+								)}
+							</button>
+						</div>
+
+						{attachmentModalOpen && (
+							<AttachmentFileModal
+								type={attachmentType}
+								onClose={() => setAttachmentModalOpen(false)}
+								onFileSelect={(file: File) => {
+									if (attachmentType === "Image") {
+										setImagePreview(URL.createObjectURL(file));
+									} else {
+										setVideoPreview(URL.createObjectURL(file));
+									}
+								}}
+							/>
+						)}
+					</div>
+				) : (
+					<div className="flex flex-col gap-4 mt-3">
+						<p className="text-xl text-gray-900">{answer.content}</p>
+						{answer.attachments?.length > 0 && (
+							<Image
+								src={answer.attachments[0].url}
+								alt={answer.attachments[0].name}
+								width={500}
+								height={300}
+								unoptimized
+							/>
+						)}
+						{/* TODO: 영상 미리보기 */}
+					</div>
+				)}
+
+				{/* 채택된 답변 표시 */}
 				{answer.isAccepted && (
 					<div className="mt-4 p-3 bg-green-100/60 rounded-xl border">
 						<div className="flex items-center gap-2 text-lg text-green-700">
