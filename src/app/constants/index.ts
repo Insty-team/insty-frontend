@@ -153,3 +153,4 @@ export const EMPTY_ENROLLMENT_COURSE = "수강한 강의가 없습니다.";
 export const EMPTY_QUESTION = "질문이 없습니다.";
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_ANSWER_VIDEO_SIZE = 120;

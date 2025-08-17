@@ -107,8 +107,9 @@ export default function AnswerCard({
 		});
 	};
 
-	const handleUpdateAnswer = () => {
+	const handleEditAnswer = () => {
 		setIsEditing(true);
+		setOpenDropdown(false);
 	};
 
 	const handleSaveEdit = () => {
@@ -227,12 +228,12 @@ export default function AnswerCard({
 									isOpen={openDropdown}
 									setIsOpen={setOpenDropdown}
 									trigger={
-										<button>
+										<button className="outline-none">
 											<BsThreeDots className="cursor-pointer size-5 text-gray-500" />
 										</button>
 									}
 									items={[
-										{ label: "수정", onClick: handleUpdateAnswer },
+										{ label: "수정", onClick: handleEditAnswer },
 										{
 											label: "삭제",
 											onClick: handleDeleteAnswer,

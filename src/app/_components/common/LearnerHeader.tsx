@@ -161,6 +161,12 @@ function LearnerHeader() {
 							<Link
 								key={menu.id}
 								href={menu.path}
+								// className={`${
+								// 	pathname.includes(menu.path)
+								// 		? "text-primary-green-600"
+								// 		: "text-black-400"
+								// } hover:text-primary-green-500`}
+
 								className={`${
 									pathname.includes(menu.path)
 										? "text-primary-green-600"
