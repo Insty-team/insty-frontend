@@ -20,7 +20,7 @@ function MyPageActivityWriting() {
 
 	const handleDeleteQuestion = () => {
 		Swal.fire({
-			title: "삭제하시겠습니까?",
+			title: "정말 삭제하시겠습니까?",
 			text: "삭제 후에는 되돌릴 수 없습니다.",
 			icon: "question",
 			showCancelButton: true,
