@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, useEffect, useState } from "react";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 
-import { BaseSearchBar } from "@/app/_components/common";
-import { EMPTY_QUESTION, EMPTY_UPLOAD_COURSE } from "@/app/constants";
+import { BaseButton, BaseSearchBar } from "@/app/_components/common";
+import { EMPTY_QUESTION } from "@/app/constants";
 import { useUserStore } from "@/app/stores";
 
 import { Pagination } from "../common";
@@ -51,6 +52,8 @@ interface PaginationInfo {
 }
 
 function CommunityMain({ courses, questions }: Props) {
+	const router = useRouter();
+
 	const userType = useUserStore((state) => state.user.userType);
 
 	const [value, setValue] = useState("");
@@ -116,17 +119,17 @@ function CommunityMain({ courses, questions }: Props) {
 			/>
 
 			<div className="flex gap-10 mt-10">
-				<div className="flex flex-col gap-4 w-[480px]">
-					<div className="flex flex-row justify-between">
-						<span className="text-xl font-bold">
-							{userType === "CREATOR"
-								? "내가 업로드한 강의"
-								: "내가 수강중인 강의"}
-						</span>
-					</div>
+				{hasCourses ? (
+					<>
+						<div className="flex flex-col gap-4 w-[480px]">
+							<div className="flex flex-row justify-between">
+								<span className="text-xl font-bold">
+									{userType === "CREATOR"
+										? "내가 업로드한 강의"
+										: "내가 수강중인 강의"}
+								</span>
+							</div>
 
-					{hasCourses ? (
-						<>
 							{paginatedCourses.map((course) => (
 								<div
 									key={course.courseId}
@@ -173,22 +176,53 @@ function CommunityMain({ courses, questions }: Props) {
 									onPageChange={(page) => setCurrentPage(page)}
 								/>
 							)}
-						</>
-					) : (
-						<EmptyDataMessage message={EMPTY_UPLOAD_COURSE} />
-					)}
-				</div>
+						</div>
 
-				{/* 특정 강의 질문 리스트 */}
-				<div className="pt-10 flex-1">
-					{filteredQuestions.length === 0 ? (
-						<EmptyDataMessage message={EMPTY_QUESTION} />
-					) : (
-						filteredQuestions.map((question) => (
-							<QuestionCard key={question.questionId} question={question} />
-						))
-					)}
-				</div>
+						{/* 특정 강의 질문 리스트 */}
+						<div className="pt-10 flex-1">
+							{filteredQuestions.length > 0 ? (
+								filteredQuestions.map((question) => (
+									<QuestionCard key={question.questionId} question={question} />
+								))
+							) : (
+								<EmptyDataMessage message={EMPTY_QUESTION} />
+							)}
+						</div>
+					</>
+				) : //  강의가 없을 경우
+				userType === "CREATOR" ? (
+					<div className="flex flex-col w-full h-[50vh] justify-center items-center text-center text-2xl text-primary-green-600">
+						<Image
+							src="/insty.png"
+							alt="로고"
+							width={120}
+							height={120}
+							className="aspect-square"
+						/>
+						<p className="mt-4 text-2lg">아직 업로드한 강의가 없네요!</p>
+						<BaseButton
+							title="강의 업로드 하러가기"
+							onClick={() => router.push("/creator/courses/course-upload")}
+							className="!w-[30%] mt-4"
+						/>
+					</div>
+				) : (
+					<div className="flex flex-col w-full h-[50vh] justify-center items-center text-center text-2xl text-primary-green-600">
+						<Image
+							src="/insty.png"
+							alt="로고"
+							width={120}
+							height={120}
+							className="aspect-square"
+						/>
+						<p className="mt-4 text-2lg">아직 수강중인 강의가 없네요!</p>
+						<BaseButton
+							title="강의 추천받으러 가기"
+							onClick={() => router.push("/learner/recommend")}
+							className="!w-[30%] mt-4"
+						/>
+					</div>
+				)}
 			</div>
 
 			{userType === "LEARNER" && (
