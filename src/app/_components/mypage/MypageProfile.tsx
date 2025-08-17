@@ -207,7 +207,6 @@ function MyPageProfile({ mode }: { mode: "CREATOR" | "LEARNER" }) {
 		editProfile(formData, {
 			onSuccess: () => {
 				setUserNickname(getValues("nickname"));
-
 				Swal.fire({
 					icon: "success",
 					title: "수정에 성공했습니다.",
