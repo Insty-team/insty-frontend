@@ -7,6 +7,7 @@ import { IoChatbubbleEllipses } from "react-icons/io5";
 
 import { BaseButton, BaseSearchBar } from "@/app/_components/common";
 import { EMPTY_QUESTION } from "@/app/constants";
+import { useUserStore } from "@/app/stores";
 
 import { Pagination } from "../common";
 import { EmptyDataMessage, QuestionCard } from "./common";
@@ -53,6 +54,7 @@ interface PaginationInfo {
 
 function CommunityMain({ courses, questions, mode }: Props) {
 	const router = useRouter();
+	const userType = useUserStore((state) => state.user.userType);
 
 	const [value, setValue] = useState("");
 
@@ -179,9 +181,27 @@ function CommunityMain({ courses, questions, mode }: Props) {
 						{/* 특정 강의 질문 리스트 */}
 						<div className="pt-10 flex-1">
 							{filteredQuestions.length > 0 ? (
-								filteredQuestions.map((question) => (
-									<QuestionCard key={question.questionId} question={question} />
-								))
+								filteredQuestions.map((question) => {
+									const handleClick = () => {
+										if (userType === "CREATOR") {
+											router.push(
+												`/creator/community/question/${question.questionId}`,
+											);
+										} else {
+											router.push(
+												`/learner/community/question/${question.questionId}`,
+											);
+										}
+									};
+
+									return (
+										<QuestionCard
+											key={question.questionId}
+											question={question}
+											onClick={handleClick}
+										/>
+									);
+								})
 							) : (
 								<EmptyDataMessage message={EMPTY_QUESTION} />
 							)}
