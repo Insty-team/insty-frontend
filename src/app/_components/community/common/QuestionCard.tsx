@@ -1,9 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { FaMessage, FaRegMessage } from "react-icons/fa6";
 
-import { useUserStore } from "@/app/stores";
 import { getFormattedDate } from "@/app/utils/";
 
 interface QuestionCardProps {
@@ -14,6 +12,7 @@ interface QuestionCardProps {
 		isAnswered: string;
 		createdAt: string;
 	};
+	onClick: () => void;
 }
 
 // TODO: 임시로 NONE, HAS_COMMENT, COMPLETE 를 반환받았다 생각하고 (논의 완료 API 연동시 적용)
@@ -38,19 +37,10 @@ const answerStatusInfo = {
 	},
 } as const;
 
-export default function QuestionCard({ question }: QuestionCardProps) {
-	const userType = useUserStore((state) => state.user.userType);
-
-	const router = useRouter();
+export default function QuestionCard({ question, onClick }: QuestionCardProps) {
 	const status =
 		answerStatusInfo[question.isAnswered as keyof typeof answerStatusInfo] ??
 		answerStatusInfo.NONE;
-
-	const handleClick = () => {
-		userType === "CREATOR"
-			? router.push(`/creator/community/question/${question.questionId}`)
-			: router.push(`/learner/community/question/${question.questionId}`);
-	};
 
 	return (
 		<div
@@ -59,7 +49,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
 				border-b last:border-b-0
 				hover:bg-primary-green-50/30 hover:px-4
 				transition-all duration-300 ease-out"
-			onClick={handleClick}
+			onClick={onClick}
 		>
 			<h4 className="font-semibold text-xl text-gray-900 mb-3 transition-colors line-clamp-2 leading-relaxed">
 				{question.title}
