@@ -3,7 +3,7 @@
 import * as Amplitude from "@amplitude/analytics-browser";
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FaRegFile } from "react-icons/fa6";
 import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
@@ -18,7 +18,11 @@ import {
 	putCourse,
 	putCourseVideoUpload,
 } from "@/app/api/backend";
-import { MAX_FILE_NAME, MAX_VIDEO_DURATION } from "@/app/constants";
+import {
+	DEV_MAX_VIDEO_DURATION,
+	MAX_FILE_NAME,
+	PROD_MAX_VIDEO_DURATION,
+} from "@/app/constants";
 import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useThumbnailUpload } from "@/app/hooks/useThumbnailUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
@@ -35,7 +39,11 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 }) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-
+	const pathname = usePathname();
+	const maxVideoDuration =
+		pathname.includes("dev") || pathname.includes("localhost")
+			? DEV_MAX_VIDEO_DURATION
+			: PROD_MAX_VIDEO_DURATION;
 	const {
 		title,
 		setTitle,
@@ -95,8 +103,12 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 	const [isDescriptionSuggesting, setIsDescriptionSuggesting] =
 		useState<boolean>(false);
 
-	const { transcriptionStatus, transcriptionProgress, transcriptionStep } =
-		useTranscriptionProgress(isNewVideo ? videoUuid : null);
+	const {
+		transcriptionStatus,
+		transcriptionProgress,
+		transcriptionStep,
+		reason,
+	} = useTranscriptionProgress(isNewVideo ? videoUuid : null);
 
 	useEffect(() => {
 		if (initialData) {
@@ -129,10 +141,63 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 	// videoUuid가 변경될 때 썸네일 요청 시작 (기존 썸네일이 없을 때만)
 	useEffect(() => {
-		if (videoUuid && !thumbnailUrl) {
+		if (
+			videoUuid &&
+			!thumbnailUrl &&
+			!isThumbnailLoading &&
+			transcriptionStatus !== "FAILED_INVALID_VIDEO_LENGTH"
+		) {
 			startThumbnailRequest(videoUuid);
 		}
-	}, [videoUuid, thumbnailUrl, startThumbnailRequest]);
+	}, [
+		videoUuid,
+		thumbnailUrl,
+		isThumbnailLoading,
+		startThumbnailRequest,
+		transcriptionStatus,
+	]);
+
+	// 전사 실패 시 처리
+	useEffect(() => {
+		if (transcriptionStatus === "FAILED") {
+			stopThumbnailRequest();
+			setVideoFile(null);
+			setVideoFileName(null);
+			setVideoUuid("");
+			setIsNewVideo(false);
+			if (videoInputRef.current) {
+				videoInputRef.current.value = "";
+			}
+			Swal.fire({
+				title: "영상 분석에 실패했습니다.",
+				text: `${reason}`,
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+		}
+	}, [transcriptionStatus, stopThumbnailRequest, reason]);
+
+	// 영상 길이 초과 시 처리
+	useEffect(() => {
+		if (transcriptionStatus === "FAILED_INVALID_VIDEO_LENGTH") {
+			stopThumbnailRequest();
+			setVideoFile(null);
+			setVideoFileName(null);
+			setVideoUuid("");
+			setIsNewVideo(false);
+			if (videoInputRef.current) {
+				videoInputRef.current.value = "";
+			}
+			Swal.fire({
+				title: `${reason}`,
+				text: `${maxVideoDuration / 60}분 이하의 영상만 업로드 가능합니다.`,
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+		}
+	}, [transcriptionStatus, stopThumbnailRequest, reason, maxVideoDuration]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -261,10 +326,10 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 
 		const duration = await getVideoDuration(file);
 
-		if (duration > MAX_VIDEO_DURATION) {
+		if (duration > maxVideoDuration) {
 			Swal.fire({
 				title: "영상이 너무 길어요.",
-				text: `${MAX_VIDEO_DURATION / 60}분 이하의 영상만 업로드 가능합니다.`,
+				text: `${maxVideoDuration / 60}분 이하의 영상만 업로드 가능합니다.`,
 				icon: "error",
 				confirmButtonText: "확인",
 			}).then(() => {
@@ -307,7 +372,12 @@ const CourseEditForm: React.FC<CourseFormProps> = ({
 				console.error(error);
 			}
 		} catch (error) {
-			console.error(error);
+			Swal.fire({
+				title: "비디오 업로드 실패",
+				text: `${error}`,
+				icon: "error",
+				confirmButtonText: "확인",
+			});
 		}
 	};
 
