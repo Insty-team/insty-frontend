@@ -307,15 +307,15 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		setVideoFile(file);
 		setIsExistingVideo(false); // 새 비디오 업로드 시 기존 비디오 상태 초기화
 		//console.log("선택된 비디오:", file);
+		const videoInfo = {
+			fileName: file.name,
+			contentType: file.type,
+		};
 
 		try {
-			const videoInfo = {
-				fileName: file.name,
-				contentType: file.type,
-			};
 			const res = await postCourseVideo(videoInfo);
-			setVideoUuid(res.data.uuid);
 			if (res.success) {
+				setVideoUuid(res.data.uuid);
 				try {
 					//비디오 분석 요청
 					await putCourseVideoUpload(res.data.uploadUrl, file);
@@ -330,6 +330,13 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 					icon: "error",
 					confirmButtonText: "확인",
 				});
+				setVideoFile(null);
+				setVideoUuid("");
+				setIsExistingVideo(false);
+				stopThumbnailRequest();
+				if (videoInputRef.current) {
+					videoInputRef.current.value = "";
+				}
 			}
 		} catch (error) {
 			console.error(error);
