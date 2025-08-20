@@ -9,7 +9,6 @@ import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { useGetMyCoursesQuery } from "@/app/queries";
 
-import CourseDetail from "./CourseDetail";
 import CourseEdit from "./CourseEdit";
 import CourseList from "./CourseList";
 
@@ -25,8 +24,7 @@ function CourseManagement() {
 		error,
 	} = useGetMyCoursesQuery(currentPage, 5); // 페이지별 5개씩
 
-	const mode =
-		(searchParams.get("mode") as "list" | "edit" | "detail") || "list";
+	const mode = (searchParams.get("mode") as "list" | "edit") || "list";
 	const courseIdFromUrl = searchParams.get("courseId");
 
 	useEffect(() => {
@@ -40,14 +38,7 @@ function CourseManagement() {
 	};
 
 	//누를때마다 쿼리스트링으로 모드 변경(뒤로가기 흔적 남기기 위함...)
-	const handleModeChange = (
-		newMode: "list" | "edit" | "detail",
-		courseId?: number,
-	) => {
-		//상세보기는 1차기능 아니므로 주석처리
-		if (newMode === "detail") {
-			return;
-		}
+	const handleModeChange = (newMode: "list" | "edit", courseId?: number) => {
 		const params = new URLSearchParams(searchParams.toString());
 		params.set("mode", newMode);
 		if (courseId) {
@@ -61,15 +52,6 @@ function CourseManagement() {
 	if (mode === "edit" && selectedCourseId) {
 		return (
 			<CourseEdit
-				key={selectedCourseId}
-				courseId={selectedCourseId}
-				onBack={() => handleModeChange("list")}
-			/>
-		);
-	}
-	if (mode === "detail" && selectedCourseId) {
-		return (
-			<CourseDetail
 				key={selectedCourseId}
 				courseId={selectedCourseId}
 				onBack={() => handleModeChange("list")}
@@ -124,9 +106,6 @@ function CourseManagement() {
 						totalPages={myCoursesItems.pagination.totalPages}
 						onEdit={(courseId) => {
 							handleModeChange("edit", courseId);
-						}}
-						onDetail={(courseId) => {
-							handleModeChange("detail", courseId);
 						}}
 					/>
 				</>

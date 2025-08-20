@@ -122,7 +122,20 @@ const getVideoThumbnail = async (videoUuid: string) => {
 	throw new Error("서버와 통신 불가");
 };
 
+const deleteCourse = async (courseId: number) => {
+	try {
+		const res = await axiosInstance.delete(`${BASE_URL}/courses/${courseId}`);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
 export {
+	deleteCourse,
 	getCourseDetail,
 	getMyCourses,
 	getVideoThumbnail,

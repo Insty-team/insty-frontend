@@ -2,6 +2,7 @@
 
 import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BsStars } from "react-icons/bs";
@@ -14,7 +15,11 @@ import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { postSuggestMetadata } from "@/app/api/ai";
 import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
-import { MAX_FILE_NAME, MAX_VIDEO_DURATION } from "@/app/constants";
+import {
+	DEV_MAX_VIDEO_DURATION,
+	MAX_FILE_NAME,
+	PROD_MAX_VIDEO_DURATION,
+} from "@/app/constants";
 import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
@@ -91,6 +96,11 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const videoInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
 	const [isSuggesting, setIsSuggesting] = useState<boolean>(false);
+	const pathname = usePathname();
+	const maxVideoDuration =
+		pathname.includes("dev") || pathname.includes("localhost")
+			? DEV_MAX_VIDEO_DURATION
+			: PROD_MAX_VIDEO_DURATION;
 
 	// 전사 진행률 커스텀 훅 사용
 	const {
@@ -113,12 +123,12 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 			Swal.fire({
 				title: `${reason}`,
-				text: `${MAX_VIDEO_DURATION / 60}분 이하의 영상만 업로드 가능합니다. `,
+				text: `${maxVideoDuration / 60}분 이하의 영상만 업로드 가능합니다. `,
 				icon: "error",
 				confirmButtonText: "확인",
 			});
 		}
-	}, [transcriptionStatus, stopThumbnailRequest, reason]);
+	}, [transcriptionStatus, stopThumbnailRequest, reason, maxVideoDuration]);
 
 	useEffect(() => {
 		const dataToUse = data || initialData;
@@ -165,6 +175,25 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		transcriptionStatus,
 		transcriptionProgress,
 	]);
+
+	useEffect(() => {
+		//분석 실패 시 바로 썸네일 요청 중단
+		if (transcriptionStatus === "FAILED") {
+			stopThumbnailRequest();
+			setVideoFile(null);
+			setVideoUuid("");
+			if (videoInputRef.current) {
+				videoInputRef.current.value = "";
+			}
+			Swal.fire({
+				title: "영상 분석에 실패했습니다.",
+				text: `${reason}`,
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+		}
+	}, [transcriptionStatus, stopThumbnailRequest, reason]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -294,7 +323,12 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				console.error(error);
 			}
 		} catch (error) {
-			console.error(error);
+			Swal.fire({
+				title: "비디오 업로드 실패",
+				text: `${error}`,
+				icon: "error",
+				confirmButtonText: "확인",
+			});
 		}
 	};
 
