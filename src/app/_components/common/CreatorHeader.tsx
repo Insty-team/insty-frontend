@@ -161,6 +161,9 @@ function CreatorHeader() {
 								href={`${menu.id === 1 || menu.id === 4 ? "" : menu.path}`}
 								key={menu.id}
 								className={`${menu.id === 1 || menu.id === 4 ? "text-gray-scale-300 disabled cursor-not-allowed" : "hover:text-primary-green-500 cursor-pointer "}`}
+								// href={menu.path}
+								// key={menu.id}
+								// className={`hover:text-primary-green-500 cursor-pointer`}
 							>
 								<span
 									className={

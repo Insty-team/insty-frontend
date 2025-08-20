@@ -2,6 +2,7 @@
 
 import * as Amplitude from "@amplitude/analytics-browser";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BsStars } from "react-icons/bs";
@@ -14,7 +15,11 @@ import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { postSuggestMetadata } from "@/app/api/ai";
 import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
-import { MAX_FILE_NAME, MAX_VIDEO_DURATION } from "@/app/constants";
+import {
+	DEV_MAX_VIDEO_DURATION,
+	MAX_FILE_NAME,
+	PROD_MAX_VIDEO_DURATION,
+} from "@/app/constants";
 import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
@@ -91,6 +96,11 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const videoInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
 	const [isSuggesting, setIsSuggesting] = useState<boolean>(false);
+	const pathname = usePathname();
+	const maxVideoDuration =
+		pathname.includes("dev") || pathname.includes("localhost")
+			? DEV_MAX_VIDEO_DURATION
+			: PROD_MAX_VIDEO_DURATION;
 
 	// 전사 진행률 커스텀 훅 사용
 	const {
@@ -99,6 +109,26 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		transcriptionStep,
 		reason,
 	} = useTranscriptionProgress(videoUuid);
+
+	// 영상 길이 초과 시 알림 처리
+	useEffect(() => {
+		if (transcriptionStatus === "FAILED_INVALID_VIDEO_LENGTH") {
+			// 썸네일 요청 중단 및 올라간 비디오 삭제
+			setVideoFile(null);
+			setVideoUuid("");
+			stopThumbnailRequest();
+			if (videoInputRef.current) {
+				videoInputRef.current.value = "";
+			}
+
+			Swal.fire({
+				title: `${reason}`,
+				text: `${maxVideoDuration / 60}분 이하의 영상만 업로드 가능합니다. `,
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+		}
+	}, [transcriptionStatus, stopThumbnailRequest, reason, maxVideoDuration]);
 
 	useEffect(() => {
 		const dataToUse = data || initialData;
@@ -131,7 +161,8 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			!thumbnailUrl &&
 			!isThumbnailLoading &&
 			!isExistingVideo &&
-			!isAnalysisCompleted
+			!isAnalysisCompleted &&
+			transcriptionStatus !== "FAILED_INVALID_VIDEO_LENGTH"
 		) {
 			startThumbnailRequest(videoUuid);
 		}
@@ -144,6 +175,25 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		transcriptionStatus,
 		transcriptionProgress,
 	]);
+
+	useEffect(() => {
+		//분석 실패 시 바로 썸네일 요청 중단
+		if (transcriptionStatus === "FAILED") {
+			stopThumbnailRequest();
+			setVideoFile(null);
+			setVideoUuid("");
+			if (videoInputRef.current) {
+				videoInputRef.current.value = "";
+			}
+			Swal.fire({
+				title: "영상 분석에 실패했습니다.",
+				text: `${reason}`,
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+		}
+	}, [transcriptionStatus, stopThumbnailRequest, reason]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -227,18 +277,6 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		videoInputRef.current?.click();
 	};
 
-	const getVideoDuration = async (file: File): Promise<number> => {
-		return new Promise((resolve) => {
-			const video = document.createElement("video");
-			video.preload = "metadata";
-			video.onloadedmetadata = () => {
-				resolve(video.duration);
-			};
-
-			video.src = URL.createObjectURL(file);
-		});
-	};
-
 	const handleVideoFileChange = async (
 		e: React.ChangeEvent<HTMLInputElement>,
 	) => {
@@ -250,30 +288,6 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				text: "150자 이하의 이름으로 업로드 해주세요.",
 				icon: "error",
 				confirmButtonText: "확인",
-			});
-			return;
-		}
-		const duration = await getVideoDuration(file);
-
-		if (duration > MAX_VIDEO_DURATION) {
-			Swal.fire({
-				title: "영상이 너무 길어요.",
-				text: `${MAX_VIDEO_DURATION / 60}분 이하의 영상만 업로드 가능합니다.`,
-				icon: "error",
-				confirmButtonText: "확인",
-			}).then(() => {
-				return;
-			});
-			return;
-		}
-
-		if (duration < 3) {
-			Swal.fire({
-				title: "영상이 너무 짧아요.",
-				icon: "error",
-				confirmButtonText: "확인",
-			}).then(() => {
-				return;
 			});
 			return;
 		}
@@ -300,14 +314,22 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 				contentType: file.type,
 			};
 			const res = await postCourseVideo(videoInfo);
-			//console.log(res);
 			setVideoUuid(res.data.uuid);
-			try {
-				//비디오 분석 요청
-				await putCourseVideoUpload(res.data.uploadUrl, file);
-				//console.log(videoUploadResponse, "비디오 업로드요청 성공");
-			} catch (error) {
-				console.error(error);
+			if (res.success) {
+				try {
+					//비디오 분석 요청
+					await putCourseVideoUpload(res.data.uploadUrl, file);
+					//console.log(videoUploadResponse, "비디오 업로드요청 성공");
+				} catch (error) {
+					console.error(error);
+				}
+			} else {
+				Swal.fire({
+					title: "비디오 업로드 실패",
+					text: `${res.error.message}`,
+					icon: "error",
+					confirmButtonText: "확인",
+				});
 			}
 		} catch (error) {
 			console.error(error);

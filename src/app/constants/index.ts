@@ -145,4 +145,11 @@ export const REFUND_POLICY = [
 ];
 
 export const MAX_FILE_NAME = 150;
-export const MAX_VIDEO_DURATION = 15 * 60;
+
+export const EMPTY_QUESTION = "질문이 없습니다.";
+
+export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_ANSWER_VIDEO_SIZE = 120;
+
+export const DEV_MAX_VIDEO_DURATION = 2 * 60;
+export const PROD_MAX_VIDEO_DURATION = 15 * 60;

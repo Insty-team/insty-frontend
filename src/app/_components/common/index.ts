@@ -1,4 +1,5 @@
 import BaseButton from "./BaseButton";
+import BaseDropdown from "./BaseDropdown";
 import BaseSearchBar from "./BaseSearchBar";
 import BaseSelect from "./BaseSelect";
 import BaseTab from "./BaseTab";
@@ -8,9 +9,11 @@ import CreatorHeader from "./CreatorHeader";
 import Footer from "./Footer";
 import LearnerHeader from "./LearnerHeader";
 import Markdown from "./Markdown";
+import Pagination from "./Pagination";
 
 export {
 	BaseButton,
+	BaseDropdown,
 	BaseSearchBar,
 	BaseSelect,
 	BaseTab,
@@ -20,4 +23,5 @@ export {
 	Footer,
 	LearnerHeader,
 	Markdown,
+	Pagination,
 };
