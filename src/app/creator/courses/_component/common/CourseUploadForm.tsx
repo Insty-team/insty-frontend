@@ -315,20 +315,24 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 			};
 			const res = await postCourseVideo(videoInfo);
 			setVideoUuid(res.data.uuid);
-			try {
-				//비디오 분석 요청
-				await putCourseVideoUpload(res.data.uploadUrl, file);
-				//console.log(videoUploadResponse, "비디오 업로드요청 성공");
-			} catch (error) {
-				console.error(error);
+			if (res.success) {
+				try {
+					//비디오 분석 요청
+					await putCourseVideoUpload(res.data.uploadUrl, file);
+					//console.log(videoUploadResponse, "비디오 업로드요청 성공");
+				} catch (error) {
+					console.error(error);
+				}
+			} else {
+				Swal.fire({
+					title: "비디오 업로드 실패",
+					text: `${res.error.message}`,
+					icon: "error",
+					confirmButtonText: "확인",
+				});
 			}
 		} catch (error) {
-			Swal.fire({
-				title: "비디오 업로드 실패",
-				text: `${error}`,
-				icon: "error",
-				confirmButtonText: "확인",
-			});
+			console.error(error);
 		}
 	};
 
