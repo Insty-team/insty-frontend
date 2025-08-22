@@ -85,7 +85,7 @@ function RootLayout({
 				<title>Insty</title>
 				<meta
 					name="title"
-					content="AI가 도와주는 프로그래밍 설치/설정 온라인 강의 플랫폼"
+					content="AI가 도와주는 설치/세팅 온라인 강의 플랫폼"
 				/>
 				<meta
 					name="description"
@@ -104,7 +104,7 @@ function RootLayout({
 				<meta property="og:url" content="https://insty.ai.kr" />
 				<meta
 					property="og:title"
-					content="Insty - AI가 도와주는 프로그래밍 설치/설정 온라인 강의 플랫폼"
+					content="Insty - AI가 도와주는 설치/세팅 온라인 강의 플랫폼"
 				/>
 				<meta
 					property="og:description"
@@ -119,7 +119,7 @@ function RootLayout({
 				<meta property="twitter:url" content="https://insty.ai.kr" />
 				<meta
 					property="twitter:title"
-					content="Insty - AI가 도와주는 프로그래밍 설치/설정 온라인 강의 플랫폼"
+					content="Insty - AI가 도와주는 설치/세팅 온라인 강의 플랫폼"
 				/>
 				<meta
 					property="twitter:description"
