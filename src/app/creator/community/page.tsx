@@ -1,4 +1,5 @@
 import { CommunityMain } from "@/app/_components/community/";
+import CommunityHeader from "@/app/_components/community/common/CommunityHeader";
 
 function CreatorCommunity() {
 	const uploadCourses = [
@@ -204,13 +205,16 @@ function CreatorCommunity() {
 	];
 
 	return (
-		<div className="flex flex-col mt-16">
-			<CommunityMain
-				courses={uploadCourses}
-				questions={myCourseQuestions}
-				mode="CREATOR"
-			/>
-		</div>
+		<>
+			<CommunityHeader />
+			<div className="flex flex-col mt-16">
+				<CommunityMain
+					courses={uploadCourses}
+					questions={myCourseQuestions}
+					mode="CREATOR"
+				/>
+			</div>
+		</>
 	);
 }
 

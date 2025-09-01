@@ -55,6 +55,15 @@ export const LEARNER_MYPAGE_ACTIVITY_SUB_MENU = [
 	{ id: 3, title: "내가 북마크한 게시글" },
 ];
 
+export const COMMUNITY_MENU_LIST = [
+	{ id: 1, title: "커뮤니티", path: "/creator/community" },
+	{
+		id: 2,
+		title: "러너 요청 리스트",
+		path: "/creator/community/learner-request",
+	},
+];
+
 //더미 데이터
 export const VIDEOS_DUMMY_LIST = [
 	{
