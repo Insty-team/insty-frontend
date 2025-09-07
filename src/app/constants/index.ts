@@ -47,6 +47,7 @@ export const LEARNER_MYPAGE_MENU_LIST = [
 	{ id: 3, title: "강의중 AI 챗봇 질문 이력" },
 	{ id: 4, title: "구매 내역" },
 	{ id: 5, title: "설정" },
+	{ id: 6, title: "강의 요청" },
 ];
 
 export const LEARNER_MYPAGE_ACTIVITY_SUB_MENU = [

@@ -7,6 +7,7 @@ import { MypageProfile } from "@/app/_components/mypage";
 import MyPageActivityWriting from "./_components/MyPageActivityWriting";
 import MyPageAIChat from "./_components/MyPageAIChat";
 import MyPageBuy from "./_components/MyPageBuy";
+import MyPageCourseRequest from "./_components/MyPageCourseRequest";
 import MyPageLearnerSide from "./_components/MyPageLearnerSide";
 import MyPageLike from "./_components/MyPageLike";
 import MyPageSetting from "./_components/MyPageSetting";
@@ -28,6 +29,7 @@ function LearnerMyPage() {
 				{activeMenu === "구매 내역" && <MyPageBuy />}
 				{activeMenu === "찜한 영상" && <MyPageLike />}
 				{activeMenu === "설정" && <MyPageSetting />}
+				{activeMenu === "강의 요청" && <MyPageCourseRequest />}
 			</section>
 		</div>
 	);
