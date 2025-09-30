@@ -35,8 +35,8 @@ interface CourseRequestAnswer {
 
 // 강의 요청 제출 데이터 타입
 interface SubmitCourseRequestData {
-	title: string;
-	description: string;
+	title?: string;
+	description?: string;
 	answers: CourseRequestAnswer[];
 }
 
