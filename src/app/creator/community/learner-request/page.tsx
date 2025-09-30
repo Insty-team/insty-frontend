@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FaCheckSquare, FaExclamationCircle } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
 import Swal from "sweetalert2";
 
+import AIRecommendationSection from "@/app/_components/common/AIRecommendationSection";
 import Loading from "@/app/_components/common/Loading";
 import Modal from "@/app/_components/common/Modal";
 import {
@@ -36,6 +38,7 @@ interface FormData {
 }
 
 function LearnerRequest() {
+	const router = useRouter();
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [selectedRequest, setSelectedRequest] = useState<LearnerRequest | null>(
 		null,
@@ -69,6 +72,21 @@ function LearnerRequest() {
 			extra_question: "추가 질문",
 		};
 		return fieldLabels[fieldKey] || fieldKey;
+	};
+
+	// 업로드 페이지로 이동하는 함수
+	const handleGoToUpload = () => {
+		if (!selectedRequest) return;
+
+		// 선택된 요청 정보를 localStorage에 저장
+		const requestData = {
+			request: selectedRequest,
+			timestamp: Date.now(), // 저장 시간 추가
+		};
+		localStorage.setItem("selectedLearnerRequest", JSON.stringify(requestData));
+
+		// 업로드 페이지로 이동
+		router.push("/creator/community/learner-request/upload");
 	};
 
 	// API 데이터를 프론트엔드 형태로 변환하는 함수
@@ -665,7 +683,7 @@ function LearnerRequest() {
 				title="강의 요청 사항 확인"
 				onCloseTitle="닫기"
 				actionsTitle="강의 업로드 하러가기"
-				actions={() => {}}
+				actions={handleGoToUpload}
 				isActionDisabled={!Object.values(checklist).every(Boolean)}
 			>
 				{selectedRequest && (
@@ -682,132 +700,10 @@ function LearnerRequest() {
 							</div>
 
 							{/* AI 분석 및 추천 섹션 */}
-							<div className="space-y-6">
-								<h3 className="text-lg font-semibold text-black-300 flex items-center">
-									<span className="w-2 h-2 bg-primary-green-500 rounded-full mr-3"></span>
-									AI 강의 준비 도우미
-								</h3>
-
-								{/* 요청 정보 요약 */}
-								<div className="bg-primary-green-50 p-4 rounded-lg border-l-4 border-primary-green-400">
-									<h4 className="font-medium text-primary-green-800 mb-2">
-										📝 요청 정보 요약
-									</h4>
-									<div className="text-primary-green-700 text-sm leading-relaxed space-y-2">
-										<div>
-											<strong>주제:</strong> {selectedRequest.title}
-										</div>
-										<div>
-											<strong>설명:</strong> {selectedRequest.description}
-										</div>
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
-											{selectedRequest.selected_fields.map((field, index) => (
-												<div
-													key={index}
-													className="bg-primary-green-100 p-2 rounded"
-												>
-													<div className="font-medium text-primary-green-800">
-														{getFieldLabel(field.field_key)}
-													</div>
-													<div className="text-primary-green-700 text-xs mt-1">
-														{field.answer_text}
-													</div>
-												</div>
-											))}
-										</div>
-									</div>
-								</div>
-
-								{/* AI 추천 이유 */}
-								<div className="p-4 rounded-lg border-l-4 border-primary-blue-400">
-									<h4 className="font-medium text-primary-blue-700 mb-2">
-										🤖 AI 추천 이유
-									</h4>
-									<p className="text-primary-blue-600 text-sm leading-relaxed">
-										{selectedRequest.reason}
-									</p>
-								</div>
-
-								{/* 영상 구성 추천 */}
-								<div className="p-4 rounded-lg border-l-4 border-primary-blue-400">
-									<h4 className="font-medium text-primary-blue-700 mb-3">
-										🎬 AI 영상 구성 추천
-									</h4>
-									<div className="space-y-2 text-sm text-primary-blue-600">
-										<div className="flex">
-											<span className="font-medium w-20">1단계:</span>
-											<span>개념 소개 및 필요성 설명 (3분)</span>
-										</div>
-										<div className="flex">
-											<span className="font-medium w-20">2단계:</span>
-											<span>실습 환경 구축 (3분)</span>
-										</div>
-										<div className="flex">
-											<span className="font-medium w-20">3단계:</span>
-											<span>핵심 기능 구현 (7분)</span>
-										</div>
-										<div className="flex">
-											<span className="font-medium w-20">4단계:</span>
-											<span>트러블슈팅 & 마무리 (2분)</span>
-										</div>
-									</div>
-								</div>
-
-								{/* 스크립트 초안 */}
-								<div className="p-4 rounded-lg border-l-4 border-orange">
-									<h4 className="font-medium text-black-400 mb-3">
-										📜 스크립트 초안
-									</h4>
-									<div className="text-sm text-black-300 space-y-2">
-										<p>
-											<strong>인트로:</strong> 안녕하세요! 오늘은{" "}
-											{selectedRequest.title}에 대해 알아보겠습니다. 이 강의를
-											통해...
-										</p>
-										<p>
-											<strong>본문:</strong> 먼저 기본 개념부터 차근차근
-											설명드리고, 실제 코드로 구현해보면서...
-										</p>
-										<p>
-											<strong>마무리:</strong> 지금까지 배운 내용을 정리하면...
-											궁금한 점이 있으시면 댓글로 문의해주세요!
-										</p>
-									</div>
-								</div>
-
-								{/* 참고 자료 링크 */}
-								<div className="p-4 rounded-lg border-l-4 border-orange">
-									<h4 className="font-medium text-black-400 mb-3">
-										🔗 AI 추천 참고 자료
-									</h4>
-									<div className="space-y-2 text-sm">
-										<a
-											href="#"
-											className="text-primary-blue-500 hover:underline block"
-										>
-											📚 공식 문서: 관련 기술 가이드
-										</a>
-										<a
-											href="#"
-											className="text-primary-blue-500 hover:underline block"
-										>
-											📖 튜토리얼: 단계별 구현 가이드
-										</a>
-										<a
-											href="#"
-											className="text-primary-blue-500 hover:underline block"
-										>
-											💬 Stack Overflow: 자주 묻는 질문
-										</a>
-										<a
-											href="#"
-											className="text-primary-blue-500 hover:underline block"
-										>
-											🎥 참고 영상: 비슷한 주제 강의
-										</a>
-									</div>
-								</div>
-							</div>
+							<AIRecommendationSection
+								request={selectedRequest}
+								getFieldLabel={getFieldLabel}
+							/>
 
 							{/* 영상 제작 체크리스트 */}
 							<div className="space-y-4">
@@ -896,53 +792,6 @@ function LearnerRequest() {
 											✅ 모든 준비가 완료되었습니다! 이제 강의를 업로드할 수
 											있습니다.
 										</p>
-									</div>
-								</div>
-							</div>
-
-							{/* 요청 상세 정보 */}
-							<div className="mt-6 p-4 bg-gray-scale-100 rounded-lg border-l-4 border-gray-scale-300">
-								<h4 className="font-medium text-black-300 mb-3">
-									📋 요청 상세 정보
-								</h4>
-								<div className="space-y-2 text-sm">
-									<div>
-										<span className="font-medium text-black-300">요청 ID:</span>{" "}
-										<span className="text-gray-scale-400">
-											{selectedRequest.request_id}
-										</span>
-									</div>
-									<div>
-										<span className="font-medium text-black-300">제목:</span>{" "}
-										<span className="text-gray-scale-400">
-											{selectedRequest.title}
-										</span>
-									</div>
-									<div>
-										<span className="font-medium text-black-300">설명:</span>{" "}
-										<span className="text-gray-scale-400">
-											{selectedRequest.description}
-										</span>
-									</div>
-									<div className="mt-3">
-										<span className="font-medium text-black-300">
-											러너 요구사항:
-										</span>
-										<div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-											{selectedRequest.selected_fields.map((field, index) => (
-												<div
-													key={index}
-													className="bg-gray-scale-50 p-3 rounded border shadow-sm"
-												>
-													<div className="font-medium text-black-300 text-sm">
-														{getFieldLabel(field.field_key)}
-													</div>
-													<div className="text-gray-scale-400 text-xs mt-1">
-														{field.answer_text}
-													</div>
-												</div>
-											))}
-										</div>
 									</div>
 								</div>
 							</div>

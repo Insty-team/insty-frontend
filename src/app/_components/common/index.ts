@@ -1,3 +1,4 @@
+import AIRecommendationSection from "./AIRecommendationSection";
 import BaseButton from "./BaseButton";
 import BaseDropdown from "./BaseDropdown";
 import BaseSearchBar from "./BaseSearchBar";
@@ -12,6 +13,7 @@ import Markdown from "./Markdown";
 import Pagination from "./Pagination";
 
 export {
+	AIRecommendationSection,
 	BaseButton,
 	BaseDropdown,
 	BaseSearchBar,

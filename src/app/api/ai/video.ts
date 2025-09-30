@@ -91,10 +91,25 @@ const postVectorStatus = async (video_uuid: string) => {
 	}
 };
 
+const postSuggestPracticeGuide = async (videoUuid: string) => {
+	try {
+		const res = await axiosInstance.post(
+			`${AI_BASE_URL}/videos/${videoUuid}/suggest-practice-guide`,
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return error.response.data;
+		}
+		throw new Error("실습 가이드 생성 실패");
+	}
+};
+
 export {
 	getTranscriptionStatus,
 	postSuggestDescription,
 	postSuggestMetadata,
+	postSuggestPracticeGuide,
 	postSuggestTitle,
 	postVectorStatus,
 };
