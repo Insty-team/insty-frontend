@@ -10,13 +10,13 @@ export default function Login() {
     <>
       <section className="flex min-h-screen items-center justify-center p-8">
         <div className="flex flex-col items-center gap-12">
-          <Image src={instyPng} alt="logo" priority />
+          <Image src={instyPng} alt="logo" className="w-[208px]" priority />
           <div className="text-center">
             <p className="text-black-200 text-lg">어떤 활동을 시작하시겠어요?</p>
             <p className="text-black-400/90 text-2xl font-bold">가입 유형을 선택하고 시작하세요!</p>
           </div>
           <div className="grid grid-cols-1 gap-20 md:grid-cols-2">
-            <div className="border-primary-blue-400 flex flex-col items-center justify-between rounded-2xl border-4 px-8 py-10 shadow-lg transition-transform duration-300 hover:-translate-y-2 md:h-[400px]">
+            <div className="border-primary-blue-400 flex h-[360px] flex-col items-center justify-between gap-8 rounded-2xl border-4 px-8 py-10 shadow-lg transition-transform duration-300 hover:-translate-y-2">
               <span className="text-2xl font-bold select-none">러너</span>
               <div className="flex flex-col gap-4">
                 <p className="text-lg font-medium">
@@ -35,7 +35,7 @@ export default function Login() {
               </Link>
             </div>
 
-            <div className="flex flex-col items-center justify-between rounded-2xl border-4 border-orange-400 px-8 py-10 shadow-lg transition-transform duration-300 hover:-translate-y-2 md:h-[400px]">
+            <div className="flex h-[360px] flex-col items-center justify-between gap-8 rounded-2xl border-4 border-orange-400 px-8 py-10 shadow-lg transition-transform duration-300 hover:-translate-y-2">
               <span className="text-2xl font-bold select-none">크리에이터</span>
               <div className="flex flex-col gap-4">
                 <p className="text-lg font-medium">
