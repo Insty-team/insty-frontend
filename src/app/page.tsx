@@ -14,7 +14,7 @@ export default function Home() {
       <ScrollAnimation />
       <Link
         href="/login"
-        className="fixed-login-button bg-primary-green-500 hover:bg-primary-green-600 fixed top-2 right-2 z-50 rounded-xl px-6 py-2 font-bold text-white transition-all duration-300"
+        className="fixed-login-button hover:bg-primary-green-600 bg-primary-green-500 fixed top-2 right-2 z-50 rounded-xl px-6 py-2 font-bold text-white transition-all duration-300"
       >
         로그인
       </Link>
