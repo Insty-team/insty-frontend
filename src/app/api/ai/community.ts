@@ -133,7 +133,22 @@ const getLastCreatorForm = async () => {
 	}
 };
 
+const deleteCourseRequest = async (requestId: number) => {
+	try {
+		const res = await axiosInstance.delete(
+			`${AI_BASE_URL}/community/course-requests/${requestId}`,
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return error.response.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
 export {
+	deleteCourseRequest,
 	getCheckCourseRequestAvailibility,
 	getCourseRequestForm,
 	getCreatorRecommendationForm,
