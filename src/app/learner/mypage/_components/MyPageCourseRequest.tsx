@@ -3,10 +3,13 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { IoTrash } from "react-icons/io5";
+import Swal from "sweetalert2";
 
 import { BaseButton, Pagination } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
-import { useGetMyCourseRequestsQuery } from "@/app/queries";
+import { deleteCourseRequest } from "@/app/api/ai/community";
+import { queryClient, useGetMyCourseRequestsQuery } from "@/app/queries";
 import type {
 	ApiCourseRequestItem,
 	CourseRequestItem,
@@ -16,6 +19,7 @@ function MyPageCourseRequest() {
 	const router = useRouter();
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 5; // 페이지당 5개 항목
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	const {
 		data: myCourseRequest,
@@ -26,7 +30,13 @@ function MyPageCourseRequest() {
 	const transformApiData = (
 		apiData: ApiCourseRequestItem[],
 	): CourseRequestItem[] => {
-		return apiData.map((item) => ({
+		const sortedData = apiData.sort((a, b) => {
+			return (
+				new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+			);
+		});
+
+		return sortedData.map((item) => ({
 			requestId: item.request_id,
 			title: item.title,
 			description: item.description,
@@ -96,6 +106,48 @@ function MyPageCourseRequest() {
 		setCurrentPage(page);
 	};
 
+	const handleDeleteRequest = (requestId: number) => {
+		Swal.fire({
+			title: "정말 강의 요청을 삭제하시겠어요?",
+			text: "삭제된 요청은 복구할 수 없습니다.",
+			icon: "warning",
+			confirmButtonText: "삭제",
+			showCancelButton: true,
+			confirmButtonColor: "#6ead79",
+			cancelButtonText: "취소",
+			cancelButtonColor: "#ff4f64",
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				setIsDeleting(true);
+				try {
+					const res = await deleteCourseRequest(requestId);
+					if (res.success) {
+						Swal.fire({
+							title: "강의 요청이 삭제되었습니다.",
+							icon: "success",
+							confirmButtonText: "확인",
+						}).then(() => {
+							queryClient.invalidateQueries({
+								queryKey: ["myCourseRequests"],
+							});
+						});
+					} else {
+						Swal.fire({
+							title: "강의 요청 삭제에 실패했습니다.",
+							text: `${res.error.message}`,
+							icon: "error",
+						});
+					}
+				} catch (error) {
+					console.error(error);
+				} finally {
+					setIsDeleting(false);
+					router.refresh();
+				}
+			}
+		});
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex flex-row w-full gap-16 items-center justify-center">
@@ -140,6 +192,21 @@ function MyPageCourseRequest() {
 						/>
 					</div>
 					<div className="space-y-4">
+						{isDeleting && (
+							<div className="fixed inset-0 w-full h-full bg-black-100/50 backdrop-blur-sm z-[1000] flex flex-col justify-center items-center">
+								<div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-6 min-w-[300px] animate-fade-in">
+									<div className="flex flex-col items-center gap-4">
+										<Loading width={50} height={50} />
+										<p className="text-black-300 text-xl font-semibold text-center">
+											강의를 삭제 중입니다
+										</p>
+										<p className="text-gray-scale-400 text-sm text-center">
+											잠시만 기다려주세요...
+										</p>
+									</div>
+								</div>
+							</div>
+						)}
 						{currentItems.map((item) => (
 							<div
 								key={item.requestId}
@@ -166,6 +233,12 @@ function MyPageCourseRequest() {
 
 								<div className="flex justify-between items-center text-sm text-gray-500">
 									<span>요청일: {item.requestDate}</span>
+									<button
+										className="text-secondary-red-300 cursor-pointer text-sm flex flex-row items-center gap-1 hover:bg-secondary-red-300 hover:text-white rounded-lg p-2"
+										onClick={() => handleDeleteRequest(item.requestId)}
+									>
+										<p>요청 삭제</p> <IoTrash />
+									</button>
 								</div>
 							</div>
 						))}

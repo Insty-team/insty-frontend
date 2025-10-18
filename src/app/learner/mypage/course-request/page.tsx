@@ -26,6 +26,8 @@ function CourseRequestPage() {
 	const {
 		control,
 		handleSubmit,
+		watch,
+		reset,
 		formState: { errors },
 	} = useForm<FormData>({
 		defaultValues: {
@@ -81,6 +83,26 @@ function CourseRequestPage() {
 					// order_no로 정렬
 					transformedFields.sort((a, b) => a.orderNo - b.orderNo);
 					setFormFields(transformedFields);
+
+					const dynamicDefaults: FormData = {
+						title: "",
+						description: "",
+					};
+					transformedFields.forEach((field) => {
+						dynamicDefaults[`field_${field.id}`] =
+							field.type === "checkbox" ? [] : "";
+						if (field.type === "radio" || field.type === "checkbox") {
+							const otherOption = field.options.find(
+								(opt) => opt.label.toLowerCase() === "other",
+							);
+							if (otherOption) {
+								dynamicDefaults[`field_${field.id}_answer_text`] = "";
+							}
+						}
+					});
+					reset({
+						...dynamicDefaults,
+					});
 				}
 			} catch (error) {
 				console.error("폼 데이터 로딩 실패:", error);
@@ -102,6 +124,8 @@ function CourseRequestPage() {
 			.map((field) => {
 				const fieldKey = `field_${field.id}`;
 				const fieldValue = data[fieldKey];
+				const otherTextKey = `${fieldKey}_answer_text`;
+				const otherText = data[otherTextKey] as string;
 
 				// 선택형 필드 (radio, checkbox)
 				if (field.type === "radio" || field.type === "checkbox") {
@@ -111,10 +135,21 @@ function CourseRequestPage() {
 							? [parseInt(fieldValue as string)]
 							: [];
 
-					return {
+					const answer: {
+						field_id: number;
+						answer_option_ids: number[];
+						answer_text?: string;
+					} = {
 						field_id: field.id,
 						answer_option_ids: answerOptionIds,
 					};
+
+					// "Other" 텍스트가 있으면 추가
+					if (otherText && otherText.trim()) {
+						answer.answer_text = otherText.trim();
+					}
+
+					return answer;
 				}
 
 				// 텍스트 필드 (text, textarea)
@@ -217,24 +252,33 @@ function CourseRequestPage() {
 					/>
 				);
 
-			case "radio":
+			case "radio": {
+				// "Other" 옵션 찾기
+				const otherOption = field.options.find(
+					(opt) => opt.label.toLowerCase() === "other",
+				);
+				const selectedValue = watch(fieldName) as string;
+				const isOtherSelected =
+					otherOption && selectedValue === String(otherOption.id);
+
 				return (
-					<Controller
-						name={fieldName}
-						control={control}
-						rules={{
-							required: field.isRequired
-								? `${field.label}을(를) 선택해주세요.`
-								: false,
-						}}
-						render={({ field: controllerField }) => (
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-								{field.options
-									.sort((a, b) => a.orderNo - b.orderNo)
-									.map((option) => (
-										<label
-											key={option.id}
-											className={`
+					<>
+						<Controller
+							name={fieldName}
+							control={control}
+							rules={{
+								required: field.isRequired
+									? `${field.label}을(를) 선택해주세요.`
+									: false,
+							}}
+							render={({ field: controllerField }) => (
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+									{field.options
+										.sort((a, b) => a.orderNo - b.orderNo)
+										.map((option) => (
+											<label
+												key={option.id}
+												className={`
 												relative flex items-center p-5 rounded-xl border-2 cursor-pointer transition-colors duration-200
 												${
 													controllerField.value === String(option.id)
@@ -242,18 +286,18 @@ function CourseRequestPage() {
 														: "border-gray-scale-200 bg-white hover:border-primary-green-300 hover:bg-primary-green-50"
 												}
 											`}
-										>
-											<input
-												type="radio"
-												value={option.id}
-												checked={controllerField.value === String(option.id)}
-												onChange={() =>
-													controllerField.onChange(String(option.id))
-												}
-												className="sr-only"
-											/>
-											<div
-												className={`
+											>
+												<input
+													type="radio"
+													value={option.id}
+													checked={controllerField.value === String(option.id)}
+													onChange={() =>
+														controllerField.onChange(String(option.id))
+													}
+													className="sr-only"
+												/>
+												<div
+													className={`
 												w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors duration-200
 												${
 													controllerField.value === String(option.id)
@@ -261,91 +305,14 @@ function CourseRequestPage() {
 														: "border-gray-scale-300 bg-white"
 												}
 											`}
-											>
-												{controllerField.value === String(option.id) && (
-													<FaCircleCheck className="w-6 h-6 text-primary-green-500" />
-												)}
-											</div>
-											<span
-												className={`text-lg font-semibold transition-colors duration-200 ${
-													controllerField.value === String(option.id)
-														? "text-primary-green-500"
-														: "text-black-300"
-												}`}
-											>
-												{option.label}
-											</span>
-										</label>
-									))}
-							</div>
-						)}
-					/>
-				);
-
-			case "checkbox":
-				return (
-					<Controller
-						name={fieldName}
-						control={control}
-						rules={{
-							required: field.isRequired
-								? `${field.label}을(를) 선택해주세요.`
-								: false,
-						}}
-						render={({ field: controllerField }) => (
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-								{field.options
-									.sort((a, b) => a.orderNo - b.orderNo)
-									.map((option) => {
-										const currentValues = Array.isArray(controllerField.value)
-											? controllerField.value
-											: [];
-										const isChecked = currentValues.includes(String(option.id));
-
-										return (
-											<label
-												key={option.id}
-												className={`
-													relative flex items-center p-5 rounded-xl border-2 cursor-pointer transition-colors duration-200
-													${
-														isChecked
-															? "border-primary-green-500 bg-primary-green-100"
-															: "border-gray-scale-200 bg-white hover:border-primary-green-300 hover:bg-primary-green-50"
-													}
-												`}
-											>
-												<input
-													type="checkbox"
-													checked={isChecked}
-													onChange={(e) => {
-														if (e.target.checked) {
-															controllerField.onChange([
-																...currentValues,
-																String(option.id),
-															]);
-														} else {
-															controllerField.onChange(
-																currentValues.filter(
-																	(value) => value !== String(option.id),
-																),
-															);
-														}
-													}}
-													className="sr-only"
-												/>
-												<div
-													className={`
-													w-6 h-6 rounded border-2 mr-4 flex items-center justify-center transition-colors duration-200
-													${isChecked ? "" : "border-gray-scale-300 bg-white"}
-												`}
 												>
-													{isChecked && (
-														<FaCheckSquare className="w-6 h-6 text-primary-green-500" />
+													{controllerField.value === String(option.id) && (
+														<FaCircleCheck className="w-6 h-6 text-primary-green-500" />
 													)}
 												</div>
 												<span
 													className={`text-lg font-semibold transition-colors duration-200 ${
-														isChecked
+														controllerField.value === String(option.id)
 															? "text-primary-green-500"
 															: "text-black-300"
 													}`}
@@ -353,12 +320,168 @@ function CourseRequestPage() {
 													{option.label}
 												</span>
 											</label>
-										);
-									})}
-							</div>
+										))}
+								</div>
+							)}
+						/>
+
+						{/* "Other" 선택 시 텍스트 입력란 표시 */}
+						{isOtherSelected && (
+							<Controller
+								name={`${fieldName}_answer_text`}
+								control={control}
+								rules={{
+									required: field.isRequired
+										? "상세 내용을 입력해주세요."
+										: false,
+								}}
+								render={({ field: otherField }) => (
+									<div className="mt-4">
+										<input
+											{...otherField}
+											type="text"
+											placeholder="상세 내용을 입력해주세요"
+											className="w-full px-5 py-4 text-lg border-2 border-gray-scale-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-green/20 focus:border-primary-green transition-all duration-200 bg-white"
+										/>
+										{errors[`${fieldName}_answer_text`] && (
+											<div className="flex items-center gap-2 mt-2">
+												<FaExclamationCircle className="w-5 h-5 text-secondary-red-300" />
+												<p className="text-secondary-red-300 text-base font-medium">
+													{errors[`${fieldName}_answer_text`]?.message}
+												</p>
+											</div>
+										)}
+									</div>
+								)}
+							/>
 						)}
-					/>
+					</>
 				);
+			}
+
+			case "checkbox": {
+				// "Other" 옵션 찾기
+				const otherOption = field.options.find(
+					(opt) => opt.label.toLowerCase() === "other",
+				);
+				const selectedValues = watch(fieldName) as string[];
+				const isOtherChecked =
+					otherOption &&
+					Array.isArray(selectedValues) &&
+					selectedValues.includes(String(otherOption.id));
+
+				return (
+					<>
+						<Controller
+							name={fieldName}
+							control={control}
+							rules={{
+								required: field.isRequired
+									? `${field.label}을(를) 선택해주세요.`
+									: false,
+							}}
+							render={({ field: controllerField }) => (
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+									{field.options
+										.sort((a, b) => a.orderNo - b.orderNo)
+										.map((option) => {
+											const currentValues = Array.isArray(controllerField.value)
+												? controllerField.value
+												: [];
+											const isChecked = currentValues.includes(
+												String(option.id),
+											);
+
+											return (
+												<label
+													key={option.id}
+													className={`
+													relative flex items-center p-5 rounded-xl border-2 cursor-pointer transition-colors duration-200
+													${
+														isChecked
+															? "border-primary-green-500 bg-primary-green-100"
+															: "border-gray-scale-200 bg-white hover:border-primary-green-300 hover:bg-primary-green-50"
+													}
+												`}
+												>
+													<input
+														type="checkbox"
+														checked={isChecked}
+														onChange={(e) => {
+															if (e.target.checked) {
+																controllerField.onChange([
+																	...currentValues,
+																	String(option.id),
+																]);
+															} else {
+																controllerField.onChange(
+																	currentValues.filter(
+																		(value) => value !== String(option.id),
+																	),
+																);
+															}
+														}}
+														className="sr-only"
+													/>
+													<div
+														className={`
+													w-6 h-6 rounded border-2 mr-4 flex items-center justify-center transition-colors duration-200
+													${isChecked ? "" : "border-gray-scale-300 bg-white"}
+												`}
+													>
+														{isChecked && (
+															<FaCheckSquare className="w-6 h-6 text-primary-green-500" />
+														)}
+													</div>
+													<span
+														className={`text-lg font-semibold transition-colors duration-200 ${
+															isChecked
+																? "text-primary-green-500"
+																: "text-black-300"
+														}`}
+													>
+														{option.label}
+													</span>
+												</label>
+											);
+										})}
+								</div>
+							)}
+						/>
+
+						{/* "Other" 선택 시 텍스트 입력란 표시 */}
+						{isOtherChecked && (
+							<Controller
+								name={`${fieldName}_answer_text`}
+								control={control}
+								rules={{
+									required: field.isRequired
+										? "상세 내용을 입력해주세요."
+										: false,
+								}}
+								render={({ field: otherField }) => (
+									<div className="mt-4">
+										<input
+											{...otherField}
+											type="text"
+											placeholder="상세 내용을 입력해주세요"
+											className="w-full px-5 py-4 text-lg border-2 border-gray-scale-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-green/20 focus:border-primary-green transition-all duration-200 bg-white"
+										/>
+										{errors[`${fieldName}_answer_text`] && (
+											<div className="flex items-center gap-2 mt-2">
+												<FaExclamationCircle className="w-5 h-5 text-secondary-red-300" />
+												<p className="text-secondary-red-300 text-base font-medium">
+													{errors[`${fieldName}_answer_text`]?.message}
+												</p>
+											</div>
+										)}
+									</div>
+								)}
+							/>
+						)}
+					</>
+				);
+			}
 
 			default:
 				return null;
@@ -497,6 +620,11 @@ function CourseRequestPage() {
 														*
 													</span>
 												)}
+												{field.id === 2 && (
+													<span className="text-secondary-red-300 ml-2 text-base">
+														(다중선택 가능)
+													</span>
+												)}
 											</label>
 
 											<div className="space-y-2">
@@ -526,9 +654,17 @@ function CourseRequestPage() {
 									</button>
 									<button
 										type="submit"
+										disabled={postMutation.isPending}
 										className="flex-1 px-8 py-4 bg-primary-green-500 text-white rounded-xl hover:bg-primary-green-600 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
 									>
-										🚀 강의 요청하기
+										{postMutation.isPending ? (
+											<div className="flex flex-row items-center gap-2">
+												<Loading width={20} height={20} />
+												<span>강의 요청 중...</span>
+											</div>
+										) : (
+											"🚀 강의 요청하기"
+										)}
 									</button>
 								</div>
 							</div>
