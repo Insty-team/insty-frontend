@@ -24,15 +24,14 @@ import { emailReg, passwordReg } from '@/shared/lib/regex';
 import { cn } from '@/shared/lib/utils';
 import { usePostLogin } from '@/shared/services/auth/auth.hook';
 import { LoginRequest } from '@/shared/services/auth/auth.type';
-import { useAuthStore, useUserStore } from '@/shared/stores/auth';
-import { SocialLoginType, UserType, UserTypeEnum } from '@/shared/types/auth.enum';
+import { SocialLoginType, UserTypeEnum } from '@/shared/types/auth.enum';
 
 import googleSvg from '@/assets/google.svg';
 import kakaoSvg from '@/assets/kakao.svg';
 import instyPng from '@/assets/Logo.png';
 import naverSvg from '@/assets/naver.svg';
 
-export default function LoginUserType() {
+export default function Signup() {
   const { userType } = useParams();
   const router = useRouter();
   const isLoadingRef = useRef<boolean>(false);
@@ -53,27 +52,15 @@ export default function LoginUserType() {
     },
   });
 
-  const authStore = useAuthStore((state) => state);
-  const userStore = useUserStore((state) => state);
   const onSubmit = async (data: LoginRequest) => {
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     await postLogin(data)
       .then((response) => {
-        console.log('login response', response);
-
-        authStore.setAccessToken(response.data.token.accessToken);
-        authStore.setRefreshToken(response.data.token.refreshToken);
-
-        userStore.setNickname(response.data.nickname);
-        userStore.setUserType(response.data.userType as UserType);
-
-        if (response.data.userType === UserTypeEnum.CREATOR) {
-          // router.push('/creator/courses');
-        } else if (response.data.userType === UserTypeEnum.LEARNER) {
-          // router.push('/learner/recommend');
+        if (userType === 'creator') {
+          router.push('/creator/courses');
         } else {
-          throw new Error('잘못된 접근입니다.');
+          router.push('/learner/recommend');
         }
       })
       .finally(() => {

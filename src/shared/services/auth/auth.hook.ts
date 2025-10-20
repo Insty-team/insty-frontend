@@ -20,10 +20,10 @@ export const usePostLogout = () => {
 };
 
 /** 사용자 이메일 로그인 */
-export const usePostLogin = (data: LoginRequest) => {
+export const usePostLogin = () => {
   return useMutation({
-    mutationKey: [POST_login.name, data],
-    mutationFn: () => POST_login(data),
+    mutationKey: [POST_login.name],
+    mutationFn: (data: LoginRequest) => POST_login(data),
   });
 };
 

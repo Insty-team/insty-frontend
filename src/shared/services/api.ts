@@ -1,6 +1,6 @@
+import { useAuthStore } from '../stores/auth';
 import { POST_logout, POST_reissue } from './auth/auth.service';
 
-import cookieStorage from '@/shared/lib/cookie-storage';
 import axios, { InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
@@ -14,7 +14,9 @@ const api = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
-      const accessToken = cookieStorage.getItem('accessToken') as string;
+      const { accessToken } = useAuthStore.getState();
+      console.log('accessToken', accessToken);
+      // const accessToken = cookieStorage.getItem('accessToken') as string;
       if (accessToken && !config.headers?.Authorization) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
@@ -61,7 +63,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = cookieStorage.getItem('refreshToken') as string;
+        const { refreshToken } = useAuthStore.getState();
 
         if (!refreshToken) {
           throw new Error('No refresh token available');
@@ -70,7 +72,7 @@ api.interceptors.response.use(
         const response = await reissueToken();
 
         const newAccessToken = response.token.accessToken;
-        cookieStorage.setItem('accessToken', newAccessToken);
+        useAuthStore.getState().setAccessToken(newAccessToken);
 
         api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
         processQueue(null, newAccessToken);
@@ -113,7 +115,11 @@ const reissueToken = async () => {
   // 새로운 refresh 요청 시작
   refreshPromise = (async () => {
     try {
-      const refreshToken = cookieStorage.getItem('refreshToken') as string;
+      const { refreshToken } = useAuthStore.getState();
+
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
 
       const result = await POST_reissue(refreshToken);
       return result.data;
