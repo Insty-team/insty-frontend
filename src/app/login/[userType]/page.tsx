@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import Image from 'next/image';
@@ -11,6 +11,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/shared/components/ui/input-group';
 import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
 import { emailReg, passwordReg } from '@/shared/lib/regex';
@@ -19,6 +20,7 @@ import { usePostLogin } from '@/shared/services/auth/auth.hook';
 import { LoginRequest } from '@/shared/services/auth/auth.type';
 import { useAuthStore, useUserStore } from '@/shared/stores/auth';
 import { SocialLoginType, UserType, UserTypeEnum } from '@/shared/types/auth.enum';
+import { Eye, EyeOff } from 'lucide-react';
 
 import googleSvg from '@/assets/google.svg';
 import kakaoSvg from '@/assets/kakao.svg';
@@ -30,6 +32,7 @@ export default function LoginUserType() {
   const router = useRouter();
   const isLoadingRef = useRef<boolean>(false);
   const { mutateAsync: postLogin } = usePostLogin();
+  const [showPassword, setShowPassword] = useState(false);
 
   const userTypeText =
     userType === UserTypeEnum.CREATOR
@@ -49,6 +52,18 @@ export default function LoginUserType() {
   const authStore = useAuthStore((state) => state);
   const userStore = useUserStore((state) => state);
   const onSubmit = async (data: LoginRequest) => {
+    if (process.env.NEXT_PUBLIC_IS_LOCAL === 'true') {
+      if (userType === UserTypeEnum.CREATOR) {
+        data.email = 'front@example.com';
+        data.password = 'asdf1234!';
+      } else if (userType === UserTypeEnum.LEARNER) {
+        data.email = 'frontLearn@example.com';
+        data.password = 'asdf1234!';
+      } else {
+        throw new Error('잘못된 접근입니다.');
+      }
+    }
+
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     await postLogin(data)
@@ -126,7 +141,18 @@ export default function LoginUserType() {
                   <FormItem>
                     <FormLabel>비밀번호</FormLabel>
                     <FormControl>
-                      <Input {...field} type="password" placeholder="비밀번호를 입력해주세요." />
+                      <InputGroup>
+                        <InputGroupInput
+                          {...field}
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="비밀번호를 입력해주세요."
+                        />
+                        <InputGroupAddon align="inline-end">
+                          <InputGroupButton onClick={() => setShowPassword(!showPassword)} size="icon-sm">
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </InputGroupButton>
+                        </InputGroupAddon>
+                      </InputGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

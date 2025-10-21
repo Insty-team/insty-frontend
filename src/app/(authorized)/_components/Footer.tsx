@@ -5,6 +5,7 @@ import { Facebook, Instagram, Mail, Twitter, Youtube } from 'lucide-react';
 
 import LogoImage from '@/assets/Logo.png';
 
+// TODO: 브랜드 로고 변경해야함 simple-icons
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
