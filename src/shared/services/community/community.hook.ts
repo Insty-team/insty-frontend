@@ -1,4 +1,4 @@
-import { api } from '@/shared/services/api';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 /** 커뮤니티 질문 검색 */
 /** 질문 작성 */

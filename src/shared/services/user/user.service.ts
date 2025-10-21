@@ -4,6 +4,7 @@ import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
 
 /** 내 사용자 정보 수정 */
+// TODO: multipart/form-data 형식으로 수정
 export const PUT_profile = async (data: UserRequest) => {
   const response = await api.put('/api/v1/users/profile', data);
   return response.data;

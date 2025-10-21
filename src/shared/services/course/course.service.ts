@@ -1,0 +1,73 @@
+import {
+  CourseCreatorResponse,
+  CourseDetailResponse,
+  CourseMyResponse,
+  CourseProgressByMeResponse,
+  CourseProgressResponse,
+  CourseRequest,
+  CoursesResponse,
+} from './course.type';
+
+import { api } from '@/shared/services/api';
+import { ApiResponse, PaginatedResponse } from '@/shared/types/api.type';
+
+/** 강의 상세조회 */
+export const GET_course_by_id = async (courseId: string): Promise<ApiResponse<CourseDetailResponse>> => {
+  const response = await api.get(`/api/v1/courses/${courseId}`);
+  return response.data;
+};
+
+/** 강의 수정 */
+// TODO: multipart/form-data 형식으로 수정
+export const PUT_course_by_id = async (
+  courseId: string,
+  data: CourseRequest,
+): Promise<ApiResponse<CourseDetailResponse>> => {
+  const response = await api.put(`/api/v1/courses/${courseId}`, data);
+  return response.data;
+};
+
+/** 강의 삭제 */
+export const DELETE_course_by_id = async (courseId: string): Promise<ApiResponse<boolean>> => {
+  const response = await api.delete(`/api/v1/courses/${courseId}`);
+  return response.data;
+};
+
+/** 강의 목록조회 */
+// TODO: query params 추가
+export const GET_courses = async (): Promise<PaginatedResponse<CoursesResponse>> => {
+  const response = await api.get('/api/v1/courses');
+  return response.data;
+};
+
+/** 강의 게시 */
+// TODO: multipart/form-data 형식으로 수정
+export const POST_course = async (data: CourseRequest): Promise<ApiResponse<CourseDetailResponse>> => {
+  const response = await api.post('/api/v1/courses', data);
+  return response.data;
+};
+
+/** 강좌 수강하기 */
+export const POST_course_progress_by_id = async (courseId: string): Promise<ApiResponse<CourseProgressResponse>> => {
+  const response = await api.post(`/api/v1/courses/${courseId}/enrollment`);
+  return response.data;
+};
+
+/** 내가 업로드한 강의 목록조회 */
+// TODO: query params 추가
+export const GET_courses_my = async (): Promise<PaginatedResponse<CourseMyResponse>> => {
+  const response = await api.get('/api/v1/courses/my');
+  return response.data;
+};
+
+/** 강의 상세조회(크리에이터용) */
+export const GET_course_by_id_for_creator = async (courseId: string): Promise<ApiResponse<CourseCreatorResponse>> => {
+  const response = await api.get(`/api/v1/courses/creator/${courseId}`);
+  return response.data;
+};
+
+/** 내가 수강중인 강의 목록조회 */
+export const GET_courses_Progress_by_me = async (): Promise<PaginatedResponse<CourseProgressByMeResponse>> => {
+  const response = await api.get('/api/v1/courses/courseProgress');
+  return response.data;
+};

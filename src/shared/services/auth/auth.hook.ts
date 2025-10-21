@@ -56,5 +56,7 @@ export const useGetSocialLoginAuthorizeCode = (socialName: SocialLoginType) => {
   return useQuery({
     queryKey: [GET_social_login_authorize_code.name, socialName],
     queryFn: () => GET_social_login_authorize_code(socialName),
+    enabled: !!socialName,
+    select: ({ data }) => data,
   });
 };

@@ -1,10 +1,4 @@
-import {
-  DELETE_withdraw,
-  GET_email_check,
-  GET_nickname_check,
-  GET_profile,
-  PUT_profile,
-} from './user.service';
+import { DELETE_withdraw, GET_email_check, GET_nickname_check, GET_profile, PUT_profile } from './user.service';
 import { UserRequest } from './user.type';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -27,6 +21,7 @@ export const useGetProfile = () => {
   return useQuery({
     queryKey: [GET_profile.name],
     queryFn: () => GET_profile(),
+    select: ({ data }) => data,
   });
 };
 
@@ -35,6 +30,8 @@ export const useGetNicknameCheck = (nickname: string) => {
   return useQuery({
     queryKey: [GET_nickname_check.name],
     queryFn: () => GET_nickname_check(nickname),
+    enabled: !!nickname,
+    select: ({ data }) => data,
   });
 };
 
@@ -43,6 +40,8 @@ export const useGetEmailCheck = (email: string) => {
   return useQuery({
     queryKey: [GET_email_check.name],
     queryFn: () => GET_email_check(email),
+    enabled: !!email,
+    select: ({ data }) => data,
   });
 };
 
