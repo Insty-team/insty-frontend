@@ -11,8 +11,8 @@ type AuthState = {
 };
 
 type AuthActions = {
-  setAccessToken: (accessToken: string) => void;
-  setRefreshToken: (refreshToken: string) => void;
+  setAccessToken: (accessToken: AuthState['accessToken']) => void;
+  setRefreshToken: (refreshToken: AuthState['refreshToken']) => void;
 };
 
 export const useAuthStore = create(
@@ -20,8 +20,8 @@ export const useAuthStore = create(
     (set) => ({
       accessToken: null,
       refreshToken: null,
-      setAccessToken: (accessToken: string) => set({ accessToken }),
-      setRefreshToken: (refreshToken: string) => set({ refreshToken }),
+      setAccessToken: (accessToken: AuthState['accessToken']) => set({ accessToken }),
+      setRefreshToken: (refreshToken: AuthState['refreshToken']) => set({ refreshToken }),
     }),
     {
       name: '@insty-app.token',

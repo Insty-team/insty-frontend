@@ -9,14 +9,7 @@ import { useParams, useRouter } from 'next/navigation';
 
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/shared/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
@@ -69,9 +62,9 @@ export default function LoginUserType() {
         userStore.setUserType(response.data.userType as UserType);
 
         if (response.data.userType === UserTypeEnum.CREATOR) {
-          // router.push('/creator/courses');
+          router.push('/creator');
         } else if (response.data.userType === UserTypeEnum.LEARNER) {
-          // router.push('/learner/recommend');
+          router.push('/learner');
         } else {
           throw new Error('잘못된 접근입니다.');
         }
@@ -83,11 +76,7 @@ export default function LoginUserType() {
   const handleSocialLogin = (type: SocialLoginType) => {};
   return (
     <section className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div
-        className={cn(
-          'flex w-[420px] flex-col justify-center gap-6 rounded-2xl px-12 py-10 shadow-lg',
-        )}
-      >
+      <div className={cn('flex w-[420px] flex-col justify-center gap-6 rounded-2xl px-12 py-10 shadow-lg')}>
         <div className="flex w-full flex-col justify-center">
           <div className="flex flex-col items-center gap-5">
             <Image src={instyPng} alt="logo" width={120} priority />
@@ -95,10 +84,7 @@ export default function LoginUserType() {
           </div>
         </div>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid w-full items-center space-y-3"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid w-full items-center space-y-3">
             <div className="space-y-6">
               <FormField
                 control={form.control}
@@ -177,13 +163,7 @@ export default function LoginUserType() {
                 handleSocialLogin('GOOGLE');
               }}
             >
-              <Image
-                src={googleSvg}
-                alt="google"
-                className="cursor-pointer rounded-2xl"
-                width={36}
-                height={36}
-              />
+              <Image src={googleSvg} alt="google" className="cursor-pointer rounded-2xl" width={36} height={36} />
             </button>
             <button
               type="button"
@@ -191,26 +171,16 @@ export default function LoginUserType() {
                 handleSocialLogin('NAVER');
               }}
             >
-              <Image
-                src={naverSvg}
-                alt="naver"
-                className="cursor-pointer rounded-2xl"
-                width={36}
-                height={36}
-              />
+              <Image src={naverSvg} alt="naver" className="cursor-pointer rounded-2xl" width={36} height={36} />
             </button>
           </div>
         </div>
         <Separator />
         <div className="flex flex-col items-center justify-center gap-3">
           <div className="flex items-center justify-center gap-2">
-            <span className="cursor-pointer text-sm text-gray-600 hover:underline">
-              아이디 찾기
-            </span>
+            <span className="cursor-pointer text-sm text-gray-600 hover:underline">아이디 찾기</span>
             <Separator orientation="vertical" className="!h-[12px]" />
-            <span className="cursor-pointer text-sm text-gray-600 hover:underline">
-              비밀번호 찾기
-            </span>
+            <span className="cursor-pointer text-sm text-gray-600 hover:underline">비밀번호 찾기</span>
           </div>
           <div className="flex items-center justify-center gap-1">
             <div className="text-sm text-gray-600">계정이 없으신가요?</div>
