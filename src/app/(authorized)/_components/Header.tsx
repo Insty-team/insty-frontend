@@ -212,7 +212,7 @@ export default function Header() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">
+                  <Link href={isCreator ? '/creator/profile' : '/learner/profile'}>
                     <User className="mr-2 h-4 w-4" />
                     <span>프로필</span>
                   </Link>

@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { cn } from '@/shared/lib/utils';
 
+// TODO: autofill 배경색 제거하고 싶은데 어떻게하지
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
     <input

@@ -1,3 +1,3 @@
 export default function LearnerPage() {
-  return <div>LearnerPage</div>;
+  return <div>러너 페이지</div>;
 }
