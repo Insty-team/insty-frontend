@@ -56,7 +56,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* 로고 */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href={isCreator ? '/creator' : '/learner'} className="flex items-center gap-2">
               <Image src={LogoImage} alt="Insty" width={120} height={40} className="h-8 w-auto" />
             </Link>
 
