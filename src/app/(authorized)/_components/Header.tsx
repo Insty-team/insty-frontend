@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -17,11 +15,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { Input } from '@/shared/components/ui/input';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import { useAuthStore, useUserStore } from '@/shared/stores/auth';
 import { UserTypeEnum } from '@/shared/types/auth.enum';
-import { Bell, BookOpen, LogOut, Menu, Search, Settings, ShoppingCart, User, Video } from 'lucide-react';
+import { Bell, BookOpen, LogOut, Menu, Settings, ShoppingCart, User, Video } from 'lucide-react';
 
 import LogoImage from '@/assets/Logo.png';
 
@@ -32,14 +29,6 @@ export default function Header() {
   const authStore = useAuthStore((state) => state);
 
   const { data: profile } = useGetProfile();
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-    }
-  };
 
   const handleLogout = () => {
     // 로그아웃 로직
@@ -62,35 +51,6 @@ export default function Header() {
 
             {/* 카테고리 메뉴 */}
             <nav className="hidden items-center gap-6 md:flex">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-1">
-                    <Menu className="h-4 w-4" />
-                    <span>카테고리</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuItem>
-                    <Link href="/courses?category=development">개발·프로그래밍</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/courses?category=design">디자인</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/courses?category=marketing">마케팅</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/courses?category=business">비즈니스·경제</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/courses?category=language">외국어</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/courses?category=etc">기타</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
               {isCreator ? (
                 <Link
                   href="/creator"
@@ -111,20 +71,6 @@ export default function Header() {
                 </Link>
               )}
             </nav>
-          </div>
-
-          {/* 검색바 */}
-          <div className="mx-4 hidden max-w-xl flex-1 lg:block">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                type="search"
-                placeholder="배우고 싶은 강의를 검색해보세요"
-                className="w-full pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </form>
           </div>
 
           {/* 우측 액션 버튼 */}
@@ -247,20 +193,6 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
-
-        {/* 모바일 검색바 */}
-        <div className="pb-4 lg:hidden">
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-            <Input
-              type="search"
-              placeholder="강의 검색"
-              className="w-full pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
         </div>
       </div>
     </header>
