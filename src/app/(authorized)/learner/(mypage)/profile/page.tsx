@@ -1,4 +1,4 @@
-import ProfilePage from '@/app/(authorized)/(common)/(mypage)/profile/page';
+import ProfilePage from '@/app/(authorized)/(mypage)/profile/page';
 
 export default function LearnerProfilePage() {
   return <ProfilePage />;

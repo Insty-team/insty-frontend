@@ -4,10 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
-import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/shared/lib/utils';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import { Edit } from 'lucide-react';
 
 interface NavigationItem {
   name: string;
@@ -51,13 +49,6 @@ export default function ProfileSidebar({ navigation, userType }: ProfileSidebarP
         <p className="text-muted-foreground mb-4 text-sm">{profile?.email}</p>
 
         {profile?.introduce && <p className="text-muted-foreground mb-4 line-clamp-2 text-sm">{profile.introduce}</p>}
-
-        <Link href={`/${userType}/profile`}>
-          <Button variant="outline" size="lg" className="w-full">
-            <Edit className="mr-2 h-4 w-4" />
-            프로필 수정
-          </Button>
-        </Link>
       </div>
 
       {/* 네비게이션 메뉴 */}
