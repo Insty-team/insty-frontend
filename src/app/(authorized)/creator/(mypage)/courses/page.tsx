@@ -1,57 +1,177 @@
 'use client';
 
+import { CourseCard } from './_components/CourseCard';
+import { CourseFilters, SortOption, StatusFilter } from './_components/CourseFilters';
+import { CourseStats } from './_components/CourseStats';
+import { DeleteCourseDialog } from './_components/DeleteCourseDialog';
+import { ToggleVisibilityDialog } from './_components/ToggleVisibilityDialog';
+
+import { useMemo, useState } from 'react';
+
 import Link from 'next/link';
 
-import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
-import { Separator } from '@/shared/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Eye, MoreVertical, Star, Users, Video } from 'lucide-react';
-
-// 임시 데이터
-const mockCourses = {
-  published: [
-    {
-      id: 1,
-      title: 'Next.js 완벽 가이드',
-      status: 'published',
-      students: 234,
-      rating: 4.8,
-      reviews: 89,
-      price: 59000,
-      revenue: 13806000,
-    },
-    {
-      id: 2,
-      title: 'React 기초부터 실전까지',
-      status: 'published',
-      students: 456,
-      rating: 4.9,
-      reviews: 167,
-      price: 49000,
-      revenue: 22344000,
-    },
-  ],
-  draft: [
-    {
-      id: 3,
-      title: 'TypeScript 마스터하기',
-      status: 'draft',
-      completionRate: 65,
-    },
-  ],
-};
+import { useGetCoursesMy } from '@/shared/services/course/course.hook';
+import { CourseMyResponse } from '@/shared/services/course/course.type';
+import { Plus, Video } from 'lucide-react';
 
 export default function CreatorCoursesPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  // 다이얼로그 상태
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    courseId: string;
+    courseTitle: string;
+  }>({
+    isOpen: false,
+    courseId: '',
+    courseTitle: '',
+  });
+
+  const [toggleVisibilityDialog, setToggleVisibilityDialog] = useState<{
+    isOpen: boolean;
+    courseId: string;
+    courseTitle: string;
+    currentVisibility: boolean;
+  }>({
+    isOpen: false,
+    courseId: '',
+    courseTitle: '',
+    currentVisibility: false,
+  });
+
+  // API에서 강의 데이터 가져오기
+  const { data: coursesData, isLoading, error } = useGetCoursesMy();
+  const courses = coursesData?.items || [];
+
+  // 필터링 및 정렬된 강의 목록
+  const filteredAndSortedCourses = useMemo(() => {
+    let filtered = courses;
+
+    // 검색 필터
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (course: CourseMyResponse) =>
+          course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          course.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
+      );
+    }
+
+    // 상태 필터
+    if (statusFilter === 'published') {
+      filtered = filtered.filter((course: CourseMyResponse) => course.isShow);
+    } else if (statusFilter === 'draft') {
+      filtered = filtered.filter((course: CourseMyResponse) => !course.isShow);
+    }
+
+    // 정렬
+    filtered.sort((a: CourseMyResponse, b: CourseMyResponse) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'views':
+          return b.viewCount - a.viewCount;
+        case 'comments':
+          return b.commentCount - a.commentCount;
+        case 'title':
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [courses, searchQuery, sortBy, statusFilter]);
+
+  // 공개/비공개 강의 분리
+  const publishedCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => course.isShow);
+  const draftCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => !course.isShow);
+
+  // 이벤트 핸들러들
+  const handleEdit = (courseId: string) => {
+    // TODO: 강의 수정 페이지로 이동
+    console.log('Edit course:', courseId);
+  };
+
+  const handleDelete = (courseId: string) => {
+    const course = courses.find((c: CourseMyResponse) => c.courseId === courseId);
+    if (course) {
+      setDeleteDialog({
+        isOpen: true,
+        courseId: course.courseId,
+        courseTitle: course.title,
+      });
+    }
+  };
+
+  const handleViewStats = (courseId: string) => {
+    // TODO: 통계 페이지로 이동
+    console.log('View stats for course:', courseId);
+  };
+
+  const handleToggleVisibility = (courseId: string) => {
+    const course = courses.find((c: CourseMyResponse) => c.courseId === courseId);
+    if (course) {
+      setToggleVisibilityDialog({
+        isOpen: true,
+        courseId: course.courseId,
+        courseTitle: course.title,
+        currentVisibility: course.isShow,
+      });
+    }
+  };
+
+  const handleDeleteSuccess = () => {
+    // TODO: 강의 목록 새로고침 또는 낙관적 업데이트
+    console.log('강의 삭제 성공');
+  };
+
+  const handleToggleSuccess = () => {
+    // TODO: 강의 목록 새로고침 또는 낙관적 업데이트
+    console.log('공개 상태 변경 성공');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">내 강의 관리</h2>
+            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-muted-foreground">강의 목록을 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">내 강의 관리</h2>
+            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-destructive">강의 목록을 불러오는데 실패했습니다.</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">내 강의 관리</h2>
@@ -59,163 +179,112 @@ export default function CreatorCoursesPage() {
         </div>
         <Button asChild>
           <Link href="/creator/courses/new">
-            <Video className="mr-2 h-4 w-4" />새 강의 만들기
+            <Plus className="mr-2 h-4 w-4" />새 강의 만들기
           </Link>
         </Button>
       </div>
 
       {/* 통계 요약 */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">전체 학생 수</p>
-                <p className="mt-1 text-2xl font-bold">690명</p>
-              </div>
-              <Users className="text-muted-foreground h-8 w-8" />
-            </div>
-          </CardContent>
-        </Card>
+      {courses.length > 0 && <CourseStats courses={courses} />}
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">평균 평점</p>
-                <p className="mt-1 text-2xl font-bold">4.85</p>
-              </div>
-              <Star className="h-8 w-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">총 수익</p>
-                <p className="mt-1 text-2xl font-bold">3,615만원</p>
-              </div>
-              <Eye className="text-muted-foreground h-8 w-8" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* 필터 및 검색 */}
+      <CourseFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        totalCount={courses.length}
+        filteredCount={filteredAndSortedCourses.length}
+      />
 
       {/* 강의 목록 */}
-      <Tabs defaultValue="published" className="w-full">
-        <TabsList>
-          <TabsTrigger value="published">공개 강의 ({mockCourses.published.length})</TabsTrigger>
-          <TabsTrigger value="draft">작성 중 ({mockCourses.draft.length})</TabsTrigger>
-        </TabsList>
+      {filteredAndSortedCourses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <Video className="text-muted-foreground mb-4 h-12 w-12" />
+          <h3 className="mb-2 text-lg font-semibold">
+            {searchQuery || statusFilter !== 'all' ? '검색 결과가 없습니다' : '아직 강의가 없습니다'}
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            {searchQuery || statusFilter !== 'all'
+              ? '다른 검색어나 필터를 시도해보세요.'
+              : '첫 번째 강의를 만들어보세요!'}
+          </p>
+          {!searchQuery && statusFilter === 'all' && (
+            <Button asChild>
+              <Link href="/creator/courses/new">
+                <Plus className="mr-2 h-4 w-4" />새 강의 만들기
+              </Link>
+            </Button>
+          )}
+        </div>
+      ) : (
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList>
+            <TabsTrigger value="all">전체 ({filteredAndSortedCourses.length})</TabsTrigger>
+            <TabsTrigger value="published">공개 ({publishedCourses.length})</TabsTrigger>
+            <TabsTrigger value="draft">비공개 ({draftCourses.length})</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="published" className="mt-6 space-y-4">
-          {mockCourses.published.map((course) => (
-            <Card key={course.id}>
-              <CardContent className="p-6">
-                <div className="flex gap-4">
-                  <div className="bg-muted h-24 w-40 flex-shrink-0 rounded-lg" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex items-center gap-2">
-                          <h3 className="text-lg font-semibold">{course.title}</h3>
-                          <Badge variant="secondary">공개중</Badge>
-                        </div>
-                        <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
-                          <span className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            {course.students}명
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Star className="h-4 w-4 text-yellow-500" />
-                            {course.rating} ({course.reviews}개 리뷰)
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <p className="text-sm">
-                            판매가: <span className="font-semibold">{course.price.toLocaleString()}원</span>
-                          </p>
-                          <Separator orientation="vertical" className="h-4" />
-                          <p className="text-sm">
-                            총 수익:{' '}
-                            <span className="font-semibold text-green-600">{course.revenue.toLocaleString()}원</span>
-                          </p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>수정하기</DropdownMenuItem>
-                          <DropdownMenuItem>통계 보기</DropdownMenuItem>
-                          <DropdownMenuItem>미리보기</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">비공개 전환</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <Separator className="my-4" />
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        수정하기
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        통계 보기
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
+          <TabsContent value="all" className="mt-6 space-y-4">
+            {filteredAndSortedCourses.map((course: CourseMyResponse) => (
+              <CourseCard
+                key={course.courseId}
+                course={course}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onViewStats={handleViewStats}
+                onToggleVisibility={handleToggleVisibility}
+              />
+            ))}
+          </TabsContent>
 
-        <TabsContent value="draft" className="mt-6 space-y-4">
-          {mockCourses.draft.map((course) => (
-            <Card key={course.id}>
-              <CardContent className="p-6">
-                <div className="flex gap-4">
-                  <div className="bg-muted h-24 w-40 flex-shrink-0 rounded-lg" />
-                  <div className="flex-1">
-                    <div className="mb-3 flex items-start justify-between gap-4">
-                      <div>
-                        <div className="mb-2 flex items-center gap-2">
-                          <h3 className="text-lg font-semibold">{course.title}</h3>
-                          <Badge variant="outline">작성 중</Badge>
-                        </div>
-                        <p className="text-muted-foreground text-sm">완성도: {course.completionRate}%</p>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>수정하기</DropdownMenuItem>
-                          <DropdownMenuItem>미리보기</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">삭제</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <Separator className="my-4" />
-                    <div className="flex gap-2">
-                      <Button size="sm">이어서 작성</Button>
-                      <Button size="sm" variant="outline">
-                        미리보기
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="published" className="mt-6 space-y-4">
+            {publishedCourses.map((course: CourseMyResponse) => (
+              <CourseCard
+                key={course.courseId}
+                course={course}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onViewStats={handleViewStats}
+                onToggleVisibility={handleToggleVisibility}
+              />
+            ))}
+          </TabsContent>
+
+          <TabsContent value="draft" className="mt-6 space-y-4">
+            {draftCourses.map((course: CourseMyResponse) => (
+              <CourseCard
+                key={course.courseId}
+                course={course}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onViewStats={handleViewStats}
+                onToggleVisibility={handleToggleVisibility}
+              />
+            ))}
+          </TabsContent>
+        </Tabs>
+      )}
+
+      {/* 다이얼로그들 */}
+      <DeleteCourseDialog
+        courseId={deleteDialog.courseId}
+        courseTitle={deleteDialog.courseTitle}
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={handleDeleteSuccess}
+      />
+
+      <ToggleVisibilityDialog
+        courseId={toggleVisibilityDialog.courseId}
+        courseTitle={toggleVisibilityDialog.courseTitle}
+        currentVisibility={toggleVisibilityDialog.currentVisibility}
+        isOpen={toggleVisibilityDialog.isOpen}
+        onClose={() => setToggleVisibilityDialog((prev) => ({ ...prev, isOpen: false }))}
+        onSuccess={handleToggleSuccess}
+      />
     </div>
   );
 }

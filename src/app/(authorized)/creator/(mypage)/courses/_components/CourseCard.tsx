@@ -1,0 +1,151 @@
+'use client';
+
+import Image from 'next/image';
+
+import { Badge } from '@/shared/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
+import { Separator } from '@/shared/components/ui/separator';
+import { CourseMyResponse } from '@/shared/services/course/course.type';
+import { BarChart3, Calendar, Edit, Eye, MessageCircle, MoreVertical, Play, Settings, Trash2 } from 'lucide-react';
+
+interface CourseCardProps {
+  course: CourseMyResponse;
+  onEdit?: (courseId: string) => void;
+  onDelete?: (courseId: string) => void;
+  onViewStats?: (courseId: string) => void;
+  onToggleVisibility?: (courseId: string) => void;
+}
+
+export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisibility }: CourseCardProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const formatViewCount = (count: number) => {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
+    return count.toString();
+  };
+
+  return (
+    <Card className="group transition-shadow duration-200 hover:shadow-md">
+      <CardContent className="p-0">
+        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:p-6">
+          {/* 썸네일 */}
+          <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-48">
+            {course.thumbnailUrl ? (
+              <Image
+                src={course.thumbnailUrl}
+                alt={course.title}
+                fill
+                className="object-cover transition-transform duration-200 group-hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <Play className="text-muted-foreground h-8 w-8" />
+              </div>
+            )}
+            <div className="absolute top-2 right-2">
+              <Badge variant={course.isShow ? 'default' : 'secondary'} className="text-xs">
+                {course.isShow ? '공개' : '비공개'}
+              </Badge>
+            </div>
+          </div>
+
+          {/* 강의 정보 */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                {/* 제목 */}
+                <h3 className="group-hover:text-primary mb-2 line-clamp-2 text-lg font-semibold transition-colors">
+                  {course.title}
+                </h3>
+
+                {/* 태그 */}
+                {course.tags && course.tags.length > 0 && (
+                  <div className="mb-3 flex flex-wrap gap-1">
+                    {course.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {/* 통계 정보 */}
+                <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
+                  <span className="flex items-center gap-1">
+                    <Eye className="h-4 w-4" />
+                    {formatViewCount(course.viewCount)}회
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MessageCircle className="h-4 w-4" />
+                    {course.commentCount}개
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    {formatDate(course.createdAt)}
+                  </span>
+                </div>
+
+                {/* 가격 */}
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">판매가:</span>
+                  <span className="text-lg font-semibold">{course.price.toLocaleString()}원</span>
+                </div>
+              </div>
+
+              {/* 액션 메뉴 */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit?.(course.courseId)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    수정하기
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onViewStats?.(course.courseId)}>
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    통계 보기
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onViewStats?.(course.courseId)}>
+                    <Play className="mr-2 h-4 w-4" />
+                    미리보기
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onToggleVisibility?.(course.courseId)}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    {course.isShow ? '비공개 전환' : '공개 전환'}
+                  </DropdownMenuItem>
+                  <Separator />
+                  <DropdownMenuItem
+                    onClick={() => onDelete?.(course.courseId)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    삭제
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

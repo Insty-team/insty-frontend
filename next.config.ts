@@ -1,6 +1,18 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dev.insty.ai.kr',
+      },
+      {
+        protocol: 'https',
+        hostname: 'insty.ai.kr',
+      },
+    ],
+  },
   rewrites: async () => {
     return [
       {

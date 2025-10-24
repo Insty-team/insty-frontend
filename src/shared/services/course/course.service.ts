@@ -56,7 +56,7 @@ export const POST_course_progress_by_id = async (courseId: string): Promise<ApiR
 /** 내가 업로드한 강의 목록조회 */
 // TODO: query params 추가
 export const GET_courses_my = async (): Promise<PaginatedResponse<CourseMyResponse>> => {
-  const response = await api.get('/api/v1/courses/my');
+  const response = await api.get('/api/v1/courses/my?page=1&pageSize=10');
   return response.data;
 };
 
