@@ -177,9 +177,7 @@ export default function LearnerPage() {
                 >
                   {message.role === 'assistant' && (
                     <Avatar className="size-8 shrink-0">
-                      <AvatarFallback className="from-primary-green-100 to-primary-green-600 bg-gradient-to-br text-white">
-                        AI
-                      </AvatarFallback>
+                      <AvatarFallback className="bg-gray-200 text-gray-700">AI</AvatarFallback>
                     </Avatar>
                   )}
 
@@ -189,8 +187,10 @@ export default function LearnerPage() {
                     }`}
                   >
                     <div
-                      className={`rounded-2xl px-4 py-3 ${
-                        message.role === 'user' ? 'bg-blue-600 text-white' : 'border bg-white shadow-sm'
+                      className={`rounded-xl px-4 py-3 ${
+                        message.role === 'user'
+                          ? 'rounded-tr-none bg-gray-200 text-gray-700'
+                          : 'rounded-tl-none bg-white shadow-sm'
                       }`}
                     >
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -288,9 +288,7 @@ export default function LearnerPage() {
               {isLoading && (
                 <div className="flex gap-3">
                   <Avatar className="size-8 shrink-0">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      AI
-                    </AvatarFallback>
+                    <AvatarFallback className="bg-gray-200 text-gray-700">AI</AvatarFallback>
                   </Avatar>
                   <div className="rounded-2xl border bg-white px-4 py-3 shadow-sm">
                     <div className="flex gap-1">
