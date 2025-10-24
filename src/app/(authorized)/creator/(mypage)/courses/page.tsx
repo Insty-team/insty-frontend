@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Card, CardContent } from '@/shared/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { Separator } from '@/shared/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Eye, MoreVertical, Plus, Star, Users } from 'lucide-react';
+import { Eye, MoreVertical, Star, Users, Video } from 'lucide-react';
 
 // 임시 데이터
 const mockCourses = {
@@ -57,8 +57,10 @@ export default function CreatorCoursesPage() {
           <h2 className="text-2xl font-bold">내 강의 관리</h2>
           <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />새 강의 만들기
+        <Button asChild>
+          <Link href="/creator/courses/new">
+            <Video className="mr-2 h-4 w-4" />새 강의 만들기
+          </Link>
         </Button>
       </div>
 

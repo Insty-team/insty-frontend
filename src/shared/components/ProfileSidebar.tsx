@@ -54,7 +54,7 @@ export default function ProfileSidebar({ navigation }: ProfileSidebarProps) {
       <div className="rounded-lg bg-white p-6">
         <nav className="space-y-1">
           {navigation.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
               <Link

@@ -77,7 +77,7 @@ export default function Header() {
           </div>
 
           {/* 우측 액션 버튼 */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {isCreator && (
               <Button asChild variant="default">
                 <Link href="/creator/courses/new">
