@@ -113,49 +113,38 @@ export default function ProfileEditPage() {
           <h2 className="text-2xl font-bold">프로필 수정</h2>
           <p className="text-muted-foreground mt-1">나의 정보를 수정하세요</p>
         </div>
-        <Button variant="outline" onClick={handleCancel}>
-          취소
-        </Button>
       </div>
 
-      {/* 프로필 사진 섹션 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>프로필 사진</CardTitle>
-          <CardDescription>프로필 이미지를 변경하세요</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <Avatar className="h-24 w-24 cursor-pointer" onClick={handleImageClick}>
-                <AvatarImage src={previewUrl || profile?.thumbnailUrl} alt={profile?.nickname} />
-                <AvatarFallback className="text-2xl">{profile?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black opacity-0 transition-opacity hover:opacity-100">
-                <span className="text-sm font-medium text-white">변경</span>
-              </div>
-            </div>
-            <div>
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
-              <Button variant="outline" size="sm" onClick={handleImageClick}>
-                사진 변경
-              </Button>
-              <p className="text-muted-foreground mt-2 text-sm">JPG, PNG 파일 (최대 5MB)</p>
-              {selectedFile && <p className="mt-1 text-sm text-green-600">새로운 사진이 선택되었습니다</p>}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 기본 정보 섹션 */}
       <Card>
         <CardHeader>
           <CardTitle>기본 정보</CardTitle>
-          <CardDescription>닉네임과 소개를 수정할 수 있습니다</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-2">
+            {/* 프로필 사진 섹션 */}
+            <div className="flex items-center gap-6">
+              <div className="relative space-y-1">
+                <Label>프로필 사진</Label>
+                <Avatar className="h-24 w-24 cursor-pointer" onClick={handleImageClick}>
+                  <AvatarImage src={previewUrl || profile?.thumbnailUrl} alt={profile?.nickname} />
+                  <AvatarFallback className="text-2xl">{profile?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black opacity-0 transition-opacity hover:opacity-100">
+                  <span className="text-sm font-medium text-white">변경</span>
+                </div>
+              </div>
+              <div>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+                <Button variant="outline" size="sm" onClick={handleImageClick}>
+                  사진 변경
+                </Button>
+                <p className="text-muted-foreground mt-2 text-sm">JPG, PNG 파일 (최대 5MB)</p>
+                {selectedFile && <p className="mt-1 text-sm text-green-600">새로운 사진이 선택되었습니다</p>}
+              </div>
+            </div>
+
+            {/* 기본 정보 섹션 */}
+            <div className="space-y-1">
               <Label htmlFor="nickname">닉네임</Label>
               <Input
                 id="nickname"
@@ -168,13 +157,13 @@ export default function ProfileEditPage() {
               {errors.nickname && <p className="text-destructive text-sm">{errors.nickname.message}</p>}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="email">이메일</Label>
               <Input id="email" {...register('email')} disabled />
               <p className="text-muted-foreground text-sm">이메일은 변경할 수 없습니다</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="introduce">소개</Label>
               <Textarea
                 id="introduce"
@@ -187,12 +176,12 @@ export default function ProfileEditPage() {
               {errors.introduce && <p className="text-destructive text-sm">{errors.introduce.message}</p>}
             </div>
 
-            <div className="flex gap-2">
-              <Button type="submit" disabled={isPending}>
-                {isPending ? '저장 중...' : '저장'}
-              </Button>
+            <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={handleCancel}>
                 취소
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? '저장 중...' : '저장'}
               </Button>
             </div>
           </form>
