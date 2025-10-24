@@ -93,19 +93,6 @@ export function FileUpload({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getStatusColor = () => {
-    switch (uploadStatus) {
-      case 'PROCESSING':
-        return 'bg-blue-500';
-      case 'COMPLETED':
-        return 'bg-green-500';
-      case 'ERROR':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-200';
-    }
-  };
-
   const getStatusText = () => {
     switch (uploadStatus) {
       case 'PROCESSING':
@@ -124,7 +111,7 @@ export function FileUpload({
       <Label>{isThumbnail ? '강의 썸네일' : '강의 영상'}</Label>
 
       <Card
-        className={`cursor-pointer py-4 transition-colors ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-dashed'}`}
+        className={`cursor-pointer py-6 transition-colors ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-dashed'}`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -170,7 +157,7 @@ export function FileUpload({
             </div>
           ) : (
             <div className="space-y-2 text-center">
-              <Upload className="text-muted-foreground mx-auto h-12 w-12" />
+              <Upload className="text-muted-foreground mx-auto h-10 w-10" />
               <div>
                 <p className="font-medium">{isThumbnail ? '썸네일을 업로드하세요' : '영상을 업로드하세요'}</p>
                 <p className="text-muted-foreground text-sm">
