@@ -15,7 +15,7 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
       const { accessToken } = useAuthStore.getState();
-      console.log('accessToken', accessToken);
+
       // const accessToken = cookieStorage.getItem('accessToken') as string;
       if (accessToken && !config.headers?.Authorization) {
         config.headers.Authorization = `Bearer ${accessToken}`;

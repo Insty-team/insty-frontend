@@ -1,16 +1,10 @@
 'use client';
 
 import ProfileSidebar from '@/shared/components/ProfileSidebar';
-import { BarChart3, BookOpen, CreditCard, User } from 'lucide-react';
 
-const navigation = [
-  { name: '프로필 관리', href: '/creator/profile', icon: User },
-  { name: '내 계좌정보', href: '/creator/account', icon: CreditCard },
-  { name: '판매 대시보드', href: '/creator/dashboard', icon: BarChart3 },
-  { name: '내 강의 관리', href: '/creator/courses', icon: BookOpen },
-];
+import CREATOR_NAVIGATION from '@/app/_navigations/creator-navigation';
 
-export default function CreatorMyPageLayout({ children }: { children: React.ReactNode }) {
+export default function CommonMyPageLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-5">
@@ -19,7 +13,7 @@ export default function CreatorMyPageLayout({ children }: { children: React.Reac
 
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* 프로필 사이드바 */}
-        <ProfileSidebar navigation={navigation} userType="creator" />
+        <ProfileSidebar navigation={CREATOR_NAVIGATION} />
 
         {/* 메인 컨텐츠 */}
         <main className="min-w-0 flex-1">{children}</main>

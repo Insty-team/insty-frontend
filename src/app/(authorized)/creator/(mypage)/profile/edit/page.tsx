@@ -1,7 +1,9 @@
 'use client';
 
-// import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
+import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -16,12 +18,16 @@ type ProfileFormData = {
   nickname: string;
   email: string;
   introduce: string;
+  thumbnail?: File;
 };
 
-export default function ProfilePage() {
+export default function ProfileEditPage() {
+  const router = useRouter();
   const { data: profile, isLoading } = useGetProfile();
   const { mutate: updateProfile, isPending } = usePutProfile();
-  // const [isEditing, setIsEditing] = useState(true); // 기본적으로 편집 모드로 시작
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -43,14 +49,52 @@ export default function ProfilePage() {
   });
 
   const onSubmit = (data: ProfileFormData) => {
-    updateProfile(data, {
+    const updateData = {
+      nickname: data.nickname,
+      introduce: data.introduce,
+      thumbnail: selectedFile || undefined,
+    };
+
+    updateProfile(updateData, {
       onSuccess: () => {
         alert('프로필이 업데이트되었습니다!');
+        router.push('/creator/profile'); // 프로필 보기 페이지로 이동
       },
       onError: () => {
         alert('프로필 업데이트에 실패했습니다.');
       },
     });
+  };
+
+  const handleCancel = () => {
+    router.push('/creator/profile'); // 프로필 보기 페이지로 이동
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // 파일 크기 체크 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('파일 크기는 5MB 이하여야 합니다.');
+        return;
+      }
+
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+
+      setSelectedFile(file);
+
+      // 미리보기 URL 생성
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
   };
 
   if (isLoading) {
@@ -63,11 +107,18 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">프로필 수정</h2>
-        <p className="text-muted-foreground mt-1">나의 정보를 수정하세요</p>
+      {/* 헤더 섹션 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">프로필 수정</h2>
+          <p className="text-muted-foreground mt-1">나의 정보를 수정하세요</p>
+        </div>
+        <Button variant="outline" onClick={handleCancel}>
+          취소
+        </Button>
       </div>
 
+      {/* 프로필 사진 섹션 */}
       <Card>
         <CardHeader>
           <CardTitle>프로필 사진</CardTitle>
@@ -75,20 +126,28 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={profile?.thumbnailUrl} alt={profile?.nickname} />
-              <AvatarFallback>{profile?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-24 w-24 cursor-pointer" onClick={handleImageClick}>
+                <AvatarImage src={previewUrl || profile?.thumbnailUrl} alt={profile?.nickname} />
+                <AvatarFallback className="text-2xl">{profile?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black opacity-0 transition-opacity hover:opacity-100">
+                <span className="text-sm font-medium text-white">변경</span>
+              </div>
+            </div>
             <div>
-              <Button variant="outline" size="sm">
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+              <Button variant="outline" size="sm" onClick={handleImageClick}>
                 사진 변경
               </Button>
               <p className="text-muted-foreground mt-2 text-sm">JPG, PNG 파일 (최대 5MB)</p>
+              {selectedFile && <p className="mt-1 text-sm text-green-600">새로운 사진이 선택되었습니다</p>}
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* 기본 정보 섹션 */}
       <Card>
         <CardHeader>
           <CardTitle>기본 정보</CardTitle>
@@ -131,6 +190,9 @@ export default function ProfilePage() {
             <div className="flex gap-2">
               <Button type="submit" disabled={isPending}>
                 {isPending ? '저장 중...' : '저장'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>
+                취소
               </Button>
             </div>
           </form>

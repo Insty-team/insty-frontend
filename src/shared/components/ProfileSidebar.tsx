@@ -15,10 +15,9 @@ interface NavigationItem {
 
 interface ProfileSidebarProps {
   navigation: NavigationItem[];
-  userType: 'creator' | 'learner';
 }
 
-export default function ProfileSidebar({ navigation, userType }: ProfileSidebarProps) {
+export default function ProfileSidebar({ navigation }: ProfileSidebarProps) {
   const pathname = usePathname();
   const { data: profile, isLoading } = useGetProfile();
 

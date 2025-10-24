@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
@@ -16,16 +16,17 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import { useAuthStore, useUserStore } from '@/shared/stores/auth';
+import { useAuthStore } from '@/shared/stores/auth';
 import { UserTypeEnum } from '@/shared/types/auth.enum';
-import { Bell, BookOpen, LogOut, Menu, Settings, ShoppingCart, User, Video } from 'lucide-react';
+import { Bell, LogOut, ShoppingCart, Video } from 'lucide-react';
+
+import CREATOR_NAVIGATION from '@/app/_navigations/creator-navigation';
+import LEARNER_NAVIGATION from '@/app/_navigations/learner-navigation';
 
 import LogoImage from '@/assets/Logo.png';
 
 export default function Header() {
-  const pathname = usePathname();
   const router = useRouter();
-  const { userType } = useUserStore();
   const authStore = useAuthStore((state) => state);
 
   const { data: profile } = useGetProfile();
@@ -37,7 +38,9 @@ export default function Header() {
     router.push('/login');
   };
 
-  const isCreator = userType === UserTypeEnum.CREATOR;
+  const isCreator = profile?.userType === UserTypeEnum.CREATOR;
+  const isLearner = profile?.userType === UserTypeEnum.LEARNER;
+  const navigations = isCreator ? CREATOR_NAVIGATION : isLearner ? LEARNER_NAVIGATION : [];
 
   return (
     <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
@@ -50,7 +53,7 @@ export default function Header() {
             </Link>
 
             {/* 카테고리 메뉴 */}
-            <nav className="hidden items-center gap-6 md:flex">
+            {/* <nav className="hidden items-center gap-6 md:flex">
               {isCreator ? (
                 <Link
                   href="/creator"
@@ -70,7 +73,7 @@ export default function Header() {
                   내 강의
                 </Link>
               )}
-            </nav>
+            </nav> */}
           </div>
 
           {/* 우측 액션 버튼 */}
@@ -157,34 +160,17 @@ export default function Header() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={isCreator ? '/creator/profile' : '/learner/profile'}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>마이페이지</span>
-                  </Link>
-                </DropdownMenuItem>
-                {!isCreator && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/my-courses">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      <span>내 강의</span>
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                {isCreator && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/creator">
-                      <Video className="mr-2 h-4 w-4" />
-                      <span>크리에이터 센터</span>
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>설정</span>
-                  </Link>
-                </DropdownMenuItem>
+                {navigations.map((navigation) => {
+                  return (
+                    <DropdownMenuItem asChild key={navigation.name}>
+                      <Link href={navigation.href}>
+                        <navigation.icon className="mr-2 h-4 w-4" />
+                        <span>{navigation.name}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />

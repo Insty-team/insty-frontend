@@ -1,6 +1,10 @@
 import { SocialLoginType, UserType } from '@/shared/types/auth.enum';
 
-export type UserRequest = {};
+export type UserRequest = {
+  nickname?: string;
+  introduce?: string;
+  thumbnail?: File;
+};
 
 export type UserResponse = {
   id: number;
