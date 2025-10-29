@@ -13,7 +13,7 @@ export default function Home() {
     <div className="relative bg-white">
       <ScrollAnimation />
       <Link
-        href="/login"
+        href="/onboarding"
         className="fixed-login-button hover:bg-primary-green-600 bg-primary-green-500 fixed top-2 right-2 z-50 rounded-xl px-6 py-2 font-bold text-white transition-all duration-300"
       >
         로그인
@@ -25,15 +25,9 @@ export default function Home() {
         className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 px-6"
       >
         <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-black-500 mb-8 text-5xl font-bold">
-            처음에 뭐든 설치하고 세팅하고 참 어렵죠?
-          </h1>
-          <p className="text-black-200 mb-6 text-3xl md:text-2xl">
-            설치 방법부터 복잡한 환경 설정까지...
-          </p>
-          <p className="text-black-100 mb-12 text-2xl">
-            복잡한 설치, 저희 Insty가 해결해 드릴게요!
-          </p>
+          <h1 className="text-black-500 mb-8 text-5xl font-bold">처음에 뭐든 설치하고 세팅하고 참 어렵죠?</h1>
+          <p className="text-black-200 mb-6 text-3xl md:text-2xl">설치 방법부터 복잡한 환경 설정까지...</p>
+          <p className="text-black-100 mb-12 text-2xl">복잡한 설치, 저희 Insty가 해결해 드릴게요!</p>
           <ArrowDown className="text-gray-scale-400 mx-auto size-8 animate-bounce" />
         </div>
       </section>
@@ -57,9 +51,7 @@ export default function Home() {
               <div className="space-y-8">
                 <div className="rounded-xl bg-white p-6 shadow-lg">
                   <h3 className="text-black-400 mb-3 text-xl font-bold">🤖 AI 학습 도우미</h3>
-                  <p className="text-black-200">
-                    수강 중 막히는 부분이 있다면, 즉시 질문하고 맞춤형 답변을 받으세요.
-                  </p>
+                  <p className="text-black-200">수강 중 막히는 부분이 있다면, 즉시 질문하고 맞춤형 답변을 받으세요.</p>
                 </div>
 
                 <div className="rounded-xl bg-white p-6 shadow-lg">
@@ -87,9 +79,7 @@ export default function Home() {
             <h2 className="text-primary-green-500 mb-6 text-4xl font-bold md:text-5xl">
               크리에이터라면 불필요한 시간을 줄이세요
             </h2>
-            <p className="text-black-200 text-xl">
-              Insty AI가 영상을 분석하여 초안을 완성해 드립니다.
-            </p>
+            <p className="text-black-200 text-xl">Insty AI가 영상을 분석하여 초안을 완성해 드립니다.</p>
           </div>
 
           <div className="grid items-center gap-12 md:grid-cols-2">
@@ -113,9 +103,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="text-black-400 mb-2 text-xl font-bold">AI 초안 분석</h3>
-                    <p className="text-black-200">
-                      제목부터 핵심 내용까지, 자동으로 완성해 드립니다.
-                    </p>
+                    <p className="text-black-200">제목부터 핵심 내용까지, 자동으로 완성해 드립니다.</p>
                   </div>
                 </div>
 
@@ -136,9 +124,7 @@ export default function Home() {
             <div className="inline-flex items-center space-x-6 rounded-full bg-white px-8 py-4 shadow-lg">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">⚡</span>
-                <span className="text-black-300 font-semibold">
-                  강의 준비 시간이 엄청 줄어들 거예요!
-                </span>
+                <span className="text-black-300 font-semibold">강의 준비 시간이 엄청 줄어들 거예요!</span>
               </div>
             </div>
           </div>
@@ -154,7 +140,7 @@ export default function Home() {
           <h2 className="text-gray-scale-50 mb-8 text-4xl font-bold">지금 바로 경험해 보세요!</h2>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link
-              href="/login"
+              href="/onboarding"
               className="bg-primary-green-500 hover:bg-primary-green-600 rounded-lg px-8 py-4 font-bold text-white transition-colors"
             >
               시작하기
