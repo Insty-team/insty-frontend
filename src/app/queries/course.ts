@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getCourseDetail, getMyCourses } from "../api/backend";
+import {
+	getCourseDetail,
+	getCourseDetailByCreator,
+	getMyCourses,
+} from "../api/backend";
 import { CourseDetail } from "../types/course";
 
 // queries/course.ts
@@ -18,4 +22,15 @@ const useGetCourseDetailQuery = (courseId: number) => {
 	});
 };
 
-export { useGetCourseDetailQuery, useGetMyCoursesQuery };
+const useGetCourseDetailByCreatorQuery = (courseId: number) => {
+	return useQuery<{ data: CourseDetail }>({
+		queryKey: ["courseDetailByCreator", courseId],
+		queryFn: () => getCourseDetailByCreator(courseId),
+	});
+};
+
+export {
+	useGetCourseDetailByCreatorQuery,
+	useGetCourseDetailQuery,
+	useGetMyCoursesQuery,
+};
