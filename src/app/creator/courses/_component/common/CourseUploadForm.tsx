@@ -1196,11 +1196,11 @@ ${request.description}
 							</div>
 						</div>
 
-						{mode === "requestUpload" && (
-							<div className="mt-4">
-								<div className="flex items-center justify-between mb-4">
-									<label className="text-2xl font-semibold flex items-center gap-2">
-										<p>실습 파일 작성</p>
+						<div className="mt-4">
+							<div className="flex items-center justify-between mb-4">
+								<label className="text-2xl font-semibold flex items-center gap-2">
+									<p>실습 파일 작성</p>
+									{mode === "requestUpload" && learnerRequestData && (
 										<div className="relative group">
 											<FiAlertCircle
 												onClick={() => setIsRequestInfoModalOpen(true)}
@@ -1210,40 +1210,40 @@ ${request.description}
 												요청 정보 확인
 											</div>
 										</div>
-									</label>
-									<BaseButton
-										title="AI에게 초안작성 요청하기"
-										onClick={() => handleSuggestPracticeGuide(videoUuid)}
-										fill={false}
-										className="!px-6 !py-2 !rounded-lg !w-[25%] !text-lg !border-primary-green-400 !text-primary-green-400 hover:!bg-primary-green-500 hover:!text-white !transition-all !duration-200"
-									/>
-								</div>
-								<div className="border rounded-lg overflow-hidden">
-									<MDEditor
-										value={practiceFileContent}
-										onChange={(value) => setPracticeFileContent(value || "")}
-										preview="edit"
-										hideToolbar={false}
-										height={400}
-										data-color-mode="light"
-									/>
-								</div>
-								<div className="flex items-center justify-between mt-2">
-									<p className="text-sm text-gray-500 mt-2 mr-6">
-										마크다운 문법을 사용하여 실습 가이드를 작성할 수 있습니다.
-										코드블록, 링크, 이미지 등을 활용해 보세요. PDF 변환 버튼을
-										클릭하면 실습 자료에 자동으로 추가됩니다.
-									</p>
-									<BaseButton
-										title="PDF 변환하기"
-										icon={<FaFilePdf />}
-										onClick={handleConvertToPDF}
-										fill={false}
-										className="!px-4 !py-2 !w-[25%] !ml-auto !rounded-lg !border-orange !text-orange hover:!bg-orange hover:!text-white !transition-all !duration-200"
-									/>
-								</div>
+									)}
+								</label>
+								<BaseButton
+									title="AI에게 초안작성 요청하기"
+									onClick={() => handleSuggestPracticeGuide(videoUuid)}
+									fill={false}
+									className="!px-6 !py-2 !rounded-lg !w-[25%] !text-lg !border-primary-green-400 !text-primary-green-400 hover:!bg-primary-green-500 hover:!text-white !transition-all !duration-200"
+								/>
 							</div>
-						)}
+							<div className="border rounded-lg overflow-hidden">
+								<MDEditor
+									value={practiceFileContent}
+									onChange={(value) => setPracticeFileContent(value || "")}
+									preview="edit"
+									hideToolbar={false}
+									height={400}
+									data-color-mode="light"
+								/>
+							</div>
+							<div className="flex items-center justify-between mt-2">
+								<p className="text-sm text-gray-500 mt-2 mr-6">
+									마크다운 문법을 사용하여 실습 가이드를 작성할 수 있습니다.
+									코드블록, 링크, 이미지 등을 활용해 보세요. PDF 변환 버튼을
+									클릭하면 실습 자료에 자동으로 추가됩니다.
+								</p>
+								<BaseButton
+									title="PDF 변환하기"
+									icon={<FaFilePdf />}
+									onClick={handleConvertToPDF}
+									fill={false}
+									className="!px-4 !py-2 !w-[25%] !ml-auto !rounded-lg !border-orange !text-orange hover:!bg-orange hover:!text-white !transition-all !duration-200"
+								/>
+							</div>
+						</div>
 
 						<div className="w-[20%] flex items-end ml-auto">
 							<BaseButton
