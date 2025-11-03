@@ -1,5 +1,7 @@
 'use client';
 
+import Notification from './Notification';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -35,7 +37,7 @@ export default function Header() {
     // 로그아웃 로직
     authStore.setAccessToken(null);
     authStore.setRefreshToken(null);
-    router.push('/login');
+    router.push('/onboarding');
   };
 
   const isCreator = profile?.userType === UserTypeEnum.CREATOR;
@@ -51,29 +53,6 @@ export default function Header() {
             <Link href={isCreator ? '/creator' : '/learner'} className="flex items-center gap-2">
               <Image src={LogoImage} alt="Insty" width={120} height={40} className="h-8 w-auto" />
             </Link>
-
-            {/* 카테고리 메뉴 */}
-            {/* <nav className="hidden items-center gap-6 md:flex">
-              {isCreator ? (
-                <Link
-                  href="/creator"
-                  className={`hover:text-primary text-sm font-medium transition-colors ${
-                    pathname === '/creator' ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  크리에이터 대시보드
-                </Link>
-              ) : (
-                <Link
-                  href="/my-courses"
-                  className={`hover:text-primary text-sm font-medium transition-colors ${
-                    pathname === '/my-courses' ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  내 강의
-                </Link>
-              )}
-            </nav> */}
           </div>
 
           {/* 우측 액션 버튼 */}
@@ -88,44 +67,7 @@ export default function Header() {
             )}
 
             {/* 알림 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs"
-                  >
-                    3
-                  </Badge>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
-                <DropdownMenuLabel>알림</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="max-h-96 overflow-y-auto">
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                    <p className="font-medium">새로운 강의가 업데이트되었습니다</p>
-                    <p className="text-muted-foreground text-xs">React 완전정복 강의에 새로운 섹션이 추가되었습니다</p>
-                    <span className="text-muted-foreground text-xs">2시간 전</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                    <p className="font-medium">질문에 답변이 달렸습니다</p>
-                    <p className="text-muted-foreground text-xs">
-                      &quot;useState 사용법&quot; 질문에 강사님이 답변하셨습니다
-                    </p>
-                    <span className="text-muted-foreground text-xs">5시간 전</span>
-                  </DropdownMenuItem>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/notifications" className="text-primary w-full text-center">
-                    모든 알림 보기
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Notification />
 
             {/* 장바구니 */}
             {!isCreator && (

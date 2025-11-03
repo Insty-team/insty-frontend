@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Spinner } from '@/shared/components/ui/spinner';
@@ -17,8 +18,9 @@ import { useGetProfile, usePutProfile } from '@/shared/services/user/user.hook';
 type ProfileFormData = {
   nickname: string;
   email: string;
-  introduce: string;
-  thumbnail?: File;
+  oldPassword: string;
+  newPassword: string;
+  profileImage?: File;
 };
 
 export default function ProfileEditPage() {
@@ -29,41 +31,30 @@ export default function ProfileEditPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ProfileFormData>({
-    defaultValues: {
+  const form = useForm<ProfileFormData>({
+    values: {
       nickname: profile?.nickname || '',
       email: profile?.email || '',
-      introduce: profile?.introduce || '',
+      oldPassword: '',
+      newPassword: '',
     },
-    values: profile
-      ? {
-          nickname: profile.nickname,
-          email: profile.email,
-          introduce: profile.introduce,
-        }
-      : undefined,
   });
 
   const onSubmit = (data: ProfileFormData) => {
-    const updateData = {
-      nickname: data.nickname,
-      introduce: data.introduce,
-      thumbnail: selectedFile || undefined,
-    };
+    const formData = new FormData();
+    formData.append('userUpdateReq', new Blob([JSON.stringify(data)], { type: 'application/json' }));
 
-    updateProfile(updateData, {
-      onSuccess: () => {
-        alert('프로필이 업데이트되었습니다!');
-        router.push('/learner/profile'); // 프로필 보기 페이지로 이동
-      },
-      onError: () => {
-        alert('프로필 업데이트에 실패했습니다.');
-      },
-    });
+    formData.append('profileImage', selectedFile || '');
+
+    // updateProfile(formData, {
+    //   onSuccess: () => {
+    //     alert('프로필이 업데이트되었습니다!');
+    //     router.push('/learner/profile'); // 프로필 보기 페이지로 이동
+    //   },
+    //   onError: () => {
+    //     alert('프로필 업데이트에 실패했습니다.');
+    //   },
+    // });
   };
 
   const handleCancel = () => {
@@ -120,71 +111,97 @@ export default function ProfileEditPage() {
           <CardTitle>기본 정보</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* 프로필 사진 섹션 */}
-            <div className="flex items-center gap-6">
-              <div className="relative space-y-1">
-                <Label>프로필 사진</Label>
-                <Avatar className="h-24 w-24 cursor-pointer" onClick={handleImageClick}>
-                  <AvatarImage src={previewUrl || profile?.thumbnailUrl} alt={profile?.nickname} />
-                  <AvatarFallback className="text-2xl">{profile?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black opacity-0 transition-opacity hover:opacity-100">
-                  <span className="text-sm font-medium text-white">변경</span>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* 프로필 사진 섹션 */}
+              <div className="flex items-center gap-6">
+                <div className="relative space-y-1">
+                  <Label>프로필 사진</Label>
+                  <Avatar className="h-24 w-24 cursor-pointer" onClick={handleImageClick}>
+                    <AvatarImage src={previewUrl || profile?.thumbnailUrl} alt={profile?.nickname} />
+                    <AvatarFallback className="text-2xl">{profile?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black opacity-0 transition-opacity hover:opacity-100">
+                    <span className="text-sm font-medium text-white">변경</span>
+                  </div>
+                </div>
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={handleImageClick}>
+                    사진 변경
+                  </Button>
+                  <p className="text-muted-foreground mt-2 text-sm">JPG, PNG 파일 (최대 5MB)</p>
+                  {selectedFile && <p className="mt-1 text-sm text-green-600">새로운 사진이 선택되었습니다</p>}
                 </div>
               </div>
-              <div>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
-                <Button variant="outline" size="sm" onClick={handleImageClick}>
-                  사진 변경
-                </Button>
-                <p className="text-muted-foreground mt-2 text-sm">JPG, PNG 파일 (최대 5MB)</p>
-                {selectedFile && <p className="mt-1 text-sm text-green-600">새로운 사진이 선택되었습니다</p>}
-              </div>
-            </div>
 
-            {/* 기본 정보 섹션 */}
-            <div className="space-y-1">
-              <Label htmlFor="nickname">닉네임</Label>
-              <Input
-                id="nickname"
-                {...register('nickname', {
-                  required: '닉네임을 입력해주세요',
+              {/* 기본 정보 섹션 */}
+              <FormField
+                control={form.control}
+                name="nickname"
+                rules={{
+                  required: { value: true, message: '닉네임을 입력해주세요.' },
                   minLength: { value: 2, message: '닉네임은 2자 이상이어야 합니다' },
                   maxLength: { value: 20, message: '닉네임은 20자 이하여야 합니다' },
-                })}
+                }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>닉네임</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="닉네임을 입력해주세요" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.nickname && <p className="text-destructive text-sm">{errors.nickname.message}</p>}
-            </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="email">이메일</Label>
-              <Input id="email" {...register('email')} disabled />
-              <p className="text-muted-foreground text-sm">이메일은 변경할 수 없습니다</p>
-            </div>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>이메일</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="이메일을 입력해주세요" {...field} disabled />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="space-y-1">
-              <Label htmlFor="introduce">소개</Label>
-              <Textarea
-                id="introduce"
-                {...register('introduce', {
+              {/* <FormField
+                control={form.control}
+                name="introduce"
+                rules={{
                   maxLength: { value: 500, message: '소개는 500자 이하여야 합니다' },
-                })}
-                rows={4}
-                placeholder="자기소개를 입력해주세요"
-              />
-              {errors.introduce && <p className="text-destructive text-sm">{errors.introduce.message}</p>}
-            </div>
+                }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>소개</FormLabel>
+                    <FormControl>
+                      <Textarea rows={4} placeholder="자기소개를 입력해주세요" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              /> */}
 
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={handleCancel}>
-                취소
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? '저장 중...' : '저장'}
-              </Button>
-            </div>
-          </form>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  취소
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? '저장 중...' : '저장'}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
