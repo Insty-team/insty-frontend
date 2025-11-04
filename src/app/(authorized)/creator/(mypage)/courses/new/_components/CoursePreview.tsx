@@ -4,6 +4,8 @@ import { CourseFormData } from '../types';
 
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { cn } from '@/shared/lib/utils';
+import { Check, X } from 'lucide-react';
 
 interface CoursePreviewProps {
   formData: CourseFormData;
@@ -72,10 +74,13 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
                 <Badge
                   key={req.id}
                   variant={req.isSupported ? 'default' : 'secondary'}
-                  className="flex items-center gap-1"
+                  className={cn(
+                    'flex items-center gap-1',
+                    req.isSupported ? 'bg-primary-green-100 text-primary-green-800' : '',
+                  )}
                 >
                   {req.name}
-                  {req.isSupported ? ' ✓' : ' ✗'}
+                  {req.isSupported ? <Check /> : <X />}
                 </Badge>
               ))}
             </div>
@@ -92,8 +97,8 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
           <CardContent>
             <ul className="grid gap-2 sm:grid-cols-2">
               {formData.coreContents.map((content, index) => (
-                <li key={index} className="text-primary-green-600 flex items-center gap-2">
-                  <span className="bg-primary-green-100 rounded-full p-1">✓</span>
+                <li key={index} className="text-primary-green-800 flex items-center gap-2">
+                  <span className="bg-primary-green-800 rounded-full p-1"></span>
                   <span className="font-medium">{content}</span>
                 </li>
               ))}

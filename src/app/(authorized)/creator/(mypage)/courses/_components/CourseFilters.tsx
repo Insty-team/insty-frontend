@@ -101,7 +101,7 @@ export function CourseFilters({
 
       {/* 필터 옵션들 */}
       {showFilters && (
-        <div className="bg-muted/50 space-y-4 rounded-lg border p-4">
+        <div className="bg-background space-y-4 rounded-lg border p-4">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* 정렬 옵션 */}
             <div className="space-y-2">

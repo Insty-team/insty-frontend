@@ -42,10 +42,10 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
 
   return (
     <Card className="group transition-shadow duration-200 hover:shadow-md">
-      <CardContent className="p-0">
-        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:p-6">
+      <CardContent>
+        <div className="flex flex-col gap-8 sm:flex-row">
           {/* 썸네일 */}
-          <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-48">
+          <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-36 sm:w-48">
             {course.thumbnailUrl ? (
               <Image
                 src={course.thumbnailUrl}

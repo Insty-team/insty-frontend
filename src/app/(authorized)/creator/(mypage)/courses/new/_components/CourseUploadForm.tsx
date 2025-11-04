@@ -185,65 +185,93 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
   const getStepInfo = (step: UploadStep) => {
     switch (step) {
       case 'UPLOAD':
-        return { label: '강의 영상 업로드', icon: FileVideo, color: 'text-blue-600' };
+        return { label: '강의 영상 업로드', icon: FileVideo };
       case 'AI_GENERATING':
-        return { label: 'AI 초안 생성', icon: Sparkles, color: 'text-purple-600' };
+        return { label: 'AI 초안 생성', icon: Sparkles };
       case 'EDIT':
-        return { label: '내용 수정', icon: Edit3, color: 'text-green-600' };
+        return { label: '내용 수정', icon: Edit3 };
       case 'PREVIEW':
-        return { label: '미리보기', icon: CheckCircle2, color: 'text-orange-600' };
+        return { label: '미리보기', icon: CheckCircle2 };
     }
   };
 
   // 전체 JSX
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      {/* 단계 표시 */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            {(['UPLOAD', 'AI_GENERATING', 'EDIT', 'PREVIEW'] as UploadStep[]).map((step, index) => {
-              const stepInfo = getStepInfo(step);
-              const isActive = currentStep === step;
-              const stepIndex = ['UPLOAD', 'AI_GENERATING', 'EDIT', 'PREVIEW'].indexOf(currentStep);
-              const isCompleted = index < stepIndex;
-              const StepIcon = stepInfo.icon;
-
-              return (
-                <div key={step} className="flex flex-1 items-center">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
-                        isActive
-                          ? 'border-primary bg-primary text-white'
-                          : isCompleted
-                            ? 'border-green-500 bg-green-500 text-white'
-                            : 'border-gray-300 bg-white'
-                      }`}
-                    >
-                      {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <StepIcon className="h-5 w-5" />}
-                    </div>
-                    <span
-                      className={`text-sm font-medium ${isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-500'}`}
-                    >
-                      {stepInfo.label}
-                    </span>
-                  </div>
-                  {index < 3 && (
-                    <div className={`mx-4 h-0.5 flex-1 ${index < stepIndex ? 'bg-primary' : 'bg-gray-300'}`} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="mx-auto space-y-6">
       {/* 헤더 섹션 */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">새 강의 업로드</h2>
           <p className="text-muted-foreground mt-1">단계별로 강의를 생성하세요</p>
+        </div>
+      </div>
+
+      {/* 단계 표시 */}
+      <div className="relative my-8">
+        {/* 연결선 */}
+        <div className="absolute top-6 right-[12%] left-[12%] flex">
+          {[0, 1, 2].map((idx) => {
+            const stepIndex = ['UPLOAD', 'AI_GENERATING', 'EDIT', 'PREVIEW'].indexOf(currentStep);
+            const isCompleted = idx < stepIndex;
+            return (
+              <div key={idx} className="h-0.5 flex-1" style={{ marginLeft: idx > 0 ? '0' : '0', marginRight: '0' }}>
+                <div className={`h-full transition-all duration-500 ${isCompleted ? 'bg-green-500' : 'bg-gray-200'}`} />
+              </div>
+            );
+          })}
+        </div>
+        {/* 단계 아이콘 및 라벨 */}
+        <div className="relative z-10 flex">
+          {(['UPLOAD', 'AI_GENERATING', 'EDIT', 'PREVIEW'] as UploadStep[]).map((step, index) => {
+            const stepInfo = getStepInfo(step);
+            const isActive = currentStep === step;
+            const stepIndex = ['UPLOAD', 'AI_GENERATING', 'EDIT', 'PREVIEW'].indexOf(currentStep);
+            const isCompleted = index < stepIndex;
+            const StepIcon = stepInfo.icon;
+
+            return (
+              <div key={step} className="flex flex-1 flex-col items-center gap-3">
+                {/* 아이콘 영역 */}
+                <div className="relative">
+                  <div
+                    className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white transition-all duration-300 ${
+                      isActive
+                        ? 'border-primary bg-primary shadow-primary/40 text-white shadow-md'
+                        : isCompleted
+                          ? 'border-green-500 bg-green-500 text-green-500'
+                          : 'border-gray-300 bg-white text-gray-400'
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle2 className="h-6 w-6" />
+                    ) : (
+                      <StepIcon className={`h-6 w-6 ${isActive ? 'text-black' : ''}`} />
+                    )}
+                    {isActive && (
+                      <div className="border-primary animate-ping-once absolute -inset-0.5 rounded-full border-2 opacity-75" />
+                    )}
+                  </div>
+                </div>
+                {/* 라벨 영역 */}
+                <div className="flex flex-col items-center gap-1 text-center">
+                  <span
+                    className={`text-sm font-semibold transition-colors ${
+                      isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                    }`}
+                  >
+                    {stepInfo.label}
+                  </span>
+                  <span
+                    className={`text-xs transition-colors ${
+                      isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                    }`}
+                  >
+                    {index + 1}단계
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -263,7 +291,6 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
               uploadStatus={videoProgress.status}
               error={videoProgress.message}
             />
-            <Separator />
             <FileUpload
               type="thumbnail"
               file={thumbnailFile}

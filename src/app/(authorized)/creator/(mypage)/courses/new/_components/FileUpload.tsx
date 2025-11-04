@@ -111,7 +111,7 @@ export function FileUpload({
       <Label>{isThumbnail ? '강의 썸네일' : '강의 영상'}</Label>
 
       <Card
-        className={`cursor-pointer py-6 transition-colors ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-dashed'}`}
+        className={`cursor-pointer rounded-md border-2 py-6 shadow-none transition-colors ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-dashed'}`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

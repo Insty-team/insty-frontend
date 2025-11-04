@@ -73,7 +73,7 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
               <CardContent className="pr-2 pl-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <BookOpen className="text-primary-green-600 h-5 w-5" />
+                    <span className="bg-primary-green-800 rounded-full p-1"></span>
                     <span className="font-medium">{content}</span>
                   </div>
                   <Button type="button" variant="ghost" size="icon-lg" onClick={() => handleRemoveContent(index)}>

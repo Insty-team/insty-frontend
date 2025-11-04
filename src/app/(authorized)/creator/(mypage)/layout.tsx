@@ -11,12 +11,12 @@ export default function CommonMyPageLayout({ children }: { children: React.React
         <h1 className="text-3xl font-bold">크리에이터 센터</h1>
       </div>
 
-      <div className="flex flex-col gap-6 lg:flex-row">
+      <div className="flex flex-col lg:flex-row">
         {/* 프로필 사이드바 */}
         <ProfileSidebar navigation={CREATOR_NAVIGATION} />
 
         {/* 메인 컨텐츠 */}
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 rounded-sm bg-gray-400/10 px-8 py-6">{children}</main>
       </div>
     </div>
   );
