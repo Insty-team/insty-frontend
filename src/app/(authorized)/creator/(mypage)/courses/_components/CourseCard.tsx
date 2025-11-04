@@ -13,7 +13,19 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { Separator } from '@/shared/components/ui/separator';
 import { CourseMyResponse } from '@/shared/services/course/course.type';
-import { BarChart3, Calendar, Edit, Eye, MessageCircle, MoreVertical, Play, Settings, Trash2 } from 'lucide-react';
+import dayjs from 'dayjs';
+import {
+  BarChart3,
+  Calendar,
+  Edit,
+  Eye,
+  EyeOff,
+  MessageCircle,
+  MoreVertical,
+  Play,
+  Settings,
+  Trash2,
+} from 'lucide-react';
 
 interface CourseCardProps {
   course: CourseMyResponse;
@@ -24,15 +36,6 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisibility }: CourseCardProps) {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const formatViewCount = (count: number) => {
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}K`;
@@ -41,7 +44,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
   };
 
   return (
-    <Card className="group transition-shadow duration-200 hover:shadow-md">
+    <Card className="transition-shadow duration-200 hover:shadow-lg">
       <CardContent>
         <div className="flex flex-col gap-8 sm:flex-row">
           {/* 썸네일 */}
@@ -51,7 +54,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                 src={course.thumbnailUrl}
                 alt={course.title}
                 fill
-                className="object-cover transition-transform duration-200 group-hover:scale-105"
+                className="object-contain transition-transform duration-200"
               />
             ) : (
               <div className="flex h-full items-center justify-center">
@@ -59,7 +62,10 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
               </div>
             )}
             <div className="absolute top-2 right-2">
-              <Badge variant={course.isShow ? 'default' : 'secondary'} className="text-xs">
+              <Badge
+                variant={course.isShow ? 'default' : 'secondary'}
+                className="bg-primary-green-100 text-primary-green-800 text-xs"
+              >
                 {course.isShow ? '공개' : '비공개'}
               </Badge>
             </div>
@@ -70,16 +76,18 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 {/* 제목 */}
-                <h3 className="group-hover:text-primary mb-2 line-clamp-2 text-lg font-semibold transition-colors">
-                  {course.title}
-                </h3>
+                <h3 className="mb-2 line-clamp-2 text-lg font-semibold transition-colors">{course.title}</h3>
 
                 {/* 태그 */}
                 {course.tags && course.tags.length > 0 && (
-                  <div className="mb-3 flex flex-wrap gap-1">
+                  <div className="mb-3 flex flex-wrap gap-1.5">
                     {course.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {tag}
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-primary-green-100 text-primary-green-800 border-primary-green-300"
+                      >
+                        #{tag}
                       </Badge>
                     ))}
                   </div>
@@ -97,7 +105,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {formatDate(course.createdAt)}
+                    {dayjs(course.createdAt).format('YYYY.MM.DD')}
                   </span>
                 </div>
 
@@ -129,7 +137,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                     미리보기
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onToggleVisibility?.(course.courseId)}>
-                    <Settings className="mr-2 h-4 w-4" />
+                    {course.isShow ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
                     {course.isShow ? '비공개 전환' : '공개 전환'}
                   </DropdownMenuItem>
                   <Separator />
@@ -137,7 +145,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                     onClick={() => onDelete?.(course.courseId)}
                     className="text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="text-destructive mr-2 h-4 w-4" />
                     삭제
                   </DropdownMenuItem>
                 </DropdownMenuContent>

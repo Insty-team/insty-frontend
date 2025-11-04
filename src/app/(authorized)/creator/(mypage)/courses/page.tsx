@@ -11,15 +11,27 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { Button } from '@/shared/components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/shared/components/ui/pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { useGetCoursesMy } from '@/shared/services/course/course.hook';
 import { CourseMyResponse } from '@/shared/services/course/course.type';
+import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { Plus, Video } from 'lucide-react';
 
 export default function CreatorCoursesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(3);
 
   // 다이얼로그 상태
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -44,11 +56,43 @@ export default function CreatorCoursesPage() {
     currentVisibility: false,
   });
 
-  // API에서 강의 데이터 가져오기
-  const { data: coursesData, isLoading, error } = useGetCoursesMy();
+  // API에서 강의 데이터 가져오기 (서버 사이드 pagination)
+  const { data: coursesData, isLoading, error } = useGetCoursesMy(pageIndex + 1, pageSize);
   const courses = coursesData?.items || [];
+  const pagination = coursesData?.pagination;
 
-  // 필터링 및 정렬된 강의 목록
+  // 테이블 컬럼 정의
+  const columns: ColumnDef<CourseMyResponse>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'courseId',
+        header: 'ID',
+      },
+      {
+        accessorKey: 'title',
+        header: '제목',
+      },
+      {
+        accessorKey: 'createdAt',
+        header: '생성일',
+      },
+      {
+        accessorKey: 'viewCount',
+        header: '조회수',
+      },
+      {
+        accessorKey: 'commentCount',
+        header: '댓글수',
+      },
+      {
+        accessorKey: 'isShow',
+        header: '공개 여부',
+      },
+    ],
+    [],
+  );
+
+  // 필터링 및 정렬된 강의 목록 (클라이언트 사이드 필터링)
   const filteredAndSortedCourses = useMemo(() => {
     let filtered = courses;
 
@@ -88,6 +132,30 @@ export default function CreatorCoursesPage() {
 
     return filtered;
   }, [courses, searchQuery, sortBy, statusFilter]);
+
+  // 테이블 인스턴스 생성
+  const table = useReactTable({
+    data: filteredAndSortedCourses,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    rowCount: pagination?.totalItems ?? 0,
+    pageCount: pagination?.totalPages ?? 0,
+    state: {
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
+    },
+    onPaginationChange: (updater) => {
+      if (typeof updater === 'function') {
+        const newPagination = updater({ pageIndex, pageSize });
+        setPageIndex(newPagination.pageIndex);
+        setPageSize(newPagination.pageSize);
+      }
+    },
+  });
 
   // 공개/비공개 강의 분리
   const publishedCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => course.isShow);
@@ -190,12 +258,18 @@ export default function CreatorCoursesPage() {
       {/* 필터 및 검색 */}
       <CourseFilters
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={(query) => {
+          setSearchQuery(query);
+          setPageIndex(0); // 검색 시 첫 페이지로 리셋
+        }}
         sortBy={sortBy}
         onSortChange={setSortBy}
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        totalCount={courses.length}
+        onStatusFilterChange={(filter) => {
+          setStatusFilter(filter);
+          setPageIndex(0); // 필터 변경 시 첫 페이지로 리셋
+        }}
+        totalCount={pagination?.totalItems ?? courses.length}
         filteredCount={filteredAndSortedCourses.length}
       />
 
@@ -222,8 +296,8 @@ export default function CreatorCoursesPage() {
       ) : (
         <Tabs defaultValue="all" className="w-full">
           <TabsList>
-            <TabsTrigger value="all">전체 ({filteredAndSortedCourses.length})</TabsTrigger>
-            <TabsTrigger value="published">공개 ({publishedCourses.length})</TabsTrigger>
+            <TabsTrigger value="all">전체 ({table.getRowCount()})</TabsTrigger>
+            <TabsTrigger value="published">공개 ({table.getRowCount()})</TabsTrigger>
             <TabsTrigger value="draft">비공개 ({draftCourses.length})</TabsTrigger>
           </TabsList>
 
@@ -266,6 +340,98 @@ export default function CreatorCoursesPage() {
             ))}
           </TabsContent>
         </Tabs>
+      )}
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => {
+                  if (table.getCanPreviousPage()) {
+                    table.previousPage();
+                  }
+                }}
+                className={!table.getCanPreviousPage() ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              />
+            </PaginationItem>
+
+            {(() => {
+              const currentPage = pagination.currentPage;
+              const totalPages = pagination.totalPages;
+              const pages: (number | 'ellipsis')[] = [];
+
+              if (totalPages <= 7) {
+                // 총 페이지가 7개 이하면 모두 표시
+                for (let i = 1; i <= totalPages; i++) {
+                  pages.push(i);
+                }
+              } else {
+                // 첫 페이지
+                pages.push(1);
+
+                if (currentPage <= 3) {
+                  // 현재 페이지가 앞쪽에 있으면
+                  for (let i = 2; i <= 4; i++) {
+                    pages.push(i);
+                  }
+                  pages.push('ellipsis');
+                  pages.push(totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                  // 현재 페이지가 뒤쪽에 있으면
+                  pages.push('ellipsis');
+                  for (let i = totalPages - 3; i <= totalPages; i++) {
+                    pages.push(i);
+                  }
+                } else {
+                  // 현재 페이지가 중간에 있으면
+                  pages.push('ellipsis');
+                  for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                    pages.push(i);
+                  }
+                  pages.push('ellipsis');
+                  pages.push(totalPages);
+                }
+              }
+
+              return pages.map((page, index) => {
+                if (page === 'ellipsis') {
+                  return (
+                    <PaginationItem key={`ellipsis-${index}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+
+                return (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => {
+                        table.setPageIndex(page - 1);
+                      }}
+                      isActive={page === currentPage}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              });
+            })()}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => {
+                  if (table.getCanNextPage()) {
+                    table.nextPage();
+                  }
+                }}
+                className={!table.getCanNextPage() ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
 
       {/* 다이얼로그들 */}

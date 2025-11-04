@@ -16,7 +16,7 @@ export default function CommonMyPageLayout({ children }: { children: React.React
         <ProfileSidebar navigation={LEARNER_NAVIGATION} />
 
         {/* 메인 컨텐츠 */}
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 rounded-sm bg-gray-400/10 px-8 py-6">{children}</main>
       </div>
     </div>
   );

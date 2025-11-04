@@ -20,7 +20,7 @@ const categories = [
   '기타',
 ];
 
-export default function LearnerRequestPage() {
+export default function LearnerCourseRequestPage() {
   const [category, setCategory] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
