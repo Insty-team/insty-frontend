@@ -65,10 +65,10 @@ export const usePostCourseProgressById = (courseId: string) => {
 };
 
 /** 내가 업로드한 강의 목록조회 */
-export const useGetCoursesMy = () => {
+export const useGetCoursesMy = (page: number = 1, pageSize: number = 10) => {
   return useQuery({
-    queryKey: [GET_courses_my.name],
-    queryFn: () => GET_courses_my(),
+    queryKey: [GET_courses_my.name, page, pageSize],
+    queryFn: () => GET_courses_my(page, pageSize),
     select: ({ data }) => data,
   });
 };
