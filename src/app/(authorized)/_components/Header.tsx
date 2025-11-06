@@ -4,7 +4,6 @@ import Notification from './Notification';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
@@ -20,7 +19,7 @@ import {
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import { useAuthStore } from '@/shared/stores/auth';
 import { UserTypeEnum } from '@/shared/types/auth.enum';
-import { Bell, LogOut, ShoppingCart, Video } from 'lucide-react';
+import { LogOut, ShoppingCart, Video } from 'lucide-react';
 
 import CREATOR_NAVIGATION from '@/app/_navigations/creator-navigation';
 import LEARNER_NAVIGATION from '@/app/_navigations/learner-navigation';
@@ -28,16 +27,12 @@ import LEARNER_NAVIGATION from '@/app/_navigations/learner-navigation';
 import LogoImage from '@/assets/Logo.png';
 
 export default function Header() {
-  const router = useRouter();
-  const authStore = useAuthStore((state) => state);
+  const { logout } = useAuthStore((state) => state);
 
   const { data: profile } = useGetProfile();
 
   const handleLogout = () => {
-    // 로그아웃 로직
-    authStore.setAccessToken(null);
-    authStore.setRefreshToken(null);
-    router.push('/onboarding');
+    logout();
   };
 
   const isCreator = profile?.userType === UserTypeEnum.CREATOR;

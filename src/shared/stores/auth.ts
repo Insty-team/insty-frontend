@@ -13,6 +13,7 @@ type AuthState = {
 type AuthActions = {
   setAccessToken: (accessToken: AuthState['accessToken']) => void;
   setRefreshToken: (refreshToken: AuthState['refreshToken']) => void;
+  logout: () => void;
 };
 
 export const useAuthStore = create(
@@ -22,6 +23,10 @@ export const useAuthStore = create(
       refreshToken: null,
       setAccessToken: (accessToken: AuthState['accessToken']) => set({ accessToken }),
       setRefreshToken: (refreshToken: AuthState['refreshToken']) => set({ refreshToken }),
+      logout: () => {
+        set({ accessToken: null, refreshToken: null });
+        window.location.href = '/onboarding';
+      },
     }),
     {
       name: '@insty-app.token',
