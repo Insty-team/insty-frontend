@@ -1,5 +1,5 @@
 import Loading from "@/app/_components/common/Loading";
-import { useGetCourseDetailQuery } from "@/app/queries/course";
+import { useGetCourseDetailByCreatorQuery } from "@/app/queries/course";
 
 import CourseEditForm from "../common/CourseEditForm";
 
@@ -14,7 +14,7 @@ function CourseEdit({
 		data: courseDetail,
 		isLoading,
 		//error,
-	} = useGetCourseDetailQuery(courseId);
+	} = useGetCourseDetailByCreatorQuery(courseId);
 
 	//console.log("CourseDetail Response:", courseDetail);
 	//console.log("CourseDetail Error:", error);

@@ -1,20 +1,35 @@
 "use client";
 
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
+
 import * as Amplitude from "@amplitude/analytics-browser";
+import MDEditor from "@uiw/react-md-editor";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BsStars } from "react-icons/bs";
-import { FaRegFile } from "react-icons/fa6";
+import { FaFilePdf, FaRegFile } from "react-icons/fa6";
+import { FiAlertCircle } from "react-icons/fi";
 import { RiDeleteBinFill, RiFolderUploadLine } from "react-icons/ri";
 import { TiDelete } from "react-icons/ti";
+import ReactMarkdown from "react-markdown";
 import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
+import AIRecommendationSection from "@/app/_components/common/AIRecommendationSection";
 import Loading from "@/app/_components/common/Loading";
-import { postSuggestMetadata } from "@/app/api/ai";
+import Modal from "@/app/_components/common/Modal";
+import { postSuggestMetadata, postSuggestPracticeGuide } from "@/app/api/ai";
 import { postCourseVideo, putCourseVideoUpload } from "@/app/api/backend";
-import { MAX_FILE_NAME, MAX_VIDEO_DURATION } from "@/app/constants";
+import {
+	DEV_MAX_VIDEO_DURATION,
+	MAX_FILE_NAME,
+	PROD_MAX_VIDEO_DURATION,
+} from "@/app/constants";
 import SuggestionLoading from "@/app/creator/_component/SuggestionLoading";
 import { useVideoUploadStore } from "@/app/stores/videoUpload";
 import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
@@ -29,6 +44,7 @@ interface CourseUploadFormProps {
 	initialData?: UploadformData;
 	onSubmit: (formData: UploadformData) => void;
 	onBack?: () => void;
+	mode?: "upload" | "requestUpload";
 }
 
 interface FormData {
@@ -45,6 +61,7 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	subject,
 	initialData,
 	onSubmit,
+	mode = "upload",
 }) => {
 	const { data, setData } = useVideoUploadStore();
 
@@ -87,10 +104,29 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 	const [videoUuid, setVideoUuid] = useState<string>("");
 	const [practiceFiles, setPracticeFiles] = useState<File[]>([]);
 	const [isExistingVideo, setIsExistingVideo] = useState<boolean>(false);
+	const [practiceFileContent, setPracticeFileContent] = useState<string>("");
+	const [isRequestInfoModalOpen, setIsRequestInfoModalOpen] =
+		useState<boolean>(false);
+	const [learnerRequestData, setLearnerRequestData] = useState<{
+		request_id: number;
+		title: string;
+		description: string;
+		selected_fields: Array<{
+			field_key: string;
+			answer_text: string;
+		}>;
+		reason: string;
+	} | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const videoInputRef = useRef<HTMLInputElement>(null);
 	const practiceFileInputRef = useRef<HTMLInputElement>(null);
+	const pdfRef = useRef<HTMLDivElement>(null);
 	const [isSuggesting, setIsSuggesting] = useState<boolean>(false);
+	const pathname = usePathname();
+	const maxVideoDuration =
+		pathname.includes("dev") || pathname.includes("localhost")
+			? DEV_MAX_VIDEO_DURATION
+			: PROD_MAX_VIDEO_DURATION;
 
 	// 전사 진행률 커스텀 훅 사용
 	const {
@@ -113,12 +149,153 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 
 			Swal.fire({
 				title: `${reason}`,
-				text: `${MAX_VIDEO_DURATION / 60}분 이하의 영상만 업로드 가능합니다. `,
+				text: `${maxVideoDuration / 60}분 이하의 영상만 업로드 가능합니다. `,
 				icon: "error",
 				confirmButtonText: "확인",
 			});
 		}
-	}, [transcriptionStatus, stopThumbnailRequest, reason]);
+	}, [transcriptionStatus, stopThumbnailRequest, reason, maxVideoDuration]);
+
+	// localStorage에서 러너 요청 데이터를 불러와서 실습 파일 내용 미리 채우기
+	useEffect(() => {
+		if (mode === "requestUpload") {
+			const savedRequestData = localStorage.getItem("selectedLearnerRequest");
+			if (savedRequestData) {
+				try {
+					const { request } = JSON.parse(savedRequestData);
+					if (request) {
+						// 모달에서 사용할 수 있도록 상태에 저장
+						setLearnerRequestData(request);
+						// 실습 파일 템플릿 생성
+						const practiceTemplate = `# ${request.title} - 실습 가이드
+
+## 📋 강의 개요
+${request.description}
+
+### 이 곳에, 사용할 실습 파일을 작성하세요.`;
+						setPracticeFileContent(practiceTemplate);
+					}
+				} catch (error) {
+					console.error("Failed to parse learner request data:", error);
+				}
+			}
+		}
+	}, [mode]);
+
+	// field_key를 한국어 라벨로 매핑하는 함수
+	const getFieldLabel = (fieldKey: string): string => {
+		const fieldLabels: Record<string, string> = {
+			os_env: "운영체제",
+			difficulty: "어려움을 느끼는 부분",
+			software_name: "소프트웨어 이름",
+			extra_question: "추가 질문",
+		};
+		return fieldLabels[fieldKey] || fieldKey;
+	};
+
+	// 파일 다운로드 함수
+	const handleDownloadFile = (file: File) => {
+		const url = URL.createObjectURL(file);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = file.name;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	};
+
+	// 마크다운을 PDF로 변환하는 함수 (개선된 방식)
+	const handleConvertToPDF = async () => {
+		if (!practiceFileContent.trim()) {
+			Swal.fire({
+				title: "내용이 없습니다",
+				text: "실습 파일 내용을 먼저 작성해주세요.",
+				icon: "warning",
+				confirmButtonText: "확인",
+			});
+			return;
+		}
+
+		try {
+			// 로딩 표시
+			Swal.fire({
+				title: "PDF 변환 중...",
+				text: "잠시만 기다려주세요.",
+				allowOutsideClick: false,
+				didOpen: () => {
+					Swal.showLoading();
+				},
+			});
+
+			// PDF용 렌더링 영역이 있는지 확인
+			if (!pdfRef.current) {
+				throw new Error("PDF 렌더링 영역을 찾을 수 없습니다.");
+			}
+
+			// HTML을 캔버스로 변환 (개선된 옵션)
+			const canvas = await html2canvas(pdfRef.current, {
+				scale: 2,
+				useCORS: true,
+				allowTaint: true,
+				backgroundColor: "#ffffff",
+				width: pdfRef.current.scrollWidth,
+				height: pdfRef.current.scrollHeight,
+			});
+
+			// PDF 생성
+			const imgData = canvas.toDataURL("image/png");
+			const pdf = new jsPDF("p", "mm", "a4");
+
+			const imgWidth = 210; // A4 width in mm
+			const pageHeight = 295; // A4 height in mm
+			const imgHeight = (canvas.height * imgWidth) / canvas.width;
+			let heightLeft = imgHeight;
+			let position = 0;
+
+			// 첫 페이지 추가
+			pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+			heightLeft -= pageHeight;
+
+			// 여러 페이지가 필요한 경우 추가 페이지 생성
+			while (heightLeft >= 0) {
+				position = heightLeft - imgHeight;
+				pdf.addPage();
+				pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+				heightLeft -= pageHeight;
+			}
+
+			// PDF를 Blob으로 변환
+			const pdfBlob = pdf.output("blob");
+
+			// 파일명 생성 (현재 시간 기반)
+			const now = new Date();
+			const fileName = `실습가이드_${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}_${now.getHours().toString().padStart(2, "0")}${now.getMinutes().toString().padStart(2, "0")}.pdf`;
+
+			// Blob을 File 객체로 변환
+			const pdfFile = new File([pdfBlob], fileName, {
+				type: "application/pdf",
+			});
+
+			// 실습 파일 목록에 추가
+			setPracticeFiles((prev) => [...prev, pdfFile]);
+
+			Swal.fire({
+				title: "PDF 변환 완료!",
+				text: `${fileName}이 실습 자료에 추가되었습니다.`,
+				icon: "success",
+				confirmButtonText: "확인",
+			});
+		} catch (error) {
+			console.error("PDF 변환 오류:", error);
+			Swal.fire({
+				title: "PDF 변환 실패",
+				text: "PDF 변환 중 오류가 발생했습니다. 다시 시도해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+		}
+	};
 
 	useEffect(() => {
 		const dataToUse = data || initialData;
@@ -165,6 +342,25 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		transcriptionStatus,
 		transcriptionProgress,
 	]);
+
+	useEffect(() => {
+		//분석 실패 시 바로 썸네일 요청 중단
+		if (transcriptionStatus === "FAILED") {
+			stopThumbnailRequest();
+			setVideoFile(null);
+			setVideoUuid("");
+			if (videoInputRef.current) {
+				videoInputRef.current.value = "";
+			}
+			Swal.fire({
+				title: "영상 분석에 실패했습니다.",
+				text: `${reason}`,
+				icon: "error",
+				confirmButtonText: "확인",
+				confirmButtonColor: "#6ead79",
+			});
+		}
+	}, [transcriptionStatus, stopThumbnailRequest, reason]);
 
 	const handleUploadThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -278,20 +474,36 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		setVideoFile(file);
 		setIsExistingVideo(false); // 새 비디오 업로드 시 기존 비디오 상태 초기화
 		//console.log("선택된 비디오:", file);
+		const videoInfo = {
+			fileName: file.name,
+			contentType: file.type,
+		};
 
 		try {
-			const videoInfo = {
-				fileName: file.name,
-				contentType: file.type,
-			};
 			const res = await postCourseVideo(videoInfo);
-			setVideoUuid(res.data.uuid);
-			try {
-				//비디오 분석 요청
-				await putCourseVideoUpload(res.data.uploadUrl, file);
-				//console.log(videoUploadResponse, "비디오 업로드요청 성공");
-			} catch (error) {
-				console.error(error);
+			if (res.success) {
+				setVideoUuid(res.data.uuid);
+				try {
+					//비디오 분석 요청
+					await putCourseVideoUpload(res.data.uploadUrl, file);
+					//console.log(videoUploadResponse, "비디오 업로드요청 성공");
+				} catch (error) {
+					console.error(error);
+				}
+			} else {
+				Swal.fire({
+					title: "비디오 업로드 실패",
+					text: `${res.error.message}`,
+					icon: "error",
+					confirmButtonText: "확인",
+				});
+				setVideoFile(null);
+				setVideoUuid("");
+				setIsExistingVideo(false);
+				stopThumbnailRequest();
+				if (videoInputRef.current) {
+					videoInputRef.current.value = "";
+				}
 			}
 		} catch (error) {
 			console.error(error);
@@ -600,348 +812,633 @@ const CourseUploadForm: React.FC<CourseUploadFormProps> = ({
 		);
 	};
 
+	const handleSuggestPracticeGuide = async (videoUuid: string) => {
+		if (!videoUuid) {
+			Swal.fire({
+				title: "영상이 필요합니다",
+				text: "AI 초안 작성을 위해서는 먼저 영상을 업로드해주세요.",
+				icon: "warning",
+				confirmButtonText: "확인",
+			});
+			return;
+		}
+
+		try {
+			// 로딩 표시
+			Swal.fire({
+				title: "AI가 초안을 작성 중입니다...",
+				text: "영상을 분석하여 실습 가이드를 생성하고 있습니다.",
+				allowOutsideClick: false,
+				didOpen: () => {
+					Swal.showLoading();
+				},
+			});
+
+			const res = await postSuggestPracticeGuide(videoUuid);
+
+			if (res && res.success && res.data && res.data.practice_draft) {
+				setPracticeFileContent(res.data.practice_draft);
+
+				Swal.fire({
+					title: "AI 초안 작성 완료!",
+					text: "실습 가이드 초안이 생성되었습니다. 필요에 따라 수정해주세요.",
+					icon: "success",
+					confirmButtonText: "확인",
+				});
+			} else {
+				throw new Error("응답 데이터가 올바르지 않습니다.");
+			}
+		} catch (error) {
+			console.error("AI 초안 작성 오류:", error);
+			Swal.fire({
+				title: "AI 초안 작성 실패",
+				text: "초안 작성 중 오류가 발생했습니다. 다시 시도해주세요.",
+				icon: "error",
+				confirmButtonText: "확인",
+			});
+		}
+	};
+
 	return (
-		<form onSubmit={handleFormSubmit(onSubmitForm)}>
-			<div className="flex items-center justify-between">
-				<div className="font-bold text-3xl mb-12">{subject}</div>
-				<BaseButton
-					title="AI로 초안 작성하기"
-					alignIcon="left"
-					icon={<BsStars />}
-					fill={false}
-					className="!px-4 !py-2 !rounded-lg !border-primary-green-600 !w-[210px] !disabled:cursor-not-allowed !disabled:bg-gray-scale-300"
-					onClick={handleSuggestMetadata}
-					disabled={
-						transcriptionStatus !== "COMPLETED" ||
-						videoFile === null ||
-						videoUuid === ""
-					}
-				/>
-			</div>
-			{isSuggesting && (
-				<div
-					className="fixed inset-0 w-full h-full bg-black-100/50 z-[1000] flex justify-center items-center cursor-wait"
-					onClick={(e) => e.preventDefault()}
-					onMouseDown={(e) => e.preventDefault()}
-					style={{ pointerEvents: "auto" }}
-				>
-					<SuggestionLoading />
+		<>
+			<form onSubmit={handleFormSubmit(onSubmitForm)}>
+				<div className="flex items-center justify-between">
+					<div className="font-bold text-3xl mb-12">{subject}</div>
+					<BaseButton
+						title="AI로 초안 작성하기"
+						alignIcon="left"
+						icon={<BsStars />}
+						fill={false}
+						className="!px-4 !py-2 !rounded-lg !border-primary-green-600 !w-[210px] !disabled:cursor-not-allowed !disabled:bg-gray-scale-300"
+						onClick={handleSuggestMetadata}
+						disabled={
+							transcriptionStatus !== "COMPLETED" ||
+							videoFile === null ||
+							videoUuid === ""
+						}
+					/>
 				</div>
-			)}
-			{/* 전사 진행률 표시 (새 비디오이고 분석이 진행 중일 때만) */}
-			{videoUuid !== "" && !isExistingVideo && (
-				<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
-					<div className="mb-2">
-						<strong>변환 상태:</strong> {transcriptionStatus}
+				{isSuggesting && (
+					<div
+						className="fixed inset-0 w-full h-full bg-black-100/50 z-[1000] flex justify-center items-center cursor-wait"
+						onClick={(e) => e.preventDefault()}
+						onMouseDown={(e) => e.preventDefault()}
+						style={{ pointerEvents: "auto" }}
+					>
+						<SuggestionLoading />
 					</div>
-					<div className="mb-2 flex flex-row">
-						{transcriptionStatus === "FAILED" ? (
-							<div>
-								<strong>분석 실패: </strong> {reason}
-							</div>
-						) : (
-							<div>
-								<strong>진행 단계:</strong> {transcriptionStep}
-							</div>
-						)}
-					</div>
-					<div className="mb-1 flex justify-between">
-						<strong>진행률:</strong>
-						<span>{transcriptionProgress}%</span>
-					</div>
-					<div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-						<div
-							className="h-full bg-green-500 transition-all duration-500"
-							style={{ width: `${transcriptionProgress}%` }}
-						/>
-					</div>
-				</div>
-			)}
-			<div className="flex w-full gap-9">
-				<div className="flex flex-col w-3/5 max-w-[350px]">
-					<label className="block text-2xl font-semibold mb-1">
-						강의 썸네일
-					</label>
-					<div className="mb-2 w-full h-[250px] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
-						{thumbnailUrl ? (
-							<Image
-								src={thumbnailUrl}
-								alt="썸네일"
-								className="w-full h-full object-cover rounded-2xl aspect-square"
-								width={250}
-								height={250}
+				)}
+				{/* 전사 진행률 표시 (새 비디오이고 분석이 진행 중일 때만) */}
+				{videoUuid !== "" && !isExistingVideo && (
+					<div className="mb-6 text-sm bg-gray-50 p-4 rounded-xl border">
+						<div className="mb-2">
+							<strong>변환 상태:</strong> {transcriptionStatus}
+						</div>
+						<div className="mb-2 flex flex-row">
+							{transcriptionStatus === "FAILED" ? (
+								<div>
+									<strong>분석 실패: </strong> {reason}
+								</div>
+							) : (
+								<div>
+									<strong>진행 단계:</strong> {transcriptionStep}
+								</div>
+							)}
+						</div>
+						<div className="mb-1 flex justify-between">
+							<strong>진행률:</strong>
+							<span>{transcriptionProgress}%</span>
+						</div>
+						<div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+							<div
+								className="h-full bg-green-500 transition-all duration-500"
+								style={{ width: `${transcriptionProgress}%` }}
 							/>
-						) : isThumbnailLoading ? (
-							<div className="text-black-300 flex flex-col items-center justify-center">
-								썸네일 로드 중... <Loading width={30} height={30} />
-							</div>
-						) : (
-							<span className="text-gray-scale-200">썸네일을 선택해주세요</span>
-						)}
-						{thumbnailUrl && (
-							<button
-								type="button"
-								className="absolute top-1 right-2 text-secondary-red-300 z-20 cursor-pointer hover:text-2lg"
-								onClick={handleRemoveThumbnail}
-							>
-								✕
-							</button>
-						)}
+						</div>
 					</div>
-					<div className="flex flex-col gap-3 mt-3 justify-center align-middle text-center">
-						<input
-							ref={fileInputRef}
-							type="file"
-							accept=".jpg,.jpeg,.png,.webp"
-							className="hidden"
-							onChange={handleUploadThumbnail}
-						/>
-						<BaseButton
-							title="썸네일 선택"
-							icon={<RiFolderUploadLine />}
-							onClick={handleThumbnailClick}
-							className="!rounded-lg !w-[75%] !mx-auto"
-						/>
-						<input
-							ref={videoInputRef}
-							type="file"
-							accept={ALLOWED_FILE_TYPES.video.accept}
-							className="hidden"
-							onChange={handleVideoFileChange}
-						/>
-						<BaseButton
-							title="영상 선택"
-							icon={<RiFolderUploadLine />}
-							onClick={handleUploadVideo}
-							className="!rounded-lg !w-[75%] !mx-auto"
-						/>
-						{videoFile && (
-							<div className="flex w-[75%] mx-auto justify-between text-md truncate items-center bg-gray-100 p-2 rounded">
-								업로드한 영상 : {videoFile.name}
-							</div>
-						)}
-						<div className="flex flex-col gap-2">
+				)}
+				<div className="flex w-full gap-9">
+					<div className="flex flex-col w-3/5 max-w-[350px]">
+						<label className="block text-2xl font-semibold mb-1">
+							강의 썸네일
+						</label>
+						<div className="mb-2 w-full h-[250px] bg-gray-scale-100 rounded-2xl flex items-center justify-center relative">
+							{thumbnailUrl ? (
+								<Image
+									src={thumbnailUrl}
+									alt="썸네일"
+									className="w-full h-full object-cover rounded-2xl aspect-square"
+									width={250}
+									height={250}
+								/>
+							) : isThumbnailLoading ? (
+								<div className="text-black-300 flex flex-col items-center justify-center">
+									썸네일 로드 중... <Loading width={30} height={30} />
+								</div>
+							) : (
+								<span className="text-gray-scale-200">
+									썸네일을 선택해주세요
+								</span>
+							)}
+							{thumbnailUrl && (
+								<button
+									type="button"
+									className="absolute top-1 right-2 text-secondary-red-300 z-20 cursor-pointer hover:text-2lg"
+									onClick={handleRemoveThumbnail}
+								>
+									✕
+								</button>
+							)}
+						</div>
+						<div className="flex flex-col gap-3 mt-3 justify-center align-middle text-center">
 							<input
-								ref={practiceFileInputRef}
+								ref={fileInputRef}
 								type="file"
-								accept=".pdf,.hwp,.doc,.docx"
-								multiple
+								accept=".jpg,.jpeg,.png,.webp"
 								className="hidden"
-								onChange={handleUploadPracticeFile}
+								onChange={handleUploadThumbnail}
 							/>
 							<BaseButton
-								title="실습 자료 파일 선택"
-								fill={false}
-								onClick={handlePracticeFileClick}
+								title="썸네일 선택"
+								icon={<RiFolderUploadLine />}
+								onClick={handleThumbnailClick}
 								className="!rounded-lg !w-[75%] !mx-auto"
 							/>
-							{practiceFiles.length > 0 && (
-								<div className="flex flex-col gap-2 mt-2">
-									{practiceFiles.map((file, index) => (
-										<div
-											key={index}
-											className="flex w-[75%] mx-auto items-center justify-between bg-gray-100 p-2 rounded truncate"
-										>
-											<div className="text-md truncate flex items-center">
-												<FaRegFile className="mr-2" />
-												{file.name.length >= 15
-													? `${file.name.slice(0, 15)}...`
-													: file.name}
+							<input
+								ref={videoInputRef}
+								type="file"
+								accept={ALLOWED_FILE_TYPES.video.accept}
+								className="hidden"
+								onChange={handleVideoFileChange}
+							/>
+							<BaseButton
+								title="영상 선택"
+								icon={<RiFolderUploadLine />}
+								onClick={handleUploadVideo}
+								className="!rounded-lg !w-[75%] !mx-auto"
+							/>
+							{videoFile && (
+								<div className="flex w-[75%] mx-auto justify-between text-md truncate items-center bg-gray-100 p-2 rounded">
+									업로드한 영상 : {videoFile.name}
+								</div>
+							)}
+							<div className="flex flex-col gap-2">
+								<input
+									ref={practiceFileInputRef}
+									type="file"
+									accept=".pdf,.hwp,.doc,.docx"
+									multiple
+									className="hidden"
+									onChange={handleUploadPracticeFile}
+								/>
+								<BaseButton
+									title="실습 자료 파일 선택"
+									fill={false}
+									onClick={handlePracticeFileClick}
+									className="!rounded-lg !w-[75%] !mx-auto"
+								/>
+								{practiceFiles.length > 0 && (
+									<div className="flex flex-col gap-2 mt-2">
+										{practiceFiles.map((file, index) => (
+											<div
+												key={index}
+												className="flex w-[75%] mx-auto items-center justify-between bg-gray-100 p-2 rounded truncate"
+											>
+												<div
+													className="text-md truncate flex items-center cursor-pointer hover:text-primary-blue-500 flex-1"
+													onClick={() => handleDownloadFile(file)}
+												>
+													<FaRegFile className="mr-2" />
+													{file.name.length >= 15
+														? `${file.name.slice(0, 15)}...`
+														: file.name}
+												</div>
+												<button
+													type="button"
+													onClick={() => handleRemovePracticeFile(index)}
+													className="text-secondary-red-300"
+												>
+													✕
+												</button>
 											</div>
+										))}
+									</div>
+								)}
+							</div>
+							<button
+								type="button"
+								className="w-[75%] mx-auto mt-2 text-2lg py-3 text-secondary-red-300 flex justify-center items-center cursor-pointer hover:border-secondary-red-300 hover:bg-secondary-red-300 hover:rounded-lg hover:text-white transition-all duration-300"
+								onClick={handleRemoveVideoFile}
+							>
+								<span className="mr-2">업로드 강의 삭제</span>
+								<RiDeleteBinFill />
+							</button>
+						</div>
+					</div>
+
+					<div className="flex-1 flex flex-col gap-4">
+						<div>
+							<label className="block text-2xl font-semibold mb-1">제목</label>
+							<div className="flex">
+								<input
+									{...register("title")}
+									className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
+									placeholder="설치 가이드 주제 입력"
+								/>
+							</div>
+						</div>
+
+						<div className="flex gap-4 mt-4">
+							<div className="flex-1">
+								<label className="block text-2xl font-semibold mb-1">
+									대상자
+								</label>
+								<input
+									{...register("targetAudience")}
+									className="w-full bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
+									placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
+								/>
+							</div>
+						</div>
+
+						<div className="mt-4">
+							<label className="block text-2xl font-semibold mb-1">설명</label>
+							<div className="flex">
+								<textarea
+									{...register("description")}
+									className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg resize-none"
+									rows={6}
+									placeholder="설명 내용 입력"
+								/>
+							</div>
+						</div>
+
+						<div className="mt-4">
+							<label className="block text-2xl font-semibold mb-1">
+								설치 환경 체크리스트
+							</label>
+							<div className="flex flex-col gap-2">
+								{(watch("installEnvChecklist") || []).map(
+									(
+										env: { content: string; isSupported: boolean },
+										idx: number,
+									) => (
+										<div key={idx} className="flex gap-2 items-center">
+											<input
+												className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
+												value={env.content}
+												onChange={(e) =>
+													handleEnvChange(idx, "content", e.target.value)
+												}
+												placeholder="환경 입력"
+											/>
+											<select
+												className="border border-gray-scale-300 rounded-3xl px-4 py-4 text-black-100 text-2lg"
+												value={env.isSupported ? "지원" : "미지원"}
+												onChange={(e) =>
+													handleEnvChange(idx, "support", e.target.value)
+												}
+											>
+												<option>지원</option>
+												<option>미지원</option>
+											</select>
 											<button
 												type="button"
-												onClick={() => handleRemovePracticeFile(index)}
-												className="text-secondary-red-300"
+												className="text-gray-400 ml-2"
+												onClick={() => handleRemoveEnv(idx)}
 											>
 												✕
 											</button>
 										</div>
-									))}
-								</div>
-							)}
+									),
+								)}
+								<button
+									type="button"
+									className="self-center px-5 py-2 border border-gray-scale-300 rounded text-lg mt-1 hover:bg-gray-scale-300"
+									onClick={handleAddEnv}
+								>
+									더 입력하기 +
+								</button>
+							</div>
 						</div>
-						<button
-							type="button"
-							className="w-[75%] mx-auto mt-2 text-2lg py-3 text-secondary-red-300 flex justify-center items-center cursor-pointer hover:border-secondary-red-300 hover:bg-secondary-red-300 hover:rounded-lg hover:text-white transition-all duration-300"
-							onClick={handleRemoveVideoFile}
-						>
-							<span className="mr-2">업로드 강의 삭제</span>
-							<RiDeleteBinFill />
-						</button>
+
+						<div className="mt-4">
+							<label className="block text-2xl font-semibold mb-1">
+								해당 영상이 다루는 핵심 내용
+							</label>
+							<div className="flex flex-col gap-2">
+								{(watch("keyPoints") || []).map(
+									(content: string, idx: number) => (
+										<div key={idx} className="flex gap-2 items-center">
+											<input
+												className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
+												value={content}
+												onChange={(e) => handleCoreChange(idx, e.target.value)}
+												placeholder="핵심 내용 입력"
+											/>
+											<button
+												type="button"
+												className="text-gray-400 ml-2"
+												onClick={() => handleRemoveCore(idx)}
+											>
+												✕
+											</button>
+										</div>
+									),
+								)}
+								<button
+									type="button"
+									className="self-center px-5 py-2 border border-gray-scale-300 rounded text-lg mt-1 hover:bg-gray-scale-300"
+									onClick={handleAddCore}
+								>
+									더 입력하기 +
+								</button>
+							</div>
+						</div>
+
+						<div className="mt-4">
+							<label className="block text-2xl font-semibold mb-1">태그</label>
+							<div className="flex gap-2">
+								<input
+									className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
+									value={tagInput}
+									onChange={(e) => setTagInput(e.target.value)}
+									onKeyDown={(e) =>
+										e.key === "Enter" &&
+										!e.nativeEvent.isComposing &&
+										(e.preventDefault(), handleAddTag())
+									}
+									placeholder="태그 입력 후 Enter"
+								/>
+								<button
+									type="button"
+									className="px-3 py-1 border border-gray-scale-300 rounded-3xl text-lg cursor-pointer"
+									onClick={handleAddTag}
+								>
+									추가
+								</button>
+							</div>
+							<div className="flex flex-wrap gap-2 mt-2">
+								{(watch("tags") || []).map((tag: string) => (
+									<span
+										key={tag}
+										className="px-4 py-2 rounded-full flex items-center text-lg border !border-primary-green-600"
+									>
+										{tag}
+										<button
+											className="flex items-center cursor-pointer"
+											onClick={() => handleRemoveTag(tag)}
+										>
+											<TiDelete className="size-6" />
+										</button>
+									</span>
+								))}
+							</div>
+						</div>
+
+						<div className="mt-4">
+							<div className="flex items-center justify-between mb-4">
+								<label className="text-2xl font-semibold flex items-center gap-2">
+									<p>실습 파일 작성</p>
+									{mode === "requestUpload" && learnerRequestData && (
+										<div className="relative group">
+											<FiAlertCircle
+												onClick={() => setIsRequestInfoModalOpen(true)}
+												className="cursor-pointer text-gray-400 hover:text-gray-600"
+											/>
+											<div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+												요청 정보 확인
+											</div>
+										</div>
+									)}
+								</label>
+								<BaseButton
+									title="AI에게 초안작성 요청하기"
+									onClick={() => handleSuggestPracticeGuide(videoUuid)}
+									fill={false}
+									className="!px-6 !py-2 !rounded-lg !w-[25%] !text-lg !border-primary-green-400 !text-primary-green-400 hover:!bg-primary-green-500 hover:!text-white !transition-all !duration-200"
+								/>
+							</div>
+							<div className="border rounded-lg overflow-hidden">
+								<MDEditor
+									value={practiceFileContent}
+									onChange={(value) => setPracticeFileContent(value || "")}
+									preview="edit"
+									hideToolbar={false}
+									height={400}
+									data-color-mode="light"
+								/>
+							</div>
+							<div className="flex items-center justify-between mt-2">
+								<p className="text-sm text-gray-500 mt-2 mr-6">
+									마크다운 문법을 사용하여 실습 가이드를 작성할 수 있습니다.
+									코드블록, 링크, 이미지 등을 활용해 보세요. PDF 변환 버튼을
+									클릭하면 실습 자료에 자동으로 추가됩니다.
+								</p>
+								<BaseButton
+									title="PDF 변환하기"
+									icon={<FaFilePdf />}
+									onClick={handleConvertToPDF}
+									fill={false}
+									className="!px-4 !py-2 !w-[25%] !ml-auto !rounded-lg !border-orange !text-orange hover:!bg-orange hover:!text-white !transition-all !duration-200"
+								/>
+							</div>
+						</div>
+
+						<div className="w-[20%] flex items-end ml-auto">
+							<BaseButton
+								title={
+									subject === "업로드 전 강의 수정" ? "수정 완료" : "미리 보기"
+								}
+								buttonType="submit"
+							/>
+						</div>
 					</div>
 				</div>
+			</form>
 
-				<div className="flex-1 flex flex-col gap-4">
-					<div>
-						<label className="block text-2xl font-semibold mb-1">제목</label>
-						<div className="flex">
-							<input
-								{...register("title")}
-								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-								placeholder="설치 가이드 주제 입력"
-							/>
+			{/* 러너 요청 정보 모달 */}
+			{mode === "requestUpload" && learnerRequestData && (
+				<Modal
+					open={isRequestInfoModalOpen}
+					onClose={() => setIsRequestInfoModalOpen(false)}
+					title="러너 요청 정보"
+					onCloseTitle="닫기"
+					actionsTitle="확인"
+					actions={() => setIsRequestInfoModalOpen(false)}
+				>
+					<div className="max-h-[70vh] overflow-y-auto">
+						{/* 제목과 설명 */}
+						<div className="border-b pb-4 mb-6">
+							<h2 className="text-xl font-bold text-black-300 mb-2">
+								{learnerRequestData.title}
+							</h2>
+							<p className="text-gray-scale-400">
+								{learnerRequestData.description}
+							</p>
 						</div>
-					</div>
 
-					<div className="flex gap-4 mt-4">
-						<div className="flex-1">
-							<label className="block text-2xl font-semibold mb-1">
-								대상자
-							</label>
-							<input
-								{...register("targetAudience")}
-								className="w-full bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-								placeholder="예: 파이썬 개발 환경 설치가 처음인 초보자"
-							/>
-						</div>
-					</div>
-
-					<div className="mt-4">
-						<label className="block text-2xl font-semibold mb-1">설명</label>
-						<div className="flex">
-							<textarea
-								{...register("description")}
-								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg resize-none"
-								rows={6}
-								placeholder="설명 내용 입력"
-							/>
-						</div>
-					</div>
-
-					<div className="mt-4">
-						<label className="block text-2xl font-semibold mb-1">
-							설치 환경 체크리스트
-						</label>
-						<div className="flex flex-col gap-2">
-							{(watch("installEnvChecklist") || []).map(
-								(
-									env: { content: string; isSupported: boolean },
-									idx: number,
-								) => (
-									<div key={idx} className="flex gap-2 items-center">
-										<input
-											className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-											value={env.content}
-											onChange={(e) =>
-												handleEnvChange(idx, "content", e.target.value)
-											}
-											placeholder="환경 입력"
-										/>
-										<select
-											className="border border-gray-scale-300 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-											value={env.isSupported ? "지원" : "미지원"}
-											onChange={(e) =>
-												handleEnvChange(idx, "support", e.target.value)
-											}
-										>
-											<option>지원</option>
-											<option>미지원</option>
-										</select>
-										<button
-											type="button"
-											className="text-gray-400 ml-2"
-											onClick={() => handleRemoveEnv(idx)}
-										>
-											✕
-										</button>
-									</div>
-								),
-							)}
-							<button
-								type="button"
-								className="self-center px-5 py-2 border border-gray-scale-300 rounded text-lg mt-1 hover:bg-gray-scale-300"
-								onClick={handleAddEnv}
-							>
-								더 입력하기 +
-							</button>
-						</div>
-					</div>
-
-					<div className="mt-4">
-						<label className="block text-2xl font-semibold mb-1">
-							해당 영상이 다루는 핵심 내용
-						</label>
-						<div className="flex flex-col gap-2">
-							{(watch("keyPoints") || []).map(
-								(content: string, idx: number) => (
-									<div key={idx} className="flex gap-2 items-center">
-										<input
-											className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-											value={content}
-											onChange={(e) => handleCoreChange(idx, e.target.value)}
-											placeholder="핵심 내용 입력"
-										/>
-										<button
-											type="button"
-											className="text-gray-400 ml-2"
-											onClick={() => handleRemoveCore(idx)}
-										>
-											✕
-										</button>
-									</div>
-								),
-							)}
-							<button
-								type="button"
-								className="self-center px-5 py-2 border border-gray-scale-300 rounded text-lg mt-1 hover:bg-gray-scale-300"
-								onClick={handleAddCore}
-							>
-								더 입력하기 +
-							</button>
-						</div>
-					</div>
-
-					<div className="mt-4">
-						<label className="block text-2xl font-semibold mb-1">태그</label>
-						<div className="flex gap-2">
-							<input
-								className="flex-1 bg-gray-scale-100 rounded-3xl px-4 py-4 text-black-100 text-2lg"
-								value={tagInput}
-								onChange={(e) => setTagInput(e.target.value)}
-								onKeyDown={(e) =>
-									e.key === "Enter" &&
-									!e.nativeEvent.isComposing &&
-									(e.preventDefault(), handleAddTag())
-								}
-								placeholder="태그 입력 후 Enter"
-							/>
-							<button
-								type="button"
-								className="px-3 py-1 border border-gray-scale-300 rounded-3xl text-lg cursor-pointer"
-								onClick={handleAddTag}
-							>
-								추가
-							</button>
-						</div>
-						<div className="flex flex-wrap gap-2 mt-2">
-							{(watch("tags") || []).map((tag: string) => (
-								<span
-									key={tag}
-									className="px-4 py-2 rounded-full flex items-center text-lg border !border-primary-green-600"
-								>
-									{tag}
-									<button
-										className="flex items-center cursor-pointer"
-										onClick={() => handleRemoveTag(tag)}
-									>
-										<TiDelete className="size-6" />
-									</button>
-								</span>
-							))}
-						</div>
-					</div>
-
-					<div className="w-[20%] flex items-end ml-auto">
-						<BaseButton
-							title={
-								subject === "업로드 전 강의 수정" ? "수정 완료" : "미리 보기"
-							}
-							buttonType="submit"
+						{/* AI 추천 섹션 */}
+						<AIRecommendationSection
+							request={learnerRequestData}
+							getFieldLabel={getFieldLabel}
 						/>
 					</div>
+				</Modal>
+			)}
+
+			{/* PDF 변환용 숨겨진 div */}
+			<div
+				ref={pdfRef}
+				style={{
+					position: "absolute",
+					left: "-9999px",
+					top: "-9999px",
+					width: "210mm",
+					minHeight: "297mm",
+					padding: "20mm",
+					backgroundColor: "white",
+					fontFamily: "Arial, sans-serif",
+					fontSize: "12px",
+					lineHeight: "1.6",
+				}}
+			>
+				<div
+					style={{
+						maxWidth: "100%",
+						margin: "0 auto",
+					}}
+				>
+					<ReactMarkdown
+						components={{
+							h1: ({ children }) => (
+								<h1
+									style={{
+										fontSize: "24px",
+										fontWeight: "bold",
+										marginBottom: "16px",
+										color: "#1a1a1a",
+										borderBottom: "2px solid #e5e5e5",
+										paddingBottom: "8px",
+									}}
+								>
+									{children}
+								</h1>
+							),
+							h2: ({ children }) => (
+								<h2
+									style={{
+										fontSize: "20px",
+										fontWeight: "bold",
+										marginTop: "24px",
+										marginBottom: "12px",
+										color: "#2a2a2a",
+									}}
+								>
+									{children}
+								</h2>
+							),
+							h3: ({ children }) => (
+								<h3
+									style={{
+										fontSize: "16px",
+										fontWeight: "bold",
+										marginTop: "20px",
+										marginBottom: "10px",
+										color: "#3a3a3a",
+									}}
+								>
+									{children}
+								</h3>
+							),
+							p: ({ children }) => (
+								<p
+									style={{
+										marginBottom: "12px",
+										color: "#4a4a4a",
+										textAlign: "justify",
+									}}
+								>
+									{children}
+								</p>
+							),
+							ul: ({ children }) => (
+								<ul
+									style={{
+										marginBottom: "12px",
+										paddingLeft: "20px",
+									}}
+								>
+									{children}
+								</ul>
+							),
+							ol: ({ children }) => (
+								<ol
+									style={{
+										marginBottom: "12px",
+										paddingLeft: "20px",
+									}}
+								>
+									{children}
+								</ol>
+							),
+							li: ({ children }) => (
+								<li
+									style={{
+										marginBottom: "4px",
+										color: "#4a4a4a",
+									}}
+								>
+									{children}
+								</li>
+							),
+							code: ({ children }) => (
+								<code
+									style={{
+										backgroundColor: "#f5f5f5",
+										padding: "2px 4px",
+										borderRadius: "3px",
+										fontFamily: "Consolas, Monaco, monospace",
+										fontSize: "11px",
+									}}
+								>
+									{children}
+								</code>
+							),
+							pre: ({ children }) => (
+								<pre
+									style={{
+										backgroundColor: "#f8f8f8",
+										padding: "12px",
+										borderRadius: "4px",
+										marginBottom: "12px",
+										overflow: "auto",
+										border: "1px solid #e5e5e5",
+									}}
+								>
+									{children}
+								</pre>
+							),
+							blockquote: ({ children }) => (
+								<blockquote
+									style={{
+										borderLeft: "4px solid #ddd",
+										paddingLeft: "16px",
+										marginBottom: "12px",
+										fontStyle: "italic",
+										color: "#666",
+									}}
+								>
+									{children}
+								</blockquote>
+							),
+						}}
+					>
+						{practiceFileContent}
+					</ReactMarkdown>
 				</div>
 			</div>
-		</form>
+		</>
 	);
 };
 

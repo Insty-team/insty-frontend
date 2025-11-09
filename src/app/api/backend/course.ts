@@ -34,6 +34,22 @@ const getCourseDetail = async (courseId: number) => {
 	throw new Error("서버와 통신 불가");
 };
 
+const getCourseDetailByCreator = async (courseId: number) => {
+	try {
+		const res = await axiosInstance.get(
+			`${BASE_URL}/courses/creator/${courseId}`,
+		);
+
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+
+	throw new Error("서버와 통신 불가");
+};
+
 const putCourse = async (
 	courseId: number,
 	courseData: CourseUpdateReq,
@@ -169,10 +185,24 @@ const getExistCourse = async (courseId: number) => {
 	}
 };
 
+const deleteCourse = async (courseId: number) => {
+	try {
+		const res = await axiosInstance.delete(`${BASE_URL}/courses/${courseId}`);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
 export {
+	deleteCourse,
 	getCourseDetail,
 	getCourseProgress,
 	getExistCourse,
+	getCourseDetailByCreator,
 	getMyCourses,
 	getVideoThumbnail,
 	postCourse,

@@ -1,13 +1,19 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { GoCalendar } from "react-icons/go";
 import { GoGraph } from "react-icons/go";
 import { IoClipboardOutline } from "react-icons/io5";
 import { IoPencil } from "react-icons/io5";
+import Swal from "sweetalert2";
 
 import { BaseButton } from "@/app/_components/common";
+import Loading from "@/app/_components/common/Loading";
+import { deleteCourse } from "@/app/api/backend/course";
 import { MyCoursesItems } from "@/app/types/course";
 
 function CourseList({
@@ -16,17 +22,17 @@ function CourseList({
 	setCurrentPage,
 	totalPages,
 	onEdit,
-	onDetail,
 }: {
 	myCoursesItems: MyCoursesItems[];
 	currentPage: number;
 	setCurrentPage: (page: number) => void;
 	totalPages: number;
 	onEdit: (courseId: number) => void;
-	onDetail: (courseId: number) => void;
 }) {
 	const currentCourses = myCoursesItems;
-
+	const router = useRouter();
+	const queryClient = useQueryClient();
+	const [isDeleting, setIsDeleting] = useState(false);
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
 	};
@@ -55,9 +61,66 @@ function CourseList({
 		return pages;
 	};
 
+	const handleDeleteCourse = (courseId: number) => {
+		Swal.fire({
+			title: "정말 강의를 삭제하시겠어요?",
+			text: "관련 질문 및 영상 정보가 모두 사라집니다.",
+			icon: "warning",
+			confirmButtonText: "삭제",
+			showCancelButton: true,
+			confirmButtonColor: "#6ead79",
+			cancelButtonText: "취소",
+			cancelButtonColor: "#ff4f64",
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				setIsDeleting(true);
+				try {
+					const res = await deleteCourse(courseId);
+					if (res.success) {
+						Swal.fire({
+							title: "강의가 삭제되었습니다.",
+							icon: "success",
+							confirmButtonText: "확인",
+						}).then((result) => {
+							if (result.isConfirmed) {
+								queryClient.invalidateQueries({
+									queryKey: ["myCourses"],
+								});
+								router.refresh();
+							}
+						});
+					} else {
+						Swal.fire({
+							title: "강의 삭제에 실패했습니다.",
+							text: `${res.error.message}`,
+							icon: "error",
+							confirmButtonText: "확인",
+						});
+					}
+				} catch (error) {
+					console.error(error);
+					Swal.fire({
+						title: "강의 삭제 중 오류가 발생했습니다.",
+						text: "다시 시도해주세요.",
+						icon: "error",
+						confirmButtonText: "확인",
+					});
+				} finally {
+					setIsDeleting(false);
+				}
+			}
+		});
+	};
+
 	//console.log(myCoursesItems);
 	return (
 		<>
+			{/* 로딩 오버레이 */}
+			{isDeleting && (
+				<div className="fixed inset-0 w-full h-full bg-black-100/50 z-[1000] flex justify-center items-center cursor-wait">
+					<Loading width={100} height={100} />
+				</div>
+			)}
 			{currentCourses?.map((course: MyCoursesItems, index: number) => (
 				<div
 					key={course.courseId}
@@ -133,13 +196,12 @@ function CourseList({
 								onClick={() => onEdit(course.courseId)}
 							/>
 							<BaseButton
-								title="상세보기"
+								title="강의 삭제"
 								fill={false}
 								textSize="text-21g"
 								icon={<IoClipboardOutline />}
 								className="!rounded-lg disabled:cursor-not-allowed disabled:bg-gray-scale-200 disabled:!text-gray-400"
-								onClick={() => onDetail(course.courseId)}
-								disabled
+								onClick={() => handleDeleteCourse(course.courseId)}
 							/>
 						</div>
 					</div>
