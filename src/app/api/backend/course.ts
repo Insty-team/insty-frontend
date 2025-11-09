@@ -200,9 +200,9 @@ const deleteCourse = async (courseId: number) => {
 export {
 	deleteCourse,
 	getCourseDetail,
+	getCourseDetailByCreator,
 	getCourseProgress,
 	getExistCourse,
-	getCourseDetailByCreator,
 	getMyCourses,
 	getVideoThumbnail,
 	postCourse,

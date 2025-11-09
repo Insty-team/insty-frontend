@@ -27,7 +27,7 @@ const useGetCourseProgressQuery = (page: number, pageSize: number) => {
 	return useQuery({
 		queryKey: ["courseProgress", page, pageSize],
 		queryFn: () => getCourseProgress(page, pageSize),
-  });
+	});
 };
 
 const useGetCourseDetailByCreatorQuery = (courseId: number) => {
@@ -38,9 +38,8 @@ const useGetCourseDetailByCreatorQuery = (courseId: number) => {
 };
 
 export {
-	useGetCourseDetailQuery,
-	useGetCourseProgressQuery,
 	useGetCourseDetailByCreatorQuery,
 	useGetCourseDetailQuery,
+	useGetCourseProgressQuery,
 	useGetMyCoursesQuery,
 };
