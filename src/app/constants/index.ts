@@ -152,3 +152,10 @@ export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 export const MAX_ANSWER_VIDEO_SIZE = 120;
 
 export const MAX_VIDEO_DURATION = 120;
+
+// 답변 상태값
+export const ANSWER_STATUS_OPTIONS = [
+	{ label: "답변 대기", value: "WAITING" },
+	{ label: "답변 완료", value: "ANSWERED" },
+	{ label: "채택 완료", value: "ACCEPTED" },
+];

@@ -12,8 +12,8 @@ import { getSessionMessages, postChatSession } from "@/app/api/ai";
 import { getPlaylistVideo, postPlayListVideo } from "@/app/api/backend";
 import CourseQuestionChatBotModal from "@/app/learner/_component/CourseQuestionChatBotModal";
 import HLSPlayer from "@/app/learner/_component/courses/HLSPlayer";
+import CourseSidebar from "@/app/learner/_component/CourseSidebar";
 import { useGetCourseDetailQuery } from "@/app/queries";
-//import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
 import { CourserChatbotMessage } from "@/app/types/course";
 import { trackEvent } from "@/app/utils";
 import { formatTime } from "@/app/utils/date";
@@ -60,8 +60,9 @@ function WatchCoursePage() {
 					courseData.data.videoInfo.videoType,
 					courseData.data.courseId,
 				);
+				console.log(response);
 
-				const masterUrl = response.data.signedUrl;
+				const masterUrl = response.data?.signedUrl;
 				const playlistResponse = await getPlaylistVideo(masterUrl);
 
 				const lines = playlistResponse.trim().split("\n");
@@ -140,7 +141,7 @@ function WatchCoursePage() {
 		<div className="flex flex-col gap-8 items-stretch relative">
 			<div className="font-bold text-2xl mt-10">{data.title}</div>
 
-			{/* <CommunitySidebar /> */}
+			<CourseSidebar />
 			<button
 				className="fixed bottom-8 right-8 z-50 flex items-center bg-primary-green-400 hover:bg-primary-green-500 text-white font-semibold px-6 py-2 rounded-full shadow-none"
 				onClick={toggleChatbot}

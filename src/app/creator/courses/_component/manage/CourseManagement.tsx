@@ -25,6 +25,8 @@ function CourseManagement() {
 		error,
 	} = useGetMyCoursesQuery(currentPage, 5); // 페이지별 5개씩
 
+	console.log(myCoursesItems?.items[0]?.courseId);
+
 	const mode =
 		(searchParams.get("mode") as "list" | "edit" | "detail") || "list";
 	const courseIdFromUrl = searchParams.get("courseId");

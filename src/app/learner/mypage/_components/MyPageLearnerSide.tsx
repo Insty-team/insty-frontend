@@ -25,11 +25,7 @@ function MyPageLearnerSide({
 							<button
 								onClick={() => onMenubuttonClick(menu.title)}
 								className={`flex justify-start  disabled:text-gray-300 ${menu.title === "설정" || menu.title === "구매 내역" ? "cursor-not-allowed" : "cursor-pointer hover:font-semibold"}`}
-								disabled={
-									menu.title === "내 활동" ||
-									menu.title === "설정" ||
-									menu.title === "구매 내역"
-								}
+								disabled={menu.title === "설정" || menu.title === "구매 내역"}
 							>
 								<span
 									className={activeMenu === menu.title ? "font-semibold" : ""}

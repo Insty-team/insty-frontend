@@ -1,12 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import {
+	getMyQuestion,
 	getUserProfileInfo,
 	patchUserEmailAgree,
 	patchUserType,
 	putUserProfileInfoEdit,
 } from "@/app/api/backend";
 import { UserProfileInfoResponse, UserType } from "@/app/types";
+import { QuestionsParamsReq } from "@/app/types/community";
+import { MyQuestionResponse } from "@/app/types/community";
 import { useAgreeEmail } from "@/app/utils";
 
 import { queryClient } from "./queryClient";
@@ -46,5 +49,17 @@ export const usePatchUserTypeMutation = () => {
 	return useMutation<UserProfileInfoResponse, Error, UserType>({
 		mutationKey: ["userProfile"],
 		mutationFn: (userType) => patchUserType(userType),
+	});
+};
+
+// 사용자 질문 리스트
+export const useGetMyQuestion = (
+	params: QuestionsParamsReq,
+	enabled: boolean = true,
+) => {
+	return useQuery<MyQuestionResponse>({
+		queryKey: ["myQuestions", params],
+		queryFn: () => getMyQuestion(params),
+		enabled,
 	});
 };

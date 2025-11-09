@@ -5,14 +5,18 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoChatboxEllipses, IoChatboxEllipsesOutline } from "react-icons/io5";
 import { IoChevronForwardOutline } from "react-icons/io5";
 
-import QuestionDetail from "./sidebar/QuestionDetail";
-import QuestionList from "./sidebar/QuestionList";
+import QuestionDraftForm from "./community/QuestionDraftForm";
+import QuestionEditForm from "./community/QuestionEditForm";
+import SidebarQuestionDetail from "./sidebar/SidebarQuestionDetail";
+import SidebarQuestionList from "./sidebar/SidebarQuestionList";
 
 export default function CourseSidebar() {
 	const [isHovered, setIsHovered] = useState(false);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-	const [mode, setMode] = useState<"LIST" | "DETAIL">("LIST");
+	const [mode, setMode] = useState<"LIST" | "DETAIL" | "ADD_QUESTION" | "EDIT">(
+		"LIST",
+	);
 	const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(
 		null,
 	);
@@ -78,15 +82,24 @@ export default function CourseSidebar() {
 					</button>
 				</div>
 				<div className="flex-1 overflow-y-auto">
-					{mode === "LIST" && <QuestionList onSelect={handleSelectQuestion} />}
+					{mode === "LIST" && (
+						<SidebarQuestionList
+							onSelect={handleSelectQuestion}
+							onAddQuestion={() => setMode("ADD_QUESTION")}
+						/>
+					)}
 					{mode === "DETAIL" && selectedQuestionId && (
 						<div className="mx-auto px-6 py-8">
 							<span className="inline-flex items-center justify-center p-2 mb-4 cursor-pointer hover:bg-gray-100 hover:rounded-full text-gray-500">
 								<FaArrowLeft size={24} onClick={() => setMode("LIST")} />
 							</span>
-							<QuestionDetail questionId={selectedQuestionId} />
+							<SidebarQuestionDetail questionId={selectedQuestionId} />
 						</div>
 					)}
+					{mode === "ADD_QUESTION" && (
+						<QuestionDraftForm from="SIDE_BAR" onNext={() => setMode("EDIT")} />
+					)}
+					{mode === "EDIT" && <QuestionEditForm />}
 				</div>
 			</div>
 		</>

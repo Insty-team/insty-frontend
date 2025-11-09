@@ -161,22 +161,22 @@ function LearnerHeader() {
 							<Link
 								key={menu.id}
 								href={menu.path}
-								// className={`${
-								// 	pathname.includes(menu.path)
-								// 		? "text-primary-green-600"
-								// 		: "text-black-400"
-								// } hover:text-primary-green-500`}
-
 								className={`${
 									pathname.includes(menu.path)
 										? "text-primary-green-600"
 										: "text-black-400"
-								} ${menu.title === "커뮤니티" ? "cursor-not-allowed text-gray-300" : "hover:text-primary-green-500"}`}
-								onClick={(e) => {
-									if (menu.title === "커뮤니티") {
-										e.preventDefault();
-									}
-								}}
+								} hover:text-primary-green-500`}
+
+								// className={`${
+								// 	pathname.includes(menu.path)
+								// 		? "text-primary-green-600"
+								// 		: "text-black-400"
+								// } ${menu.title === "커뮤니티" ? "cursor-not-allowed text-gray-300" : "hover:text-primary-green-500"}`}
+								// onClick={(e) => {
+								// 	if (menu.title === "커뮤니티") {
+								// 		e.preventDefault();
+								// 	}
+								// }}
 							>
 								{menu.title}
 							</Link>

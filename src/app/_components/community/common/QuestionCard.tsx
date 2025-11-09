@@ -2,34 +2,23 @@
 
 import { FaMessage, FaRegMessage } from "react-icons/fa6";
 
+import { CommunityQuestions } from "@/app/types/community";
 import { getFormattedDate } from "@/app/utils/";
 
-interface QuestionCardProps {
-	question: {
-		questionId: number;
-		title: string;
-		content: string;
-		isAnswered: string;
-		createdAt: string;
-	};
-	onClick: () => void;
-}
-
-// TODO: 임시로 NONE, HAS_COMMENT, COMPLETE 를 반환받았다 생각하고 (논의 완료 API 연동시 적용)
 const answerStatusInfo = {
-	NONE: {
+	WAITING: {
 		label: "댓글 대기중",
 		bg: "bg-gray-100",
 		text: "text-gray-600",
 		icon: <FaRegMessage className="w-3 h-3" />,
 	},
-	HAS_COMMENT: {
+	ANSWERED: {
 		label: "댓글 있음",
 		bg: "bg-primary-green-100",
 		text: "text-primary-green-700",
 		icon: <FaMessage className="w-3 h-3" />,
 	},
-	COMPLETE: {
+	ACCEPTED: {
 		label: "답변 완료",
 		bg: "bg-blue-100",
 		text: "text-blue-600",
@@ -37,10 +26,16 @@ const answerStatusInfo = {
 	},
 } as const;
 
-export default function QuestionCard({ question, onClick }: QuestionCardProps) {
+export default function QuestionCard({
+	question,
+	onClick,
+}: {
+	question: CommunityQuestions;
+	onClick: () => void;
+}) {
 	const status =
-		answerStatusInfo[question.isAnswered as keyof typeof answerStatusInfo] ??
-		answerStatusInfo.NONE;
+		answerStatusInfo[question.status as keyof typeof answerStatusInfo] ??
+		answerStatusInfo.WAITING;
 
 	return (
 		<div

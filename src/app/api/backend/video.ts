@@ -39,6 +39,7 @@ const putCourseVideoUpload = async (videoUrl: string, file: File) => {
 			"Content-Type": file.type,
 		},
 	});
+	console.log(res.data);
 	return res.data;
 };
 
@@ -92,11 +93,75 @@ const getPlaylistVideo = async (signedUrl: string) => {
 	return res.data;
 };
 
+// 질문 영상 등록
+const postQuestionVideo = async (videoInfo: VideoType) => {
+	try {
+		const res = await axiosInstance.post(
+			`${BASE_URL}/videos/upload/question`,
+			videoInfo,
+		);
+		console.log("질문 영상", res.data);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+};
+
+const putQuestionVideoUpload = async (videoUrl: string, file: File) => {
+	const s3AxiosInstance = axios.create({
+		withCredentials: false,
+	});
+
+	const res = await s3AxiosInstance.put(videoUrl, file, {
+		headers: {
+			"Content-Type": file.type,
+		},
+	});
+	console.log(res.data);
+	return res.data;
+};
+
+// 댓글 영상 등록
+const postAnswerVideo = async (videoInfo: VideoType) => {
+	try {
+		const res = await axiosInstance.post(
+			`${BASE_URL}/videos/upload/answer`,
+			videoInfo,
+		);
+		console.log("댓글 영상", res.data);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response?.data;
+		}
+	}
+};
+
+const putAnswerVideoUpload = async (videoUrl: string, file: File) => {
+	const s3AxiosInstance = axios.create({
+		withCredentials: false,
+	});
+
+	const res = await s3AxiosInstance.put(videoUrl, file, {
+		headers: {
+			"Content-Type": file.type,
+		},
+	});
+	console.log(res.data);
+	return res.data;
+};
+
 export {
 	getCourseVideoPreview,
 	getPlaylistVideo,
+	postAnswerVideo,
 	postCourseVideo,
 	postPlayListVideo,
 	postPreviewVideo,
+	postQuestionVideo,
+	putAnswerVideoUpload,
 	putCourseVideoUpload,
+	putQuestionVideoUpload,
 };

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getCourseDetail, getMyCourses } from "../api/backend";
+import { getCourseProgress } from "../api/backend";
 import { CourseDetail } from "../types/course";
 
 // queries/course.ts
@@ -12,10 +13,21 @@ const useGetMyCoursesQuery = (page: number, pageSize: number) => {
 };
 
 const useGetCourseDetailQuery = (courseId: number) => {
-	return useQuery<{ data: CourseDetail }>({
+	return useQuery<CourseDetail>({
 		queryKey: ["courseDetail", courseId],
 		queryFn: () => getCourseDetail(courseId),
 	});
 };
 
-export { useGetCourseDetailQuery, useGetMyCoursesQuery };
+const useGetCourseProgressQuery = (page: number, pageSize: number) => {
+	return useQuery({
+		queryKey: ["courseProgress", page, pageSize],
+		queryFn: () => getCourseProgress(page, pageSize),
+	});
+};
+
+export {
+	useGetCourseDetailQuery,
+	useGetCourseProgressQuery,
+	useGetMyCoursesQuery,
+};
