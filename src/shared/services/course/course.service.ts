@@ -69,7 +69,15 @@ export const GET_course_by_id_for_creator = async (courseId: string): Promise<Ap
 };
 
 /** 내가 수강중인 강의 목록조회 */
-export const GET_courses_Progress_by_me = async (): Promise<PaginatedResponse<CourseProgressByMeResponse>> => {
-  const response = await api.get('/api/v1/courses/courseProgress');
+export const GET_courses_Progress_by_me = async (
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<PaginatedResponse<CourseProgressByMeResponse>> => {
+  const response = await api.get('/api/v1/courses/courseProgress', {
+    params: {
+      page,
+      pageSize,
+    },
+  });
   return response.data;
 };

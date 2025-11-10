@@ -84,10 +84,10 @@ export const useGetCourseByIdForCreator = (courseId: string) => {
 };
 
 /** 내가 수강중인 강의 목록조회 */
-export const useGetCoursesProgressByMe = () => {
+export const useGetCoursesProgressByMe = (page: number = 1, pageSize: number = 10) => {
   return useQuery({
-    queryKey: [GET_courses_Progress_by_me.name],
-    queryFn: () => GET_courses_Progress_by_me(),
+    queryKey: [GET_courses_Progress_by_me.name, page, pageSize],
+    queryFn: () => GET_courses_Progress_by_me(page, pageSize),
     select: ({ data }) => data,
   });
 };
