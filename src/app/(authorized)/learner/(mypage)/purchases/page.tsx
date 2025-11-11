@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 
-import { Badge } from '@/shared/components/ui/badge';
+import Image from 'next/image';
+
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import {
@@ -14,9 +15,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/shared/components/ui/pagination';
-import { Separator } from '@/shared/components/ui/separator';
+import { formatViewCount } from '@/shared/lib/utils';
 import { useGetCoursesProgressByMe } from '@/shared/services/course/course.hook';
 import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
+import dayjs from 'dayjs';
+import { Calendar, Eye, Play } from 'lucide-react';
 
 type PurchaseRow = {
   id: string;
@@ -190,30 +193,53 @@ export default function LearnerPurchasesPage() {
         <div className="space-y-4">
           {purchases.map((purchase) => (
             <Card key={purchase.id}>
-              <CardContent className="p-6">
-                <div className="flex gap-4">
-                  <div
-                    className="bg-muted h-20 w-32 flex-shrink-0 rounded-lg"
-                    style={renderThumbnailStyle(purchase.thumbnail)}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="mb-1 text-lg font-semibold">{purchase.courseName}</h3>
-                        <p className="text-muted-foreground mb-2 text-sm">{purchase.instructor}</p>
-                        <p className="text-muted-foreground text-sm">구매일: {purchase.purchaseDate}</p>
+              <CardContent>
+                <div className="flex gap-8">
+                  <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-36 sm:w-48">
+                    {purchase.thumbnail ? (
+                      <Image
+                        src={purchase.thumbnail}
+                        alt={purchase.courseName}
+                        fill
+                        className="object-contain transition-transform duration-200"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <Play className="text-muted-foreground h-8 w-8" />
                       </div>
-                      <div className="flex-shrink-0 text-right">
-                        <p className="mb-2 text-lg font-bold">{purchase.price.toLocaleString()}원</p>
-                        <Badge variant="secondary">결제완료</Badge>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          {/* 제목 */}
+                          <h3 className="mb-2 line-clamp-2 text-lg font-semibold transition-colors">
+                            {purchase.courseName}
+                          </h3>
+
+                          {/* 통계 정보 */}
+                          <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
+                            <span className="flex items-center gap-1">
+                              <Eye className="h-4 w-4" />
+                              {formatViewCount(0)}회
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              {dayjs(purchase.purchaseDate).format('YYYY.MM.DD')}
+                            </span>
+                          </div>
+
+                          {/* 가격 */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-sm">판매가:</span>
+                            <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(0)}원</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <Separator className="my-4" />
-                    <div className="flex gap-2">
+                    <div className="mt-2 flex gap-2">
                       <Button size="sm">강의 보기</Button>
-                      <Button size="sm" variant="outline">
-                        영수증 보기
-                      </Button>
                     </div>
                   </div>
                 </div>
