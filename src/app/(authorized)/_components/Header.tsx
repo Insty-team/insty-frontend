@@ -64,21 +64,6 @@ export default function Header() {
             {/* 알림 */}
             <Notification />
 
-            {/* 장바구니 */}
-            {!isCreator && (
-              <Button variant="ghost" size="icon" asChild className="relative">
-                <Link href="/cart">
-                  <ShoppingCart className="h-5 w-5" />
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs"
-                  >
-                    2
-                  </Badge>
-                </Link>
-              </Button>
-            )}
-
             {/* 프로필 메뉴 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

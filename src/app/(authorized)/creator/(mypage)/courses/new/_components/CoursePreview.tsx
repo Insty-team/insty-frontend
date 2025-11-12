@@ -111,7 +111,7 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
       {formData.tags && formData.tags.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>태그</CardTitle>
+            <CardTitle>관련 태그</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">

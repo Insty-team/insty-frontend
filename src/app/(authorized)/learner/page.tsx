@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -224,9 +225,9 @@ export default function LearnerPage() {
                             className="w-full justify-between overflow-hidden transition-all hover:shadow-md"
                           >
                             <CardHeader>
-                              <CardTitle className="text-base font-semibold">{course.course_title}</CardTitle>
+                              <CardTitle className="h-12 text-base font-semibold">{course.course_title}</CardTitle>
                             </CardHeader>
-                            <CardContent className="relative h-48 w-full">
+                            <CardContent className="bg-muted relative h-48 w-full flex-shrink-0">
                               {course.thumbnail_url && (
                                 <Image
                                   src={course.thumbnail_url}
@@ -237,8 +238,11 @@ export default function LearnerPage() {
                               )}
                             </CardContent>
                             <Separator />
-                            <CardFooter>
+                            <CardFooter className="flex items-center justify-between">
                               <span className="text-sm font-medium text-slate-500">무료</span>
+                              <Button variant="ghost" size="sm">
+                                <Link href={`/course/${course.course_id}`}>수강하기</Link>
+                              </Button>
                             </CardFooter>
                           </Card>
                         ))}

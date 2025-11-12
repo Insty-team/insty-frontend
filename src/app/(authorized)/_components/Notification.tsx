@@ -31,7 +31,7 @@ export default function Notification() {
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel>알림</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96">
           <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
             <p className="font-medium">새로운 강의가 업데이트되었습니다</p>
             <p className="text-muted-foreground text-xs">React 완전정복 강의에 새로운 섹션이 추가되었습니다</p>
