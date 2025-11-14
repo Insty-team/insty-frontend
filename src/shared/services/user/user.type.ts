@@ -4,10 +4,11 @@ export type UserRequest = {
   userUpdateReq: {
     nickname: string;
     email: string;
-    oldPassword: string;
+    introduce: string;
+    currentPassword: string;
     newPassword: string;
   };
-  profileImage: File;
+  profileImage: File | null;
 };
 
 export type UserResponse = {

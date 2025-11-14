@@ -7,19 +7,15 @@ import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useGetProfile, usePutProfile } from '@/shared/services/user/user.hook';
+import { UserRequest } from '@/shared/services/user/user.type';
 
-type ProfileFormData = {
-  nickname: string;
-  email: string;
-  introduce: string;
-  thumbnail?: File;
-};
+type ProfileFormData = UserRequest;
 
 export default function ProfileEditPage() {
   const router = useRouter();
@@ -35,27 +31,35 @@ export default function ProfileEditPage() {
     formState: { errors },
   } = useForm<ProfileFormData>({
     defaultValues: {
-      nickname: profile?.nickname || '',
-      email: profile?.email || '',
-      introduce: profile?.introduce || '',
+      userUpdateReq: {
+        nickname: profile?.nickname || '',
+        email: profile?.email || '',
+        introduce: profile?.introduce || '',
+        currentPassword: '',
+        newPassword: '',
+      },
+      profileImage: null,
     },
     values: profile
       ? {
-          nickname: profile.nickname,
-          email: profile.email,
-          introduce: profile.introduce,
+          userUpdateReq: {
+            nickname: profile.nickname,
+            email: profile.email,
+            introduce: profile.introduce,
+            currentPassword: '',
+            newPassword: '',
+          },
+          profileImage: null,
         }
       : undefined,
   });
 
   const onSubmit = (data: ProfileFormData) => {
-    const updateData = {
-      nickname: data.nickname,
-      introduce: data.introduce,
-      thumbnail: selectedFile || undefined,
-    };
+    const formData = new FormData();
+    formData.append('userUpdateReq', new Blob([JSON.stringify(data.userUpdateReq)], { type: 'application/json' }));
+    formData.append('profileImage', selectedFile || '');
 
-    updateProfile(updateData, {
+    updateProfile(formData as unknown as UserRequest, {
       onSuccess: () => {
         alert('프로필이 업데이트되었습니다!');
         router.push('/creator/profile'); // 프로필 보기 페이지로 이동
@@ -148,18 +152,20 @@ export default function ProfileEditPage() {
               <Label htmlFor="nickname">닉네임</Label>
               <Input
                 id="nickname"
-                {...register('nickname', {
+                {...register('userUpdateReq.nickname', {
                   required: '닉네임을 입력해주세요',
                   minLength: { value: 2, message: '닉네임은 2자 이상이어야 합니다' },
                   maxLength: { value: 20, message: '닉네임은 20자 이하여야 합니다' },
                 })}
               />
-              {errors.nickname && <p className="text-destructive text-sm">{errors.nickname.message}</p>}
+              {errors.userUpdateReq?.nickname && (
+                <p className="text-destructive text-sm">{errors.userUpdateReq.nickname.message}</p>
+              )}
             </div>
 
             <div className="space-y-1">
               <Label htmlFor="email">이메일</Label>
-              <Input id="email" {...register('email')} disabled />
+              <Input id="email" {...register('userUpdateReq.email')} disabled />
               <p className="text-muted-foreground text-sm">이메일은 변경할 수 없습니다</p>
             </div>
 
@@ -167,13 +173,15 @@ export default function ProfileEditPage() {
               <Label htmlFor="introduce">소개</Label>
               <Textarea
                 id="introduce"
-                {...register('introduce', {
+                {...register('userUpdateReq.introduce', {
                   maxLength: { value: 500, message: '소개는 500자 이하여야 합니다' },
                 })}
                 rows={4}
                 placeholder="자기소개를 입력해주세요"
               />
-              {errors.introduce && <p className="text-destructive text-sm">{errors.introduce.message}</p>}
+              {errors.userUpdateReq?.introduce && (
+                <p className="text-destructive text-sm">{errors.userUpdateReq.introduce.message}</p>
+              )}
             </div>
 
             <div className="flex justify-end gap-2">

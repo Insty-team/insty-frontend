@@ -4,19 +4,7 @@ import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
 
 /** 내 사용자 정보 수정 */
-export const PUT_profile = async (data: UserRequest) => {
-  const formData = new FormData();
-
-  if (data.nickname) {
-    formData.append('nickname', data.nickname);
-  }
-  if (data.introduce) {
-    formData.append('introduce', data.introduce);
-  }
-  if (data.thumbnail) {
-    formData.append('thumbnail', data.thumbnail);
-  }
-
+export const PUT_profile = async (formData: UserRequest) => {
   const response = await api.put('/api/v1/users/profile', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
