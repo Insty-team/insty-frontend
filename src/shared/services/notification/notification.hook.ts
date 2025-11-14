@@ -1,7 +1,7 @@
 import { GET_notification_preferences, PUT_notification_preferences } from './notification.service';
 import { NotificationRequest } from './notification.type';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 /** 사용자 알림 설정 조회 */
 export const useGetNotificationPreferences = () => {
@@ -14,8 +14,13 @@ export const useGetNotificationPreferences = () => {
 
 /** 사용자 알림 설정 변경 */
 export const usePutNotificationPreferences = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationKey: [PUT_notification_preferences.name],
     mutationFn: (data: NotificationRequest) => PUT_notification_preferences(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_notification_preferences.name] });
+    },
   });
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   AlertDialog,
@@ -18,11 +18,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
 import { Switch } from '@/shared/components/ui/switch';
+import {
+  useGetNotificationPreferences,
+  usePutNotificationPreferences,
+} from '@/shared/services/notification/notification.hook';
+import { NotificationRequest } from '@/shared/services/notification/notification.type';
 
 export default function LearnerSettingsPage() {
-  const [emailNotification, setEmailNotification] = useState(true);
-  const [pushNotification, setPushNotification] = useState(true);
-  const [marketingEmail, setMarketingEmail] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationRequest>({
+    userMentionNotificationEnabled: false,
+    userMentionEmailEnabled: false,
+    newQuestionNotificationEnabled: false,
+    newQuestionEmailEnabled: false,
+    newAnswerNotificationEnabled: false,
+    newAnswerEmailEnabled: false,
+    answerAcceptedNotificationEnabled: false,
+    answerAcceptedEmailEnabled: false,
+    requestedCourseRegistrationNotificationEnabled: false,
+    requestedCourseRegistrationEmailEnabled: false,
+  });
+
+  const { data: notificationPreferences } = useGetNotificationPreferences();
+  const { mutateAsync: updateNotificationPreferences } = usePutNotificationPreferences();
+  const handleNotificationChange = async (key: keyof NotificationRequest, value: boolean) => {
+    setNotifications((prev) => ({ ...prev, [key]: value }));
+    await updateNotificationPreferences({ ...notifications, [key]: value });
+  };
+
+  useEffect(() => {
+    if (notificationPreferences) {
+      setNotifications(notificationPreferences);
+    }
+  }, [notificationPreferences]);
 
   return (
     <div className="space-y-6">
@@ -35,35 +62,117 @@ export default function LearnerSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>알림 설정</CardTitle>
-          <CardDescription>수신할 알림을 선택하세요</CardDescription>
+          <CardDescription>이벤트 별 푸시 알림과 이메일 수신 여부를 설정하세요</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="email-notification">이메일 알림</Label>
-              <p className="text-muted-foreground text-sm">새로운 강의 및 업데이트 소식을 이메일로 받습니다</p>
-            </div>
-            <Switch id="email-notification" checked={emailNotification} onCheckedChange={setEmailNotification} />
+          <div className="text-muted-foreground flex justify-end px-2 text-xs font-medium">
+            <div className="w-[100px] text-center">푸시 알림</div>
+            <div className="w-[100px] text-center">이메일 수신</div>
           </div>
 
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="push-notification">푸시 알림</Label>
-              <p className="text-muted-foreground text-sm">새로운 댓글 및 답변 알림을 받습니다</p>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 space-y-0.5">
+                  <Label htmlFor="mention-web-notification">사용자 멘션</Label>
+                  <p className="text-muted-foreground text-sm">댓글이나 답변에서 @멘션을 받으면 알려드려요</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="mention-web-notification"
+                      checked={notifications.userMentionNotificationEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('userMentionNotificationEnabled', value)}
+                    />
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="mention-email-notification"
+                      checked={notifications.userMentionEmailEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('userMentionEmailEnabled', value)}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Separator />
             </div>
-            <Switch id="push-notification" checked={pushNotification} onCheckedChange={setPushNotification} />
-          </div>
 
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="marketing-email">마케팅 수신 동의</Label>
-              <p className="text-muted-foreground text-sm">이벤트 및 할인 정보를 받습니다</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 space-y-0.5">
+                  <Label htmlFor="new-question-web-notification">새 질문</Label>
+                  <p className="text-muted-foreground text-sm">관심 태그에 새로운 질문이 등록되면 알려드려요</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="new-question-web-notification"
+                      checked={notifications.newQuestionNotificationEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('newQuestionNotificationEnabled', value)}
+                    />
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="new-question-email-notification"
+                      checked={notifications.newQuestionEmailEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('newQuestionEmailEnabled', value)}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Separator />
             </div>
-            <Switch id="marketing-email" checked={marketingEmail} onCheckedChange={setMarketingEmail} />
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 space-y-0.5">
+                  <Label htmlFor="new-answer-web-notification">새 답변</Label>
+                  <p className="text-muted-foreground text-sm">내 질문에 새로운 답변이 달리면 알려드려요</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="new-answer-web-notification"
+                      checked={notifications.newAnswerNotificationEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('newAnswerNotificationEnabled', value)}
+                    />
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="new-answer-email-notification"
+                      checked={notifications.newAnswerEmailEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('newAnswerEmailEnabled', value)}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Separator />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 space-y-0.5">
+                  <Label htmlFor="answer-accepted-web-notification">답변 채택</Label>
+                  <p className="text-muted-foreground text-sm">내 답변이 채택되면 바로 알려드려요</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="answer-accepted-web-notification"
+                      checked={notifications.answerAcceptedNotificationEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('answerAcceptedNotificationEnabled', value)}
+                    />
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="answer-accepted-email-notification"
+                      checked={notifications.answerAcceptedEmailEnabled}
+                      onCheckedChange={(value) => handleNotificationChange('answerAcceptedEmailEnabled', value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
