@@ -10,6 +10,10 @@ type MyCoursesItems = {
 	createdAt: string;
 };
 
+type CourseDetailRes = {
+	data: CourseDetail;
+};
+
 type CourseDetail = {
 	courseId: number;
 	creatorInfo?: {
@@ -118,6 +122,7 @@ type PostMessageStreamReq = {
 export type {
 	AllowedFileType,
 	CourseDetail,
+	CourseDetailRes,
 	CourseFormProps,
 	CourserChatbotMessage,
 	CourseUpdateReq,

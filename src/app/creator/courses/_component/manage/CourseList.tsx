@@ -160,7 +160,7 @@ function CourseList({
 								: course.title}
 						</div>
 						<div className="flex flex-wrap gap-1">
-							{course.tags.map((tag, idx) => (
+							{course.tags?.map((tag, idx) => (
 								<span
 									key={idx}
 									className="text-black-100 text-2lg bg-gray-100 border border-gray-200 rounded-full px-2 py-0.5"

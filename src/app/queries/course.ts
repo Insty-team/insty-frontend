@@ -6,7 +6,7 @@ import {
 	getCourseDetailByCreator,
 	getMyCourses,
 } from "../api/backend";
-import { CourseDetail } from "../types/course";
+import { CourseDetail, CourseDetailRes } from "../types/course";
 
 // queries/course.ts
 const useGetMyCoursesQuery = (page: number, pageSize: number) => {
@@ -17,7 +17,7 @@ const useGetMyCoursesQuery = (page: number, pageSize: number) => {
 };
 
 const useGetCourseDetailQuery = (courseId: number) => {
-	return useQuery<CourseDetail>({
+	return useQuery<CourseDetailRes>({
 		queryKey: ["courseDetail", courseId],
 		queryFn: () => getCourseDetail(courseId),
 	});

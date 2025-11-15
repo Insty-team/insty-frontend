@@ -1,9 +1,12 @@
+import { use } from "react";
+
 import { QuestionDetail } from "@/app/_components/community";
+
 export default function CommunityQuestionDetailPage({
 	params,
 }: {
-	params: { id: string };
+	params: Promise<{ id: string }>;
 }) {
-	const questionId = Number(params.id);
-	return <QuestionDetail questionId={questionId} />;
+	const { id } = use(params);
+	return <QuestionDetail questionId={Number(id)} />;
 }
