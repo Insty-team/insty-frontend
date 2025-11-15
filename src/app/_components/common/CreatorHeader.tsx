@@ -24,9 +24,6 @@ function CreatorHeader() {
 	const pathname = usePathname();
 	const router = useRouter();
 
-	//임시방편(운영서버에서 커뮤니티 접근 x)
-	const isDev = pathname.includes("localhost") || pathname.includes("dev");
-
 	// 드롭다운 메뉴 핸들링
 	const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
 

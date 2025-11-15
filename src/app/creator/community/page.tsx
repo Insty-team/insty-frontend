@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { CommunityMain } from "@/app/_components/community/";
 import { useGetMyCoursesQuery } from "@/app/queries";
-import CommunityHeader from "@/app/_components/community/common/CommunityHeader";
 
 function CreatorCommunity() {
 	const [currentPage, setCurrentPage] = useState(1);
