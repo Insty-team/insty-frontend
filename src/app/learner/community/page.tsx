@@ -1,69 +1,33 @@
+"use client";
+
+import { useState } from "react";
+
 import { CommunityMain } from "@/app/_components/community";
+import { useGetCourseProgressQuery } from "@/app/queries";
 
 function Community() {
-	const enrolledCourses = [
-		{
-			courseId: 1,
-			title: "string",
-			price: 0,
-			viewCount: 0,
-			commentCount: 0,
-			tags: ["string"],
-			thumbnailUrl: "/dog.png",
-			isShow: true,
-			createdAt: "2025-08-05T07:28:08.017Z",
-		},
-		{
-			courseId: 2,
-			title: "string",
-			price: 0,
-			viewCount: 0,
-			commentCount: 0,
-			tags: ["string"],
-			thumbnailUrl: "/dog.png",
-			isShow: true,
-			createdAt: "2025-08-05T07:28:08.017Z",
-		},
-	];
+	const [currentPage, setCurrentPage] = useState(1);
+	const pageSize = 10;
 
-	// 특정 강좌에 대한 질문 리스트 응답 데이터
-	const questions = [
-		{
-			user: {
-				id: 123,
-				nickname: "string",
-				userType: "LEARNER",
-			},
-			courseId: 1,
-			questionId: 1,
-			title: "string",
-			content: "string",
-			isAnswered: "COMPLETE" as const,
-			createdAt: "2025-08-05T07:50:19.007Z",
-			updatedAt: "2025-08-05T07:50:19.007Z",
-		},
-		{
-			user: {
-				id: 123,
-				nickname: "string",
-				userType: "LEARNER",
-			},
-			courseId: 2,
-			questionId: 2,
-			title: "string",
-			content: "string",
-			isAnswered: "HAS_COMMENT" as const,
-			createdAt: "2025-08-05T07:50:19.007Z",
-			updatedAt: "2025-08-05T07:50:19.007Z",
-		},
-	];
+	const {
+		data: courseItems,
+		isLoading,
+		error,
+	} = useGetCourseProgressQuery(currentPage, pageSize);
+
+	console.log(courseItems);
+
+	if (isLoading) return <p>강의 로딩 중...</p>;
+	if (error) return <p>강의 불러오기 실패</p>;
 
 	return (
 		<div className="flex flex-col mt-16">
 			<CommunityMain
-				courses={enrolledCourses}
-				questions={questions}
 				mode="LEARNER"
+				courses={courseItems?.items || []}
+				coursePagination={courseItems?.pagination}
+				currentPage={currentPage}
+				onPageChange={setCurrentPage}
 			/>
 		</div>
 	);

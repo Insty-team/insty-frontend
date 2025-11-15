@@ -1,12 +1,12 @@
 type MyCoursesItems = {
 	courseId: number;
 	title: string;
-	price: number;
-	viewCount: number;
+	price?: number;
+	viewCount?: number;
 	commentCount: number;
-	tags: string[];
+	tags?: string[];
 	thumbnailUrl: string | null;
-	isShow: boolean;
+	isShow?: boolean;
 	createdAt: string;
 };
 

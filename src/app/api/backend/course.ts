@@ -15,6 +15,7 @@ const getMyCourses = async (page: number, pageSize: number) => {
 			pageSize,
 		},
 	});
+	console.log(res.data.data);
 
 	return res.data.data;
 };
@@ -138,6 +139,52 @@ const getVideoThumbnail = async (videoUuid: string) => {
 	throw new Error("서버와 통신 불가");
 };
 
+// 내가 수강중인 강의 목록 조회
+
+const getCourseProgress = async (page: number, pageSize: number) => {
+	try {
+		const res = await axiosInstance.get(`${BASE_URL}/courses/courseProgress`, {
+			params: { page, pageSize },
+		});
+		return res.data.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
+// 강의 수강하기
+const postCourseProgress = async (courseId: number) => {
+	try {
+		const res = await axiosInstance.post(
+			`${BASE_URL}/courses/courseProgress/${courseId}`,
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
+// 강좌 수강 여부 조회
+const getExistCourse = async (courseId: number) => {
+	try {
+		const res = await axiosInstance.post(
+			`${BASE_URL}/courses/courseProgress/${courseId}/exists`,
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
 const deleteCourse = async (courseId: number) => {
 	try {
 		const res = await axiosInstance.delete(`${BASE_URL}/courses/${courseId}`);
@@ -154,8 +201,11 @@ export {
 	deleteCourse,
 	getCourseDetail,
 	getCourseDetailByCreator,
+	getCourseProgress,
+	getExistCourse,
 	getMyCourses,
 	getVideoThumbnail,
 	postCourse,
+	postCourseProgress,
 	putCourse,
 };

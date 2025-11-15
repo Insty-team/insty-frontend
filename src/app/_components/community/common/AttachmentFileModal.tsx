@@ -1,7 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { HiOutlineVideoCamera } from "react-icons/hi";
-import { IoImageOutline } from "react-icons/io5";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoImageOutline } from "react-icons/io5";
 import { TbUpload } from "react-icons/tb";
 
 import { MAX_ANSWER_VIDEO_SIZE, MAX_IMAGE_SIZE } from "@/app/constants";
@@ -10,7 +11,7 @@ import { ALLOWED_FILE_TYPES } from "@/app/types/allowedFileTypes";
 interface AttachmentModalProps {
 	onClose: () => void;
 	type: "Image" | "Video";
-	onFileSelect: (file: File) => void;
+	onFileSelect: (file: File, videoUuid?: string) => void;
 }
 
 function AttachmentFileModal({
@@ -27,13 +28,11 @@ function AttachmentFileModal({
 			setFileName("");
 			setSelectedFile(null);
 			setError("");
-
 			return;
 		}
 
 		const file = e.target.files[0];
 		const fileExt = `.${file.name.split(".").pop()?.toLowerCase()}`;
-		console.log(fileExt);
 
 		const allowedFileType =
 			type === "Image"
@@ -44,7 +43,7 @@ function AttachmentFileModal({
 
 		if (!allowedFileType) return;
 
-		if (!allowedFileType.accept.split(",").includes(fileExt || "")) {
+		if (!allowedFileType.accept.split(",").includes(fileExt)) {
 			setError(
 				`${type === "Image" ? "이미지" : "영상"} 파일 형식이 올바르지 않습니다.`,
 			);
@@ -68,8 +67,7 @@ function AttachmentFileModal({
 
 			video.onloadedmetadata = () => {
 				URL.revokeObjectURL(video.src);
-				const duration = video.duration;
-				if (duration > MAX_ANSWER_VIDEO_SIZE) {
+				if (video.duration > MAX_ANSWER_VIDEO_SIZE) {
 					setError("영상은 2분 이하만 업로드 가능합니다.");
 					e.target.value = "";
 					setFileName("");
@@ -82,6 +80,7 @@ function AttachmentFileModal({
 			};
 
 			video.src = URL.createObjectURL(file);
+			return;
 		}
 
 		setError("");
@@ -113,12 +112,10 @@ function AttachmentFileModal({
 								<HiOutlineVideoCamera className="w-5 h-5 text-primary-green-600" />
 							)}
 						</div>
-
 						<h1 className="text-xl font-bold text-gray-900">
 							{type === "Image" ? "이미지 첨부" : "영상 첨부"}
 						</h1>
 					</div>
-
 					<div
 						onClick={onClose}
 						className="cursor-pointer hover:bg-gray-100 hover:rounded-xl p-2"
@@ -152,6 +149,7 @@ function AttachmentFileModal({
 								: "영상을 선택하거나 드래그하세요")}
 					</label>
 				</div>
+
 				{error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 
 				<div className="bg-gray-100 rounded-lg p-4 mt-4">
@@ -182,7 +180,7 @@ function AttachmentFileModal({
 
 				<div className="flex justify-center mt-4">
 					<button
-						className="bg-primary-green-200 hover:bg-primary-green-300 rounded-2xl py-3 w-full cursor-pointer"
+						className="bg-primary-green-200 hover:bg-primary-green-300 rounded-2xl py-3 w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
 						onClick={handleAttach}
 						disabled={!selectedFile}
 					>

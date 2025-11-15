@@ -7,6 +7,7 @@ import {
 	UserProfileInfoResponse,
 	UserType,
 } from "@/app/types";
+import { QuestionsParamsReq } from "@/app/types/community";
 
 import axiosInstance from "../interceptor";
 
@@ -130,9 +131,43 @@ const deleteUserInformation = async () => {
 	}
 };
 
+const getMyQuestion = async ({
+	page,
+	pageSize,
+	orderBy,
+	order,
+	keyword,
+	statuses,
+}: QuestionsParamsReq) => {
+	try {
+		const res = await axiosInstance.get(`${BASE_URL}/community/questions/my`, {
+			params: { page, pageSize, orderBy, order, keyword, statuses },
+			paramsSerializer: (params) => {
+				const searchParams = new URLSearchParams();
+				Object.entries(params).forEach(([key, value]) => {
+					if (Array.isArray(value)) {
+						value.forEach((v) => searchParams.append(key, v));
+					} else if (value !== undefined && value !== null && value !== "") {
+						searchParams.append(key, String(value));
+					}
+				});
+				return searchParams.toString();
+			},
+		});
+
+		return res.data.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.data) {
+			return error.response.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
 export {
 	deleteUserInformation,
 	getEmailCheck,
+	getMyQuestion,
 	getNicknameCheck,
 	getSocialAuthCode,
 	getUserProfileInfo,

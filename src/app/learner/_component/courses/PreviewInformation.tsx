@@ -10,7 +10,12 @@ import Swal from "sweetalert2";
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { getPurchaseAssistantUsageCount } from "@/app/api/ai";
-import { getCourseVideoPreview, postPreviewVideo } from "@/app/api/backend";
+import {
+	getCourseVideoPreview,
+	getExistCourse,
+	postPreviewVideo,
+} from "@/app/api/backend";
+import { postCourseProgress } from "@/app/api/backend";
 import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssistantChatbotModal";
 import { useUserStore } from "@/app/stores";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
@@ -31,6 +36,8 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 
 	const [m3u8Url, setM3u8Url] = useState<string | null>(null);
 	const [videoDuration, setVideoDuration] = useState<number>(0);
+	const [isCourseExist, setIsCourseExist] = useState<boolean>(false);
+
 	const { user: userInfo } = useUserStore();
 
 	//console.log(data);
@@ -44,6 +51,14 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	const [messages, setMessages] = useState(baseMessages);
 	const [remainCount, setRemainCount] = useState(0);
 	const [isInitialized, setIsInitialized] = useState(false);
+
+	useEffect(() => {
+		const fetchExistCourse = async () => {
+			const exist = await getExistCourse(data.courseId);
+			setIsCourseExist(!!exist);
+		};
+		fetchExistCourse();
+	}, [data.courseId]);
 
 	useEffect(() => {
 		if (!isInitialized) {
@@ -113,12 +128,23 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 			cancelButtonText: "닫기",
 			confirmButtonText: "수강하기",
 			confirmButtonColor: "#6ead79",
-		}).then((result) => {
+		}).then(async (result) => {
 			if (result.isConfirmed) {
-				// 강의 수강 시작 추적
-				Amplitude.track("Course Watch Started");
-				trackEvent("강의_시청_시작");
-				router.push(`/learner/recommend/course/${data.courseId}/watch`);
+				try {
+					await postCourseProgress(data.courseId);
+
+					// 강의 수강 시작 추적
+					Amplitude.track("Course Watch Started");
+					trackEvent("강의_시청_시작");
+					router.push(`/learner/recommend/course/${data.courseId}/watch`);
+				} catch (error) {
+					console.error("강의 수강 시작 실패: ", error);
+					Swal.fire({
+						icon: "error",
+						title: "강의 수강 실패",
+						text: "다시 시도해주세요.",
+					});
+				}
 			}
 		});
 	};
@@ -213,7 +239,16 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 
 					<div className="flex justify-between gap-8">
 						<div className="w-[60%] flex items-center mr-auto">
-							<BaseButton title="수강하기" onClick={handleWatchCourse} />
+							<BaseButton
+								title={isCourseExist ? "이미 수강 중인 강의입니다" : "수강하기"}
+								onClick={handleWatchCourse}
+								disabled={isCourseExist}
+								className={
+									isCourseExist
+										? "bg-gray-300 cursor-not-allowed"
+										: "bg-primary-green-400 hover:bg-primary-green-500"
+								}
+							/>
 						</div>
 					</div>
 				</div>

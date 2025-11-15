@@ -2,121 +2,102 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 
 import { BaseButton, BaseSearchBar } from "@/app/_components/common";
 import { EMPTY_QUESTION } from "@/app/constants";
+import { useGetCommunityCourseQuestionQuery } from "@/app/queries"; // 강좌별 질문 검색
 import { useUserStore } from "@/app/stores";
+import { MyCoursesItems } from "@/app/types/course";
 
 import { Pagination } from "../common";
 import { EmptyDataMessage, QuestionCard } from "./common";
 
-// 더미데이터 형태에 따른 임시 type 정의
-type IsAnsweredType = "NONE" | "HAS_COMMENT" | "COMPLETE";
-
-interface Props {
-	courses: {
-		courseId: number;
-		title: string;
-		price: number;
-		viewCount: number;
-		commentCount: number;
-		tags: string[];
-		thumbnailUrl: string;
-		isShow: boolean;
-		createdAt: string;
-	}[];
-
-	questions: {
-		user: {
-			id: number;
-			nickname: string;
-			userType: string;
-		};
-		courseId: number;
-		questionId: number; // temp
-		title: string;
-		content: string;
-		isAnswered: IsAnsweredType;
-		createdAt: string;
-		updatedAt: string;
-	}[];
+interface CommunityMainProps {
 	mode: "CREATOR" | "LEARNER";
+	courses: MyCoursesItems[];
+	coursePagination: Pagination;
+	currentPage: number;
+	onPageChange: (page: number) => void;
 }
 
-interface PaginationInfo {
+interface Pagination {
 	totalItems: number;
 	totalPages: number;
 	currentPage: number;
 	perPage: number;
 }
 
-function CommunityMain({ courses, questions, mode }: Props) {
+function CommunityMain({
+	mode,
+	courses,
+	coursePagination,
+	onPageChange,
+}: CommunityMainProps) {
 	const router = useRouter();
 	const userType = useUserStore((state) => state.user.userType);
 
-	const [value, setValue] = useState("");
+	const [selectedCourse, setSelectedCourse] = useState<number | null>(
+		courses.length > 0 ? courses[0].courseId : null,
+	);
 
+	const [keyword, setKeyword] = useState("");
+
+	const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+		"WAITING",
+		"ANSWERED",
+		"ACCEPTED",
+	]);
+
+	const toggleStatus = (status: string) => {
+		setSelectedStatuses((prev) =>
+			prev.includes(status)
+				? prev.filter((s) => s !== status)
+				: [...prev, status],
+		);
+	};
+
+	// 검색 관련
 	const onChangeSearch = (e: ChangeEvent<HTMLInputElement>) => {
-		setValue(e.target.value);
+		setKeyword(e.target.value);
 	};
 
 	const hasCourses = courses.length > 0;
 
-	// 강의 있으면 가장 첫번째 강의 선택
-	const [selectedCourse, setSelectedCourse] = useState<number | null>(
-		hasCourses ? courses[0].courseId : null,
-	);
+	const { data: questions } = useGetCommunityCourseQuestionQuery({
+		courseId: selectedCourse!,
+		page: 1,
+		pageSize: 20,
+		keyword,
+		statuses: selectedStatuses,
+	});
 
-	// courses가 바뀔 때 선택 및 페이지 초기화
-	useEffect(() => {
-		if (hasCourses) {
-			setSelectedCourse(courses[0].courseId);
-		} else {
-			setSelectedCourse(null);
-		}
-		// 페이지네이션 초기화도 같이
-		setCurrentPage(1);
-	}, [courses]);
-
-	// TODO: 질문 리스트 추후 필터링 -> API
-	const filteredQuestions = selectedCourse
-		? questions.filter((q) => q.courseId === selectedCourse)
-		: [];
-
-	// 페이지네이션 더미
-	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 5;
-
-	const paginatedCourses = courses.slice(
-		(currentPage - 1) * pageSize,
-		currentPage * pageSize,
-	);
-
-	const pagination: PaginationInfo = {
-		totalItems: courses.length,
-		totalPages: Math.max(1, Math.ceil(courses.length / pageSize)),
-		currentPage,
-		perPage: pageSize,
-	};
+	console.log(selectedStatuses);
+	console.log("질문 목록", questions);
+	const courseQuestions = questions?.items || [];
 
 	return (
 		<div className="flex flex-col gap-4">
 			<div className="flex justify-between items-start">
 				<h3 className="text-2xl font-semibold">커뮤니티</h3>
 				{hasCourses && mode === "LEARNER" && (
-					<button className="bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 text-white py-2 px-4 rounded-4xl transition-all duration-300 cursor-pointer">
+					<button
+						onClick={() => router.push("/learner/community/question")}
+						className="bg-primary-green-400 hover:bg-primary-green-500 active:bg-primary-green-600 text-white py-2 px-4 rounded-4xl transition-all duration-300 cursor-pointer"
+					>
 						질문 남기기
 					</button>
 				)}
 			</div>
 
-			<BaseSearchBar
-				value={value}
-				placeholder="원하는 질문이나 키워드를 입력하세요!"
-				onChange={onChangeSearch}
-			/>
+			<div>
+				<BaseSearchBar
+					value={keyword}
+					placeholder="원하는 질문이나 키워드를 입력하세요!"
+					onChange={onChangeSearch}
+				/>
+			</div>
 
 			<div className="flex gap-10 mt-10">
 				{hasCourses ? (
@@ -130,7 +111,7 @@ function CommunityMain({ courses, questions, mode }: Props) {
 								</span>
 							</div>
 
-							{paginatedCourses.map((course) => (
+							{courses.map((course: MyCoursesItems) => (
 								<div
 									key={course.courseId}
 									onClick={() => setSelectedCourse(course.courseId)}
@@ -147,7 +128,7 @@ function CommunityMain({ courses, questions, mode }: Props) {
 								>
 									<div className="relative w-[200px] h-[120px] rounded-xl overflow-hidden shrink-0">
 										<Image
-											src={course.thumbnailUrl}
+											src={course.thumbnailUrl || ""}
 											alt={course.title}
 											fill
 											className="rounded-xl object-cover"
@@ -170,18 +151,47 @@ function CommunityMain({ courses, questions, mode }: Props) {
 								</div>
 							))}
 
-							{pagination.totalPages > 1 && (
+							{coursePagination.totalPages > 1 && (
 								<Pagination
-									pagination={pagination}
-									onPageChange={(page) => setCurrentPage(page)}
+									pagination={coursePagination}
+									onPageChange={onPageChange}
 								/>
 							)}
 						</div>
 
 						{/* 특정 강의 질문 리스트 */}
 						<div className="pt-10 flex-1">
-							{filteredQuestions.length > 0 ? (
-								filteredQuestions.map((question) => {
+							{/* 필터링 버튼 */}
+							<div className="flex gap-3 mb-6">
+								{["WAITING", "ANSWERED", "ACCEPTED"].map((status) => {
+									const isSelected = selectedStatuses.includes(status);
+									const label =
+										status === "WAITING"
+											? "답변 대기"
+											: status === "ANSWERED"
+												? "답변 완료"
+												: "채택 완료";
+
+									return (
+										<button
+											key={status}
+											onClick={() => toggleStatus(status)}
+											className={`
+          px-4 py-2 rounded-lg border text-sm font-medium transition-colors
+          ${
+						isSelected
+							? "bg-primary-green-200 text-primary-green-600 border-primary-green-300"
+							: "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+					}
+        `}
+										>
+											{label}
+										</button>
+									);
+								})}
+							</div>
+							{courseQuestions && courseQuestions.length > 0 ? (
+								courseQuestions.map((question) => {
 									const handleClick = () => {
 										if (userType === "CREATOR") {
 											router.push(
