@@ -28,7 +28,7 @@ export const useGetProfile = () => {
 /** 닉네임 중복 체크 */
 export const useGetNicknameCheck = (nickname: string) => {
   return useQuery({
-    queryKey: [GET_nickname_check.name],
+    queryKey: [GET_nickname_check.name, nickname],
     queryFn: () => GET_nickname_check(nickname),
     enabled: !!nickname,
     select: ({ data }) => data,
@@ -38,7 +38,7 @@ export const useGetNicknameCheck = (nickname: string) => {
 /** 이메일 중복 체크 */
 export const useGetEmailCheck = (email: string) => {
   return useQuery({
-    queryKey: [GET_email_check.name],
+    queryKey: [GET_email_check.name, email],
     queryFn: () => GET_email_check(email),
     enabled: !!email,
     select: ({ data }) => data,
