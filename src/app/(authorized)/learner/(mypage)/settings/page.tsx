@@ -19,37 +19,55 @@ import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
 import { Switch } from '@/shared/components/ui/switch';
 import {
-  useGetNotificationPreferences,
-  usePutNotificationPreferences,
+  useGetNotificationSettings,
+  usePutNotificationSettings,
 } from '@/shared/services/notification/notification.hook';
-import { NotificationRequest } from '@/shared/services/notification/notification.type';
+import {
+  NOTIFICATION_TYPE,
+  NotificationSettingsRequest,
+  NotificationSettingsResponse,
+} from '@/shared/services/notification/notification.type';
 
 export default function LearnerSettingsPage() {
-  const [notifications, setNotifications] = useState<NotificationRequest>({
-    userMentionNotificationEnabled: false,
-    userMentionEmailEnabled: false,
-    newQuestionNotificationEnabled: false,
-    newQuestionEmailEnabled: false,
-    newAnswerNotificationEnabled: false,
-    newAnswerEmailEnabled: false,
-    answerAcceptedNotificationEnabled: false,
-    answerAcceptedEmailEnabled: false,
-    requestedCourseRegistrationNotificationEnabled: false,
-    requestedCourseRegistrationEmailEnabled: false,
+  const [notifications, setNotifications] = useState<NotificationSettingsResponse['settings']>({
+    [NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+    [NOTIFICATION_TYPE.NEW_COURSE]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+    [NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+    [NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+    [NOTIFICATION_TYPE.USER_MENTIONED]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
   });
 
-  const { data: notificationPreferences } = useGetNotificationPreferences();
-  const { mutateAsync: updateNotificationPreferences } = usePutNotificationPreferences();
-  const handleNotificationChange = async (key: keyof NotificationRequest, value: boolean) => {
-    setNotifications((prev) => ({ ...prev, [key]: value }));
-    await updateNotificationPreferences({ ...notifications, [key]: value });
+  const { data: notificationSettings } = useGetNotificationSettings();
+  const { mutateAsync: updateNotificationSettings } = usePutNotificationSettings();
+
+  const handleNotificationChange = async (data: NotificationSettingsRequest) => {
+    setNotifications((prev) => ({
+      ...prev,
+      [data.notificationType]: { inAppEnabled: data.inAppEnabled, emailEnabled: data.emailEnabled },
+    }));
+    await updateNotificationSettings(data);
   };
 
   useEffect(() => {
-    if (notificationPreferences) {
-      setNotifications(notificationPreferences);
+    if (notificationSettings?.settings) {
+      setNotifications(notificationSettings.settings);
     }
-  }, [notificationPreferences]);
+  }, [notificationSettings]);
 
   return (
     <div className="space-y-6">
@@ -81,15 +99,27 @@ export default function LearnerSettingsPage() {
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="mention-web-notification"
-                      checked={notifications.userMentionNotificationEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('userMentionNotificationEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.USER_MENTIONED].inAppEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.USER_MENTIONED,
+                          inAppEnabled: value,
+                          emailEnabled: notifications[NOTIFICATION_TYPE.USER_MENTIONED].emailEnabled,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="mention-email-notification"
-                      checked={notifications.userMentionEmailEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('userMentionEmailEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.USER_MENTIONED].emailEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.USER_MENTIONED,
+                          inAppEnabled: notifications[NOTIFICATION_TYPE.USER_MENTIONED].inAppEnabled,
+                          emailEnabled: value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -107,15 +137,27 @@ export default function LearnerSettingsPage() {
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="new-question-web-notification"
-                      checked={notifications.newQuestionNotificationEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('newQuestionNotificationEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].inAppEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION,
+                          inAppEnabled: value,
+                          emailEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].emailEnabled,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="new-question-email-notification"
-                      checked={notifications.newQuestionEmailEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('newQuestionEmailEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].emailEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION,
+                          inAppEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].inAppEnabled,
+                          emailEnabled: value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -133,15 +175,27 @@ export default function LearnerSettingsPage() {
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="new-answer-web-notification"
-                      checked={notifications.newAnswerNotificationEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('newAnswerNotificationEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].inAppEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER,
+                          inAppEnabled: value,
+                          emailEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].emailEnabled,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="new-answer-email-notification"
-                      checked={notifications.newAnswerEmailEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('newAnswerEmailEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].emailEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER,
+                          inAppEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].inAppEnabled,
+                          emailEnabled: value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -159,15 +213,27 @@ export default function LearnerSettingsPage() {
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="answer-accepted-web-notification"
-                      checked={notifications.answerAcceptedNotificationEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('answerAcceptedNotificationEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].inAppEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT,
+                          inAppEnabled: value,
+                          emailEnabled: notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].emailEnabled,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex w-[100px] items-center justify-center gap-2">
                     <Switch
                       id="answer-accepted-email-notification"
-                      checked={notifications.answerAcceptedEmailEnabled}
-                      onCheckedChange={(value) => handleNotificationChange('answerAcceptedEmailEnabled', value)}
+                      checked={notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].emailEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT,
+                          inAppEnabled: notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].inAppEnabled,
+                          emailEnabled: value,
+                        })
+                      }
                     />
                   </div>
                 </div>
