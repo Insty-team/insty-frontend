@@ -33,6 +33,12 @@ export const DELETE_course_by_id = async (courseId: string): Promise<ApiResponse
   return response.data;
 };
 
+/** 강좌의 visible 상태 변경 */
+export const PUT_course_visible_by_id = async (courseId: string, isShow: boolean): Promise<ApiResponse<boolean>> => {
+  const response = await api.put(`/api/v1/courses/${courseId}/visibility?isShow=${isShow}`);
+  return response.data;
+};
+
 /** 강의 목록조회 */
 // TODO: query params 추가
 export const GET_courses = async (): Promise<PaginatedResponse<CoursesResponse>> => {
@@ -57,8 +63,15 @@ export const POST_course_progress_by_id = async (courseId: string): Promise<ApiR
 export const GET_courses_my = async (
   page: number = 1,
   pageSize: number = 10,
+  isShow?: boolean,
 ): Promise<PaginatedResponse<CourseMyResponse>> => {
-  const response = await api.get(`/api/v1/courses/my?page=${page}&pageSize=${pageSize}`);
+  const response = await api.get(`/api/v1/courses/my`, {
+    params: {
+      page,
+      pageSize,
+      isShow,
+    },
+  });
   return response.data;
 };
 

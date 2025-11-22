@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { Separator } from '@/shared/components/ui/separator';
-import { formatViewCount } from '@/shared/lib/utils';
+import { cn, formatViewCount } from '@/shared/lib/utils';
 import { CourseMyResponse } from '@/shared/services/course/course.type';
 import dayjs from 'dayjs';
 import { BarChart3, Calendar, Edit, Eye, EyeOff, MessageCircle, MoreVertical, Play, Trash2 } from 'lucide-react';
@@ -46,8 +46,11 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
             )}
             <div className="absolute top-2 right-2">
               <Badge
-                variant={course.isShow ? 'default' : 'secondary'}
-                className="bg-primary-green-100 text-primary-green-800 text-xs"
+                variant="default"
+                className={cn(
+                  'text-xs',
+                  course.isShow ? 'bg-primary-green-100 text-primary-green-800' : 'bg-orange-100 text-orange-800',
+                )}
               >
                 {course.isShow ? '공개' : '비공개'}
               </Badge>

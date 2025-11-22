@@ -8,6 +8,7 @@ import {
   POST_course,
   POST_course_progress_by_id,
   PUT_course_by_id,
+  PUT_course_visible_by_id,
 } from './course.service';
 import { CourseRequest } from './course.type';
 
@@ -39,6 +40,14 @@ export const useDeleteCourseById = (courseId: string) => {
   });
 };
 
+/** 강좌의 visible 상태 변경 */
+export const usePutCourseVisibleById = (courseId: string) => {
+  return useMutation({
+    mutationKey: [PUT_course_visible_by_id.name, courseId],
+    mutationFn: (isShow: boolean) => PUT_course_visible_by_id(courseId, isShow),
+  });
+};
+
 /** 강의 목록조회 */
 export const useGetCourses = () => {
   return useQuery({
@@ -65,10 +74,10 @@ export const usePostCourseProgressById = (courseId: string) => {
 };
 
 /** 내가 업로드한 강의 목록조회 */
-export const useGetCoursesMy = (page: number = 1, pageSize: number = 10) => {
+export const useGetCoursesMy = (page: number = 1, pageSize: number = 10, isShow?: boolean) => {
   return useQuery({
-    queryKey: [GET_courses_my.name, page, pageSize],
-    queryFn: () => GET_courses_my(page, pageSize),
+    queryKey: [GET_courses_my.name, page, pageSize, isShow],
+    queryFn: () => GET_courses_my(page, pageSize, isShow),
     select: ({ data }) => data,
   });
 };

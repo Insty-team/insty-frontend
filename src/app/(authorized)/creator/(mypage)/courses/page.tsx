@@ -6,7 +6,7 @@ import { CourseStats } from './_components/CourseStats';
 import { DeleteCourseDialog } from './_components/DeleteCourseDialog';
 import { ToggleVisibilityDialog } from './_components/ToggleVisibilityDialog';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
@@ -23,7 +23,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { useGetCoursesMy } from '@/shared/services/course/course.hook';
 import { CourseMyResponse } from '@/shared/services/course/course.type';
-import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
+import {
+  type ColumnDef,
+  type ColumnFiltersState,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import { Plus, Video } from 'lucide-react';
 
 export default function CreatorCoursesPage() {
@@ -32,6 +39,7 @@ export default function CreatorCoursesPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(3);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   // 다이얼로그 상태
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -57,7 +65,16 @@ export default function CreatorCoursesPage() {
   });
 
   // API에서 강의 데이터 가져오기 (서버 사이드 pagination)
-  const { data: coursesData, isLoading, error } = useGetCoursesMy(pageIndex + 1, pageSize);
+  const {
+    data: coursesData,
+    isLoading,
+    error,
+    refetch,
+  } = useGetCoursesMy(
+    pageIndex + 1,
+    pageSize,
+    statusFilter === 'published' ? true : statusFilter === 'draft' ? false : undefined,
+  );
   const courses = coursesData?.items || [];
   const pagination = coursesData?.pagination;
 
@@ -105,12 +122,12 @@ export default function CreatorCoursesPage() {
       );
     }
 
-    // 상태 필터
-    if (statusFilter === 'published') {
-      filtered = filtered.filter((course: CourseMyResponse) => course.isShow);
-    } else if (statusFilter === 'draft') {
-      filtered = filtered.filter((course: CourseMyResponse) => !course.isShow);
-    }
+    // // 상태 필터
+    // if (statusFilter === 'published') {
+    //   filtered = filtered.filter((course: CourseMyResponse) => course.isShow);
+    // } else if (statusFilter === 'draft') {
+    //   filtered = filtered.filter((course: CourseMyResponse) => !course.isShow);
+    // }
 
     // 정렬
     filtered.sort((a: CourseMyResponse, b: CourseMyResponse) => {
@@ -138,6 +155,7 @@ export default function CreatorCoursesPage() {
     data: filteredAndSortedCourses,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     manualPagination: true,
     rowCount: pagination?.totalItems ?? 0,
@@ -147,6 +165,7 @@ export default function CreatorCoursesPage() {
         pageIndex,
         pageSize,
       },
+      columnFilters,
     },
     onPaginationChange: (updater) => {
       if (typeof updater === 'function') {
@@ -155,11 +174,45 @@ export default function CreatorCoursesPage() {
         setPageSize(newPagination.pageSize);
       }
     },
+    onColumnFiltersChange: setColumnFilters,
   });
+
+  useEffect(() => {
+    setColumnFilters((prev) => {
+      const filtersWithoutIsShow = prev.filter((filter) => filter.id !== 'isShow');
+
+      if (statusFilter === 'published') {
+        return [...filtersWithoutIsShow, { id: 'isShow', value: true }];
+      }
+
+      if (statusFilter === 'draft') {
+        return [...filtersWithoutIsShow, { id: 'isShow', value: false }];
+      }
+
+      return filtersWithoutIsShow;
+    });
+  }, [statusFilter]);
 
   // 공개/비공개 강의 분리
   const publishedCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => course.isShow);
   const draftCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => !course.isShow);
+  const currentCourses = table.getRowModel().rows.map((row) => row.original);
+
+  const getCoursesByTab = (tab: StatusFilter) => {
+    if (tab === statusFilter) {
+      return currentCourses;
+    }
+
+    if (tab === 'published') {
+      return publishedCourses;
+    }
+
+    if (tab === 'draft') {
+      return draftCourses;
+    }
+
+    return filteredAndSortedCourses;
+  };
 
   // 이벤트 핸들러들
   const handleEdit = (courseId: string) => {
@@ -201,8 +254,7 @@ export default function CreatorCoursesPage() {
   };
 
   const handleToggleSuccess = () => {
-    // TODO: 강의 목록 새로고침 또는 낙관적 업데이트
-    console.log('공개 상태 변경 성공');
+    refetch();
   };
 
   if (isLoading) {
@@ -294,15 +346,23 @@ export default function CreatorCoursesPage() {
           )}
         </div>
       ) : (
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs
+          value={statusFilter}
+          onValueChange={(value) => {
+            const nextValue = value as StatusFilter;
+            setStatusFilter(nextValue);
+            setPageIndex(0);
+          }}
+          className="w-full"
+        >
           <TabsList>
-            <TabsTrigger value="all">전체 ({table.getRowCount()})</TabsTrigger>
-            <TabsTrigger value="published">공개 ({table.getRowCount()})</TabsTrigger>
+            <TabsTrigger value="all">전체 ({filteredAndSortedCourses.length})</TabsTrigger>
+            <TabsTrigger value="published">공개 ({publishedCourses.length})</TabsTrigger>
             <TabsTrigger value="draft">비공개 ({draftCourses.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-6 space-y-4">
-            {filteredAndSortedCourses.map((course: CourseMyResponse) => (
+            {getCoursesByTab('all').map((course: CourseMyResponse) => (
               <CourseCard
                 key={course.courseId}
                 course={course}
@@ -315,7 +375,7 @@ export default function CreatorCoursesPage() {
           </TabsContent>
 
           <TabsContent value="published" className="mt-6 space-y-4">
-            {publishedCourses.map((course: CourseMyResponse) => (
+            {getCoursesByTab('published').map((course: CourseMyResponse) => (
               <CourseCard
                 key={course.courseId}
                 course={course}
@@ -328,7 +388,7 @@ export default function CreatorCoursesPage() {
           </TabsContent>
 
           <TabsContent value="draft" className="mt-6 space-y-4">
-            {draftCourses.map((course: CourseMyResponse) => (
+            {getCoursesByTab('draft').map((course: CourseMyResponse) => (
               <CourseCard
                 key={course.courseId}
                 course={course}

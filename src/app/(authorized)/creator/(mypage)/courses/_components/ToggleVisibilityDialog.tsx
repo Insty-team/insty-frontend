@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/shared/components/ui/alert-dialog';
 import { Button } from '@/shared/components/ui/button';
+import { usePutCourseVisibleById } from '@/shared/services/course/course.hook';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 interface ToggleVisibilityDialogProps {
@@ -34,20 +35,18 @@ export function ToggleVisibilityDialog({
 }: ToggleVisibilityDialogProps) {
   const [isToggling, setIsToggling] = useState(false);
 
+  const { mutateAsync: putCourseVisible } = usePutCourseVisibleById(courseId);
+
   const handleToggle = async () => {
     try {
       setIsToggling(true);
-      // TODO: API 호출로 공개/비공개 상태 변경
-      // await toggleCourseVisibility(courseId, !currentVisibility);
 
-      // 임시로 성공 처리
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await putCourseVisible(!currentVisibility);
 
       onSuccess?.();
       onClose();
     } catch (error) {
       console.error('공개 상태 변경 실패:', error);
-      // TODO: 에러 토스트 표시
     } finally {
       setIsToggling(false);
     }
@@ -71,11 +70,11 @@ export function ToggleVisibilityDialog({
             )}
             강의 {actionText} 전환
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <p>
+          <AlertDialogDescription className="flex flex-col gap-2">
+            <span>
               <strong>"{courseTitle}"</strong> 강의를 {actionText}로 전환하시겠습니까?
-            </p>
-            <p className="text-muted-foreground text-sm">{actionDescription}</p>
+            </span>
+            <span className="text-muted-foreground text-sm">{actionDescription}</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
