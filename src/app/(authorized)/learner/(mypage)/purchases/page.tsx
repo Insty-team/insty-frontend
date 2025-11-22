@@ -3,18 +3,11 @@
 import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
+import { TanstackTablePagination } from '@/shared/components/TanstackTablePagination';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/shared/components/ui/pagination';
 import { formatViewCount } from '@/shared/lib/utils';
 import { useGetCoursesProgressByMe } from '@/shared/services/course/course.hook';
 import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
@@ -32,7 +25,8 @@ type PurchaseRow = {
 
 export default function LearnerPurchasesPage() {
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(3);
+  const router = useRouter();
 
   const {
     data: purchasesResponse,
@@ -147,16 +141,6 @@ export default function LearnerPurchasesPage() {
   });
 
   const totalPages = pagination?.totalPages ?? 0;
-  const currentPage = pagination?.currentPage ?? pageIndex + 1;
-
-  const renderThumbnailStyle = (thumbnail: string) =>
-    thumbnail
-      ? {
-          backgroundImage: `url(${thumbnail})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }
-      : {};
 
   const showLoadingState = isLoading || (isFetching && purchases.length === 0);
 
@@ -239,7 +223,9 @@ export default function LearnerPurchasesPage() {
                       </div>
                     </div>
                     <div className="mt-2 flex gap-2">
-                      <Button size="sm">강의 보기</Button>
+                      <Button size="sm" onClick={() => router.push(`/course/${purchase.id}`)}>
+                        강의 보기
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -248,90 +234,7 @@ export default function LearnerPurchasesPage() {
           ))}
         </div>
       )}
-
-      {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => {
-                  if (table.getCanPreviousPage()) {
-                    table.previousPage();
-                  }
-                }}
-                className={!table.getCanPreviousPage() ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-
-            {(() => {
-              const pages: (number | 'ellipsis')[] = [];
-
-              if (totalPages <= 7) {
-                for (let page = 1; page <= totalPages; page++) {
-                  pages.push(page);
-                }
-              } else {
-                pages.push(1);
-
-                if (currentPage <= 3) {
-                  for (let page = 2; page <= 4; page++) {
-                    pages.push(page);
-                  }
-                  pages.push('ellipsis');
-                  pages.push(totalPages);
-                } else if (currentPage >= totalPages - 2) {
-                  pages.push('ellipsis');
-                  for (let page = totalPages - 3; page <= totalPages; page++) {
-                    pages.push(page);
-                  }
-                } else {
-                  pages.push('ellipsis');
-                  for (let page = currentPage - 1; page <= currentPage + 1; page++) {
-                    pages.push(page);
-                  }
-                  pages.push('ellipsis');
-                  pages.push(totalPages);
-                }
-              }
-
-              return pages.map((page, index) => {
-                if (page === 'ellipsis') {
-                  return (
-                    <PaginationItem key={`ellipsis-${index}`}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-
-                return (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      onClick={() => {
-                        table.setPageIndex(page - 1);
-                      }}
-                      isActive={page === currentPage}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              });
-            })()}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => {
-                  if (table.getCanNextPage()) {
-                    table.nextPage();
-                  }
-                }}
-                className={!table.getCanNextPage() ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+      {totalPages > 1 && <TanstackTablePagination table={table} />}
     </div>
   );
 }

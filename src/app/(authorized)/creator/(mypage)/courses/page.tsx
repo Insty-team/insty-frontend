@@ -10,16 +10,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
+import { TanstackTablePagination } from '@/shared/components/TanstackTablePagination';
 import { Button } from '@/shared/components/ui/button';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/shared/components/ui/pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { useGetCoursesMy } from '@/shared/services/course/course.hook';
 import { CourseMyResponse } from '@/shared/services/course/course.type';
@@ -401,98 +393,7 @@ export default function CreatorCoursesPage() {
           </TabsContent>
         </Tabs>
       )}
-
-      {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => {
-                  if (table.getCanPreviousPage()) {
-                    table.previousPage();
-                  }
-                }}
-                className={!table.getCanPreviousPage() ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-
-            {(() => {
-              const currentPage = pagination.currentPage;
-              const totalPages = pagination.totalPages;
-              const pages: (number | 'ellipsis')[] = [];
-
-              if (totalPages <= 7) {
-                // 총 페이지가 7개 이하면 모두 표시
-                for (let i = 1; i <= totalPages; i++) {
-                  pages.push(i);
-                }
-              } else {
-                // 첫 페이지
-                pages.push(1);
-
-                if (currentPage <= 3) {
-                  // 현재 페이지가 앞쪽에 있으면
-                  for (let i = 2; i <= 4; i++) {
-                    pages.push(i);
-                  }
-                  pages.push('ellipsis');
-                  pages.push(totalPages);
-                } else if (currentPage >= totalPages - 2) {
-                  // 현재 페이지가 뒤쪽에 있으면
-                  pages.push('ellipsis');
-                  for (let i = totalPages - 3; i <= totalPages; i++) {
-                    pages.push(i);
-                  }
-                } else {
-                  // 현재 페이지가 중간에 있으면
-                  pages.push('ellipsis');
-                  for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-                    pages.push(i);
-                  }
-                  pages.push('ellipsis');
-                  pages.push(totalPages);
-                }
-              }
-
-              return pages.map((page, index) => {
-                if (page === 'ellipsis') {
-                  return (
-                    <PaginationItem key={`ellipsis-${index}`}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-
-                return (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      onClick={() => {
-                        table.setPageIndex(page - 1);
-                      }}
-                      isActive={page === currentPage}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              });
-            })()}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => {
-                  if (table.getCanNextPage()) {
-                    table.nextPage();
-                  }
-                }}
-                className={!table.getCanNextPage() ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+      {pagination && pagination.totalPages > 1 && <TanstackTablePagination table={table} />}
 
       {/* 다이얼로그들 */}
       <DeleteCourseDialog

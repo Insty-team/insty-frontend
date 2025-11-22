@@ -27,7 +27,7 @@ export default function ProfileEditPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormData>({
-    defaultValues: {
+    values: {
       userUpdateReq: {
         nickname: profile?.nickname || '',
         email: profile?.email || '',
@@ -37,18 +37,6 @@ export default function ProfileEditPage() {
       },
       profileImage: null,
     },
-    values: profile
-      ? {
-          userUpdateReq: {
-            nickname: profile.nickname,
-            email: profile.email,
-            introduce: profile.introduce,
-            currentPassword: '',
-            newPassword: '',
-          },
-          profileImage: null,
-        }
-      : undefined,
   });
 
   const onSubmit = (data: ProfileFormData) => {
