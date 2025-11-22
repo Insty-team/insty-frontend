@@ -2,6 +2,7 @@ import {
   DELETE_course_by_id,
   GET_course_by_id,
   GET_course_by_id_for_creator,
+  GET_course_progress_exists_by_id,
   GET_courses,
   GET_courses_my,
   GET_courses_Progress_by_me,
@@ -12,7 +13,7 @@ import {
 } from './course.service';
 import { CourseRequest } from './course.type';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 /** 강의 상세조회 */
 export const useGetCourseById = (courseId: string) => {
@@ -67,9 +68,14 @@ export const usePostCourse = () => {
 
 /** 강좌 수강하기 */
 export const usePostCourseProgressById = (courseId: string) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationKey: [POST_course_progress_by_id.name, courseId],
     mutationFn: () => POST_course_progress_by_id(courseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_progress_exists_by_id.name, courseId] });
+    },
   });
 };
 
@@ -97,6 +103,16 @@ export const useGetCoursesProgressByMe = (page: number = 1, pageSize: number = 1
   return useQuery({
     queryKey: [GET_courses_Progress_by_me.name, page, pageSize],
     queryFn: () => GET_courses_Progress_by_me(page, pageSize),
+    select: ({ data }) => data,
+  });
+};
+
+/** 강의 수강 여부 조회 */
+export const useGetCourseProgressExistsById = (courseId: string) => {
+  return useQuery({
+    queryKey: [GET_course_progress_exists_by_id.name, courseId],
+    queryFn: () => GET_course_progress_exists_by_id(courseId),
+    enabled: !!courseId,
     select: ({ data }) => data,
   });
 };

@@ -55,7 +55,7 @@ export const POST_course = async (data: CourseRequest): Promise<ApiResponse<Cour
 
 /** 강좌 수강하기 */
 export const POST_course_progress_by_id = async (courseId: string): Promise<ApiResponse<CourseProgressResponse>> => {
-  const response = await api.post(`/api/v1/courses/${courseId}/enrollment`);
+  const response = await api.post(`/api/v1/courses/courseProgress/${courseId}`);
   return response.data;
 };
 
@@ -92,5 +92,11 @@ export const GET_courses_Progress_by_me = async (
       pageSize,
     },
   });
+  return response.data;
+};
+
+/** 강의 수강 여부 조회 */
+export const GET_course_progress_exists_by_id = async (courseId: string): Promise<ApiResponse<boolean>> => {
+  const response = await api.get(`/api/v1/courses/courseProgress/${courseId}/exists`);
   return response.data;
 };

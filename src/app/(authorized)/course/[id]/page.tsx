@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -12,22 +12,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Separator } from '@/shared/components/ui/separator';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { cn } from '@/shared/lib/utils';
-import { useGetCourseById, usePostCourseProgressById } from '@/shared/services/course/course.hook';
-import dayjs from 'dayjs';
 import {
-  Calendar,
-  Check,
-  CheckCircle2,
-  CreditCard,
-  Download,
-  FileText,
-  Hash,
-  PlayCircle,
-  Sparkles,
-  Users,
-  X,
-  XCircle,
-} from 'lucide-react';
+  useGetCourseById,
+  useGetCourseProgressExistsById,
+  usePostCourseProgressById,
+} from '@/shared/services/course/course.hook';
+import dayjs from 'dayjs';
+import { Check, Download, FileText, Hash, PlayCircle, Users, X } from 'lucide-react';
 
 function formatFileSize(bytes: number) {
   if (!bytes) return '0 B';
@@ -49,9 +40,8 @@ export default function CoursePage() {
 
   const { data: course, isLoading, isError } = useGetCourseById(courseId);
   const { mutate: enrollCourse, isPending: isEnrolling } = usePostCourseProgressById(courseId);
-
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  const [enrollError, setEnrollError] = useState<string | null>(null);
+  const { data: isCourseProgressExists, isError: isCourseProgressExistsError } =
+    useGetCourseProgressExistsById(courseId);
 
   const installEnvChecklist = useMemo(() => {
     if (!course?.installEnvChecklist) return [];
@@ -67,15 +57,7 @@ export default function CoursePage() {
 
   const handleEnroll = () => {
     if (!course) return;
-    setEnrollError(null);
-    enrollCourse(undefined, {
-      onSuccess: () => {
-        setIsEnrolled(true);
-      },
-      onError: () => {
-        setEnrollError('수강 신청에 실패했습니다. 잠시 후 다시 시도해주세요.');
-      },
-    });
+    enrollCourse();
   };
 
   if (isLoading) {
@@ -104,9 +86,53 @@ export default function CoursePage() {
 
   return (
     <div className="container mx-auto flex flex-col gap-8 py-8">
-      <div className="grid gap-12 lg:grid-cols-[7fr_3fr]">
+      {/*  */}
+      <div className="flex items-end justify-between gap-5">
+        <div>
+          <div className="mb-6">
+            <h1 className="text-xl leading-tight font-bold">{course.title}</h1>
+            {course.description && (
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{course.description}</p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-12">
+            <div>
+              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">등록일</p>
+              <p className="text-base font-semibold">{dayjs(course.createdAt).format('YYYY.MM.DD')}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">가격</p>
+              <p className="text-primary text-base font-semibold">
+                {Intl.NumberFormat('ko-KR').format(course.price)}원
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Button size="lg" onClick={handleEnroll} disabled={isCourseProgressExists || isEnrolling} className="gap-2">
+            {isEnrolling ? <Spinner className="size-5" /> : <PlayCircle className="size-5" />}
+            {isCourseProgressExists ? '수강 중인 강의입니다' : '지금 수강 시작하기'}
+          </Button>
+          {practiceFiles.length > 0 && (
+            <Button size="lg" variant="outline" className="gap-2" asChild>
+              <a href="#practice-files">실습 자료 보기</a>
+            </Button>
+          )}
+        </div>
+
+        {isCourseProgressExistsError && (
+          <div className="bg-destructive/10 text-destructive mt-4 rounded-lg px-4 py-3 text-sm">
+            수강 신청에 실패했습니다. 잠시 후 다시 시도해주세요.
+          </div>
+        )}
+      </div>
+      {/*  */}
+
+      <div className="grid items-start gap-12 lg:grid-cols-[7fr_3fr]">
         {/* 좌측: 썸네일 */}
-        <div className="bg-muted relative h-full min-h-[500px] w-full overflow-hidden rounded-lg border">
+        <div className="bg-muted relative min-h-[500px] w-full overflow-hidden rounded-lg border">
           {course.thumbnailUrl ? (
             <Image src={course.thumbnailUrl} alt={course.title} fill priority className="object-contain" />
           ) : (
@@ -118,49 +144,6 @@ export default function CoursePage() {
 
         {/* 우측: 강의 정보들 */}
         <div className="flex flex-col gap-6">
-          {/* 1. 강의 정보 */}
-          <Card>
-            <CardContent>
-              <div className="mb-6">
-                <h1 className="text-3xl leading-tight font-bold">{course.title}</h1>
-                {course.description && (
-                  <p className="text-muted-foreground mt-4 leading-relaxed">{course.description}</p>
-                )}
-              </div>
-
-              <div className="mb-6 grid gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">등록일</p>
-                  <p className="text-base font-semibold">{dayjs(course.createdAt).format('YYYY.MM.DD')}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">가격</p>
-                  <p className="text-primary text-base font-semibold">
-                    {Intl.NumberFormat('ko-KR').format(course.price)}원
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <Button size="lg" onClick={handleEnroll} disabled={isEnrolled || isEnrolling} className="gap-2">
-                  {isEnrolling ? <Spinner className="size-5" /> : <PlayCircle className="size-5" />}
-                  {isEnrolled ? '수강 중인 강의입니다' : '지금 수강 시작하기'}
-                </Button>
-                {practiceFiles.length > 0 && (
-                  <Button size="lg" variant="outline" className="gap-2" asChild>
-                    <a href="#practice-files">실습 자료 보기</a>
-                  </Button>
-                )}
-              </div>
-
-              {enrollError && (
-                <div className="bg-destructive/10 text-destructive mt-4 rounded-lg px-4 py-3 text-sm">
-                  {enrollError}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* 2. 설치 환경 요구사항 */}
           <Card>
             <CardHeader>
@@ -234,7 +217,7 @@ export default function CoursePage() {
                   keyPoints.map((content, index) => (
                     <li key={index} className="text-primary-green-800 flex items-center gap-2">
                       <span className="bg-primary-green-800 rounded-full p-1"></span>
-                      <span className="font-medium">{content}</span>
+                      <span className="text-sm font-medium">{content}</span>
                     </li>
                   ))
                 ) : (
