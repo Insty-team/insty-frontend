@@ -26,6 +26,7 @@ export const CREATOR_MENU_LIST = [
 	{ id: 2, title: "강의 관리", path: "/creator/courses" },
 	{ id: 3, title: "마이페이지", path: "/creator/mypage" },
 	{ id: 4, title: "커뮤니티", path: "/creator/community" },
+	{ id: 5, title: "강의 요청 리스트", path: "/creator/learner-request" },
 ];
 
 export const CREATOR_MYPAGE_MENU_LIST = [
@@ -169,5 +170,5 @@ export const ANSWER_STATUS_OPTIONS = [
 	{ label: "답변 완료", value: "ANSWERED" },
 	{ label: "채택 완료", value: "ACCEPTED" },
 ];
-export const DEV_MAX_VIDEO_DURATION = 2 * 60;
+export const DEV_MAX_VIDEO_DURATION = 15 * 60;
 export const PROD_MAX_VIDEO_DURATION = 15 * 60;
