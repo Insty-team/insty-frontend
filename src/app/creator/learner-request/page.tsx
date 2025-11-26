@@ -14,6 +14,7 @@ import {
 	getCheckCourseRequestAvailibility,
 	getCreatorRecommendationForm,
 	getLastCreatorForm,
+	patchRecommendationStatus,
 	postCourseRequestWithBase,
 	postCourseRequestWithoutBase,
 } from "@/app/api/ai/community";
@@ -75,18 +76,10 @@ function LearnerRequest() {
 	};
 
 	// 업로드 페이지로 이동하는 함수
-	const handleGoToUpload = () => {
+	const handleGoToUpload = async () => {
 		if (!selectedRequest) return;
 
-		// 선택된 요청 정보를 localStorage에 저장
-		const requestData = {
-			request: selectedRequest,
-			timestamp: Date.now(), // 저장 시간 추가
-		};
-		localStorage.setItem("selectedLearnerRequest", JSON.stringify(requestData));
-
-		// 업로드 페이지로 이동
-		router.push("/creator/community/learner-request/upload");
+		await checkAvailibility(selectedRequest.request_id);
 	};
 
 	// API 데이터를 프론트엔드 형태로 변환하는 함수
@@ -127,9 +120,56 @@ function LearnerRequest() {
 		});
 	};
 
+	const refreshRequest = async () => {
+		await fetchRequestList();
+	};
+
 	const checkAvailibility = async (requestId: number) => {
-		const res = await getCheckCourseRequestAvailibility(requestId);
-		console.log(res);
+		try {
+			const res = await getCheckCourseRequestAvailibility(requestId);
+			console.log(res);
+			//업로드 가능시, 상태 업데이트
+			if (
+				(res.success && res.data.status === "IGNORED") ||
+				res.data.status === "DECLINED"
+			) {
+				const requestData = {
+					request: selectedRequest,
+					timestamp: Date.now(), // 저장 시간 추가
+				};
+
+				localStorage.setItem(
+					"selectedLearnerRequest",
+					JSON.stringify(requestData),
+				);
+
+				await patchRecommendationStatus(requestId, "ACCEPTED");
+				console.log("상태 업데이트 완료!!", requestId, "ACCEPTED");
+				router.push("/creator/learner-request/upload");
+			} else {
+				Swal.fire({
+					title: "업로드 불가",
+					text: "이미 누군가가 해당 요청에 대한 강의를 작성중입니다.",
+					icon: "error",
+				}).then(async () => {
+					setIsModalOpen(false);
+					setSelectedRequest(null);
+					setChecklist({
+						scriptPrepared: false,
+						videoPrepared: false,
+						materialsReady: false,
+					});
+					refreshRequest();
+				});
+			}
+		} catch (error) {
+			console.error(error);
+			Swal.fire({
+				title: "추천 가능 여부 확인 오류!",
+				text: "추천 가능 여부를 확인하는데 실패했습니다. 다시시도해주세요.",
+				icon: "error",
+			});
+		}
 	};
 
 	// 폼 제출 핸들러
@@ -618,7 +658,6 @@ function LearnerRequest() {
 							onClick={() => {
 								setSelectedRequest(request);
 								setIsModalOpen(true);
-								checkAvailibility(request.request_id);
 							}}
 						>
 							<div className="flex justify-between items-start mb-4">

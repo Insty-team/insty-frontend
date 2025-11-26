@@ -70,7 +70,11 @@ function CourseUpload() {
 				/>
 			)}
 			{step === "preview" && data && (
-				<PreviewUploadInfomation data={data} onEdit={handleEdit} />
+				<PreviewUploadInfomation
+					data={data}
+					onEdit={handleEdit}
+					mode="upload"
+				/>
 			)}
 			{step === "edit" && data && (
 				<CourseUploadForm
