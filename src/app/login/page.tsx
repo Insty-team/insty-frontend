@@ -53,18 +53,6 @@ export default function Login() {
   const authStore = useAuthStore((state) => state);
   const userStore = useUserStore((state) => state);
   const onSubmit = async (data: LoginRequest) => {
-    if (process.env.NEXT_PUBLIC_IS_LOCAL === 'true') {
-      if (userType === UserTypeEnum.CREATOR) {
-        data.email = 'front@example.com';
-        data.password = 'asdf1234!';
-      } else if (userType === UserTypeEnum.LEARNER) {
-        data.email = 'frontLearn@example.com';
-        data.password = 'asdf1234!';
-      } else {
-        throw new Error('잘못된 접근입니다.');
-      }
-    }
-
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     await postLogin(data)

@@ -379,7 +379,6 @@ storage: createJSONStorage(() => cookieStorage);
 ### **2. 환경변수 분리**
 
 - `NEXT_PUBLIC_BACK_BASE_URL` - API 기본 URL
-- `NEXT_PUBLIC_IS_LOCAL` - 로컬 개발 모드
 
 ### **3. API Proxy 패턴**
 
