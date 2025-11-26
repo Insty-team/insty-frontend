@@ -1,0 +1,38 @@
+---
+alwaysApply: true
+description: 'Zustand 상태·Axios API·에러·성능 최적화 패턴'
+---
+
+# State & API Pattern Cursor Rule
+
+## 상태 관리 패턴 (Zustand)
+
+- `shared/stores`에 `auth`, `user`, `ui` 등 도메인별 store를 분리해 선언합니다.
+- 토큰은 `persist` + 쿠키 스토리지(`createJSONStorage(() => cookieStorage)`)로 유지하고, 사용자 정보는 메모리에만 저장합니다.
+- `useAuthStore` 등의 selector 훅으로 토큰/유저 상태에 접근하고, `set` 액션을 `setState`로 묶어 명시적 API 제공.
+- 로딩/에러 UI는 `shared/stores/ui`에서 글로벌 상태로 관리하고 React Query `onMutate/onSettled`에서 연동합니다.
+
+## API 통신 패턴 (Axios)
+
+- `shared/services/api.ts`에서 Axios 인스턴스를 만들고 기본 `baseURL`·`timeout`·`headers`·`withCredentials` 설정을 고정합니다.
+- `shared/services/{domain}` 아래에 `domain.service.ts`를 두고 HTTP 메서드 접두사 함수(`POST_login`)에서 해당 인스턴스를 직접 호출합니다.
+- React Query 훅은 `use{HttpMethod}{Domain}{Action}`으로 `mutationFn/queryFn`에 service 함수를 연결하며, `shared/services/{domain}/index.ts`에서 export 정리합니다.
+
+## 에러 핸들링
+
+- 모든 API 호출은 `try/catch`로 감싸고 실패 시 `toast`/`notification` 또는 `FormMessage`로 메시지 노출합니다.
+- Axios 에러는 `isAxiosError`로 확인한 뒤 `error.response?.data`/`error.code` 기반 분기하고, 서버 `code` 값을 `ApiResponse`로 파싱해 정책 결정합니다.
+- 401·403은 response interceptor에서 리프레시 토큰으로 재인증하거나 로그아웃을 트리거하며, queue 패턴으로 동시 요청을 순차 재시도합니다.
+
+## 성능 최적화
+
+- 서버 컴포넌트에서 `use` 함수를 통해 선탐색하고 `staleTime`·`keepPreviousData` 조정으로 React Query 요청을 최소화합니다.
+- `React.memo`, `useMemo`, `useCallback`은 불필요한 렌더링/계산을 막기 위한 경우에만 사용합니다.
+- Next.js `Image`/`Link` 컴포넌트와 `tailwind-merge`로 클래스 중복 제거하며, `use client` 범위를 좁혀 서버 렌더링 이점을 유지합니다.
+- 긴 요청은 `tw-animate-css` spinner와 함께 `aria-busy`/`role="status"` 설정으로 사용자에게 활동을 알려 줍니다.
+
+## 요약 · 확인 · 미완료 항목
+
+- 요약: Zustand store·Axios API·에러·성능 관리를 통합한 규칙을 제시.
+- 확인: `shared/stores`/`shared/services` 구현이 각 항목을 따르는지 spot-check.
+- 미완료: 에러/로딩/리프레시 시나리오에 대한 통합 테스트 및 자동화 커버리지 확보 필요.

@@ -1,0 +1,30 @@
+---
+alwaysApply: true
+description: '온라인 강의 플랫폼의 전체 아키텍처·구조·라우팅 안내'
+---
+
+# Project Overview Cursor Rule
+
+## 프로젝트 개요 및 목표
+
+- 강사는 강의 제작·업로드·통계 관리를 맡고, 학습자는 강의를 탐색·구매·수강하며 개인 학습 여정을 완성합니다.
+- AI 챗봇은 강의 추천·학습 도움을, 결제 시스템은 구매·환불·수강권 관리를 책임집니다.
+- 모든 기능은 Next.js App Router + React 19 기반으로 연결되어 단일 페이지처럼 빠르게 동작해야 합니다.
+
+## 디렉토리 구조 및 파일 조직
+
+- `src/app`은 App Router 구조이며 `(authorized)` 내부에 `creator`, `learner` 등 역할별 레이아웃을 둡니다.
+- `_components`·`_navigations`·`(mypage)` 같은 그룹을 활용해 레이아웃 공유(예: `Header`, `Footer`)하되 URL에는 영향 미치지 않게 유지합니다.
+- `shared`는 `components/ui`, `services/{domain}`, `stores`, `types`, `lib`로 세분화해 재사용성 확보하며, 도메인별 service/hook/type 3단 구조를 고수합니다.
+
+## 라우팅 규칙
+
+- `/creator`는 대시보드·course 관리·profile, `/learner`는 dashboard/requests/purchases/settings/chat-history로 구분합니다.
+- 공통 페이지는 `/login`, `/signup`, `/onboarding`, 루트 `page.tsx`에서 제공하며 `[id]` 동적 라우트는 강의·결제 상세(`course/[id]`, `course-request/[id]`)에 할당합니다.
+- `(authorized)` 레이아웃에서 헤더/푸터/알림 등 공통 UI를 감싸고, `creator/learner` 내부에서 해당 역할에 특화한 하위 레이아웃을 중첩합니다.
+
+## 요약 · 확인 · 미완료 항목
+
+- 요약: 프로젝트 목표와 구조·라우팅 흐름을 `app`/`shared` 기준으로 정리함.
+- 확인: 실제 디렉토리(`(authorized)`, `(mypage)`, `shared/services`)가 규칙과 맞는지 체크 필요.
+- 미완료: 새로운 역할/도메인 추가 시 이 구조를 따라 레이아웃·라우팅을 확장할 수 있는지 검토.

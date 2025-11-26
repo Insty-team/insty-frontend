@@ -1,0 +1,52 @@
+---
+alwaysApply: true
+description: "온라인 강의 플랫폼 아키텍처/도메인 중심 Cursor 규칙"
+---
+
+# Project Architecture Cursor Rule
+
+## 프로젝트 구조 설명
+- `src/app` 중심: `(authorized)` → `creator`/`learner` 등 역할별 레이아웃, `login`, `signup`, 공용 `_components`.
+- `shared`는 `components/ui`, `services/{domain}`, `stores`, `types`, `lib` 등 재사용 리소스 분리.
+- 각 `(authorized)` 하위에 `(mypage)` 같은 그룹을 두어 레이아웃 공유하지만 URL에 영향 없음.
+
+## 도메인별 파일 구성 규칙
+- `Creator` 관련은 `shared/services/ai-course`, `shared/services/course`, `app/(authorized)/creator` 하위에서 관리.
+- `Student`는 `app/(authorized)/learner`, `shared/services/user`, `shared/services/purchase`로 분리.
+- `Course` 도메인은 `shared/services/course`에서 API/타입 정의, `app/(authorized)`의 `course`, `creator/courses`, `learner/course-request`.
+- `Purchase` 관련은 `shared/services/purchase`(비슷)와 `app/(authorized)/learner/purchases` 페이지.
+- `Chat`은 `shared/services/ai-chatbot`, `ai-community`, `ai-search`, `ai-video`로 기능별 분리, UI는 공통 컴포넌트에서 Dialog/Form.
+
+## API 라우트 네이밍 컨벤션
+- `shared/services/{domain}/{domain}.service.ts` 내 API 함수는 `HTTP_METHOD_action` (예: `POST_createCourse`).
+- 라우트 경로는 `/api/v1/{domain}/{action}`처럼 도메인 우선, 액션 구체화.
+- React Query 훅은 `use{HttpMethod}{Domain}{Action}` (예: `usePostCourseUpload`).
+
+## 컴포넌트 조직화 방법
+- `shared/components/ui`에 shadcn/ui 기반 공통 컴포넌트 저장.
+- 페이지별 컴포넌트는 해당 디렉토리 `_components` 내에서 `PascalCase`로 구성.
+- 반복 UI는 `shared/components/{domain}`으로 추출하여 재사용성 확보.
+- `Form` 관련은 React Hook Form + shadcn UI 패턴 (`FormField`, `FormControl`, `FormMessage`).
+
+## 도메인별 데이터 타입 정의 가이드
+- `shared/types` 또는 `shared/services/{domain}/{domain}.type.ts`에 `Request`/`Response` 타입 유지.
+- 각 타입은 `PascalCase` + `Request`/`Response` 접미사, enum은 `PascalCaseEnum`.
+- `ApiResponse<T>` 제네릭 응답 래퍼를 통해 `success/code/message/data` 공통 처리.
+- AI 챗봇/검색은 `Message`, `Suggestion`, `Session` 등 사전 정의된 타입으로 응답 구조 통일.
+
+## 상태 관리 전략
+- `shared/stores`에 `auth`, `user`, `ui` 등 도메인별 Zustand store 분리.
+- 인증 토큰은 `persist` + 쿠키 스토리지, 유저 정보는 메모리 상태로 유지.
+- `Selector` 훅(`useAuthStore`, `useUserStore`)을 통해 토큰, 사용자, 테마 상태 접근.
+- 비동기 로직은 React Query + 서비스 훅으로 처리하고, store에는 UI/로컬 상태만 유지.
+
+## 페이지 라우팅 구조
+- `/creator` → 강사용 대시보드(`dashboard`), `courses`, `mypage/account/profile` 등.
+- `/learner` → 학습자용 대시보드, `course-request`, `purchases`, `settings`, `chat-history`.
+- 공통 페이지는 `/login`, `/signup`, `/onboarding`, 루트 `page.tsx`.
+- `[id]` 동적 라우트는 강의/결제 상세에 활용(`course/[id]`, `course-request/[id]`).
+
+## 요약 · 확인 · 미완료 항목
+- 요약: Creator/Student/Course/Purchase/Chat 도메인 중심 구조·규칙 문서화.
+- 확인: 실제 서비스 디렉토리/파일이 명명·Routing/Store 패턴을 따르는지 점검.
+- 미완료: 신규 도메인 추가 시 해당 Rule 반영 여부 리뷰 필요.

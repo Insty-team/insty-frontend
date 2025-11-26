@@ -1,0 +1,93 @@
+---
+alwaysApply: true
+description: 'Next15·React19·TypeScript5 기반 인스턴트 스택 전용 Cursor 규칙'
+---
+
+# Tech Stack Cursor Rule
+
+## 코드 스타일 및 구조
+
+- `src/app`는 App Router 구조로 `page.tsx`, `layout.tsx` 기준 유지.
+- `shared`는 UI·lib·services·stores·types로 세분화된 3계층 패턴 적용.
+- 컴포넌트는 `PascalCase`, 훅은 `useXxx`, 서비스는 `domain.service.ts` 네이밍 고수.
+- 구조상 `components/ui`는 shadcn/ui 기반 공통 컴포넌트만 보관.
+- Next.js 서버 컴포넌트가 기본, 필요 시 `use client` 최소 범위 설정.
+- 모든 파일은 `import` 순서: 상대 → CSS → React → Next → 타사 → `@/`.
+
+## 명명 규칙 (파일·컴포넌트·변수)
+
+- 페이지/레이아웃: `page.tsx`, `layout.tsx` 고정 이름.
+- 컴포넌트/훅/서비스/타입은 PascalCase/`domain.hook/service/type` 패턴.
+- 상태 변수, 이벤트 핸들러는 `camelCase`, 화살표 함수 앞엔 `const`.
+- Boolean props는 `is`, `has` 접두어, 콜백은 `onXxx`.
+- 상수는 `UPPER_SNAKE_CASE`, enum은 `PascalCaseEnum`.
+
+## TypeScript 사용 규칙
+
+- `strict` 모드 유지, `@/*` alias 통해 절대 경로 사용.
+- `zod` 스키마를 통해 `infer` 타입 정의, `type`/`interface` 혼용 최소화.
+- `ApiResponse<T>`처럼 제네릭 공통 응답 타입 활용.
+- `readonly`/`as const`으로 불변성 유지, `any` 사용 금지.
+- React props는 `type`으로 선언하고 `React.FC` 대신 함수 선언.
+
+## React 19 Best Practices
+
+- 기본은 서버 컴포넌트, 클라이언트 전환 시 `use client` 최소화.
+- 클라이언트 컴포넌트 내 상태는 Zustand·React Query로 외부 분리.
+- `use` 함수를 통한 서버 데이터 페칭 권장, `useEffect`는 클라이언트 전용.
+- JSX 내 `key`는 고유값 유지, `Fragment`는 불필요한 div 제거.
+- `useMemo`/`useCallback`은 꼭 필요한 경우만 사용.
+
+## Tailwind CSS 사용 규칙
+
+- Mobile-first: 기본 클래스는 스마트폰, `md:` 등 반응형 접두사 단계별 추가.
+- 유틸리티는 의미 단위로 묶고 `@apply`보다 `cn` 조합 우선.
+- 레이아웃에서 `gap`, `space-x`를 선호해 마진 일관성 확보.
+- 색상·글꼴 변수는 `globals.css` CSS 변수 활용.
+- 애니메이션은 `tw-animate-css` 클래스와 `transition` 조합 사용.
+
+## shadcn/ui 컴포넌트 활용
+
+- `shared/components/ui` 내 컴포넌트는 cva 기반 변형 선언.
+- 버튼/입력 등은 `buttonVariants`처럼 `cva`로 스타일 처리.
+- `Form`, `FormField`, `FormControl` 패턴으로 `react-hook-form` 연결.
+- shadcn 컴포넌트는 새 기능 추가 시 재사용 가능하게 props 확장.
+- `className`은 `cn` 유틸로 결합하며 `rest` props 전달 유지.
+
+## Zustand 상태 관리 패턴
+
+- `shared/stores`에 각 도메인 스토어를 분리해 정의.
+- 토큰은 `persist` + 쿠키 스토리지 사용, `user` 정보는 메모리 유지.
+- Action은 `setState`로 묶어 명확히 제공.
+- 상태 조합 시 `useStore` 훅을 선언해 소비 컴포넌트에서 사용.
+- 비동기 로직은 서비스 훅(React Query)과 연계해 처리.
+
+## Axios API 호출 패턴
+
+- `shared/services/{domain}`에 `domain.service.ts` 작성, HTTP 메서드 접두사 사용(예: `POST_login`).
+- Axios 인스턴스를 `shared/services/api.ts`에서 정의하고 인터셉터 등록.
+- request interceptor에서 Zustand 토큰을 `Authorization` 헤더에 주입.
+- response interceptor는 401 시 refresh token 처리 및 재요청 큐 유지.
+- React Query 훅에서 해당 서비스 함수를 호출하여 mutate/query 구현.
+
+## 에러 핸들링 및 검증
+
+- `zod` 스키마로 입력 검증, `FormMessage`로 사용자 친화적 오류 노출.
+- Axios 에러는 `isAxiosError` 체크 후 `message`/`response.data` 활용.
+- `try/catch`에 `toast`/`notification`으로 실패 메시지 통일.
+- 서버 응답 실패 코드에는 `error.code` 기준 분기.
+- 비동기 로직에서는 `mutateAsync().catch()`로 명시적 처리.
+
+## 성능 최적화 전략
+
+- 서버 컴포넌트에서 가능한 한 데이터 선탐색(use함수) 처리.
+- `React.memo`는 주로 큰 리스트, `useMemo`는 무거운 계산에만 적용.
+- Next.js `Image`/`Link` 컴포넌트 적극 활용.
+- `react-query` staleTime/keepPreviousData 조정으로 불필요 요청 절감.
+- `tailwind-merge`로 클래스 중복 제거, `use client` 범위 축소로 서버 사이드 렌더링 유지.
+
+## 요약 · 확인 · 미완료 항목
+
+- 요약: 핵심 스타일·명명·React/Tailwind/shadcn/Zustand/Axios 지침 정리.
+- 확인: 실제 컴포넌트가 `use client` 최소화·`cva` 변형·`staleTime` 정책 따르는지 점검.
+- 미완료: 신규 기능에 이 규칙을 적용한 코드 리뷰/교육 필요.

@@ -1,0 +1,39 @@
+---
+alwaysApply: true
+description: '코드 스타일·컴포넌트 개발·타입·접근성 가이드'
+---
+
+# Code Guidelines Cursor Rule
+
+## 코드 스타일 및 명명 규칙
+
+- 컴포넌트는 `PascalCase`, 훅은 `useXxx`, 상태/이벤트는 `camelCase`, 상수는 `UPPER_SNAKE_CASE`.
+- 서비스/훅/타입 파일은 `domain.service.ts`, `domain.hook.ts`, `domain.type.ts`처럼 도메인 기반 네이밍을 유지합니다.
+- `import` 순서는 상대 → CSS → React → Next → 서드파티 → `@/`이며 `prettier-plugin-sort-imports` + `tailwindcss` 플러그인을 따라 정렬합니다.
+- 화살표 함수 앞에 `const`, `React.FC` 대신 함수 선언으로 props 정의, `type`으로 명시적 `Props` 타입 지정.
+
+## 컴포넌트 개발 가이드
+
+- 기본은 서버 컴포넌트이며 클라이언트 전환 시 `use client`를 최소한의 캡슐로 한정합니다.
+- shadcn/ui + `cva`로 `buttonVariants`, `inputVariants`처럼 변형을 선언하고 `cn`으로 `className`을 조합합니다.
+- 반복 UI는 `_components` 또는 `shared/components/{domain}`으로 분리하며, 폼은 `FormField`, `FormControl`, `FormMessage` 패턴과 `react-hook-form`을 연결합니다.
+- Tailwind 유틸은 의미 단위로 묶고 `gap`, `space`, `grid` 조합을 활용해 반응형 레이아웃을 구성합니다.
+
+## 타입 정의 전략
+
+- `shared/services/{domain}/{domain}.type.ts` 또는 `shared/types`에 `PascalCaseRequest`/`Response`와 `PascalCaseEnum`을 정의합니다.
+- `ApiResponse<T>` 인터페이스로 `success/code/message/data`를 공통화하며 `zod`로 스키마를 구성해 `infer<typeof schema>`로 타입을 추론합니다.
+- 컴포넌트 props는 `type`으로 정의하고 `readonly`/`as const`를 활용해 불변성을 유지합니다.
+
+## 접근성 가이드라인
+
+- 버튼/링크는 텍스트 레이블 제공, `aria-label`/`aria-describedby`로 보조 설명 보완.
+- 키보드 포커스 순서와 대비(Contrast) 기준을 지키도록 Tailwind `focus-visible`/`ring` 유틸 사용.
+- `FormMessage`·`aria-busy` 등으로 스테이트를 표현하고, `tw-animate-css` spinner 사용 시 `role="status"`/`aria-live="polite"` 추가.
+- 컬러는 CSS 변수(`--color-primary-*`)를 통해 색상 대비 조절하고, 러닝 인터랙션에 `motion-safe` 클래스를 붙여 애니메이션 선택권 제공.
+
+## 요약 · 확인 · 미완료 항목
+
+- 요약: 명명·컴포넌트·타입·접근성 지침을 조합해 일관된 UI/코드 기준을 제시.
+- 확인: 컴포넌트가 `use client` 범위, `cva` 변형, 접근성 속성 등 지침을 충족하는지 spot-check.
+- 미완료: 신규 UI 컴포넌트 추가 시 위 틀을 적용하고 `cn`/`Form` 패턴을 준수하도록 리뷰 필요.

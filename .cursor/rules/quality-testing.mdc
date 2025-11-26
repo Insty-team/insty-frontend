@@ -1,0 +1,25 @@
+---
+alwaysApply: false
+---
+
+# Quality & Testing Cursor Rule
+
+## 테스팅 전략
+
+- 컴포넌트는 `vitest`/`@testing-library/react` 스타일로 유닛/통합 테스트를 작성하고, 실사용 폴더(`app/(authorized)`, `shared/components`)에 대응됩니다.
+- `shared/services` API 함수는 `msw` 또는 mock Axios 인스턴스로 `usePost...` 훅과 `mutationFn`을 격리해 테스트합니다.
+- 폼과 입력은 `react-hook-form`의 `FormProvider`를 활용해 `FormField`/`FormMessage` 사례를 검증하고, `zod` 스키마 기반 테스트로 에러/성공 케이스를 분리합니다.
+- 상태/스토어는 zustand의 `setState` 액션을 직접 호출해 로딩/에러/토큰 전환 흐름을 시뮬레이션합니다.
+- 테스트는 `npm run test` 형태로 자동화하며, CI에서는 `node --test`/`vitest` 실행 후 커버리지 보고서를 저장합니다.
+
+## 품질 검증 팁
+
+- 변경된 API는 `shared/services/{domain}`의 type/service/hook 간 일관성을 `ApiResponse` 구조로 교차 검증합니다.
+- 접근성/성능을 위해 `axe-core`/`lighthouse` 수준의 수동 체크를 주기적으로 실시하고, `aria-*` 속성 및 다크 모드 색상 대조를 집중 점검합니다.
+- 코드 리뷰에서는 `use client` 범위, `react-query` `staleTime`, `Loader` 상태 처리, `Authorization` 헤더 포함 여부를 중심으로 확인합니다.
+
+## 요약 · 확인 · 미완료 항목
+
+- 요약: 테스트/품질 전략을 문서화해 API·폼·상태에 대한 검증 루틴을 정의함.
+- 확인: 실제 테스트 커버리지와 CI 스크립트(`npm run test`)가 문서화된 흐름을 반영하는지 확인 필요.
+- 미완료: `msw`/mock 데이터와 실제 API 간 격차를 줄이고, 테스트 자동화를 CI 파이프라인에 완성할 방안 도입.
