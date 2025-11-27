@@ -7,7 +7,7 @@ import { CourseTags } from './CourseTags';
 import { FileUpload } from './FileUpload';
 import { InstallationRequirements } from './InstallationRequirements';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { useRouter } from 'next/navigation';
@@ -30,6 +30,7 @@ export function CourseUploadForm() {
   const [installationRequirements, setInstallationRequirements] = useState<InstallationRequirement[]>([]);
   const [coreContents, setCoreContents] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [installationRequirementsError, setInstallationRequirementsError] = useState<string | null>(null);
 
   const [thumbnailProgress, setThumbnailProgress] = useState<UploadProgress>({
     status: 'IDLE',
@@ -151,6 +152,12 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
 
   // 최종 제출
   const onSubmit = async (data: CourseFormData) => {
+    if (installationRequirements.length === 0) {
+      setInstallationRequirementsError('설치 환경 요구사항을 최소 1개 이상 입력해주세요.');
+      setCurrentStep('EDIT');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -177,8 +184,24 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
     }
   };
 
+  useEffect(() => {
+    if (installationRequirements.length > 0 && installationRequirementsError) {
+      setInstallationRequirementsError(null);
+    }
+  }, [installationRequirements, installationRequirementsError]);
+
   const handleCancel = () => {
     router.push('/creator/courses');
+  };
+
+  const handlePreview = () => {
+    if (installationRequirements.length === 0) {
+      setInstallationRequirementsError('설치 환경 요구사항을 최소 1개 이상 입력해주세요.');
+      return;
+    }
+
+    setInstallationRequirementsError(null);
+    setCurrentStep('PREVIEW');
   };
 
   // 단계별 네비게이션
@@ -408,6 +431,9 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
                 requirements={installationRequirements}
                 onRequirementsChange={setInstallationRequirements}
               />
+              {installationRequirementsError && (
+                <p className="text-destructive mt-3 text-sm">{installationRequirementsError}</p>
+              )}
             </CardContent>
           </Card>
 
@@ -438,7 +464,7 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               취소
             </Button>
-            <Button type="button" variant="outline" onClick={() => setCurrentStep('PREVIEW')}>
+            <Button type="button" variant="outline" onClick={handlePreview}>
               미리보기
             </Button>
           </div>

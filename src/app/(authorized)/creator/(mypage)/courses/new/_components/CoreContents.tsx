@@ -15,9 +15,16 @@ interface CoreContentsProps {
 
 export function CoreContents({ contents, onContentsChange }: CoreContentsProps) {
   const [inputValue, setInputValue] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleAddContent = () => {
-    if (!inputValue.trim() || contents.includes(inputValue.trim())) return;
+    if (!inputValue.trim()) {
+      setErrorMessage('핵심 내용을 입력해주세요.');
+      return;
+    }
+    if (contents.includes(inputValue.trim())) {
+      return;
+    }
     if (contents.length >= 8) {
       alert('최대 8개까지만 추가할 수 있습니다.');
       return;
@@ -29,6 +36,7 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
 
     onContentsChange([...contents, inputValue.trim()]);
     setInputValue('');
+    setErrorMessage(null);
   };
 
   const handleRemoveContent = (index: number) => {
@@ -49,7 +57,12 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
       <div className="flex gap-2">
         <Input
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            if (e.target.value.trim() && errorMessage) {
+              setErrorMessage(null);
+            }
+          }}
           onKeyDown={handleKeyPress}
           placeholder="예: React 기초, 컴포넌트 설계, 상태 관리, 라우팅 등"
           maxLength={60}
@@ -60,7 +73,6 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
           variant="outline"
           size="icon-lg"
           onClick={handleAddContent}
-          disabled={!inputValue.trim() || contents.includes(inputValue.trim())}
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -86,7 +98,10 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
         </div>
       )}
 
-      <p className="text-muted-foreground text-xs">{contents.length}개 추가됨 • Enter 키로 항목을 추가하세요</p>
+      <div className="flex flex-col gap-1">
+        <p className="text-muted-foreground text-xs">{contents.length}개 추가됨 • Enter 키로 항목을 추가하세요</p>
+        {errorMessage && <p className="text-destructive text-xs">{errorMessage}</p>}
+      </div>
     </div>
   );
 }
