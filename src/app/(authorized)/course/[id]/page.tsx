@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -9,8 +9,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avat
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/shared/components/ui/sheet';
 import { Spinner } from '@/shared/components/ui/spinner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Textarea } from '@/shared/components/ui/textarea';
 import { cn } from '@/shared/lib/utils';
 import {
   useGetCourseById,
@@ -34,6 +47,65 @@ function formatFileSize(bytes: number) {
   return `${size % 1 === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
 }
 
+const qaHistory = [
+  {
+    id: 'qa-1',
+    courseTitle: 'React 서버 컴포넌트 심화',
+    question: 'use server에서 클라이언트 상태를 어떻게 관리하나요?',
+    answerSnippet:
+      'React 19에서는 서버 데이터를 선물아도, 클라이언트 상태는 use client 컴포넌트에서 useState/유효한 store로 분리하면 됩니다.',
+    status: '답변 완료',
+    answeredAt: '2025년 11월 22일',
+  },
+  {
+    id: 'qa-2',
+    courseTitle: 'Next.js 성능 최적화',
+    question: 'prefetch와 use client 경계 처리는 어떻게 정하는 게 좋을까요?',
+    answerSnippet:
+      '기본은 서버 컴포넌트로 두고, prefetch가 필요한 interactive 내는 use client로 따로 묶어서 필요한 시점에만 상태를 관리하세요.',
+    status: '답변 중',
+    answeredAt: '2025년 11월 24일',
+  },
+  {
+    id: 'qa-3',
+    courseTitle: '테스트 자동화',
+    question: 'React Query의 isFetching과 isLoading을 같이 쓰는 팁이 있을까요?',
+    answerSnippet: '전자는 백그라운드 갱신, 후자는 첫 로딩이므로 버튼 disable 등 UI 영향 구분해서 쓰면 됩니다.',
+    status: '일시 보류',
+    answeredAt: '2025년 11월 20일',
+  },
+];
+
+const communityComments = [
+  {
+    id: 'community-1',
+    courseTitle: 'TypeScript 완전정복',
+    content: '함께 복습할 모각코 파트너 구합니다! 마음 맞으신 분 DM 주세요.',
+    author: '수강생 김하나',
+    postedAt: '2시간 전',
+    likes: 8,
+    replies: 3,
+  },
+  {
+    id: 'community-2',
+    courseTitle: 'AI 기반 콘텐츠 제작',
+    content: '이번 챕터에서 추천해준 생성형 프롬프트 템플릿 잘 써먹고 있어요.',
+    author: '수강생 정민우',
+    postedAt: '어제',
+    likes: 12,
+    replies: 5,
+  },
+  {
+    id: 'community-3',
+    courseTitle: 'Next.js 마스터',
+    content: '코드 리뷰 파트에서 사용한 디렉토리 구조로 시작해도 될까요?',
+    author: '수강생 박유진',
+    postedAt: '2025년 11월 24일',
+    likes: 4,
+    replies: 1,
+  },
+];
+
 export default function CoursePage() {
   const params = useParams();
   const courseId = params.id as string;
@@ -54,6 +126,18 @@ export default function CoursePage() {
   }, [course?.practiceFile]);
 
   const keyPoints = useMemo(() => course?.keyPoints?.filter(Boolean) ?? [], [course?.keyPoints]);
+
+  const [activeSheetTab, setActiveSheetTab] = useState<'qa' | 'community'>('qa');
+
+  const handleSheetSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  };
+
+  const sheetInputId = activeSheetTab === 'qa' ? 'course-sheet-question' : 'course-sheet-comment';
+  const sheetLabel = activeSheetTab === 'qa' ? '새 질문 등록' : '새 댓글 작성';
+  const sheetPlaceholder =
+    activeSheetTab === 'qa' ? '궁금한 내용을 간단히 정리해 주세요.' : '커뮤니티 의견을 간단히 작성해 주세요.';
+  const sheetButtonLabel = activeSheetTab === 'qa' ? '질문 등록' : '댓글 등록';
 
   const handleEnroll = () => {
     if (!course) return;
@@ -85,8 +169,7 @@ export default function CoursePage() {
   const creatorInitial = course.creatorInfo.nickname?.[0] ?? 'I';
 
   return (
-    <div className="container mx-auto flex flex-col gap-8 py-8">
-      {/*  */}
+    <div className="container mx-auto flex flex-col gap-8 px-4 py-8">
       <div className="flex items-end justify-between gap-5">
         <div>
           <div className="mb-6">
@@ -128,7 +211,6 @@ export default function CoursePage() {
           </div>
         )}
       </div>
-      {/*  */}
 
       <div className="grid items-start gap-12 lg:grid-cols-[7fr_3fr]">
         {/* 좌측: 썸네일 */}
@@ -280,6 +362,106 @@ export default function CoursePage() {
               ) : (
                 <div className="text-muted-foreground text-sm">제공된 실습 자료가 없습니다.</div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-background/70 border-dashed">
+            <CardHeader>
+              <CardTitle className="text-xl">Q&A · 커뮤니티</CardTitle>
+              <CardDescription>질문과 댓글을 슬라이드 창으로 확인하고 바로 의견을 남겨보세요.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-muted-foreground text-sm">
+                강의를 들으며 생긴 궁금한 점을 질문하고, 커뮤니티 의견도 함께 살펴보세요.
+              </p>
+
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="secondary" className="w-full">
+                    질문 · 댓글 창 열기
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="px-6 py-6">
+                  <SheetHeader>
+                    <SheetTitle>Q&A · 커뮤니티</SheetTitle>
+                    <SheetDescription className="text-sm">
+                      최신 질문과 댓글을 확인하고 바로 의견을 남기세요.
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <Tabs
+                    value={activeSheetTab}
+                    onValueChange={(value) => setActiveSheetTab(value as 'qa' | 'community')}
+                    className="space-y-4"
+                  >
+                    <TabsList>
+                      <TabsTrigger value="qa">Q&A</TabsTrigger>
+                      <TabsTrigger value="community">커뮤니티</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="qa" className="space-y-4 overflow-y-auto pt-1 pb-4">
+                      <div className="space-y-3">
+                        {qaHistory.slice(0, 3).map((item) => (
+                          <article key={item.id} className="border-border/80 bg-background/80 rounded-2xl border p-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-muted-foreground text-[11px] tracking-[0.4em] uppercase">
+                                  {item.courseTitle}
+                                </p>
+                                <h4 className="text-foreground text-sm font-semibold">{item.question}</h4>
+                              </div>
+                              <span className="border-border/80 text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] tracking-widest uppercase">
+                                {item.status}
+                              </span>
+                            </div>
+                            <p className="text-muted-foreground mt-2 text-xs">{item.answerSnippet}</p>
+                          </article>
+                        ))}
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="community" className="space-y-4 overflow-y-auto pt-1 pb-4">
+                      <div className="space-y-3">
+                        {communityComments.slice(0, 3).map((comment) => (
+                          <article
+                            key={comment.id}
+                            className="border-border/80 bg-background/70 rounded-2xl border p-3"
+                          >
+                            <div className="text-muted-foreground flex items-center justify-between text-[11px] tracking-[0.3em] uppercase">
+                              <span>{comment.courseTitle}</span>
+                              <span>{comment.postedAt}</span>
+                            </div>
+                            <p className="text-foreground mt-2 text-sm font-semibold">{comment.content}</p>
+                            <div className="text-muted-foreground mt-2 flex items-center gap-3 text-[11px]">
+                              <span>좋아요 {comment.likes}</span>
+                              <span>댓글 {comment.replies}</span>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+
+                  <SheetFooter className="space-y-3">
+                    <form onSubmit={handleSheetSubmit} className="space-y-3">
+                      <div className="space-y-1 text-sm">
+                        <Label htmlFor={sheetInputId}>{sheetLabel}</Label>
+                        <Textarea id={sheetInputId} placeholder={sheetPlaceholder} rows={3} />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button className="flex-1" type="submit">
+                          {sheetButtonLabel}
+                        </Button>
+                        <SheetClose asChild>
+                          <Button variant="outline" type="button">
+                            닫기
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </form>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </CardContent>
           </Card>
         </div>
