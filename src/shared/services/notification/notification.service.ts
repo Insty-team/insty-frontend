@@ -1,10 +1,17 @@
-import { NotificationMeResponse, NotificationSettingsRequest, NotificationSettingsResponse } from './notification.type';
+import {
+  NotificationMeResponse,
+  NotificationSettingsRequest,
+  NotificationSettingsResponseForCreator,
+  NotificationSettingsResponseForLearner,
+} from './notification.type';
 
 import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
 
 /** 내 알림 설정 조회 */
-export const GET_notification_settings = async (): Promise<ApiResponse<NotificationSettingsResponse>> => {
+export const GET_notification_settings = async (): Promise<
+  ApiResponse<NotificationSettingsResponseForLearner | NotificationSettingsResponseForCreator>
+> => {
   const response = await api.get('/api/v1/notification/settings');
   return response.data;
 };

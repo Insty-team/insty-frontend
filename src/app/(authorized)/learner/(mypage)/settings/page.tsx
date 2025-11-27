@@ -25,11 +25,11 @@ import {
 import {
   NOTIFICATION_TYPE,
   NotificationSettingsRequest,
-  NotificationSettingsResponse,
+  NotificationSettingsResponseForLearner,
 } from '@/shared/services/notification/notification.type';
 
 export default function LearnerSettingsPage() {
-  const [notifications, setNotifications] = useState<NotificationSettingsResponse['settings']>({
+  const [notifications, setNotifications] = useState<NotificationSettingsResponseForLearner['settings']>({
     [NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT]: {
       inAppEnabled: false,
       emailEnabled: false,
@@ -39,10 +39,6 @@ export default function LearnerSettingsPage() {
       emailEnabled: false,
     },
     [NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER]: {
-      inAppEnabled: false,
-      emailEnabled: false,
-    },
-    [NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION]: {
       inAppEnabled: false,
       emailEnabled: false,
     },
@@ -65,7 +61,7 @@ export default function LearnerSettingsPage() {
 
   useEffect(() => {
     if (notificationSettings?.settings) {
-      setNotifications(notificationSettings.settings);
+      setNotifications(notificationSettings.settings as NotificationSettingsResponseForLearner['settings']);
     }
   }, [notificationSettings]);
 
@@ -117,44 +113,6 @@ export default function LearnerSettingsPage() {
                         handleNotificationChange({
                           notificationType: NOTIFICATION_TYPE.USER_MENTIONED,
                           inAppEnabled: notifications[NOTIFICATION_TYPE.USER_MENTIONED].inAppEnabled,
-                          emailEnabled: value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-              <Separator />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1 space-y-0.5">
-                  <Label htmlFor="new-question-web-notification">새 질문</Label>
-                  <p className="text-muted-foreground text-sm">관심 태그에 새로운 질문이 등록되면 알려드려요</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex w-[100px] items-center justify-center gap-2">
-                    <Switch
-                      id="new-question-web-notification"
-                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].inAppEnabled}
-                      onCheckedChange={(value) =>
-                        handleNotificationChange({
-                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION,
-                          inAppEnabled: value,
-                          emailEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].emailEnabled,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="flex w-[100px] items-center justify-center gap-2">
-                    <Switch
-                      id="new-question-email-notification"
-                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].emailEnabled}
-                      onCheckedChange={(value) =>
-                        handleNotificationChange({
-                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION,
-                          inAppEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_QUESTION].inAppEnabled,
                           emailEnabled: value,
                         })
                       }
