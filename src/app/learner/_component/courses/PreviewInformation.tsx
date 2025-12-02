@@ -10,12 +10,9 @@ import Swal from "sweetalert2";
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import { getPurchaseAssistantUsageCount } from "@/app/api/ai";
-import {
-	getCourseVideoPreview,
-	getExistCourse,
-	postPreviewVideo,
-} from "@/app/api/backend";
+import { getCourseVideoPreview, postPreviewVideo } from "@/app/api/backend";
 import { postCourseProgress } from "@/app/api/backend";
+import { getExistCourse } from "@/app/api/backend";
 import PurchaseAssistantChatbotModal from "@/app/learner/_component/PurChaseAssistantChatbotModal";
 import { useUserStore } from "@/app/stores";
 //import CommunitySidebar from "@/app/learner/_component/CommunitySidebar";
@@ -55,7 +52,7 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 	useEffect(() => {
 		const fetchExistCourse = async () => {
 			const exist = await getExistCourse(data.courseId);
-			setIsCourseExist(!!exist);
+			setIsCourseExist(!!exist.data);
 		};
 		fetchExistCourse();
 	}, [data.courseId]);
@@ -238,17 +235,29 @@ function PreviewInformation({ data }: PreviewInformationProps) {
 					</div>
 
 					<div className="flex justify-between gap-8">
-						<div className="w-[60%] flex items-center mr-auto">
-							<BaseButton
-								title={isCourseExist ? "이미 수강 중인 강의입니다" : "수강하기"}
-								onClick={handleWatchCourse}
-								disabled={isCourseExist}
-								className={
-									isCourseExist
-										? "bg-gray-300 cursor-not-allowed"
-										: "bg-primary-green-400 hover:bg-primary-green-500"
-								}
-							/>
+						<div className="w-[60%] flex flex-col items-start mr-auto">
+							{isCourseExist ? (
+								<>
+									<p className="text-primary-green-700">
+										이미 수강중인 강의입니다.
+									</p>
+									<BaseButton
+										title="강의 시청하러 가기"
+										onClick={() => {
+											router.push(
+												`/learner/recommend/course/${data.courseId}/watch`,
+											);
+										}}
+										className="bg-primary-green-400 hover:bg-primary-green-500"
+									/>
+								</>
+							) : (
+								<BaseButton
+									title="수강하기"
+									onClick={handleWatchCourse}
+									className="bg-primary-green-400 hover:bg-primary-green-500"
+								/>
+							)}
 						</div>
 					</div>
 				</div>

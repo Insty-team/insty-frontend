@@ -173,7 +173,7 @@ const postCourseProgress = async (courseId: number) => {
 // 강좌 수강 여부 조회
 const getExistCourse = async (courseId: number) => {
 	try {
-		const res = await axiosInstance.post(
+		const res = await axiosInstance.get(
 			`${BASE_URL}/courses/courseProgress/${courseId}/exists`,
 		);
 		return res.data;
