@@ -235,9 +235,24 @@ const patchRecommendationStatus = async (requestId: number, status: string) => {
 	}
 };
 
+const getCourseRequestFinalResult = async (requestId: number) => {
+	try {
+		const res = await axiosInstance.get(
+			`${AI_BASE_URL}/community/course-requests/${requestId}/final-result`,
+		);
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return error.response.data;
+		}
+		throw new Error("서버와 통신 불가");
+	}
+};
+
 export {
 	deleteCourseRequest,
 	getCheckCourseRequestAvailibility,
+	getCourseRequestFinalResult,
 	getCourseRequestForm,
 	getCreatorRecommendationForm,
 	getLastCreatorForm,
