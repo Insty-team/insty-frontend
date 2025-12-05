@@ -10,6 +10,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Markdown } from '@/shared/components/ui/markdown';
 import { Separator } from '@/shared/components/ui/separator';
+import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useGetSearchRecommendHistory, usePostSearchRecommend } from '@/shared/services/ai-search/ai-search.hook';
 import {
@@ -272,10 +273,11 @@ export default function LearnerPage() {
                     <AvatarFallback className="bg-gray-200 text-gray-700">AI</AvatarFallback>
                   </Avatar>
                   <div className="rounded-2xl border bg-white px-4 py-3 shadow-sm">
-                    <div className="flex gap-1">
-                      <div className="size-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]"></div>
-                      <div className="size-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]"></div>
-                      <div className="size-2 animate-bounce rounded-full bg-slate-400"></div>
+                    <div className="flex items-center gap-2">
+                      <Spinner className="size-3 text-slate-500" />
+                      <p className="text-sm text-slate-500">
+                        최고의 결과를 위해 생각을 정리 중이에요... 잠시만 기다려주세요 ✨
+                      </p>
                     </div>
                   </div>
                 </div>
