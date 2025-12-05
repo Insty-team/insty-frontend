@@ -148,11 +148,12 @@ export default function Login() {
                 )}
               />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between space-x-2">
               <Label className="cursor-pointer text-sm text-gray-700 select-none">
                 <Checkbox />
                 아이디 저장
               </Label>
+              <span className="cursor-pointer text-sm text-gray-600 hover:underline">비밀번호 찾기</span>
             </div>
             <Button variant="default" size="lg" className="mt-4" type="submit">
               로그인
@@ -191,21 +192,14 @@ export default function Login() {
           </div>
         </div>
         <Separator />
-        <div className="flex flex-col items-center justify-center gap-3">
-          <div className="flex items-center justify-center gap-2">
-            <span className="cursor-pointer text-sm text-gray-600 hover:underline">아이디 찾기</span>
-            <Separator orientation="vertical" className="!h-[12px]" />
-            <span className="cursor-pointer text-sm text-gray-600 hover:underline">비밀번호 찾기</span>
-          </div>
-          <div className="flex items-center justify-center gap-1">
-            <div className="text-sm text-gray-600">계정이 없으신가요?</div>
-            <Link
-              href="/signup"
-              className="text-primary-green-600 hover:text-primary-green-700 text-sm font-medium underline"
-            >
-              회원가입
-            </Link>
-          </div>
+        <div className="flex items-center justify-center gap-1">
+          <div className="text-sm text-gray-600">계정이 없으신가요?</div>
+          <Link
+            href="/signup"
+            className="text-primary-green-600 hover:text-primary-green-700 text-sm font-medium underline"
+          >
+            회원가입
+          </Link>
         </div>
       </div>
     </section>

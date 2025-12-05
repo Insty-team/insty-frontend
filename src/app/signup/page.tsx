@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/shared/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
@@ -44,6 +45,7 @@ function useDebounce<T>(value: T, delay = 500) {
 }
 
 export default function SignupPage() {
+  const router = useRouter();
   const [nicknameStatus, setNicknameStatus] = useState<NicknameStatus>('idle');
   const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
   const [emailDupStatus, setEmailDupStatus] = useState<EmailDupStatus>('idle');
@@ -510,6 +512,10 @@ export default function SignupPage() {
           <div className="text-sm text-gray-600">이미 계정을 보유하고 계신가요?</div>
           <Link
             href="/login"
+            onClick={(e) => {
+              e.preventDefault();
+              router.back();
+            }}
             className="text-primary-green-600 hover:text-primary-green-700 text-sm font-medium underline"
           >
             로그인
