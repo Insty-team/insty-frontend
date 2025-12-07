@@ -382,11 +382,12 @@ function LearnerRequest() {
 	}, [refetchRecommendations, reset, transformFormFields]);
 
 	useEffect(() => {
-		// 캐시된 추천 리스트가 이미 있다면, 네트워크 요청 없이 즉시 반영
+		// 캐시된 추천 리스트가 이미 있다면, 캐시 데이터만 보여줌 (갱신 X)
 		const hasCachedRecommendations =
 			Array.isArray(cachedRecommendations) && cachedRecommendations.length > 0;
 
 		if (hasCachedRecommendations) {
+			// 캐시 데이터만 보여줌
 			setRequestList(cachedRecommendations as LearnerRequest[]);
 			setFormSubmitted(true);
 			setIsLoading(false);
@@ -409,6 +410,17 @@ function LearnerRequest() {
 				const res = await getCourseRequestFinalResult(
 					selectedRequest.request_id,
 				);
+
+				// //테스팅 용임 나중에 삭제@@
+				// const re2 = await getCheckCourseRequestAvailibility(
+				// 	selectedRequest.request_id,
+				// );
+
+				// if (re2.success && re2.data) {
+				// 	console.log(re2.data);
+				// } else {
+				// 	console.log(re2.message);
+				// }
 
 				if (res.success && res.data) {
 					setFinalResult(res.data as CourseRequestFinalResult);
