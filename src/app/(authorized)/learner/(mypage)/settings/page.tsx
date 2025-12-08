@@ -28,6 +28,8 @@ import {
   NotificationSettingsResponseForLearner,
 } from '@/shared/services/notification/notification.type';
 
+import Withdrawal from '@/app/(authorized)/_components/Withdrawal';
+
 export default function LearnerSettingsPage() {
   const [notifications, setNotifications] = useState<NotificationSettingsResponseForLearner['settings']>({
     [NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT]: {
@@ -213,34 +215,7 @@ export default function LearnerSettingsPage() {
       </Card>
 
       {/* 계정 관리 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>계정 관리</CardTitle>
-          <CardDescription>계정 삭제 및 탈퇴</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">회원 탈퇴</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>정말 탈퇴하시겠습니까?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다. 구매한 강의에 대한 접근 권한도
-                  함께 사라집니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  탈퇴하기
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+      <Withdrawal />
     </div>
   );
 }
