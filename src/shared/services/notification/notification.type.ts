@@ -14,7 +14,7 @@ export const NOTIFICATION_TYPE = {
 
 type NotificationType = (typeof NOTIFICATION_TYPE)[keyof typeof NOTIFICATION_TYPE];
 export type NotificationTypeForLearner = Exclude<NotificationType, 'NEW_COMMUNITY_QUESTION'>;
-export type NotificationTypeForCreator = Exclude<NotificationType, 'NEW_COURSE'>;
+export type NotificationTypeForCreator = Exclude<NotificationType, 'NEW_COURSE' | 'COMMUNITY_ANSWER_ACCEPT'>;
 
 export type NotificationSettingsResponseForLearner = {
   settings: {
