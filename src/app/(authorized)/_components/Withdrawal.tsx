@@ -16,12 +16,12 @@ import { toast } from 'sonner';
 
 export default function Withdrawal() {
   const { mutateAsync: withdraw } = useDeleteWithdraw();
-  const navigate = useRouter();
+  const router = useRouter();
 
   const handleWithdraw = async () => {
     await withdraw().then(() => {
       toast.success('탈퇴가 완료되었습니다.');
-      navigate.push('/onboarding');
+      router.push('/onboarding');
     });
   };
 

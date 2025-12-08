@@ -18,6 +18,7 @@ import {
   usePostCommunityCourseRequest,
 } from '@/shared/services/ai-community/ai-community.hook';
 import { CourseFormField, CourseRequest, CourseRequestAnswer } from '@/shared/services/ai-community/ai-community.type';
+import { toast } from 'sonner';
 
 // 동적으로 생성될 폼 데이터 타입
 type CourseRequestFormData = {
@@ -162,12 +163,12 @@ export default function LearnerCourseRequestNewPage() {
 
     submitCourseRequest(courseRequest, {
       onSuccess: () => {
-        alert('강의 요청이 제출되었습니다!');
+        toast.success('강의 요청이 제출되었습니다!');
         router.push('/learner/course-request');
       },
       onError: (error) => {
         console.error('강의 요청 제출 실패:', error);
-        alert('강의 요청 제출에 실패했습니다. 다시 시도해주세요.');
+        toast.error('강의 요청 제출에 실패했습니다. 다시 시도해주세요.');
       },
     });
   };
