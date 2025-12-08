@@ -1,3 +1,4 @@
+"use client";
 import dayjs from "dayjs";
 import { LiaWonSignSolid } from "react-icons/lia";
 

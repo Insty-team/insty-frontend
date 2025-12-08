@@ -12,12 +12,14 @@ import Loading from "@/app/_components/common/Loading";
 import Modal from "@/app/_components/common/Modal";
 import {
 	getCheckCourseRequestAvailibility,
+	getCourseRequestFinalResult,
 	getCreatorRecommendationForm,
 	getLastCreatorForm,
-	postCourseRequestWithBase,
+	patchRecommendationStatus,
 	postCourseRequestWithoutBase,
 } from "@/app/api/ai/community";
 import { getMyCourses } from "@/app/api/backend";
+import { useCourseRequestRecommendationsWithBaseQuery } from "@/app/queries/course-request";
 import type { ApiFormField, FormField } from "@/app/types/community";
 
 interface SelectedField {
@@ -37,6 +39,37 @@ interface FormData {
 	[key: string]: string | string[];
 }
 
+interface CourseRequestResultTask {
+	task: string;
+	status: string;
+	output: {
+		summary_title?: string;
+		summary_purpose?: string;
+		summary_recommendation_level?: string;
+		estimated_duration_minutes?: number;
+		intro?: string;
+		main?: string;
+		outro?: string;
+		call_to_action?: string;
+		error?: string;
+		item?: string;
+		references?: {
+			title: string;
+			url: string;
+			type?: string;
+			description?: string;
+		}[];
+		// 기타 필드는 필요 시 확장
+		[key: string]: unknown;
+	};
+}
+
+interface CourseRequestFinalResult {
+	request_id: number;
+	package_status_id: number;
+	results: CourseRequestResultTask[];
+}
+
 function LearnerRequest() {
 	const router = useRouter();
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,6 +87,10 @@ function LearnerRequest() {
 	const [formSubmitted, setFormSubmitted] = useState(false);
 	const [formFields, setFormFields] = useState<FormField[]>([]);
 	const [isFormLoading, setIsFormLoading] = useState(false);
+	const [finalResult, setFinalResult] =
+		useState<CourseRequestFinalResult | null>(null);
+	const [isFinalResultLoading, setIsFinalResultLoading] = useState(false);
+	const [finalResultError, setFinalResultError] = useState<string | null>(null);
 	const {
 		control,
 		handleSubmit,
@@ -62,6 +99,13 @@ function LearnerRequest() {
 	} = useForm<FormData>({
 		defaultValues: {},
 	});
+
+	// 러너 요청 추천 리스트 (with-base) 캐시 쿼리
+	const {
+		data: cachedRecommendations = [],
+		isFetching: isRecommendationsFetching,
+		refetch: refetchRecommendations,
+	} = useCourseRequestRecommendationsWithBaseQuery();
 
 	// field_key를 한국어 라벨로 매핑하는 함수
 	const getFieldLabel = (fieldKey: string): string => {
@@ -75,61 +119,103 @@ function LearnerRequest() {
 	};
 
 	// 업로드 페이지로 이동하는 함수
-	const handleGoToUpload = () => {
+	const handleGoToUpload = async () => {
 		if (!selectedRequest) return;
 
-		// 선택된 요청 정보를 localStorage에 저장
-		const requestData = {
-			request: selectedRequest,
-			timestamp: Date.now(), // 저장 시간 추가
-		};
-		localStorage.setItem("selectedLearnerRequest", JSON.stringify(requestData));
-
-		// 업로드 페이지로 이동
-		router.push("/creator/community/learner-request/upload");
+		await checkAvailibility(selectedRequest.request_id);
 	};
 
 	// API 데이터를 프론트엔드 형태로 변환하는 함수
-	const transformFormFields = (apiFields: ApiFormField[]): FormField[] => {
-		return apiFields.map((field) => {
-			// API 타입을 프론트엔드 타입으로 변환
-			let mappedType: FormField["type"] = "text";
-			switch (field.type) {
-				case "input_text":
-					mappedType = "text";
-					break;
-				case "text_area":
-					mappedType = "textarea";
-					break;
-				case "radio":
-					mappedType = "radio";
-					break;
-				case "checkbox":
-					mappedType = "checkbox";
-					break;
-				default:
-					mappedType = "text";
-			}
+	const transformFormFields = useCallback(
+		(apiFields: ApiFormField[]): FormField[] => {
+			return apiFields.map((field) => {
+				// API 타입을 프론트엔드 타입으로 변환
+				let mappedType: FormField["type"] = "text";
+				switch (field.type) {
+					case "input_text":
+						mappedType = "text";
+						break;
+					case "text_area":
+						mappedType = "textarea";
+						break;
+					case "radio":
+						mappedType = "radio";
+						break;
+					case "checkbox":
+						mappedType = "checkbox";
+						break;
+					default:
+						mappedType = "text";
+				}
 
-			return {
-				id: field.id,
-				fieldKey: field.field_key,
-				label: field.label,
-				type: mappedType,
-				isRequired: field.is_required,
-				orderNo: field.order_no,
-				options: field.options.map((option) => ({
-					id: option.id,
-					label: option.label,
-					orderNo: option.order_no,
-				})),
-			};
-		});
+				return {
+					id: field.id,
+					fieldKey: field.field_key,
+					label: field.label,
+					type: mappedType,
+					isRequired: field.is_required,
+					orderNo: field.order_no,
+					options: field.options.map((option) => ({
+						id: option.id,
+						label: option.label,
+						orderNo: option.order_no,
+					})),
+				};
+			});
+		},
+		[],
+	);
+
+	const refreshRequest = async () => {
+		await fetchRequestList();
 	};
 
 	const checkAvailibility = async (requestId: number) => {
-		const res = await getCheckCourseRequestAvailibility(requestId);
-		console.log(res);
+		try {
+			const res = await getCheckCourseRequestAvailibility(requestId);
+			console.log(res);
+			//업로드 가능시, 상태 업데이트
+			if (
+				(res.success && res.data.status === "IGNORED") ||
+				res.data.status === "DECLINED"
+			) {
+				const requestData = {
+					request: selectedRequest,
+					timestamp: Date.now(), // 저장 시간 추가
+				};
+
+				localStorage.setItem(
+					"selectedLearnerRequest",
+					JSON.stringify(requestData),
+				);
+
+				await patchRecommendationStatus(requestId, "ACCEPTED");
+				console.log("상태 업데이트 완료!!", requestId, "ACCEPTED");
+				router.push("/creator/learner-request/upload");
+			} else {
+				Swal.fire({
+					title: "업로드 불가",
+					text: "이미 누군가가 해당 요청에 대한 강의를 작성중입니다.",
+					icon: "error",
+				}).then(async () => {
+					setIsModalOpen(false);
+					setSelectedRequest(null);
+					setChecklist({
+						scriptPrepared: false,
+						videoPrepared: false,
+						materialsReady: false,
+					});
+					refreshRequest();
+				});
+			}
+		} catch (error) {
+			console.error(error);
+			Swal.fire({
+				title: "추천 가능 여부 확인 오류!",
+				text: "추천 가능 여부를 확인하는데 실패했습니다. 다시시도해주세요.",
+				icon: "error",
+			});
+		}
 	};
 
 	// 폼 제출 핸들러
@@ -206,6 +292,8 @@ function LearnerRequest() {
 		}
 	};
 
+	// 추천 리스트 조회 (초기 진입 / 갱신 공용)
+	// - 최초 진입(캐시 없음) 또는 명시적 갱신 시에만 호출
 	const fetchRequestList = useCallback(async () => {
 		try {
 			setIsLoading(true);
@@ -214,9 +302,10 @@ function LearnerRequest() {
 			//이미 내가 올린 강의가 있다면?
 			if (courseData.items.length > 0) {
 				try {
-					const response = await postCourseRequestWithBase();
-					if (response.success && response.data.recommendations) {
-						setRequestList(response.data.recommendations);
+					const { data } = await refetchRecommendations();
+
+					if (data && Array.isArray(data)) {
+						setRequestList(data as LearnerRequest[]);
 						setFormSubmitted(true);
 					}
 				} catch (error) {
@@ -290,11 +379,72 @@ function LearnerRequest() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, [reset]);
+	}, [refetchRecommendations, reset, transformFormFields]);
 
 	useEffect(() => {
-		fetchRequestList();
-	}, [fetchRequestList]);
+		// 캐시된 추천 리스트가 이미 있다면, 캐시 데이터만 보여줌 (갱신 X)
+		const hasCachedRecommendations =
+			Array.isArray(cachedRecommendations) && cachedRecommendations.length > 0;
+
+		if (hasCachedRecommendations) {
+			// 캐시 데이터만 보여줌
+			setRequestList(cachedRecommendations as LearnerRequest[]);
+			setFormSubmitted(true);
+			setIsLoading(false);
+		} else {
+			// 캐시가 없을 때만 서버에 요청
+			fetchRequestList();
+		}
+	}, [cachedRecommendations, fetchRequestList]);
+
+	useEffect(() => {
+		if (!selectedRequest) {
+			setFinalResult(null);
+			setFinalResultError(null);
+			return;
+		}
+
+		const fetchFinalResult = async () => {
+			try {
+				setIsFinalResultLoading(true);
+				const res = await getCourseRequestFinalResult(
+					selectedRequest.request_id,
+				);
+
+				// //테스팅 용임 나중에 삭제@@
+				// const re2 = await getCheckCourseRequestAvailibility(
+				// 	selectedRequest.request_id,
+				// );
+
+				// if (re2.success && re2.data) {
+				// 	console.log(re2.data);
+				// } else {
+				// 	console.log(re2.message);
+				// }
+
+				if (res.success && res.data) {
+					setFinalResult(res.data as CourseRequestFinalResult);
+					setFinalResultError(null);
+				} else {
+					setFinalResult(null);
+					setFinalResultError(
+						res?.message ||
+							"AI 강의 설계 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+					);
+				}
+			} catch (error) {
+				console.error(error);
+				setFinalResult(null);
+				setFinalResultError(
+					"AI 강의 설계 결과를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+				);
+			} finally {
+				setIsFinalResultLoading(false);
+			}
+		};
+
+		void fetchFinalResult();
+	}, [selectedRequest]);
 
 	// 폼 필드 렌더링 함수
 	const renderFormField = (field: FormField) => {
@@ -593,6 +743,23 @@ function LearnerRequest() {
 				</p>
 			</div>
 
+			{/* 리스트 갱신 버튼 */}
+			<div className="flex justify-end mt-4">
+				<button
+					type="button"
+					onClick={() => {
+						// 명시적 "추천 목록 갱신" 버튼 → 항상 서버에서 최신 목록 요청
+						fetchRequestList();
+					}}
+					disabled={isRecommendationsFetching}
+					className="text-sm text-primary-green-600 hover:text-primary-green-700 underline cursor-pointer disabled:opacity-50"
+				>
+					{isRecommendationsFetching
+						? "추천 목록 갱신 중..."
+						: "추천 목록 갱신하기"}
+				</button>
+			</div>
+
 			{isLoading ? (
 				<div className="flex justify-center items-center py-20">
 					<p className="text-2xl text-primary-green-500">
@@ -618,7 +785,6 @@ function LearnerRequest() {
 							onClick={() => {
 								setSelectedRequest(request);
 								setIsModalOpen(true);
-								checkAvailibility(request.request_id);
 							}}
 						>
 							<div className="flex justify-between items-start mb-4">
@@ -705,93 +871,275 @@ function LearnerRequest() {
 								getFieldLabel={getFieldLabel}
 							/>
 
-							{/* 영상 제작 체크리스트 */}
+							{/* AI 최종 결과 섹션 */}
 							<div className="space-y-4">
 								<h3 className="text-lg font-semibold text-black-300 flex items-center">
-									<span className="w-2 h-2 bg-orange rounded-full mr-3"></span>
-									영상 제작 체크리스트
+									<span className="w-2 h-2 bg-primary-green-500 rounded-full mr-3"></span>
+									AI 생성 강의 설계 결과
 								</h3>
 
-								<div className="bg-gray-scale-50 p-4 rounded-lg space-y-4">
-									<div className="flex items-center space-x-3">
-										<input
-											type="checkbox"
-											id="scriptPrepared"
-											checked={checklist.scriptPrepared}
-											onChange={(e) =>
-												setChecklist((prev) => ({
-													...prev,
-													scriptPrepared: e.target.checked,
-												}))
-											}
-											className="w-5 h-5 text-primary-green-500 rounded focus:ring-primary-green-500"
-										/>
-										<label
-											htmlFor="scriptPrepared"
-											className="text-black-300 font-medium"
-										>
-											스크립트 작성 완료
-										</label>
+								{isFinalResultLoading && (
+									<div className="flex items-center gap-2 text-sm text-gray-scale-400">
+										<Loading width={24} height={24} />
+										<span>강의 설계 결과를 불러오는 중입니다...</span>
 									</div>
-									<p className="ml-8 text-sm text-gray-scale-400">
-										강의 내용과 설명 스크립트가 준비되었습니다.
-									</p>
+								)}
 
-									<div className="flex items-center space-x-3">
-										<input
-											type="checkbox"
-											id="videoPrepared"
-											checked={checklist.videoPrepared}
-											onChange={(e) =>
-												setChecklist((prev) => ({
-													...prev,
-													videoPrepared: e.target.checked,
-												}))
-											}
-											className="w-5 h-5 text-primary-green-500 rounded focus:ring-primary-green-500"
-										/>
-										<label
-											htmlFor="videoPrepared"
-											className="text-black-300 font-medium"
-										>
-											강의 영상 촬영 완료
-										</label>
+								{!isFinalResultLoading && finalResultError && !finalResult && (
+									<div className="bg-secondary-red-100 border border-secondary-red-300 rounded-lg p-3 text-md text-white">
+										❌ {finalResultError}
 									</div>
-									<p className="ml-8 text-sm text-gray-scale-400">
-										강의 영상이 준비되었습니다.
-									</p>
+								)}
 
-									<div className="flex items-center space-x-3">
-										<input
-											type="checkbox"
-											id="materialsReady"
-											checked={checklist.materialsReady}
-											onChange={(e) =>
-												setChecklist((prev) => ({
-													...prev,
-													materialsReady: e.target.checked,
-												}))
-											}
-											className="w-5 h-5 text-primary-green-500 rounded focus:ring-primary-green-500"
-										/>
-										<label
-											htmlFor="materialsReady"
-											className="text-black-300 font-medium"
-										>
-											실습 자료 준비 완료
-										</label>
+								{!isFinalResultLoading && finalResult && (
+									<div className="space-y-4">
+										{/* summary */}
+										{finalResult.results
+											.filter(
+												(r) =>
+													r.task === "summary" &&
+													r.status === "COMPLETED" &&
+													r.output,
+											)
+											.map((r) => (
+												<div
+													key={r.task}
+													className="bg-primary-green-50 border border-primary-green-200 rounded-lg p-4"
+												>
+													<p className="text-sm text-gray-scale-400 mb-1">
+														요약
+													</p>
+													<p className="text-xl font-bold text-black-300 mb-1">
+														{r.output.summary_title}
+													</p>
+													<p className="text-sm text-gray-scale-500 mb-2">
+														{r.output.summary_purpose}
+													</p>
+													<div className="flex flex-wrap gap-2 text-xs text-gray-scale-500">
+														<span className="px-2 py-1 rounded-full bg-white border border-primary-green-200">
+															난이도: {r.output.summary_recommendation_level}
+														</span>
+														<span className="px-2 py-1 rounded-full bg-white border border-primary-green-200">
+															예상 소요 시간:{" "}
+															{r.output.estimated_duration_minutes}분
+														</span>
+													</div>
+												</div>
+											))}
+
+										{/* script */}
+										{finalResult.results
+											.filter(
+												(r) =>
+													r.task === "script" &&
+													r.status === "COMPLETED" &&
+													r.output,
+											)
+											.map((r) => (
+												<div
+													key={r.task}
+													className="bg-white border border-gray-scale-100 rounded-lg p-4 space-y-3"
+												>
+													<p className="text-sm font-semibold text-black-300">
+														강의 스크립트
+													</p>
+													<div className="space-y-2 text-sm text-gray-scale-500 max-h-72 overflow-y-auto">
+														<div>
+															<p className="font-semibold text-black-300">
+																인트로
+															</p>
+															<p>{r.output.intro}</p>
+														</div>
+														<div>
+															<p className="font-semibold text-black-300">
+																본론
+															</p>
+															<p>{r.output.main}</p>
+														</div>
+														<div>
+															<p className="font-semibold text-black-300">
+																마무리
+															</p>
+															<p>{r.output.outro}</p>
+														</div>
+														<div>
+															<p className="font-semibold text-black-300">
+																실행 요청
+															</p>
+															<p>{r.output.call_to_action}</p>
+														</div>
+													</div>
+												</div>
+											))}
+
+										{/* section_plan - 에러 메시지 등 */}
+										{finalResult.results
+											.filter((r) => r.task === "section_plan")
+											.map((r) => (
+												<div
+													key={r.task}
+													className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm text-orange-800"
+												>
+													<p className="font-semibold mb-1">섹션별 강의 계획</p>
+													{r.status === "COMPLETED" && r.output?.error && (
+														<p>{r.output.error}</p>
+													)}
+												</div>
+											))}
+
+										{/* checklist */}
+										{finalResult.results
+											.filter(
+												(r) =>
+													r.task === "checklist" &&
+													r.status === "COMPLETED" &&
+													r.output,
+											)
+											.map((r) => (
+												<div
+													key={r.task}
+													className="bg-primary-green-50 border border-primary-green-200 rounded-lg p-4 text-sm text-primary-green-900"
+												>
+													<p className="font-semibold mb-1">체크리스트</p>
+													<p>{r.output.item}</p>
+												</div>
+											))}
+
+										{/* references */}
+										{finalResult.results
+											.filter(
+												(r) =>
+													r.task === "references" &&
+													r.status === "COMPLETED" &&
+													Array.isArray(r.output.references) &&
+													r.output.references.length > 0,
+											)
+											.map((r) => (
+												<div
+													key={r.task}
+													className="bg-gray-scale-50 border border-gray-scale-200 rounded-lg p-4 text-sm"
+												>
+													<p className="font-semibold text-black-300 mb-2">
+														참고 자료
+													</p>
+													<ul className="space-y-2">
+														{(r.output.references ?? []).map(
+															(ref: {
+																title: string;
+																url: string;
+																description?: string;
+															}) => (
+																<li key={ref.url}>
+																	<a
+																		href={ref.url}
+																		target="_blank"
+																		rel="noreferrer"
+																		className="text-primary-green-600 hover:text-primary-green-700 underline"
+																	>
+																		{ref.title}
+																	</a>
+																	{ref.description && (
+																		<p className="text-xs text-gray-scale-500">
+																			{ref.description}
+																		</p>
+																	)}
+																</li>
+															),
+														)}
+													</ul>
+												</div>
+											))}
 									</div>
-									<p className="ml-8 text-sm text-gray-scale-400">
-										학습자가 다운로드할 수 있는 실습 파일이 준비되었습니다.
-									</p>
+								)}
 
-									<div
-										className={`mt-4 p-3 bg-primary-green-100 border border-primary-green-300 rounded-lg transition-opacity duration-200 ${Object.values(checklist).every(Boolean) ? "opacity-100" : "opacity-0 h-0 p-0 overflow-hidden"}`}
-									>
-										<p className="text-primary-green-800 text-sm font-medium">
-											✅ 모든 준비가 완료되었습니다! 이제 강의를 업로드할 수
-											있습니다.
+								{/* 영상 제작 체크리스트 */}
+								<div className="space-y-4">
+									<h3 className="text-lg font-semibold text-black-300 flex items-center">
+										<span className="w-2 h-2 bg-orange rounded-full mr-3"></span>
+										영상 제작 체크리스트
+									</h3>
+
+									<div className="bg-gray-scale-50 p-4 rounded-lg space-y-4">
+										<div className="flex items-center space-x-3">
+											<input
+												type="checkbox"
+												id="scriptPrepared"
+												checked={checklist.scriptPrepared}
+												onChange={(e) =>
+													setChecklist((prev) => ({
+														...prev,
+														scriptPrepared: e.target.checked,
+													}))
+												}
+												className="w-5 h-5 text-primary-green-500 rounded focus:ring-primary-green-500"
+											/>
+											<label
+												htmlFor="scriptPrepared"
+												className="text-black-300 font-medium"
+											>
+												스크립트 작성 완료
+											</label>
+										</div>
+										<p className="ml-8 text-sm text-gray-scale-400">
+											강의 내용과 설명 스크립트가 준비되었습니다.
 										</p>
+
+										<div className="flex items-center space-x-3">
+											<input
+												type="checkbox"
+												id="videoPrepared"
+												checked={checklist.videoPrepared}
+												onChange={(e) =>
+													setChecklist((prev) => ({
+														...prev,
+														videoPrepared: e.target.checked,
+													}))
+												}
+												className="w-5 h-5 text-primary-green-500 rounded focus:ring-primary-green-500"
+											/>
+											<label
+												htmlFor="videoPrepared"
+												className="text-black-300 font-medium"
+											>
+												강의 영상 촬영 완료
+											</label>
+										</div>
+										<p className="ml-8 text-sm text-gray-scale-400">
+											강의 영상이 준비되었습니다.
+										</p>
+
+										<div className="flex items-center space-x-3">
+											<input
+												type="checkbox"
+												id="materialsReady"
+												checked={checklist.materialsReady}
+												onChange={(e) =>
+													setChecklist((prev) => ({
+														...prev,
+														materialsReady: e.target.checked,
+													}))
+												}
+												className="w-5 h-5 text-primary-green-500 rounded focus:ring-primary-green-500"
+											/>
+											<label
+												htmlFor="materialsReady"
+												className="text-black-300 font-medium"
+											>
+												실습 자료 준비 완료
+											</label>
+										</div>
+										<p className="ml-8 text-sm text-gray-scale-400">
+											학습자가 다운로드할 수 있는 실습 파일이 준비되었습니다.
+										</p>
+
+										<div
+											className={`mt-4 p-3 bg-primary-green-100 border border-primary-green-300 rounded-lg transition-opacity duration-200 ${Object.values(checklist).every(Boolean) ? "opacity-100" : "opacity-0 h-0 p-0 overflow-hidden"}`}
+										>
+											<p className="text-primary-green-800 text-sm font-medium">
+												✅ 모든 준비가 완료되었습니다! 이제 강의를 업로드할 수
+												있습니다.
+											</p>
+										</div>
 									</div>
 								</div>
 							</div>

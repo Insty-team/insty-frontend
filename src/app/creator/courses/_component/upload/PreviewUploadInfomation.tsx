@@ -1,6 +1,7 @@
 "use client";
 
 import * as Amplitude from "@amplitude/analytics-browser";
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import Swal from "sweetalert2";
 import { BaseButton } from "@/app/_components/common";
 import Loading from "@/app/_components/common/Loading";
 import VideoPlayer from "@/app/_components/common/VideoPlayer";
+import { patchRecommendationStatus } from "@/app/api/ai/community";
 import { postVectorStatus } from "@/app/api/ai/video";
 import { postCourse } from "@/app/api/backend";
 import { useGetUserProfileInfoQuery } from "@/app/queries";
@@ -21,17 +23,22 @@ import { formatTime } from "@/app/utils/date";
 interface PreviewUploadInfomationProps {
 	data: UploadformData;
 	onEdit: () => void;
+	mode: "upload" | "learnerRequest";
+	requestId?: number;
 }
 
 function PreviewUploadInfomation({
 	data,
 	onEdit,
+	mode,
+	requestId,
 }: PreviewUploadInfomationProps) {
 	const [videoDuration, setVideoDuration] = useState(0);
 	const [isUploading, setIsUploading] = useState(false);
 	const { reset } = useVideoUploadStore();
 	const { user: userData } = useUserStore();
 	const { data: userProfileInfo } = useGetUserProfileInfoQuery();
+	const queryClient = useQueryClient();
 
 	const router = useRouter();
 	//console.log(data);
@@ -87,7 +94,23 @@ function PreviewUploadInfomation({
 							confirmButtonColor: "#6ead79",
 							timer: 30000,
 							timerProgressBar: true,
-						}).then(() => {
+						}).then(async () => {
+							//강의 요청으로 만들어진거라면.
+							if (mode === "learnerRequest" && requestId) {
+								const res = await patchRecommendationStatus(
+									requestId,
+									"COMPLETED",
+								);
+								if (res && res.success) {
+									console.log("상태 업데이트 완료!!", requestId, "COMPLETED");
+									console.log(res.data);
+								}
+								console.log("상태 업데이트 완료!!", requestId, "COMPLETED");
+								// 추천 리스트 캐시 무효화
+								queryClient.invalidateQueries({
+									queryKey: ["courseRequestRecommendationsWithBase"],
+								});
+							}
 							reset();
 							router.push("/creator/courses");
 						});
