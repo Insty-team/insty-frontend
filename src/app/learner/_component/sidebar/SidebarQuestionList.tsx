@@ -21,24 +21,16 @@ function QuestionList({
 	const courseId = Number(id);
 	console.log(courseId);
 
-	const [value, setValue] = useState("");
+	const [keyword, setKeyword] = useState("");
 
 	const onChangeSearch = (e: ChangeEvent<HTMLInputElement>) => {
-		setValue(e.target.value);
+		setKeyword(e.target.value);
 	};
 
 	const { data: questions, isLoading } = useGetCommunityCourseQuestionQuery({
 		courseId,
+		keyword,
 	});
-
-	if (isLoading) {
-		return (
-			<div className="flex-1 flex items-center justify-center p-6 text-gray-500">
-				데이터를 불러오는 중입니다...
-			</div>
-		);
-	}
-
 	const courseQuestions = questions?.items || [];
 
 	return (
@@ -51,12 +43,16 @@ function QuestionList({
 				질문 남기기
 			</button>
 			<BaseSearchBar
-				value={value}
+				value={keyword}
 				placeholder="원하는 질문이나 키워드를 입력하세요!"
 				onChange={onChangeSearch}
 				className="mb-4"
 			/>
-			{courseQuestions.length > 0 ? (
+			{isLoading ? (
+				<div className="flex items-center justify-center py-12 text-gray-500">
+					Loading...
+				</div>
+			) : courseQuestions.length > 0 ? (
 				courseQuestions.map((question) => (
 					<QuestionCard
 						key={question.questionId}
