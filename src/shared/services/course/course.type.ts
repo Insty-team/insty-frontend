@@ -109,3 +109,121 @@ export type CourseProgressByMeResponse = {
   thumbnailUrl: string;
   createdAt: string;
 };
+
+/** 
+ * 강의 QA 및 커뮤니티 관련 Type
+ */
+
+export type CourseQuestionStatus = 'WAITING' | 'ANSWERED' | 'ACCEPTED';
+export type UserType = 'LEARNER' | 'CREATOR';
+
+export type CourseQuestionSearchParams = {
+  page?: number;
+  pageSize?: number;
+  orderBy?: string;
+  order?: 'asc' | 'desc';
+  keyword?: string;
+  statuses?: CourseQuestionStatus[];
+};
+
+export type CourseQuestionRequest = {
+  title: string;
+  content: string;
+  videoUuid?: string;
+  attachments?: File[];
+};
+
+export type Attachment = {
+  id: number;
+  name: string;
+  contentType: string;
+  size: number;
+  url: string;
+};
+
+export type CourseQuestionBaseResponse = {
+  questionId: number;
+  courseId: string;
+  user: {
+    id: number;
+    nickname: string;
+    userType: UserType;
+  },
+  title: string;
+  content: string;
+  status: CourseQuestionStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CourseQuestionListItemResponse = CourseQuestionBaseResponse;
+
+export type CourseQuestionDetailResponse = CourseQuestionBaseResponse & {
+  attachments: Attachment[];
+  videoInfo: {
+    videoType: VideoType;
+    videoUuid: string;
+    originFileName: string;
+  };
+};
+
+export type CourseQuestionResponse = CourseQuestionDetailResponse;
+
+export type CourseQuestionUpdateRequest = {
+  title: string;
+  content: string;
+  videoUuid?: string;
+  deleteFileIds?: number[];
+  attachments?: File[];
+}
+
+export type MyCourseQuestionResponse = {
+  questionId: number;
+  user: {
+    id: number;
+    nickname: string;
+    userType: UserType; 
+  }
+  courseId: number;
+  title: string;
+  content: string;
+  status: CourseQuestionStatus;
+  answerCount: number;
+  hasNewAnswer: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CourseQuestionAnswersResponse = {
+  answerId: number;
+  user: {
+    id: number;
+    nickname: string;
+    userType: UserType;
+  },
+  content: string;
+  attachments: Attachment[];
+  videoInfo: {
+    videoType: VideoType;
+    videoUuid: string;
+    originFileName: string;
+  },
+  isAccepted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CourseQuestionAnswerResponse = CourseQuestionAnswersResponse;
+
+export type CourseQuestionAnswerRequest = {
+  content: string;
+  videoUuid?: string;
+  attachments?: File[];
+}
+
+export type CourseQuestionAnswerUpdateRequest = {
+  content: string;
+  videoUuid?: string;
+  deleteFileIds?: number[];
+  attachments?: File[];
+}
