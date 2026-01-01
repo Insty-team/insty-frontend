@@ -14,6 +14,7 @@ import {
 
 import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
+import axios from 'axios';
 
 /** 질문 영상 업로드 */
 export const POST_question_video_upload = async (
@@ -55,4 +56,17 @@ export const POST_video_playlist = async (data: VideoPlaylistRequest): Promise<A
 export const GET_video_thumbnail = async (videoUuid: string): Promise<ApiResponse<VideoThumbnailResponse>> => {
   const response = await api.get(`/api/v1/videos/${videoUuid}/thumbnail`);
   return response.data;
+};
+
+/** 영상 데이터 가져오기 */
+export const GET_video_playlist_by_signed_url = async (signedUrl: string) => {
+  const getVideoData = await axios.get(signedUrl, {
+    withCredentials: true,
+  });
+  const lines = getVideoData.data.trim().split('\n');
+  const variantM3u8 = lines.find((line: string) => line.endsWith('.m3u8') && !line.startsWith('#'));
+
+  const baseUrl = signedUrl.substring(0, signedUrl.lastIndexOf('/') + 1);
+  const m3u8Url = baseUrl + variantM3u8;
+  return m3u8Url;
 };
