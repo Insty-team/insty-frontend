@@ -1,6 +1,6 @@
 'use client';
 
-import { CourseDraft, CourseFormData, InstallationRequirement, UploadProgress, UploadStep } from '../types';
+import { CourseDraft, CourseFormData, InstallationRequirement, UploadStep } from '../types';
 import { CoreContents } from './CoreContents';
 import { CoursePreview } from './CoursePreview';
 import { CourseTags } from './CourseTags';
@@ -16,7 +16,6 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { Separator } from '@/shared/components/ui/separator';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { CheckCircle2, Edit3, FileVideo, Sparkles } from 'lucide-react';
@@ -27,19 +26,11 @@ export function CourseUploadForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [, setVideoUuid] = useState<string>('');
   const [installationRequirements, setInstallationRequirements] = useState<InstallationRequirement[]>([]);
   const [coreContents, setCoreContents] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-
-  const [thumbnailProgress, setThumbnailProgress] = useState<UploadProgress>({
-    status: 'IDLE',
-    progress: 0,
-  });
-
-  const [videoProgress, setVideoProgress] = useState<UploadProgress>({
-    status: 'IDLE',
-    progress: 0,
-  });
+  const [isVideoReadyToProceed, setIsVideoReadyToProceed] = useState(false);
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string>('');
@@ -61,31 +52,6 @@ export function CourseUploadForm() {
   const description = watch('description');
   const title = watch('title');
   const targetAudience = watch('targetAudience');
-
-  // 파일 업로드 시뮬레이션 (실제로는 API 호출)
-  const simulateUpload = async (
-    file: File,
-    type: 'thumbnail' | 'video',
-    setProgress: (progress: UploadProgress) => void,
-  ) => {
-    setProgress({ status: 'PROCESSING', progress: 0 });
-
-    // 업로드 진행률 시뮬레이션
-    for (let i = 0; i <= 100; i += 10) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      setProgress({ status: 'PROCESSING', progress: i });
-    }
-
-    setProgress({ status: 'COMPLETED', progress: 100 });
-
-    // 파일 URL 생성 (실제로는 서버에서 받아온 URL)
-    const url = URL.createObjectURL(file);
-    if (type === 'thumbnail') {
-      setThumbnailUrl(url);
-    } else {
-      setVideoUrl(url);
-    }
-  };
 
   // AI 초안 생성 시뮬레이션
   const generateAIDraft = async (): Promise<CourseDraft> => {
@@ -118,9 +84,15 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
       alert('강의 영상을 먼저 업로드해주세요.');
       return;
     }
-
-    // 업로드 시뮬레이션
-    await simulateUpload(videoFile, 'video', setVideoProgress);
+    if (!isVideoReadyToProceed) {
+      alert('영상 업로드/AI 분석/썸네일 생성이 완료될 때까지 기다려주세요.');
+      return;
+    }
+    // 썸네일은 "직접 업로드(thumbnailFile)" 또는 "서버 생성 썸네일(thumbnailUrl)" 중 하나만 있으면 OK
+    if (!thumbnailFile && !thumbnailUrl) {
+      alert('강의 썸네일을 먼저 업로드해주세요.');
+      return;
+    }
 
     // AI 생성 단계로 이동
     setCurrentStep('AI_GENERATING');
@@ -137,10 +109,7 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
       setCoreContents(aiDraft.coreContents);
       setTags(aiDraft.tags);
 
-      // 썸네일도 업로드 시도
-      if (thumbnailFile) {
-        await simulateUpload(thumbnailFile, 'thumbnail', setThumbnailProgress);
-      }
+      // TODO: 썸네일 업로드 API 호출
     } catch (error) {
       console.error('AI 초안 생성 실패:', error);
       alert('AI 초안 생성 중 오류가 발생했습니다.');
@@ -286,24 +255,30 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
             <FileUpload
               type="video"
               file={videoFile}
-              onFileSelect={setVideoFile}
-              uploadProgress={videoProgress.progress}
-              uploadStatus={videoProgress.status}
-              error={videoProgress.message}
+              onFileSelect={(f) => {
+                setVideoFile(f);
+                // 파일을 바꾸면 다시 준비 상태를 false로 (준비되면 FileUpload가 true로 올려줌)
+                setIsVideoReadyToProceed(false);
+                setVideoUuid('');
+                setThumbnailUrl('');
+                setVideoUrl(f ? URL.createObjectURL(f) : '');
+              }}
+              onReadyChange={setIsVideoReadyToProceed}
+              onVideoUuidChange={setVideoUuid}
+              onThumbnailUrlChange={setThumbnailUrl}
             />
             <FileUpload
               type="thumbnail"
               file={thumbnailFile}
               onFileSelect={setThumbnailFile}
-              uploadProgress={thumbnailProgress.progress}
-              uploadStatus={thumbnailProgress.status}
-              error={thumbnailProgress.message}
+              thumbnailUrl={thumbnailUrl}
+              onThumbnailUrlClear={() => setThumbnailUrl('')}
             />
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={handleCancel}>
                 취소
               </Button>
-              <Button type="button" onClick={handleVideoUploadComplete} disabled={!videoFile}>
+              <Button type="button" onClick={handleVideoUploadComplete} disabled={!videoFile || !isVideoReadyToProceed}>
                 다음 단계로 진행
               </Button>
             </div>

@@ -19,6 +19,7 @@ import {
   VideoBatchDeleteRequest,
 } from './ai-video.type';
 
+import { ApiResponse } from '@/shared/types/api.type';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 /** 영상 STT (Transcribe) */
@@ -33,13 +34,23 @@ export const usePostVideoTranscribe = (videoId: number) => {
 export const useGetVideoTranscriptionStatus = (videoUuid: string) => {
   return useQuery({
     queryKey: [GET_video_transcription_status.name, videoUuid],
-    queryFn: () => GET_video_transcription_status(videoUuid),
+    queryFn: async () => {
+      try {
+        const res = await GET_video_transcription_status(videoUuid);
+        return res;
+      } catch (e) {
+        throw e;
+      }
+    },
     enabled: !!videoUuid,
     select: ({ data }) => data,
     refetchInterval: (query) => {
-      const data = query.state.data as TranscriptionStatusResponse | undefined;
-      const status = data?.status;
-      return status === 'IN_PROGRESS' || status === 'PENDING' ? 2000 : false;
+      const originalData = query.state.data as ApiResponse<TranscriptionStatusResponse> | undefined;
+      const status = originalData?.data?.status;
+
+      return status === 'IN_PROGRESS' || status === 'PENDING' || status === 'NOT_STARTED' || status === 'PROCESSING'
+        ? 2000
+        : false;
     },
   });
 };
