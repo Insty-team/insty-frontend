@@ -91,14 +91,27 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Label>
+                    {/* 체크박스 없이, 배지 클릭(또는 Enter/Space)로 지원/미지원 토글 */}
+                    <div className="flex items-center">
                       <Checkbox
+                        className="sr-only"
                         checked={requirement.isSupported}
                         onCheckedChange={() => handleToggleSupport(requirement.id)}
+                        aria-label={`${requirement.name} 지원 여부`}
                       />
                       <Badge
                         variant={requirement.isSupported ? 'default' : 'secondary'}
-                        className="flex items-center gap-1"
+                        className="flex cursor-pointer items-center gap-1 select-none"
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={requirement.isSupported}
+                        onClick={() => handleToggleSupport(requirement.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleToggleSupport(requirement.id);
+                          }
+                        }}
                       >
                         {requirement.isSupported ? (
                           <>
@@ -112,7 +125,7 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
                           </>
                         )}
                       </Badge>
-                    </Label>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -129,7 +142,7 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
         </div>
       )}
 
-      <p className="text-muted-foreground text-xs">{requirements.length}개 추가됨 • 체크박스로 지원/미지원 여부 선택</p>
+      <p className="text-muted-foreground text-xs">{requirements.length}개 추가됨 • 배지 클릭으로 지원/미지원 토글</p>
     </div>
   );
 }
