@@ -1,13 +1,13 @@
 'use client';
 
-import { CourseDraft, CourseFormData, InstallationRequirement, UploadStep } from '../types';
+import { CourseFormData, InstallationRequirement, UploadStep } from '../types';
 import { CoreContents } from './CoreContents';
 import { CoursePreview } from './CoursePreview';
 import { CourseTags } from './CourseTags';
 import { FileUpload } from './FileUpload';
 import { InstallationRequirements } from './InstallationRequirements';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { useRouter } from 'next/navigation';
@@ -18,15 +18,20 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { usePostVideoMetadataSuggestion } from '@/shared/services/ai-video/ai-video.hook';
+import { usePostCourse } from '@/shared/services/course/course.hook';
+import { GET_courses, GET_courses_my } from '@/shared/services/course/course.service';
+import { useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Edit3, FileVideo, Sparkles } from 'lucide-react';
 
 export function CourseUploadForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<UploadStep>('UPLOAD');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [, setVideoUuid] = useState<string>('');
+  const [videoUuid, setVideoUuid] = useState<string>('');
   const [installationRequirements, setInstallationRequirements] = useState<InstallationRequirement[]>([]);
   const [coreContents, setCoreContents] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -34,6 +39,10 @@ export function CourseUploadForm() {
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string>('');
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string>('');
+
+  const videoMetadataSuggestionMutation = usePostVideoMetadataSuggestion(videoUuid);
+  const postCourseMutation = usePostCourse();
 
   const {
     register,
@@ -53,29 +62,28 @@ export function CourseUploadForm() {
   const title = watch('title');
   const targetAudience = watch('targetAudience');
 
-  // AI 초안 생성 시뮬레이션
-  const generateAIDraft = async (): Promise<CourseDraft> => {
-    await new Promise((resolve) => setTimeout(resolve, 3000)); // 3초 대기
+  // 사용자가 직접 썸네일 파일을 올린 경우, 미리보기에서 보이도록 objectURL 생성
+  useEffect(() => {
+    if (!thumbnailFile) {
+      setThumbnailPreviewUrl('');
+      return;
+    }
+    const url = URL.createObjectURL(thumbnailFile);
+    setThumbnailPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [thumbnailFile]);
 
-    // AI가 생성한 초안 데이터 시뮬레이션
-    return {
-      title: `${videoFile?.name.replace('.mp4', '') || '강의'}에 대한 AI 생성 제목`,
-      targetAudience: '초보자',
-      description: `이 강의는 ${videoFile?.name.replace('.mp4', '') || '주제'}에 대한 포괄적인 가이드를 제공합니다. 
-      
-주요 학습 내용:
-- 기본 개념 이해
-- 실전 예제와 함께하는 단계별 설명
-- 베스트 프랙티스와 팁
-
-${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들에게 적합합니다.`,
-      installationRequirements: [
-        { id: '1', name: 'Node.js', isSupported: true },
-        { id: '2', name: 'npm 또는 yarn', isSupported: true },
-      ],
-      coreContents: ['기본 개념 이해', '실전 프로젝트', '베스트 프랙티스', '문제 해결 방법'],
-      tags: ['초보자', '튜토리얼', '실전'],
-    };
+  // Base64(data:) → File 변환
+  const base64ToFile = (base64String: string, filename: string): File => {
+    const arr = base64String.split(',');
+    const mime = arr[0]?.match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1] || '');
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
   };
 
   // Step 1: 영상 업로드 후 AI 생성으로 이동
@@ -93,23 +101,32 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
       alert('강의 썸네일을 먼저 업로드해주세요.');
       return;
     }
+    if (!videoUuid) {
+      alert('영상 업로드가 완료되지 않았습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
 
     // AI 생성 단계로 이동
     setCurrentStep('AI_GENERATING');
 
     // AI 초안 생성
     try {
-      const aiDraft = await generateAIDraft();
+      const res = await videoMetadataSuggestionMutation.mutateAsync();
+      const aiDraft = res.data;
 
       // AI 초안을 폼에 채우기
       setValue('title', aiDraft.title);
-      setValue('targetAudience', aiDraft.targetAudience);
+      setValue('targetAudience', aiDraft.target);
       setValue('description', aiDraft.description);
-      setInstallationRequirements(aiDraft.installationRequirements);
-      setCoreContents(aiDraft.coreContents);
-      setTags(aiDraft.tags);
-
-      // TODO: 썸네일 업로드 API 호출
+      setInstallationRequirements(
+        (aiDraft.installation_checklist ?? []).map((name, idx) => ({
+          id: `${Date.now()}-${idx}`,
+          name,
+          isSupported: true,
+        })),
+      );
+      setCoreContents(aiDraft.core_contents ?? []);
+      setTags(aiDraft.tags ?? []);
     } catch (error) {
       console.error('AI 초안 생성 실패:', error);
       alert('AI 초안 생성 중 오류가 발생했습니다.');
@@ -123,17 +140,46 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
     setIsSubmitting(true);
 
     try {
-      // 실제 API 호출 로직은 여기에 구현
+      // thumbnail:
+      // - 사용자가 직접 올렸으면 그 파일 사용
+      // - 없고 thumbnailUrl이 data: (Base64)면 File로 변환해서 전송
+      // - 그 외(서버 썸네일 https://...)면 전송하지 않음(null)
+      let finalThumbnailFile: File | null = thumbnailFile;
+      if (!finalThumbnailFile && thumbnailUrl && thumbnailUrl.startsWith('data:')) {
+        try {
+          finalThumbnailFile = base64ToFile(thumbnailUrl, 'thumbnail.jpg');
+        } catch (e) {
+          console.error('Base64 썸네일 변환 실패:', e);
+        }
+      }
+
+      // 스펙:
+      // - 코스 JSON + thumbnail(File|null) + practiceFile(null 가능)
+      // - 서버 생성 썸네일을 쓰면 thumbnail은 null로 전송
       const courseData = {
-        ...data,
-        thumbnail: thumbnailFile,
-        video: videoFile,
-        installationRequirements,
-        coreContents,
+        keyPoints: coreContents,
+        isShow: true,
+        price: 0,
+        installEnvChecklist: installationRequirements.map((r) => ({
+          content: r.name,
+          isSupported: r.isSupported,
+        })),
+        targetAudience: data.targetAudience,
+        videoUuid,
+        title: data.title,
         tags,
+        description: data.description,
+        thumbnail: finalThumbnailFile ?? null,
+        practiceFile: null,
       };
 
-      console.log('강의 데이터:', courseData);
+      await postCourseMutation.mutateAsync(courseData);
+
+      // 강의 목록 캐시 갱신
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [GET_courses_my.name] }),
+        queryClient.invalidateQueries({ queryKey: [GET_courses.name] }),
+      ]);
 
       // 성공 시 강의 목록으로 이동
       alert('강의가 성공적으로 업로드되었습니다!');
@@ -432,7 +478,7 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
 
           <CoursePreview
             formData={{ title, targetAudience, description, installationRequirements, coreContents, tags }}
-            thumbnailUrl={thumbnailUrl}
+            thumbnailUrl={thumbnailPreviewUrl || thumbnailUrl}
             videoUrl={videoUrl}
           />
 

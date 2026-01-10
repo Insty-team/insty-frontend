@@ -3,6 +3,7 @@ export interface CourseFormData {
   targetAudience: string;
   description: string;
   thumbnail?: File;
+  practiceFile?: File;
   video?: File;
   installationRequirements: InstallationRequirement[];
   coreContents: string[];
