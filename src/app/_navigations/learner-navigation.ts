@@ -3,7 +3,8 @@ import { BookOpen, Bot, MessageSquare, Settings, User } from 'lucide-react';
 export const LEARNER_NAVIGATION = [
   { name: '프로필 관리', href: '/learner/profile', icon: User },
   { name: '강의 수강내역', href: '/learner/purchases', icon: BookOpen },
-  { name: 'Q&A · 커뮤니티 · 챗봇', href: '/learner/history', icon: Bot },
+  {name: '커뮤니티', href: '/learner/community', icon: MessageSquare},
+  { name: '히스토리', href: '/learner/history', icon: Bot },
   { name: '설정', href: '/learner/settings', icon: Settings },
   { name: '강의 요청하기', href: '/learner/course-request', icon: MessageSquare },
 ];
