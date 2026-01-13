@@ -183,7 +183,7 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
                 <div>
                   <div className="font-medium text-lg">{post.user?.nickname}</div>
                   <div className="text-muted-foreground text-sm">
-                    {dayjs(post.createdAt).format('MMM DD, YYYY at h:mm A')}
+                    {dayjs(post.createdAt).format('MMM D, YYYY h:mm A')}
                   </div>
                 </div>
               </div>
@@ -259,7 +259,7 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
                         <div className="font-medium">{comment.user?.nickname}</div>
                         <div className="flex gap-1 items-center text-muted-foreground text-sm">
                           <Calendar className="h-4 w-4" />
-                          {dayjs(comment.createdAt).format('MMM DD h:mm A')}
+                          {dayjs(comment.createdAt).format('MMM D, YYYY h:mm A')}
                         </div>
                       </div>
                     </div>

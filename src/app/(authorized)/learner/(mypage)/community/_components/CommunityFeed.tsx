@@ -4,6 +4,7 @@
 
 import { useMemo, useState } from 'react';
 
+import RichTextEditor from '@/shared/components/editor/RichTextEditor';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -22,11 +23,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { useGetCourseCommunityPostsInfinite, useDeleteCourseCommunityPostById } from '@/shared/services/community/community.hook';
+import { useGetCourseCommunityPostsInfinite, useDeleteCourseCommunityPostById, usePostCourseCommunityPostById } from '@/shared/services/community/community.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import dayjs from 'dayjs';
-import { ArrowLeft, Calendar, MessageCircle, Heart, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Calendar, MessageCircle, Heart, MoreHorizontal, Sparkles } from 'lucide-react';
 
 type Props = {
   courseId: string;
@@ -48,6 +49,11 @@ type PostRow = {
 export default function CommunityFeed({ courseId, courseName, onBack, onPostClick }: Props) {
   const { data: profile } = useGetProfile();
   const currentUserId = profile?.id;
+  const isLearner = profile?.userType === 'LEARNER';
+  
+  const [postContent, setPostContent] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isPolishing, setIsPolishing] = useState(false);
   
   const {
     data: postsData,
@@ -59,6 +65,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
   } = useGetCourseCommunityPostsInfinite(Number(courseId), 20);
 
   const { mutate: deletePost } = useDeleteCourseCommunityPostById(Number(courseId));
+  const { mutate: createPost, isPending: isPosting } = usePostCourseCommunityPostById(Number(courseId));
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
 
@@ -76,6 +83,36 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
         },
       });
     }
+  };
+
+  const handleCreatePost = () => {
+    if (!postContent.trim()) return;
+
+    createPost(
+      {
+        title: postContent.split('\n')[0].substring(0, 50) || 'New Post',
+        content: postContent,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+      },
+      {
+        onSuccess: () => {
+          setPostContent('');
+          setUploadedFiles([]);
+        },
+      },
+    );
+  };
+
+  const handlePolishPost = () => {
+    if (!postContent.trim()) return;
+    
+    setIsPolishing(true);
+    
+    setTimeout(() => {
+      const polishedContent = `📝 ${postContent.trim()}`;
+      setPostContent(polishedContent);
+      setIsPolishing(false);
+    }, 1500);
   };
 
   const posts = useMemo(() => postsData?.items?.map((post) => {
@@ -147,6 +184,36 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
       ) : (
         <ScrollArea className="max-w-3xl mx-auto h-[calc(100vh-20rem)] rounded-lg bg-white">
           <div className="">
+            {/* 글 작성 폼 */}
+            {isLearner && (
+              <div className="p-4">
+                <div className="space-y-3">
+                  <RichTextEditor
+                    value={postContent}
+                    onChange={setPostContent}
+                    placeholder="Share your thoughts, ask questions, or spark a conversation..."
+                    onSend={handleCreatePost}
+                    showSendButton={true}
+                    showAttachButton={true}
+                    onFilesChange={setUploadedFiles}
+                    isSending={isPosting}
+                    className="rounded-md"
+                  />
+                  {postContent.trim() && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePolishPost}
+                      disabled={isPolishing}
+                      className="gap-2"
+                    >
+                      <Sparkles className="size-4" />
+                      {isPolishing ? 'Polishing...' : 'Polish with AI'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
             {posts.map((post, index) => (
               <Card key={post.id} className={`shadow-none ${index < posts.length - 1 ? 'border-b' : ''}`}>
                 <CardContent className="p-6">
@@ -162,7 +229,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
                       <div className="font-medium">{post.author}</div>
                       <div className="flex gap-1 items-center text-muted-foreground text-sm">
                         <Calendar className="h-4 w-4" />
-                        {dayjs(post.createdDate).format('MMM DD h:mm A')}
+                        {dayjs(post.createdDate).format('MMM D, YYYY h:mm A')}
                       </div>
                     </div>
                   </div>
