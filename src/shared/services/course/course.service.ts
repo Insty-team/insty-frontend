@@ -15,7 +15,7 @@ import {
   CourseQuestionAnswersResponse,
   CourseQuestionAnswerResponse,
   CourseQuestionAnswerRequest,
-  CourseQuestionAnswerUpdateRequest
+  CourseQuestionAnswerUpdateRequest,
 } from './course.type';
 
 import { api } from '@/shared/services/api';
@@ -33,7 +33,7 @@ export const PUT_course_by_id = async (
   courseId: string,
   data: CourseRequest,
 ): Promise<ApiResponse<CourseDetailResponse>> => {
-  const response = await api.put(`/api/v1/courses/${courseId}`, data);
+  const response = await api.patch(`/api/v1/courses/${courseId}`, data);
   return response.data;
 };
 
@@ -173,7 +173,7 @@ export const GET_course_question__by_id = async (courseId: number, questionId: n
 };
 
 /** 질문 수정 */
-export const PUT_course_question_by_id = async (
+export const PATCH_course_question_by_id = async (
   courseId: number,
   questionId: number,
   data: CourseQuestionUpdateRequest,
@@ -201,7 +201,7 @@ export const PUT_course_question_by_id = async (
     formData.append('attachments', file);
   });
 
-  const response = await api.put(`/api/v1/courses/${courseId}/questions/${questionId}`, formData, {
+  const response = await api.patch(`/api/v1/courses/${courseId}/questions/${questionId}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -215,8 +215,8 @@ export const DELETE_course_question_by_id = async (courseId: number, questionId:
   return response.data;
 };
 
-/** 내 질문 목록 검색 */
-export const GET_course_questions_my = async (courseId: number, params: CourseQuestionSearchParams = {
+/** 내 질문 목록 검색 (특정 강의) */
+export const GET_course_questions_my_by_id = async (courseId: number, params: CourseQuestionSearchParams = {
     page: 1,
     pageSize: 20,
     orderBy: 'createdAt',
@@ -283,8 +283,8 @@ export const DELETE_course_question_answer_by_id = async (courseId: number, ques
 };
 
 /** 답변 수정 */
-export const PUT_course_question_answer_by_id = async (courseId: number, questionId: number, answerId: number, data: CourseQuestionAnswerUpdateRequest): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
-  const response = await api.put(`/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}`, data);
+export const PATCH_course_question_answer_by_id = async (courseId: number, questionId: number, answerId: number, data: CourseQuestionAnswerUpdateRequest): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
+  const response = await api.patch(`/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}`, data);
   return response.data;
 };
 
@@ -293,3 +293,14 @@ export const GET_course_question_answer_accept_by_id = async (courseId: number, 
   const response = await api.get(`/api/v1/courses/${courseId}/questions/${questionId}/answers/accepted`);
   return response.data;
 };
+
+/** 내 QA 질문 조회 */
+export const GET_my_course_questions = async (data: CourseQuestionSearchParams = {
+    page: 1,
+    pageSize: 20,
+    orderBy: 'createdAt',
+    order: 'desc',
+  }): Promise<PaginatedResponse<MyCourseQuestionResponse>> => {
+  const response = await api.get(`/api/v1/questions/me`, { params: data });
+  return response.data;
+}

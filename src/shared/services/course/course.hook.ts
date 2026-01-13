@@ -1,38 +1,39 @@
 import {
   DELETE_course_by_id,
+  DELETE_course_question_answer_by_id,
+  DELETE_course_question_by_id,
   GET_course_by_id,
   GET_course_by_id_for_creator,
   GET_course_progress_exists_by_id,
+  GET_course_question__by_id,
+  GET_course_question_answer_accept_by_id,
+  GET_course_question_answers_by_id,
+  GET_course_questions_by_id,
+  GET_course_questions_my_by_id,
   GET_courses,
   GET_courses_my,
   GET_courses_Progress_by_me,
+  GET_my_course_questions,
+  PATCH_course_question_answer_by_id,
+  PATCH_course_question_by_id,
   POST_course,
   POST_course_progress_by_id,
+  POST_course_question_answer_accept_by_id,
+  POST_course_question_answer_by_id,
+  POST_course_question_by_id,
   PUT_course_by_id,
   PUT_course_visible_by_id,
-  GET_course_questions_by_id,
-  POST_course_question_by_id,
-  PUT_course_question_by_id,
-  DELETE_course_question_by_id,
-  GET_course_questions_my,
-  GET_course_question__by_id,
-  GET_course_question_answers_by_id,
-  POST_course_question_answer_by_id,
-  POST_course_question_answer_accept_by_id,
-  DELETE_course_question_answer_by_id,
-  PUT_course_question_answer_by_id,
-  GET_course_question_answer_accept_by_id
 } from './course.service';
 import {
-  CourseRequest,
-  CourseQuestionSearchParams,
-  CourseQuestionRequest,
-  CourseQuestionUpdateRequest,
   CourseQuestionAnswerRequest,
   CourseQuestionAnswerUpdateRequest,
+  CourseQuestionRequest,
+  CourseQuestionSearchParams,
+  CourseQuestionUpdateRequest,
+  CourseRequest,
 } from './course.type';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 
 /** 강의 상세조회 */
 export const useGetCourseById = (courseId: string) => {
@@ -136,7 +137,7 @@ export const useGetCourseProgressExistsById = (courseId: string) => {
   });
 };
 
-/** 
+/**
  * 강의 QA 및 커뮤니티 관련 query
  */
 
@@ -148,7 +149,7 @@ export const useGetCourseQuestions = (courseId: number, params: CourseQuestionSe
     enabled: !!courseId,
     select: ({ data }) => data,
   });
-}
+};
 
 /** 질문 작성 */
 export const usePostCourseQuestion = () => {
@@ -161,28 +162,42 @@ export const usePostCourseQuestion = () => {
     onSuccess: (_response, variables) => {
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, variables.courseId] });
       // 이거는 필요할지 모르겠음
-      queryClient.invalidateQueries({ queryKey: [GET_course_questions_my.name, variables.courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_questions_my_by_id.name, variables.courseId] });
     },
   });
-}
+};
 
 /** 질문 상세 조회 */
-export const useGetCourseQuestion = (courseId:number, questionId:number) => {
+export const useGetCourseQuestion = (
+  courseId: number,
+  questionId: number,
+  options?: {
+    enabled?: boolean;
+  },
+) => {
   return useQuery({
     queryKey: [GET_course_question__by_id.name, courseId, questionId],
     queryFn: () => GET_course_question__by_id(courseId, questionId),
+    enabled: options?.enabled,
     select: ({ data }) => data,
-  })
-}
+  });
+};
 
 /** 질문 수정 */
-export const usePutCourseQuestion = () => {
+export const usePatchCourseQuestion = () => {
   return useMutation({
-    mutationKey: [PUT_course_question_by_id.name],
-    mutationFn: ({ courseId, questionId, data }: { courseId: number; questionId: number; data: CourseQuestionUpdateRequest }) =>
-      PUT_course_question_by_id(courseId, questionId, data),
+    mutationKey: [PATCH_course_question_by_id.name],
+    mutationFn: ({
+      courseId,
+      questionId,
+      data,
+    }: {
+      courseId: number;
+      questionId: number;
+      data: CourseQuestionUpdateRequest;
+    }) => PATCH_course_question_by_id(courseId, questionId, data),
   });
-}
+};
 
 /** 질문 삭제 */
 export const useDeleteCourseQuestion = () => {
@@ -191,25 +206,31 @@ export const useDeleteCourseQuestion = () => {
     mutationFn: ({ courseId, questionId }: { courseId: number; questionId: number }) =>
       DELETE_course_question_by_id(courseId, questionId),
   });
-}
+};
 
 /** 내 질문 목록 검색 */
-export const useGetMyCourseQuestions = (courseId: number) => {
+export const useGetMyCourseQuestionsById = (courseId: number) => {
   return useQuery({
-    queryKey: [GET_course_questions_my.name],
-    queryFn: () => GET_course_questions_my(courseId),
+    queryKey: [GET_course_questions_my_by_id.name],
+    queryFn: () => GET_course_questions_my_by_id(courseId),
     select: ({ data }) => data,
   });
-}
+};
 
 /** 답변 목록 조회 */
-export const useGetCourseQuestionAnswers = (courseId: number, questionId: number, page: number = 1, pageSize: number = 10) => {
+export const useGetCourseQuestionAnswers = (
+  courseId: number,
+  questionId: number,
+  page: number = 1,
+  pageSize: number = 10,
+) => {
   return useQuery({
     queryKey: [GET_course_question_answers_by_id.name, courseId, questionId, page, pageSize],
     queryFn: () => GET_course_question_answers_by_id(courseId, questionId, page, pageSize),
     select: ({ data }) => data,
+    placeholderData: (previousData) => previousData,
   });
-}
+};
 
 /** 답변 작성 */
 export const usePostCourseQuestionAnswer = (courseId: number, questionId: number) => {
@@ -222,15 +243,24 @@ export const usePostCourseQuestionAnswer = (courseId: number, questionId: number
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
     },
   });
-}
+};
 
 /** 답변 채택 */
 export const usePostCourseQuestionAnswerAccept = (courseId: number, questionId: number) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationKey: [POST_course_question_answer_accept_by_id.name, courseId, questionId],
     mutationFn: (answerId: number) => POST_course_question_answer_accept_by_id(courseId, questionId, answerId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
+    },
   });
-}
+};
 
 /** 답변 삭제 */
 export const useDeleteCourseQuestionAnswer = (courseId: number, questionId: number) => {
@@ -244,36 +274,37 @@ export const useDeleteCourseQuestionAnswer = (courseId: number, questionId: numb
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
     },
   });
-}
+};
 
 /** 답변 수정 */
-export const usePutCourseQuestionAnswerUpdate = (courseId: number, questionId: number, answerId: number) => {
+export const usePatchCourseQuestionAnswerUpdate = (courseId: number, questionId: number, answerId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: [PUT_course_question_answer_by_id.name, courseId, questionId, answerId],
+    mutationKey: [PATCH_course_question_answer_by_id.name, courseId, questionId, answerId],
     mutationFn: (data: CourseQuestionAnswerUpdateRequest) =>
-      PUT_course_question_answer_by_id(courseId, questionId, answerId, data),
+      PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
     },
   });
-}
+};
 
 /** 답변 수정 */
-export const usePutCourseQuestionAnswer = (courseId: number, questionId: number, answerId: number) => {
+export const usePatchCourseQuestionAnswer = (courseId: number, questionId: number, answerId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: [PUT_course_question_answer_by_id.name, courseId, questionId, answerId],
-    mutationFn: (data: CourseQuestionAnswerUpdateRequest) => PUT_course_question_answer_by_id(courseId, questionId, answerId, data),
+    mutationKey: [PATCH_course_question_answer_by_id.name, courseId, questionId, answerId],
+    mutationFn: (data: CourseQuestionAnswerUpdateRequest) =>
+      PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
     },
   });
-}
+};
 
 /** 채택된 답변 조회 */
 export const useGetCourseQuestionAnswerAccepted = (courseId: number, questionId: number) => {
@@ -282,5 +313,13 @@ export const useGetCourseQuestionAnswerAccepted = (courseId: number, questionId:
     queryFn: () => GET_course_question_answer_accept_by_id(courseId, questionId),
     select: ({ data }) => data,
   });
-}
+};
 
+/** 내 QA 질문 조회 */
+export const useGetMyCourseQuestions = (params: CourseQuestionSearchParams) => {
+  return useQuery({
+    queryKey: [GET_my_course_questions.name, params],
+    queryFn: () => GET_my_course_questions(params),
+    select: ({ data }) => data,
+  });
+};
