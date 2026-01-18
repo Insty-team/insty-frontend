@@ -4,7 +4,8 @@
 
 import { useMemo, useState } from 'react';
 
-import RichTextEditor from '@/shared/components/editor/RichTextEditor';
+import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
+import Image from 'next/image';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -23,9 +24,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { useGetCourseCommunityPostsInfinite, useDeleteCourseCommunityPostById, usePostCourseCommunityPostById } from '@/shared/services/community/community.hook';
+import { useGetCourseCommunityPostsInfinite, useDeleteCourseCommunityPostById, usePostCourseCommunityPostById, usePostCourseCommunityPostLike, useDeleteCourseCommunityPostLike } from '@/shared/services/community/community.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import dayjs from 'dayjs';
 import { ArrowLeft, Calendar, MessageCircle, Heart, MoreHorizontal, Sparkles } from 'lucide-react';
 
@@ -42,18 +42,46 @@ type PostRow = {
   content: string;
   createdDate: string;
   commentCount: number;
+  likeCount: number;
+  likedByMe: boolean;
   author: string;
   userId?: number;
+  attachments?: any[];
 };
+
+function LikeButton({ postId, likeCount, likedByMe, courseId }: { postId: number; likeCount: number; likedByMe: boolean; courseId: number }) {
+  const { mutate: likePost, isPending: isLiking } = usePostCourseCommunityPostLike(courseId, postId);
+  const { mutate: unlikePost, isPending: isUnliking } = useDeleteCourseCommunityPostLike(courseId, postId);
+
+  const handleToggleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (likedByMe) {
+      unlikePost();
+    } else {
+      likePost();
+    }
+  };
+
+  return (
+    <button 
+      className={`flex items-center gap-2 transition-colors ${likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'}`}
+      onClick={handleToggleLike}
+      disabled={isLiking || isUnliking}
+    >
+      <Heart className={`h-5 w-5 ${likedByMe ? 'fill-current' : ''}`} />
+      <span className="text-sm">{likeCount}</span>
+    </button>
+  );
+}
 
 export default function CommunityFeed({ courseId, courseName, onBack, onPostClick }: Props) {
   const { data: profile } = useGetProfile();
   const currentUserId = profile?.id;
-  const isLearner = profile?.userType === 'LEARNER';
   
   const [postContent, setPostContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isPolishing, setIsPolishing] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
   
   const {
     data: postsData,
@@ -98,6 +126,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
         onSuccess: () => {
           setPostContent('');
           setUploadedFiles([]);
+          setEditorKey(prev => prev + 1);
         },
       },
     );
@@ -119,11 +148,14 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
     type ExtendedPost = typeof post & {
       commentCount?: number;
       createdDate?: string;
+      likeCount?: number;
+      likedByMe?: boolean;
     };
 
     const extended = post as ExtendedPost;
 
     const commentCount = typeof extended.commentCount === 'number' && Number.isFinite(extended.commentCount) ? extended.commentCount : 0;
+    const likeCount = typeof extended.likeCount === 'number' && Number.isFinite(extended.likeCount) ? extended.likeCount : 0;
 
     const rawCreatedDate = extended.createdDate ?? extended.createdAt;
     let formattedCreatedDate = 'Date info unavailable';
@@ -138,8 +170,11 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
       content: post.content ?? '',
       createdDate: formattedCreatedDate,
       commentCount,
+      likeCount,
+      likedByMe: extended.likedByMe ?? false,
       author: post.user?.nickname ?? 'Unknown Author',
       userId: post.user?.id,
+      attachments: post.attachments,
     };
   }) || [], [postsData]);
   const pagination = postsData?.pagination;
@@ -184,11 +219,10 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
       ) : (
         <ScrollArea className="max-w-3xl mx-auto h-[calc(100vh-20rem)] rounded-lg bg-white">
           <div className="">
-            {/* 글 작성 폼 */}
-            {isLearner && (
               <div className="p-4">
                 <div className="space-y-3">
-                  <RichTextEditor
+                  <CommunityTextArea
+                    key={editorKey}
                     value={postContent}
                     onChange={setPostContent}
                     placeholder="Share your thoughts, ask questions, or spark a conversation..."
@@ -213,7 +247,6 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
                   )}
                 </div>
               </div>
-            )}
             {posts.map((post, index) => (
               <Card key={post.id} className={`shadow-none ${index < posts.length - 1 ? 'border-b' : ''}`}>
                 <CardContent className="p-6">
@@ -243,12 +276,12 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>수정하기</DropdownMenuItem>
+                        <DropdownMenuItem>Edit</DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive"
                           onClick={() => handleDeletePost(post.id)}
                         >
-                          삭제하기
+                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -260,19 +293,40 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
                   className="space-y-4 cursor-pointer p-2 -m-2 rounded-md transition-colors"
                   onClick={() => onPostClick(post.id)}
                 >
-                  <h4 className="text-lg font-semibold leading-tight">{post.title}</h4>
-                  <div 
-                    className="text-muted-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: getDisplayContent(post.content) }}
-                  />
+                  <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {post.content}
+                  </div>
+                  
+                  {/* 이미지 */}
+                  {post.attachments && post.attachments.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {post.attachments
+                        .filter((file: any) => file?.url)
+                        .slice(0, 2)
+                        .map((file: any) => (
+                          <div key={file.id} className="relative inline-block">
+                            <Image
+                              src={file.url}
+                              alt={file.name}
+                              width={0}
+                              height={0}
+                              sizes="100vw"
+                              className="h-60 w-auto rounded border object-contain"
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* 포스트 푸터 */}
                 <div className="flex items-center gap-3 mt-6 pt-4">
-                  <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <Heart className="h-5 w-5" />
-                    <span className="text-sm">{post.commentCount}</span>
-                  </button>
+                  <LikeButton 
+                    postId={post.id} 
+                    likeCount={post.likeCount} 
+                    likedByMe={post.likedByMe}
+                    courseId={Number(courseId)}
+                  />
                   <button 
                     className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                     onClick={() => onPostClick(post.id)}

@@ -3,7 +3,8 @@
 
 import { useState } from 'react';
 
-import RichTextEditor from '@/shared/components/editor/RichTextEditor';
+import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
+import Image from 'next/image';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -23,10 +24,9 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { ArrowLeft, Heart, MessageCircle, Calendar, MoreHorizontal } from 'lucide-react';
-import { useGetCourseCommunityPostById, useGetCourseCommunityPostCommentsInfinite, usePostCourseCommunityPostCommentById, useDeleteCourseCommunityPostCommentById } from '@/shared/services/community/community.hook';
+import { useGetCourseCommunityPostById, useGetCourseCommunityPostCommentsInfinite, usePostCourseCommunityPostCommentById, useDeleteCourseCommunityPostCommentById, usePostCourseCommunityPostLike, useDeleteCourseCommunityPostLike, usePostCourseCommunityPostCommentLike, useDeleteCourseCommunityPostCommentLike } from '@/shared/services/community/community.hook';
 import { usePostCourseVideoUpload } from '@/shared/services/video/video.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import dayjs from 'dayjs';
 
 type Props = {
@@ -35,6 +35,30 @@ type Props = {
   postId: number;
   onBack: () => void;
 };
+
+function CommentLikeButton({ commentId, likeCount, likedByMe }: { commentId: number; likeCount: number; likedByMe: boolean }) {
+  const { mutate: likeComment, isPending: isLiking } = usePostCourseCommunityPostCommentLike(commentId);
+  const { mutate: unlikeComment, isPending: isUnliking } = useDeleteCourseCommunityPostCommentLike(commentId);
+
+  const handleToggleLike = () => {
+    if (likedByMe) {
+      unlikeComment();
+    } else {
+      likeComment();
+    }
+  };
+
+  return (
+    <button 
+      className={`flex items-center gap-2 transition-colors ${likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'}`}
+      onClick={handleToggleLike}
+      disabled={isLiking || isUnliking}
+    >
+      <Heart className={`h-4 w-4 ${likedByMe ? 'fill-current' : ''}`} />
+      <span className="text-xs">{likeCount}</span>
+    </button>
+  );
+}
 
 export default function CommunityDetail({ courseId, courseName, postId, onBack }: Props) {
   const { data: profile } = useGetProfile();
@@ -63,6 +87,8 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
   const { mutate: postComment, isPending: isPosting } = usePostCourseCommunityPostCommentById(Number(courseId), postId);
   const { mutate: uploadVideo, isPending: isUploadingVideo } = usePostCourseVideoUpload();
   const { mutate: deleteComment } = useDeleteCourseCommunityPostCommentById();
+  const { mutate: likePost, isPending: isLiking } = usePostCourseCommunityPostLike(Number(courseId), postId);
+  const { mutate: unlikePost, isPending: isUnliking } = useDeleteCourseCommunityPostLike(Number(courseId), postId);
 
   const handleLoadMore = () => {
     if (!isFetchingNextPage && hasNextPage) {
@@ -83,6 +109,14 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
           setCommentToDelete(null);
         },
       });
+    }
+  };
+
+  const handleToggleLike = () => {
+    if (post?.likedByMe) {
+      unlikePost();
+    } else {
+      likePost();
     }
   };
 
@@ -162,7 +196,7 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
         </Button>
         <div className="flex-1 text-center">
           <h3 className="text-lg font-semibold">
-            {courseName} &gt; {post?.title || 'Post Detail'}
+            {courseName}
           </h3>
         </div>
         <div className="size-8"></div>
@@ -182,34 +216,55 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
                 </Avatar>
                 <div>
                   <div className="font-medium text-lg">{post.user?.nickname}</div>
-                  <div className="text-muted-foreground text-sm">
+                  <div className="flex gap-1 items-center text-muted-foreground text-sm">
+                    <Calendar className="h-4 w-4" />
                     {dayjs(post.createdAt).format('MMM D, YYYY h:mm A')}
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* 포스트 제목 */}
-            <h2 className="text-xl font-bold mb-4 leading-tight">{post.title}</h2>
-
+            
             {/* 포스트 내용 */}
-            <div 
-              className="text-muted-foreground leading-relaxed mb-6"
-              dangerouslySetInnerHTML={{ __html: getDisplayContent(post.content) }}
-            />
+            <div className="text-muted-foreground leading-relaxed mb-6 whitespace-pre-wrap">
+              {post.content}
+            </div>
+            
+            {/* 이미지 */}
+            {post.attachments && post.attachments.length > 0 && (
+              <div className="mb-6 flex flex-wrap gap-2">
+                {post.attachments
+                  .filter((file: any) => file?.url)
+                  .map((file: any) => (
+                    <div key={file.id} className="relative inline-block">
+                      <Image
+                        src={file.url}
+                        alt={file.name}
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        className="h-60 w-auto rounded border object-contain"
+                      />
+                    </div>
+                  ))}
+              </div>
+            )}
 
             {/* 포스트 푸터 */}
             <div className="flex items-center gap-3 mt-6 pt-4">
-              <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <Heart className="h-5 w-5" />
-                <span className="text-sm">100</span>
+              <button 
+                className={`flex items-center gap-2 transition-colors ${post.likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'}`}
+                onClick={handleToggleLike}
+                disabled={isLiking || isUnliking}
+              >
+                <Heart className={`h-5 w-5 ${post.likedByMe ? 'fill-current' : ''}`} />
+                <span className="text-sm">{post.likeCount ?? 0}</span>
               </button>
               <button 
                 className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => setIsCommenting(!isCommenting)}
               >
                 <MessageCircle className="h-5 w-5" />
-                <span className="text-sm">100</span>
+                <span className="text-sm">{pagination?.totalItems ?? 0}</span>
               </button>
             </div>
           </CardContent>
@@ -222,7 +277,7 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
             {isCommenting && (
               <Card className="border-b shadow-none">
                 <CardContent className="">
-                  <RichTextEditor
+                  <CommunityTextArea
                     key={editorKey}
                     value={commentContent}
                     onChange={setCommentContent}
@@ -251,7 +306,7 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-primary text-primary-foreground">
+                        <AvatarFallback className="bg-muted text-muted-foreground">
                           {comment.user?.nickname?.charAt(0)?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -273,38 +328,47 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>수정하기</DropdownMenuItem>
+                          <DropdownMenuItem>Edit</DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-destructive"
                             onClick={() => handleDeleteComment(comment.commentId)}
                           >
-                            삭제하기
+                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
                   </div>
 
-                  <div 
-                    className="space-y-4 cursor-pointer p-2 -m-2 rounded-md transition-colors"
-                  >
-                    <div 
-                      className="text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: getDisplayContent(comment.content) }}
-                    />
+                  <div className="space-y-4">
+                    <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      {comment.content}
+                    </div>
                       {comment.attachments && comment.attachments.length > 0 && (
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          {comment.attachments.map((attachment: any) => (
-                            <div key={attachment.id} className="relative aspect-square overflow-hidden rounded-lg border">
-                              <img
-                                src={attachment.url}
-                                alt={attachment.name}
-                                className="object-cover w-full h-full"
-                              />
-                            </div>
-                          ))}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {comment.attachments
+                            .filter((attachment: any) => attachment?.url)
+                            .map((attachment: any) => (
+                              <div key={attachment.id} className="relative inline-block">
+                                <Image
+                                  src={attachment.url}
+                                  alt={attachment.name}
+                                  width={0}
+                                  height={0}
+                                  sizes="100vw"
+                                  className="h-20 w-auto rounded border object-contain"
+                                />
+                              </div>
+                            ))}
                         </div>
                       )}
+                    
+                    {/* 댓글 좋아요 */}
+                    <CommentLikeButton 
+                      commentId={comment.commentId}
+                      likeCount={comment.likeCount ?? 0}
+                      likedByMe={comment.likedByMe ?? false}
+                    />
                   </div>
                 </CardContent>
               </Card>
