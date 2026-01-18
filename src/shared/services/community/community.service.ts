@@ -9,7 +9,8 @@ import {
   CourseCommunityPostCommentResponse,
   CourseCommunityPostCommentRequest,
   CourseCommunityPostCommentUpdateRequest,
-  MyCourseCommunityPostCommentResponse
+  MyCourseCommunityPostCommentResponse,
+  CommunityLikeResponse
 } from './community.type';
 
 /** 커뮤니티 글 목록 검색 */
@@ -175,5 +176,30 @@ export const GET_my_course_community_post_comments = async (page: number = 1, pa
       order: 'desc',
     },
   });
+  return response.data;
+};
+
+
+/** 커뮤니티 포스트 좋아요 */
+export const POST_course_community_post_like_by_id = async (courseId: number, postId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+  const response = await api.post(`/api/v1/community/courses/${courseId}/posts/${postId}/likes`);
+  return response.data;
+};
+
+/** 커뮤니티 포스트 좋아요 취소 */
+export const DELETE_course_community_post_like_by_id = async (courseId: number, postId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+  const response = await api.delete(`/api/v1/community/courses/${courseId}/posts/${postId}/likes`);
+  return response.data;
+};
+
+/** 커뮤니티 댓글 좋아요 */
+export const POST_course_community_post_comment_like_by_id = async (commentId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+  const response = await api.post(`/api/v1/community/comments/${commentId}/likes`);
+  return response.data;
+};
+
+/** 커뮤니티 댓글 좋아요 취소 */
+export const DELETE_course_community_post_comment_like_by_id = async (commentId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+  const response = await api.delete(`/api/v1/community/comments/${commentId}/likes`);
   return response.data;
 };

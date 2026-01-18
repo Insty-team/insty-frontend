@@ -11,6 +11,10 @@ import {
   DELETE_course_community_post_comment_by_id,
   PATCH_course_community_post_by_id,
   PATCH_course_community_post_comment_by_id,
+  POST_course_community_post_like_by_id,
+  DELETE_course_community_post_like_by_id,
+  POST_course_community_post_comment_like_by_id,
+  DELETE_course_community_post_comment_like_by_id,
 } from './community.service';
 import {
   CourseCommunityPostCommentRequest,
@@ -123,6 +127,32 @@ export const useGetCourseCommunityPostCommentsById = (
   });
 };
 
+/** 커뮤니티 댓글 목록 무한 스크롤 */
+export const useGetCourseCommunityPostCommentsInfinite = (
+  courseId: number,
+  postId: number,
+  pageSize: number = 20,
+) => {
+  return useInfiniteQuery({
+    queryKey: [GET_course_community_post_comments_by_id.name, courseId, postId, pageSize],
+    queryFn: ({ pageParam = 1 }) => GET_course_community_post_comments_by_id(courseId, postId, pageParam, pageSize),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+      const pagination = lastPage?.data?.pagination;
+      if (pagination && lastPageParam < pagination.totalPages) {
+        return lastPageParam + 1;
+      }
+      return undefined;
+    },
+    select: (data) => ({
+      pages: data.pages,
+      pageParams: data.pageParams,
+      items: data.pages.flatMap(page => page.data?.items || []),
+      pagination: data.pages[data.pages.length - 1]?.data?.pagination,
+    }),
+  });
+};
+
 /** 커뮤니티 댓글 작성 */
 export const usePostCourseCommunityPostCommentById = (courseId: number, postId: number) => {
   const queryClient = useQueryClient();
@@ -170,5 +200,59 @@ export const useGetMyCourseCommunityPostComments = () => {
     queryKey: [GET_my_course_community_post_comments.name],
     queryFn: () => GET_my_course_community_post_comments(),
     select: ({ data }) => data,
+  });
+};
+
+/** 커뮤니티 포스트 좋아요 */
+export const usePostCourseCommunityPostLike = (courseId: number, postId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [POST_course_community_post_like_by_id.name, courseId, postId],
+    mutationFn: () => POST_course_community_post_like_by_id(courseId, postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
+    },
+  });
+};
+
+/** 커뮤니티 포스트 좋아요 취소 */
+export const useDeleteCourseCommunityPostLike = (courseId: number, postId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [DELETE_course_community_post_like_by_id.name, courseId, postId],
+    mutationFn: () => DELETE_course_community_post_like_by_id(courseId, postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
+    },
+  });
+};
+
+/** 커뮤니티 댓글 좋아요 */
+export const usePostCourseCommunityPostCommentLike = (commentId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [POST_course_community_post_comment_like_by_id.name, commentId],
+    mutationFn: () => POST_course_community_post_comment_like_by_id(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
+    },
+  });
+};
+
+/** 커뮤니티 댓글 좋아요 취소 */
+export const useDeleteCourseCommunityPostCommentLike = (commentId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [DELETE_course_community_post_comment_like_by_id.name, commentId],
+    mutationFn: () => DELETE_course_community_post_comment_like_by_id(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
+    },
   });
 };

@@ -13,12 +13,21 @@ export type CourseCommunityPostResponse = {
   user: {
     id: number;
     nickname: string;
+    userType?: string;
   };
+  courseId?: number;
   title: string;
   content: string;
   createdAt: string;
   updatedAt: string;
   commentCount?: number;
+  attachments?: Attachment[];
+  videoInfo?: {
+    videoType: VideoType;
+    videoUuid: string;
+    originFileName: string;
+  } | null;
+  likeCount?: number;
 };
 
 export type CourseCommunityPostRequest = {
@@ -35,6 +44,8 @@ export type CourseCommunityPostDetailResponse = CourseCommunityPostResponse & {
     videoUuid: string;
     originFileName: string;
   };
+  likeCount?: number;
+  likedByMe?: boolean;
 };
 
 export type CourseCommunityPostUpdateRequest = {
@@ -64,6 +75,8 @@ export type CourseCommunityPostCommentResponse = {
   createdAt: string;
   updatedAt: string;
   attachments?: Attachment[];
+  likeCount?: number;
+  likedByMe?: boolean;
 };
 
 export type CourseCommunityPostCommentRequest = {
@@ -87,3 +100,8 @@ export type MyCourseCommunityPostCommentResponse = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CommunityLikeResponse = {
+  likeCount: number;
+  likedByMe: boolean;
+}
