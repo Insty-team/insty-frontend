@@ -1,7 +1,4 @@
-import { UserType } from '../types/auth.enum';
-
 import cookieStorage from '@/shared/lib/cookie-storage';
-import { UserResponse } from '@/shared/services/user/user.type';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -25,7 +22,7 @@ export const useAuthStore = create(
       setRefreshToken: (refreshToken: AuthState['refreshToken']) => set({ refreshToken }),
       logout: () => {
         set({ accessToken: null, refreshToken: null });
-        window.location.href = '/onboarding';
+        window.location.href = '/login';
       },
     }),
     {
@@ -37,17 +34,13 @@ export const useAuthStore = create(
 
 type UserState = {
   nickname: string | null;
-  userType: UserType | null;
 };
 
 type UserActions = {
   setNickname: (nickname: string) => void;
-  setUserType: (userType: UserType) => void;
 };
 
 export const useUserStore = create<UserState & UserActions>((set) => ({
   nickname: null,
-  userType: null,
   setNickname: (nickname: string) => set({ nickname }),
-  setUserType: (userType: UserType) => set({ userType }),
 }));

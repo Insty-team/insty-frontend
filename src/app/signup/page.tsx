@@ -17,7 +17,7 @@ import { emailReg, nicknameReg, passwordReg } from '@/shared/lib/regex';
 import { cn } from '@/shared/lib/utils';
 import { usePostEmailVerifyCheck, usePostEmailVerifySend } from '@/shared/services/auth/auth.hook';
 import { useGetEmailCheck, useGetNicknameCheck } from '@/shared/services/user/user.hook';
-import { Eye, EyeOff } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, Play, Share2 } from 'lucide-react';
 
 import instyPng from '@/assets/Logo.png';
 
@@ -292,234 +292,289 @@ export default function SignupPage() {
   const emailFeedbackMessage = emailMessage || emailDupMessage;
 
   return (
-    <section className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className={cn('flex w-[420px] flex-col justify-center gap-6 rounded-2xl px-12 py-10 shadow-lg')}>
-        <div className="flex w-full flex-col justify-center">
-          <div className="flex flex-col items-center gap-5">
-            <Image src={instyPng} alt="logo" width={120} priority />
-            <p className="text-green text-xl font-semibold">회원가입</p>
+    <section className="flex min-h-screen">
+      {/* 왼쪽: 서비스 소개 영역 */}
+      <div className="hidden flex-1 flex-col items-center justify-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-12 lg:flex">
+        <div className="flex max-w-md flex-col items-center gap-10 text-center text-white">
+          <Image src={instyPng} alt="logo" className="w-[180px] brightness-0 invert" priority />
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold tracking-tight">설치 가이드 플랫폼</h1>
+            <p className="text-lg text-emerald-100">인스티와 함께 시작하세요!</p>
+          </div>
+
+          <div className="mt-4 space-y-6">
+            <div className="flex items-start gap-4 text-left">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
+                <Play className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">영상으로 쉽게 배우기</h3>
+                <p className="text-sm text-emerald-100">전문가의 설치 가이드 영상을 보고 따라하세요</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 text-left">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">문서로 꼼꼼히 확인</h3>
+                <p className="text-sm text-emerald-100">단계별 문서 가이드로 놓친 부분을 체크하세요</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 text-left">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
+                <Share2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">나만의 가이드 제작</h3>
+                <p className="text-sm text-emerald-100">설치 가이드를 만들어 공유하고 수익을 창출하세요</p>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid w-full items-center space-y-3"
-            autoComplete="off"
-          >
-            <div className="space-y-6">
-              <FormField
-                control={form.control}
-                name="nickname"
-                rules={{
-                  required: '닉네임을 입력해주세요.',
-                  pattern: {
-                    value: nicknameReg,
-                    message: '2~10자의 한글/영문/숫자 조합으로 입력해주세요.',
-                  },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>닉네임</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="사용하실 닉네임을 입력해주세요."
-                        maxLength={10}
-                        autoComplete="off"
-                      />
-                    </FormControl>
-                    <FormMessage className={cn(!nicknameError && 'text-xs', !nicknameError && nicknameStatusColor)}>
-                      {!nicknameError &&
-                        (nicknameStatus === 'checking' ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Spinner className="size-3.5" />
-                            {nicknameMessage}
-                          </span>
-                        ) : (
-                          nicknameMessage || '\u00A0'
-                        ))}
-                    </FormMessage>
-                  </FormItem>
-                )}
-              />
+      {/* 오른쪽: 회원가입 폼 영역 */}
+      <div className="flex flex-1 flex-col items-center justify-center bg-gray-50 p-8">
+        <div className="flex w-full max-w-[420px] flex-col justify-center gap-5 rounded-2xl bg-white px-10 py-8 shadow-lg">
+          <div className="flex w-full flex-col justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <Image src={instyPng} alt="logo" width={100} priority className="lg:hidden" />
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900">회원가입</h2>
+                <p className="mt-1 text-sm text-gray-500">새 계정을 만들어 시작하세요</p>
+              </div>
+            </div>
+          </div>
 
-              <FormField
-                control={form.control}
-                name="email"
-                rules={{
-                  required: '이메일을 입력해주세요.',
-                  pattern: {
-                    value: emailReg,
-                    message: '이메일 형식이 올바르지 않습니다.',
-                  },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>이메일</FormLabel>
-                    <FormControl>
-                      <InputGroup>
-                        <InputGroupInput
-                          {...field}
-                          placeholder="이메일을 입력해주세요."
-                          type="email"
-                          disabled={isEmailVerified}
-                          autoComplete="off"
-                        />
-                        <InputGroupAddon align="inline-end">
-                          <InputGroupButton
-                            type="button"
-                            variant="ghost"
-                            disabled={
-                              isEmailVerified || isEmailSending || !field.value || emailDupStatus !== 'available'
-                            }
-                            onClick={handleSendVerification}
-                          >
-                            {isEmailSending ? '발송 중...' : '인증코드 발송'}
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                      </InputGroup>
-                    </FormControl>
-                    <FormMessage className={cn(!emailError && 'text-xs', !emailError && emailFeedbackColor)}>
-                      {!emailError && (emailFeedbackMessage || '\u00A0')}
-                    </FormMessage>
-                  </FormItem>
-                )}
-              />
-
-              {showEmailCodeInput && (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid w-full items-center space-y-3"
+              autoComplete="off"
+            >
+              <div className="space-y-5">
                 <FormField
                   control={form.control}
-                  name="emailCode"
+                  name="nickname"
                   rules={{
-                    validate: (value) => {
-                      if (emailStatus === 'verified') return true;
-                      return value ? true : '이메일 인증코드를 입력해주세요.';
+                    required: '닉네임을 입력해주세요.',
+                    pattern: {
+                      value: nicknameReg,
+                      message: '2~10자의 한글/영문/숫자 조합으로 입력해주세요.',
                     },
                   }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>이메일 인증코드</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input
+                      <FormLabel>닉네임</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="사용하실 닉네임을 입력해주세요."
+                          maxLength={10}
+                          autoComplete="off"
+                        />
+                      </FormControl>
+                      <FormMessage className={cn(!nicknameError && 'text-xs', !nicknameError && nicknameStatusColor)}>
+                        {!nicknameError &&
+                          (nicknameStatus === 'checking' ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Spinner className="size-3.5" />
+                              {nicknameMessage}
+                            </span>
+                          ) : (
+                            nicknameMessage || '\u00A0'
+                          ))}
+                      </FormMessage>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  rules={{
+                    required: '이메일을 입력해주세요.',
+                    pattern: {
+                      value: emailReg,
+                      message: '이메일 형식이 올바르지 않습니다.',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>이메일</FormLabel>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupInput
                             {...field}
-                            placeholder="인증코드 6자리를 입력해주세요."
-                            maxLength={6}
-                            disabled={emailStatus === 'verified'}
+                            placeholder="이메일을 입력해주세요."
+                            type="email"
+                            disabled={isEmailVerified}
                             autoComplete="off"
                           />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          disabled={emailStatus !== 'sent' || !field.value || isEmailCodeChecking}
-                          onClick={handleVerifyEmailCode}
-                        >
-                          {isEmailCodeChecking ? '확인 중...' : '인증 확인'}
-                        </Button>
-                      </div>
+                          <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                              type="button"
+                              variant="ghost"
+                              disabled={
+                                isEmailVerified || isEmailSending || !field.value || emailDupStatus !== 'available'
+                              }
+                              onClick={handleSendVerification}
+                            >
+                              {isEmailSending ? '발송 중...' : '인증코드 발송'}
+                            </InputGroupButton>
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </FormControl>
+                      <FormMessage className={cn(!emailError && 'text-xs', !emailError && emailFeedbackColor)}>
+                        {!emailError && (emailFeedbackMessage || '\u00A0')}
+                      </FormMessage>
+                    </FormItem>
+                  )}
+                />
+
+                {showEmailCodeInput && (
+                  <FormField
+                    control={form.control}
+                    name="emailCode"
+                    rules={{
+                      validate: (value) => {
+                        if (emailStatus === 'verified') return true;
+                        return value ? true : '이메일 인증코드를 입력해주세요.';
+                      },
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>이메일 인증코드</FormLabel>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="인증코드 6자리를 입력해주세요."
+                              maxLength={6}
+                              disabled={emailStatus === 'verified'}
+                              autoComplete="off"
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            disabled={emailStatus !== 'sent' || !field.value || isEmailCodeChecking}
+                            onClick={handleVerifyEmailCode}
+                          >
+                            {isEmailCodeChecking ? '확인 중...' : '인증 확인'}
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  rules={{
+                    required: '비밀번호를 입력해주세요.',
+                    pattern: {
+                      value: passwordReg,
+                      message: '영문/숫자/특수문자를 포함해 8~20자로 입력해주세요.',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>비밀번호</FormLabel>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupInput
+                            {...field}
+                            placeholder="비밀번호를 입력해주세요."
+                            type={showPassword ? 'text' : 'password'}
+                            autoComplete="new-password"
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                              type="button"
+                              size="icon-sm"
+                              variant="ghost"
+                              onClick={() => setShowPassword((prev) => !prev)}
+                            >
+                              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </InputGroupButton>
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
 
-              <FormField
-                control={form.control}
-                name="password"
-                rules={{
-                  required: '비밀번호를 입력해주세요.',
-                  pattern: {
-                    value: passwordReg,
-                    message: '영문/숫자/특수문자를 포함해 8~20자로 입력해주세요.',
-                  },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>비밀번호</FormLabel>
-                    <FormControl>
-                      <InputGroup>
-                        <InputGroupInput
-                          {...field}
-                          placeholder="비밀번호를 입력해주세요."
-                          type={showPassword ? 'text' : 'password'}
-                          autoComplete="new-password"
-                        />
-                        <InputGroupAddon align="inline-end">
-                          <InputGroupButton
-                            type="button"
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => setShowPassword((prev) => !prev)}
-                          >
-                            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                      </InputGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="passwordConfirm"
+                  rules={{
+                    required: '비밀번호를 한 번 더 입력해주세요.',
+                    validate: (value) => value === form.getValues('password') || '비밀번호가 일치하지 않습니다.',
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>비밀번호 확인</FormLabel>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupInput
+                            {...field}
+                            placeholder="비밀번호를 다시 입력해주세요."
+                            type={showPasswordConfirm ? 'text' : 'password'}
+                            autoComplete="new-password"
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                              type="button"
+                              size="icon-sm"
+                              variant="ghost"
+                              onClick={() => setShowPasswordConfirm((prev) => !prev)}
+                            >
+                              {showPasswordConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </InputGroupButton>
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="passwordConfirm"
-                rules={{
-                  required: '비밀번호를 한 번 더 입력해주세요.',
-                  validate: (value) => value === form.getValues('password') || '비밀번호가 일치하지 않습니다.',
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>비밀번호 확인</FormLabel>
-                    <FormControl>
-                      <InputGroup>
-                        <InputGroupInput
-                          {...field}
-                          placeholder="비밀번호를 다시 입력해주세요."
-                          type={showPasswordConfirm ? 'text' : 'password'}
-                          autoComplete="new-password"
-                        />
-                        <InputGroupAddon align="inline-end">
-                          <InputGroupButton
-                            type="button"
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => setShowPasswordConfirm((prev) => !prev)}
-                          >
-                            {showPasswordConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                      </InputGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              {formError && <p className="text-destructive text-sm">{formError}</p>}
 
-            {formError && <p className="text-destructive text-sm">{formError}</p>}
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isSubmitDisabled}
+                className="mt-4 bg-emerald-500 hover:bg-emerald-600"
+              >
+                회원가입
+              </Button>
+            </form>
+          </Form>
 
-            <Button type="submit" size="lg" disabled={isSubmitDisabled}>
-              회원가입
-            </Button>
-          </form>
-        </Form>
+          <Separator />
 
-        <Separator />
-        <div className="flex items-center justify-center gap-1">
-          <div className="text-sm text-gray-600">이미 계정을 보유하고 계신가요?</div>
-          <Link
-            href="/login"
-            onClick={(e) => {
-              e.preventDefault();
-              router.back();
-            }}
-            className="text-primary-green-600 hover:text-primary-green-700 text-sm font-medium underline"
-          >
-            로그인
-          </Link>
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-sm text-gray-600">이미 계정을 보유하고 계신가요?</span>
+            <Link
+              href="/login"
+              onClick={(e) => {
+                e.preventDefault();
+                router.back();
+              }}
+              className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:underline"
+            >
+              로그인
+            </Link>
+          </div>
         </div>
       </div>
     </section>

@@ -13,7 +13,7 @@ export default function Home() {
     <div className="relative bg-white">
       <ScrollAnimation />
       <Link
-        href="/onboarding"
+        href="/login"
         className="fixed-login-button hover:bg-primary-green-600 bg-primary-green-500 fixed top-2 right-2 z-50 rounded-xl px-6 py-2 font-bold text-white transition-all duration-300"
       >
         로그인
@@ -140,7 +140,7 @@ export default function Home() {
           <h2 className="text-gray-scale-50 mb-8 text-4xl font-bold">지금 바로 경험해 보세요!</h2>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link
-              href="/onboarding"
+              href="/login"
               className="bg-primary-green-500 hover:bg-primary-green-600 rounded-lg px-8 py-4 font-bold text-white transition-colors"
             >
               시작하기

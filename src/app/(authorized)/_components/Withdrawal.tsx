@@ -21,7 +21,7 @@ export default function Withdrawal() {
   const handleWithdraw = async () => {
     await withdraw().then(() => {
       toast.success('탈퇴가 완료되었습니다.');
-      router.push('/onboarding');
+      router.push('/login');
     });
   };
 
