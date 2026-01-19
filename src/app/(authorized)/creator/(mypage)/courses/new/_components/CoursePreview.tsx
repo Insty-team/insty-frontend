@@ -2,6 +2,8 @@
 
 import { CourseFormData } from '../types';
 
+import Image from 'next/image';
+
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { cn } from '@/shared/lib/utils';
@@ -16,57 +18,55 @@ interface CoursePreviewProps {
 export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePreviewProps) {
   return (
     <div className="space-y-6">
-      {/* 썸네일 미리보기 */}
+      {/* Thumbnail Preview */}
       <Card>
         <CardHeader>
-          <CardTitle>강의 썸네일</CardTitle>
+          <CardTitle>Lecture Thumbnail</CardTitle>
         </CardHeader>
         <CardContent>
           {thumbnailUrl ? (
-            <div className="relative w-full overflow-hidden rounded-lg border-2 border-dashed">
-              <img
-                src={thumbnailUrl}
-                alt="강의 썸네일"
-                className="h-auto w-full object-cover"
-                style={{ aspectRatio: '16/9', maxHeight: '400px' }}
-              />
+            <div
+              className="relative w-full overflow-hidden rounded-lg border-2 border-dashed"
+              style={{ aspectRatio: '16/9', maxHeight: '400px' }}
+            >
+              <Image src={thumbnailUrl} alt="Lecture thumbnail" fill className="object-cover" sizes="100vw" />
             </div>
           ) : (
             <div className="flex h-48 items-center justify-center rounded-lg border-2 border-dashed">
-              <p className="text-muted-foreground">썸네일 미리보기</p>
+              <p className="text-muted-foreground">Thumbnail preview</p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* 기본 정보 */}
+      {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle>기본 정보</CardTitle>
+          <CardTitle>Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-muted-foreground text-sm font-medium">강의 제목</p>
-            <p className="text-lg font-semibold">{formData.title || '제목 없음'}</p>
+            <p className="text-muted-foreground text-sm font-medium">Lecture Title</p>
+            <p className="text-lg font-semibold">{formData.title || 'Untitled'}</p>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm font-medium">대상자</p>
+            <p className="text-muted-foreground text-sm font-medium">Target Audience</p>
             <Badge variant="outline" className="mt-1">
-              {formData.targetAudience || '미설정'}
+              {formData.targetAudience || 'Not set'}
             </Badge>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm font-medium">강의 설명</p>
-            <p className="mt-1 whitespace-pre-wrap">{formData.description || '설명 없음'}</p>
+            <p className="text-muted-foreground text-sm font-medium">Lecture Description</p>
+            <p className="mt-1 whitespace-pre-wrap">{formData.description || 'No description'}</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* 설치 환경 요구사항 */}
+      {/* Prerequisites */}
       {formData.installationRequirements && formData.installationRequirements.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>설치 환경 요구사항</CardTitle>
+            <CardTitle>Prerequisites</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -88,11 +88,11 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
         </Card>
       )}
 
-      {/* 핵심 내용 */}
+      {/* Key Points */}
       {formData.coreContents && formData.coreContents.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>핵심 내용</CardTitle>
+            <CardTitle>Key Points</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="grid gap-2 sm:grid-cols-2">
@@ -107,11 +107,11 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
         </Card>
       )}
 
-      {/* 태그 */}
+      {/* Tags */}
       {formData.tags && formData.tags.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>태그</CardTitle>
+            <CardTitle>Tags</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -129,12 +129,12 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
         </Card>
       )}
 
-      {/* 비디오 미리보기 */}
+      {/* Video Preview */}
       {videoUrl && (
         <Card>
           <CardHeader>
-            <CardTitle>강의 영상</CardTitle>
-            <CardDescription>업로드된 강의 영상입니다</CardDescription>
+            <CardTitle>Lecture Video</CardTitle>
+            <CardDescription>This is the uploaded lecture video.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="relative w-full overflow-hidden rounded-lg border-2 border-dashed">
@@ -144,7 +144,7 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
                 className="h-auto w-full"
                 style={{ aspectRatio: '16/9', maxHeight: '500px' }}
               >
-                비디오를 재생할 수 없습니다.
+                Your browser does not support video playback.
               </video>
             </div>
           </CardContent>

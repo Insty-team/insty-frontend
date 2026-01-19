@@ -23,11 +23,11 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
   const handleAddRequirement = () => {
     if (!inputValue.trim()) return;
     if (requirements.some((req) => req.name === inputValue.trim())) {
-      alert('이미 추가된 설치 환경입니다.');
+      alert('This prerequisite has already been added.');
       return;
     }
     if (requirements.length >= 10) {
-      alert('최대 10개까지만 추가할 수 있습니다.');
+      alert('You can add up to 10 prerequisites.');
       return;
     }
 
@@ -58,14 +58,14 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
 
   return (
     <div className="space-y-3">
-      <Label>설치 환경 요구사항</Label>
+      <Label>Prerequisites</Label>
 
       <div className="flex gap-2">
         <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="예: Node.js, Python, Docker 등"
+          placeholder="e.g., Node.js, Python, Docker"
           maxLength={50}
           className="flex-1"
         />
@@ -97,7 +97,7 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
                         className="sr-only"
                         checked={requirement.isSupported}
                         onCheckedChange={() => handleToggleSupport(requirement.id)}
-                        aria-label={`${requirement.name} 지원 여부`}
+                        aria-label={`${requirement.name} support status`}
                       />
                       <Badge
                         variant={requirement.isSupported ? 'default' : 'secondary'}
@@ -116,12 +116,12 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
                         {requirement.isSupported ? (
                           <>
                             <Check className="h-3 w-3" />
-                            지원
+                            Supported
                           </>
                         ) : (
                           <>
                             <XCircle className="h-3 w-3" />
-                            미지원
+                            Not supported
                           </>
                         )}
                       </Badge>
@@ -142,7 +142,9 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
         </div>
       )}
 
-      <p className="text-muted-foreground text-xs">{requirements.length}개 추가됨 • 배지 클릭으로 지원/미지원 토글</p>
+      <p className="text-muted-foreground text-xs">
+        {requirements.length} added • Click the badge to toggle support status
+      </p>
     </div>
   );
 }

@@ -89,20 +89,20 @@ export function CourseUploadForm() {
   // Step 1: 영상 업로드 후 AI 생성으로 이동
   const handleVideoUploadComplete = async () => {
     if (!videoFile) {
-      alert('강의 영상을 먼저 업로드해주세요.');
+      alert('Please upload the lecture video first.');
       return;
     }
     if (!isVideoReadyToProceed) {
-      alert('영상 업로드/AI 분석/썸네일 생성이 완료될 때까지 기다려주세요.');
+      alert('Please wait until the video upload, AI processing, and thumbnail generation are complete.');
       return;
     }
     // 썸네일은 "직접 업로드(thumbnailFile)" 또는 "서버 생성 썸네일(thumbnailUrl)" 중 하나만 있으면 OK
     if (!thumbnailFile && !thumbnailUrl) {
-      alert('강의 썸네일을 먼저 업로드해주세요.');
+      alert('Please provide a course thumbnail.');
       return;
     }
     if (!videoUuid) {
-      alert('영상 업로드가 완료되지 않았습니다. 잠시 후 다시 시도해주세요.');
+      alert('Video upload is not finished yet. Please try again in a moment.');
       return;
     }
 
@@ -128,8 +128,8 @@ export function CourseUploadForm() {
       setCoreContents(aiDraft.core_contents ?? []);
       setTags(aiDraft.tags ?? []);
     } catch (error) {
-      console.error('AI 초안 생성 실패:', error);
-      alert('AI 초안 생성 중 오류가 발생했습니다.');
+      console.error('Failed to generate AI draft:', error);
+      alert('An error occurred while generating the AI draft.');
     } finally {
       setCurrentStep('EDIT');
     }
@@ -182,11 +182,11 @@ export function CourseUploadForm() {
       ]);
 
       // 성공 시 강의 목록으로 이동
-      alert('강의가 성공적으로 업로드되었습니다!');
+      alert('Your course has been uploaded successfully.');
       router.push('/creator/courses');
     } catch (error) {
-      console.error('업로드 실패:', error);
-      alert('업로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error('Upload failed:', error);
+      alert('An error occurred during upload. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -200,13 +200,13 @@ export function CourseUploadForm() {
   const getStepInfo = (step: UploadStep) => {
     switch (step) {
       case 'UPLOAD':
-        return { label: '강의 영상 업로드', icon: FileVideo };
+        return { label: 'Upload Video', icon: FileVideo };
       case 'AI_GENERATING':
-        return { label: 'AI 초안 생성', icon: Sparkles };
+        return { label: 'Generate Draft', icon: Sparkles };
       case 'EDIT':
-        return { label: '내용 수정', icon: Edit3 };
+        return { label: 'Edit Details', icon: Edit3 };
       case 'PREVIEW':
-        return { label: '미리보기', icon: CheckCircle2 };
+        return { label: 'Preview', icon: CheckCircle2 };
     }
   };
 
@@ -216,8 +216,8 @@ export function CourseUploadForm() {
       {/* 헤더 섹션 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">새 강의 업로드</h2>
-          <p className="text-muted-foreground mt-1">단계별로 강의를 생성하세요</p>
+          <h2 className="text-2xl font-bold">New Lecture Upload</h2>
+          <p className="text-muted-foreground mt-1">Create your lecture step by step</p>
         </div>
       </div>
 
@@ -281,7 +281,7 @@ export function CourseUploadForm() {
                       isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
                     }`}
                   >
-                    {index + 1}단계
+                    Step {index + 1}
                   </span>
                 </div>
               </div>
@@ -294,8 +294,8 @@ export function CourseUploadForm() {
       {currentStep === 'UPLOAD' && (
         <Card>
           <CardHeader>
-            <CardTitle>1️⃣ 강의 영상 업로드</CardTitle>
-            <CardDescription>강의 영상을 먼저 업로드해주세요 (필수)</CardDescription>
+            <CardTitle>1️⃣ Upload Lecture Video</CardTitle>
+            <CardDescription>Please upload your lecture video first (required).</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <FileUpload
@@ -322,10 +322,10 @@ export function CourseUploadForm() {
             />
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={handleCancel}>
-                취소
+                Cancel
               </Button>
               <Button type="button" onClick={handleVideoUploadComplete} disabled={!videoFile || !isVideoReadyToProceed}>
-                다음 단계로 진행
+                Continue
               </Button>
             </div>
           </CardContent>
@@ -336,14 +336,14 @@ export function CourseUploadForm() {
       {currentStep === 'AI_GENERATING' && (
         <Card>
           <CardHeader>
-            <CardTitle>2️⃣ AI 초안 생성 중...</CardTitle>
-            <CardDescription>영상을 분석하여 강의 초안을 자동으로 생성하고 있습니다</CardDescription>
+            <CardTitle>2️⃣ Generate AI Draft...</CardTitle>
+            <CardDescription>We’re analyzing your video and generating a draft automatically.</CardDescription>
           </CardHeader>
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center space-y-4">
               <Sparkles className="h-16 w-16 animate-pulse text-purple-600" />
-              <p className="text-lg font-medium">AI가 강의 초안을 생성 중입니다...</p>
-              <p className="text-muted-foreground text-sm">잠시만 기다려주세요</p>
+              <p className="text-lg font-medium">Generating your draft…</p>
+              <p className="text-muted-foreground text-sm">This may take a moment.</p>
             </div>
           </CardContent>
         </Card>
@@ -354,57 +354,57 @@ export function CourseUploadForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>3️⃣ AI 초안 수정</CardTitle>
-              <CardDescription>AI가 생성한 초안을 확인하고 필요한 내용을 수정하세요</CardDescription>
+              <CardTitle>3️⃣ Edit Content</CardTitle>
+              <CardDescription>Review the AI-generated draft and make any necessary edits.</CardDescription>
             </CardHeader>
           </Card>
 
           {/* 기본 정보 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>기본 정보</CardTitle>
-              <CardDescription>강의의 기본 정보를 입력하세요</CardDescription>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>Enter the basic details of your course.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">강의 제목 *</Label>
+                <Label htmlFor="title">Lecture Title *</Label>
                 <Input
                   id="title"
                   {...register('title', {
-                    required: '강의 제목을 입력해주세요',
-                    minLength: { value: 2, message: '제목은 2자 이상이어야 합니다' },
-                    maxLength: { value: 100, message: '제목은 100자 이하여야 합니다' },
+                    required: 'Please enter a course title.',
+                    minLength: { value: 2, message: 'Title must be at least 2 characters.' },
+                    maxLength: { value: 100, message: 'Title must be 100 characters or fewer.' },
                   })}
-                  placeholder="강의 제목을 입력하세요"
+                  placeholder="Enter a course title"
                 />
                 {errors.title && <p className="text-destructive text-sm">{errors.title.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="targetAudience">대상자 *</Label>
+                <Label htmlFor="targetAudience">Target Audience *</Label>
                 <Input
                   id="targetAudience"
                   {...register('targetAudience', {
-                    required: '대상자를 입력해주세요',
-                    minLength: { value: 2, message: '대상자는 2자 이상이어야 합니다' },
-                    maxLength: { value: 100, message: '대상자는 100자 이하여야 합니다' },
+                    required: 'Please specify the target audience.',
+                    minLength: { value: 2, message: 'Target audience must be at least 2 characters.' },
+                    maxLength: { value: 100, message: 'Target audience must be 100 characters or fewer.' },
                   })}
-                  placeholder="예: 초보자, 중급자, 개발자 등"
+                  placeholder="e.g., Beginners, Intermediate learners, Developers"
                 />
                 {errors.targetAudience && <p className="text-destructive text-sm">{errors.targetAudience.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">강의 설명 *</Label>
+                <Label htmlFor="description">Lecture Description *</Label>
                 <Textarea
                   id="description"
                   {...register('description', {
-                    required: '강의 설명을 입력해주세요',
-                    minLength: { value: 10, message: '설명은 10자 이상이어야 합니다' },
-                    maxLength: { value: 500, message: '설명은 500자 이하여야 합니다' },
+                    required: 'Please enter a course description.',
+                    minLength: { value: 10, message: 'Description must be at least 10 characters.' },
+                    maxLength: { value: 500, message: 'Description must be 500 characters or fewer.' },
                   })}
                   rows={4}
-                  placeholder="강의에 대한 자세한 설명을 입력하세요"
+                  placeholder="Write a detailed description of your course"
                   maxLength={500}
                   className="h-48"
                 />
@@ -421,8 +421,8 @@ export function CourseUploadForm() {
           {/* 설치 환경 요구사항 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>설치 환경 요구사항</CardTitle>
-              <CardDescription>강의에 필요한 설치 환경을 추가하세요</CardDescription>
+              <CardTitle>Prerequisites</CardTitle>
+              <CardDescription>Add any environment or installation requirements for this course.</CardDescription>
             </CardHeader>
             <CardContent>
               <InstallationRequirements
@@ -435,8 +435,8 @@ export function CourseUploadForm() {
           {/* 핵심 내용 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>핵심 내용</CardTitle>
-              <CardDescription>이 강의에서 다루는 핵심 내용을 추가하세요</CardDescription>
+              <CardTitle>Key Points</CardTitle>
+              <CardDescription>Add the key topics learners will cover in this course.</CardDescription>
             </CardHeader>
             <CardContent>
               <CoreContents contents={coreContents} onContentsChange={setCoreContents} />
@@ -446,8 +446,8 @@ export function CourseUploadForm() {
           {/* 태그 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>태그</CardTitle>
-              <CardDescription>강의를 찾기 쉽게 태그를 추가하세요</CardDescription>
+              <CardTitle>Tags</CardTitle>
+              <CardDescription>Add tags to help learners discover your course.</CardDescription>
             </CardHeader>
             <CardContent>
               <CourseTags tags={tags} onTagsChange={setTags} />
@@ -457,10 +457,10 @@ export function CourseUploadForm() {
           {/* 버튼 */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              취소
+              Cancel
             </Button>
             <Button type="button" variant="outline" onClick={() => setCurrentStep('PREVIEW')}>
-              미리보기
+              Preview
             </Button>
           </div>
         </form>
@@ -471,8 +471,8 @@ export function CourseUploadForm() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>4️⃣ 미리보기</CardTitle>
-              <CardDescription>강의가 사용자에게 어떻게 보여질지 확인하세요</CardDescription>
+              <CardTitle>4️⃣ Preview</CardTitle>
+              <CardDescription>Preview how your course will appear to learners.</CardDescription>
             </CardHeader>
           </Card>
 
@@ -484,16 +484,16 @@ export function CourseUploadForm() {
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => setCurrentStep('EDIT')}>
-              다시 수정하기
+              Back to Edit
             </Button>
             <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
-                  업로드 중...
+                  Uploading...
                 </>
               ) : (
-                '강의 업로드 완료'
+                'Publish Lecture'
               )}
             </Button>
           </div>

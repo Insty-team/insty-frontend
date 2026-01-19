@@ -214,23 +214,23 @@ export function FileUpload({
     if (!isThumbnail) {
       const stt = transcriptionStatus.data as TranscriptionStatusResponse | undefined;
       const isReady = uploadStatus === 'COMPLETED' && !!thumbnailQuery.data?.thumbnailUrl;
-      if (isReady) return '준비 완료';
-      if (uploadStatus === 'ERROR') return '업로드 실패';
-      if (shouldPollThumbnail) return '썸네일 생성 중...';
-      if (stt?.status === 'NOT_STARTED') return 'AI 변환 대기 중...';
-      if (stt?.status === 'IN_PROGRESS' || stt?.status === 'PENDING') return `AI 변환 중... (${stt.progress ?? 0}%)`;
-      if (stt?.status === 'FAILED') return 'AI 변환 실패';
-      if (isTranscriptionReady) return 'AI 변환 완료';
+      if (isReady) return 'Ready';
+      if (uploadStatus === 'ERROR') return 'Upload failed';
+      if (shouldPollThumbnail) return 'Generating thumbnail...';
+      if (stt?.status === 'NOT_STARTED') return 'AI processing queued...';
+      if (stt?.status === 'IN_PROGRESS' || stt?.status === 'PENDING') return `AI processing... (${stt.progress ?? 0}%)`;
+      if (stt?.status === 'FAILED') return 'AI processing failed';
+      if (isTranscriptionReady) return 'AI processing complete';
     }
     switch (uploadStatus) {
       case 'PROCESSING':
-        return '업로드 중...';
+        return 'Uploading...';
       case 'COMPLETED':
-        return '업로드 완료';
+        return 'Upload complete';
       case 'ERROR':
-        return '업로드 실패';
+        return 'Upload failed';
       default:
-        return '대기 중';
+        return 'Idle';
     }
   };
 
@@ -284,7 +284,7 @@ export function FileUpload({
 
   return (
     <div className="space-y-2">
-      <Label>{isThumbnail ? '강의 썸네일' : '강의 영상'}</Label>
+      <Label>{isThumbnail ? 'Thumbnail' : 'Lecture Video'}</Label>
 
       <Card
         className={`cursor-pointer rounded-md border-2 py-6 shadow-none transition-colors ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-dashed'}`}
@@ -384,11 +384,11 @@ export function FileUpload({
             <div className="space-y-2 text-center">
               <Upload className="text-muted-foreground mx-auto h-10 w-10" />
               <div>
-                <p className="font-medium">{isThumbnail ? '썸네일을 업로드하세요' : '영상을 업로드하세요'}</p>
+                <p className="font-medium">{isThumbnail ? 'Upload a thumbnail' : 'Upload a video'}</p>
                 <p className="text-muted-foreground text-sm">
-                  {isThumbnail ? 'JPEG, PNG 파일' : 'MP4 파일'} (최대 {maxSizeText})
+                  {isThumbnail ? 'JPEG or PNG' : 'MP4'} (max {maxSizeText})
                 </p>
-                <p className="text-muted-foreground mt-1 text-xs">클릭하거나 파일을 드래그하여 업로드</p>
+                <p className="text-muted-foreground mt-1 text-xs">Click to select a file or drag and drop</p>
               </div>
             </div>
           )}
