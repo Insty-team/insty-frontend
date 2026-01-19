@@ -1,15 +1,11 @@
-import { UserType } from '@/shared/types/auth.enum';
-
 export type LoginRequest = {
   email: string;
   password: string;
-  userType: UserType;
 };
 
 export type LoginResponse = {
   id: number;
   nickname: string;
-  userType: UserType;
   token: {
     accessToken: string;
     refreshToken: string;
@@ -22,7 +18,6 @@ export type LoginResponse = {
 export type ReissueTokenResponse = {
   id: 0;
   nickname: string;
-  userType: UserType;
   token: {
     accessToken: string;
     refreshToken: string;
@@ -34,7 +29,6 @@ export type ReissueTokenResponse = {
 
 export type SocialLoginRequest = {
   code: string;
-  userType: UserType;
 };
 
 export type EmailVerifyCheckRequest = {
