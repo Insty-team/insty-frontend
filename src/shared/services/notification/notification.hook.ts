@@ -2,6 +2,7 @@ import {
   GET_notification_settings,
   GET_notifications_me,
   POST_notification_read,
+  POST_notification_read_all,
   PUT_notification_all_settings,
   PUT_notification_settings,
 } from './notification.service';
@@ -39,6 +40,14 @@ export const usePostNotificationRead = () => {
   return useMutation({
     mutationKey: [POST_notification_read.name],
     mutationFn: (notificationId: number) => POST_notification_read(notificationId),
+  });
+};
+
+/** 모든 알림 읽음 처리 */
+export const usePostNotificationReadAll = () => {
+  return useMutation({
+    mutationKey: [POST_notification_read_all.name],
+    mutationFn: () => POST_notification_read_all(),
   });
 };
 
