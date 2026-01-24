@@ -5,9 +5,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
 import { Markdown } from '@/shared/components/ui/markdown';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Separator } from '@/shared/components/ui/separator';
@@ -20,16 +28,22 @@ import {
   RecommendationHistoryResponse,
   RecommendedCourse,
 } from '@/shared/services/ai-search/ai-search.type';
+import { useGetProfile } from '@/shared/services/user/user.hook';
+import { useAuthStore } from '@/shared/stores/auth';
 import {
   ChevronLeft,
   ChevronRight,
+  LogOut,
   MessageSquare,
   MoreHorizontal,
   PenSquare,
   Send,
   Sparkles,
   Trash2,
+  Video,
 } from 'lucide-react';
+
+import { NAVIGATIONS } from '@/app/_components/navigations';
 
 import instyLogo from '@/assets/Logo.png';
 
@@ -103,6 +117,8 @@ function ChatSidebar({
   selectedChatId,
   onSelectChat,
   onNewChat,
+  profile,
+  onLogout,
 }: {
   isOpen: boolean;
   onToggle: () => void;
@@ -110,6 +126,12 @@ function ChatSidebar({
   selectedChatId: string | null;
   onSelectChat: (id: string) => void;
   onNewChat: () => void;
+  profile?: {
+    nickname?: string;
+    email?: string;
+    thumbnailUrl?: string;
+  };
+  onLogout: () => void;
 }) {
   const groupedHistory = {
     today: chatHistory.filter((chat) => chat.category === 'today'),
@@ -129,26 +151,6 @@ function ChatSidebar({
       <MessageSquare className="size-4 shrink-0 text-slate-400" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-slate-700">{chat.title}</p>
-      </div>
-      <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <button
-          className="rounded p-1 hover:bg-slate-200"
-          onClick={(e) => {
-            e.stopPropagation();
-            // 편집 기능 (UI만)
-          }}
-        >
-          <PenSquare className="size-3.5 text-slate-500" />
-        </button>
-        <button
-          className="rounded p-1 hover:bg-red-100"
-          onClick={(e) => {
-            e.stopPropagation();
-            // 삭제 기능 (UI만)
-          }}
-        >
-          <Trash2 className="size-3.5 text-red-500" />
-        </button>
       </div>
     </button>
   );
@@ -214,15 +216,54 @@ function ChatSidebar({
             <div className="border-t p-3">
               <div className="flex items-center gap-3 rounded-lg bg-slate-100 p-3">
                 <Avatar className="size-8">
-                  <AvatarFallback className="bg-slate-300 text-xs text-slate-700">나</AvatarFallback>
+                  <AvatarImage src={profile?.thumbnailUrl} alt={profile?.nickname} />
+                  <AvatarFallback className="bg-slate-300 text-xs text-slate-700">
+                    {profile?.nickname?.charAt(0).toUpperCase() || '나'}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-700">사용자</p>
+                  <p className="truncate text-sm font-medium text-slate-700">{profile?.nickname || '사용자'}</p>
                   <p className="truncate text-xs text-slate-500">무료 플랜</p>
                 </div>
-                <Button variant="ghost" size="icon" className="size-8">
-                  <MoreHorizontal className="size-4 text-slate-500" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8">
+                      <MoreHorizontal className="size-4 text-slate-500" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" side="top" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm leading-none font-medium">{profile?.nickname || '사용자'}</p>
+                        <p className="text-muted-foreground text-xs leading-none">{profile?.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {/* 크리에이터 센터 */}
+                    <DropdownMenuItem asChild>
+                      <Link href="/creator/courses/new">
+                        <Video className="mr-2 h-4 w-4" />
+                        <span>크리에이터 센터</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {/* 마이페이지 네비게이션 */}
+                    {NAVIGATIONS.map((navigation) => (
+                      <DropdownMenuItem asChild key={navigation.name}>
+                        <Link href={navigation.href}>
+                          <navigation.icon className="mr-2 h-4 w-4" />
+                          <span>{navigation.name}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    {/* 로그아웃 */}
+                    <DropdownMenuItem onClick={onLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>로그아웃</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </>
@@ -274,6 +315,14 @@ export default function LearnerPage() {
 
   const { mutateAsync: postSearchRecommend } = usePostSearchRecommend();
   const { data: searchRecommendHistory } = useGetSearchRecommendHistory();
+
+  // 프로필 및 인증 상태
+  const { logout } = useAuthStore((state) => state);
+  const { data: profile } = useGetProfile();
+
+  const handleLogout = useCallback(() => {
+    logout();
+  }, [logout]);
 
   // 자동 스크롤
   useEffect(() => {
@@ -415,6 +464,8 @@ export default function LearnerPage() {
         selectedChatId={selectedChatId}
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
+        profile={profile}
+        onLogout={handleLogout}
       />
 
       {/* 메인 채팅 영역 */}
@@ -439,7 +490,7 @@ export default function LearnerPage() {
         {/* 채팅 영역 */}
         <div className="flex-1 overflow-hidden">
           <div className="mx-auto h-full max-w-5xl px-4">
-            <div ref={scrollRef} className="h-full overflow-y-auto pb-4">
+            <div ref={scrollRef} className="h-full overflow-y-auto py-4">
               <div className="space-y-6">
                 {errorMessage && (
                   <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
