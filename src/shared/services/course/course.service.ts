@@ -11,6 +11,8 @@ import {
 import { api } from '@/shared/services/api';
 import { ApiResponse, PaginatedResponse } from '@/shared/types/api.type';
 
+import { SortOption } from '@/app/(authorized)/creator/(mypage)/courses/_components/CourseFilters';
+
 /** 강의 상세조회 */
 export const GET_course_by_id = async (courseId: string): Promise<ApiResponse<CourseDetailResponse>> => {
   const response = await api.get(`/api/v1/courses/${courseId}`);
@@ -64,12 +66,14 @@ export const GET_courses_my = async (
   page: number = 1,
   pageSize: number = 10,
   isShow?: boolean,
+  sortType?: SortOption,
 ): Promise<PaginatedResponse<CourseMyResponse>> => {
   const response = await api.get(`/api/v1/courses/my`, {
     params: {
       page,
       pageSize,
       isShow,
+      sortType,
     },
   });
   return response.data;
