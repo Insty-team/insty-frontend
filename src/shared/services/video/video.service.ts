@@ -13,6 +13,7 @@ import {
 } from './video.type';
 
 import { api } from '@/shared/services/api';
+import { useAuthStore } from '@/shared/stores/auth';
 import { ApiResponse } from '@/shared/types/api.type';
 import axios from 'axios';
 
@@ -60,9 +61,18 @@ export const GET_video_thumbnail = async (videoUuid: string): Promise<ApiRespons
 
 /** 영상 데이터 가져오기 */
 export const GET_video_playlist_by_signed_url = async (signedUrl: string) => {
-  const getVideoData = await axios.get(signedUrl, {
-    withCredentials: true,
+  console.log('-> ', signedUrl);
+  const { accessToken } = useAuthStore.getState();
+  const axiosInstance = axios.create({
+    // withCredentials: true,
+    // headers: {
+    //   Authorization: `Bearer ${accessToken}`,
+    // },
   });
+  const getVideoData = await axiosInstance.get(signedUrl);
+  // const getVideoData = await axios.get(signedUrl, {
+  //   withCredentials: true,
+  // });
   const lines = getVideoData.data.trim().split('\n');
   const variantM3u8 = lines.find((line: string) => line.endsWith('.m3u8') && !line.startsWith('#'));
 
