@@ -66,7 +66,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                 variant={course.isShow ? 'default' : 'secondary'}
                 className="bg-primary-green-100 text-primary-green-800 text-xs"
               >
-                {course.isShow ? '공개' : '비공개'}
+                {course.isShow ? 'Public' : 'Private'}
               </Badge>
             </div>
           </div>
@@ -138,7 +138,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onToggleVisibility?.(course.courseId)}>
                     {course.isShow ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-                    {course.isShow ? '비공개 전환' : '공개 전환'}
+                    Toggle Visibility
                   </DropdownMenuItem>
                   <Separator />
                   <DropdownMenuItem

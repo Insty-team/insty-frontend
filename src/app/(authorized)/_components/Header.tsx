@@ -20,7 +20,7 @@ import {
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import { useAuthStore } from '@/shared/stores/auth';
 import { UserTypeEnum } from '@/shared/types/auth.enum';
-import { Bell, LogOut, ShoppingCart, Video } from 'lucide-react';
+import { LogOut, Plus, ShoppingCart, Video } from 'lucide-react';
 
 import CREATOR_NAVIGATION from '@/app/_navigations/creator-navigation';
 import LEARNER_NAVIGATION from '@/app/_navigations/learner-navigation';
@@ -61,7 +61,7 @@ export default function Header() {
               <Button asChild variant="default">
                 <Link href="/creator/courses/new">
                   <Video className="mr-2 h-4 w-4" />
-                  강의 등록
+                  New Lecture <Plus className="h-4 w-4" />
                 </Link>
               </Button>
             )}

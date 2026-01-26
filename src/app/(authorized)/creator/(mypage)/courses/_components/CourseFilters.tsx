@@ -10,7 +10,7 @@ import { Separator } from '@/shared/components/ui/separator';
 import { Filter, Search, X } from 'lucide-react';
 
 export type SortOption = 'newest' | 'oldest' | 'views' | 'comments' | 'title';
-export type StatusFilter = 'all' | 'published' | 'draft';
+export type StatusFilter = 'all' | 'public' | 'private';
 
 interface CourseFiltersProps {
   searchQuery: string;
@@ -45,8 +45,8 @@ export function CourseFilters({
 
   const statusOptions = [
     { value: 'all', label: '전체', count: totalCount },
-    { value: 'published', label: '공개', count: 0 }, // 실제 데이터에서 계산
-    { value: 'draft', label: '비공개', count: 0 }, // 실제 데이터에서 계산
+    { value: 'public', label: 'Public', count: 0 }, // 실제 데이터에서 계산
+    { value: 'private', label: 'Private', count: 0 }, // 실제 데이터에서 계산
   ];
 
   const clearFilters = () => {

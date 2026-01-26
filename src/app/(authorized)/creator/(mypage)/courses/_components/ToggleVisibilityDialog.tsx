@@ -54,10 +54,10 @@ export function ToggleVisibilityDialog({
   };
 
   const newVisibility = !currentVisibility;
-  const actionText = newVisibility ? '공개' : '비공개';
+  const actionText = newVisibility ? 'Public' : 'Private';
   const actionDescription = newVisibility
-    ? '강의가 공개되어 모든 사용자가 볼 수 있게 됩니다.'
-    : '강의가 비공개되어 사용자들이 볼 수 없게 됩니다.';
+    ? 'The lecture will be visible to all users.'
+    : 'The lecture will be hidden from users.';
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -69,17 +69,17 @@ export function ToggleVisibilityDialog({
             ) : (
               <EyeOff className="h-5 w-5 text-orange-600" />
             )}
-            강의 {actionText} 전환
+            Change Lecture Visibility to {actionText}
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             <p>
-              <strong>"{courseTitle}"</strong> 강의를 {actionText}로 전환하시겠습니까?
+              Are you sure you want to change <strong>&quot;{courseTitle}&quot;</strong> to {actionText}?
             </p>
             <p className="text-muted-foreground text-sm">{actionDescription}</p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isToggling}>취소</AlertDialogCancel>
+          <AlertDialogCancel disabled={isToggling}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleToggle}
             disabled={isToggling}
@@ -92,12 +92,12 @@ export function ToggleVisibilityDialog({
             {isToggling ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                처리 중...
+                Processing...
               </>
             ) : (
               <>
                 {newVisibility ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
-                {actionText}로 전환
+                Change to {actionText}
               </>
             )}
           </AlertDialogAction>

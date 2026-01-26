@@ -11,8 +11,8 @@ interface CourseStatsProps {
 export function CourseStats({ courses }: CourseStatsProps) {
   const stats = {
     totalCourses: courses.length,
-    publishedCourses: courses.filter((course) => course.isShow).length,
-    draftCourses: courses.filter((course) => !course.isShow).length,
+    publishCourses: courses.filter((course) => course.isShow).length,
+    privateCourses: courses.filter((course) => !course.isShow).length,
     totalViews: courses.reduce((sum, course) => sum + course.viewCount, 0),
     totalComments: courses.reduce((sum, course) => sum + course.commentCount, 0),
     totalRevenue: courses.reduce((sum, course) => sum + course.price, 0),
@@ -51,10 +51,10 @@ export function CourseStats({ courses }: CourseStatsProps) {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm">전체 강의</p>
+              <p className="text-muted-foreground text-sm">Total Lectures</p>
               <p className="mt-1 text-2xl font-bold">{stats.totalCourses}개</p>
               <p className="text-muted-foreground mt-1 text-xs">
-                공개 {stats.publishedCourses}개 • 비공개 {stats.draftCourses}개
+                Public {stats.publishCourses} • Private {stats.privateCourses}
               </p>
             </div>
             <TrendingUp className="text-muted-foreground size-8" />

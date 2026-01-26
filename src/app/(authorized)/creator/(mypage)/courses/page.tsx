@@ -106,9 +106,9 @@ export default function CreatorCoursesPage() {
     }
 
     // 상태 필터
-    if (statusFilter === 'published') {
+    if (statusFilter === 'public') {
       filtered = filtered.filter((course: CourseMyResponse) => course.isShow);
-    } else if (statusFilter === 'draft') {
+    } else if (statusFilter === 'private') {
       filtered = filtered.filter((course: CourseMyResponse) => !course.isShow);
     }
 
@@ -158,8 +158,8 @@ export default function CreatorCoursesPage() {
   });
 
   // 공개/비공개 강의 분리
-  const publishedCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => course.isShow);
-  const draftCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => !course.isShow);
+  const publishCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => course.isShow);
+  const privateCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => !course.isShow);
 
   // 이벤트 핸들러들
   const handleEdit = (courseId: string) => {
@@ -210,12 +210,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">내 강의 관리</h2>
-            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+            <h2 className="text-2xl font-bold">My Lectures</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-muted-foreground">강의 목록을 불러오는 중...</div>
+          <div className="text-muted-foreground">Loading lectures...</div>
         </div>
       </div>
     );
@@ -226,12 +226,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">내 강의 관리</h2>
-            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+            <h2 className="text-2xl font-bold">My Lectures</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-destructive">강의 목록을 불러오는데 실패했습니다.</div>
+          <div className="text-destructive">Failed to load lectures.</div>
         </div>
       </div>
     );
@@ -242,12 +242,12 @@ export default function CreatorCoursesPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">내 강의 관리</h2>
-          <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+          <h2 className="text-2xl font-bold">My Lectures</h2>
+          <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
         </div>
         <Button asChild>
           <Link href="/creator/courses/new">
-            <Plus className="mr-2 h-4 w-4" />새 강의 만들기
+            New Lecture <Plus className="h-4 w-4" />
           </Link>
         </Button>
       </div>
@@ -278,17 +278,17 @@ export default function CreatorCoursesPage() {
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Video className="text-muted-foreground mb-4 h-12 w-12" />
           <h3 className="mb-2 text-lg font-semibold">
-            {searchQuery || statusFilter !== 'all' ? '검색 결과가 없습니다' : '아직 강의가 없습니다'}
+            {searchQuery || statusFilter !== 'all' ? 'No search results' : 'No lectures yet'}
           </h3>
           <p className="text-muted-foreground mb-4">
             {searchQuery || statusFilter !== 'all'
-              ? '다른 검색어나 필터를 시도해보세요.'
-              : '첫 번째 강의를 만들어보세요!'}
+              ? 'Try different search terms or filters.'
+              : 'Create your first lecture!'}
           </p>
           {!searchQuery && statusFilter === 'all' && (
             <Button asChild>
               <Link href="/creator/courses/new">
-                <Plus className="mr-2 h-4 w-4" />새 강의 만들기
+                New Lecture <Plus className="h-4 w-4" />
               </Link>
             </Button>
           )}
@@ -296,9 +296,9 @@ export default function CreatorCoursesPage() {
       ) : (
         <Tabs defaultValue="all" className="w-full">
           <TabsList>
-            <TabsTrigger value="all">전체 ({table.getRowCount()})</TabsTrigger>
-            <TabsTrigger value="published">공개 ({table.getRowCount()})</TabsTrigger>
-            <TabsTrigger value="draft">비공개 ({draftCourses.length})</TabsTrigger>
+            <TabsTrigger value="all">All ({table.getRowCount()})</TabsTrigger>
+            <TabsTrigger value="public">Public ({publishCourses.length})</TabsTrigger>
+            <TabsTrigger value="private">Private ({privateCourses.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-6 space-y-4">
@@ -314,8 +314,8 @@ export default function CreatorCoursesPage() {
             ))}
           </TabsContent>
 
-          <TabsContent value="published" className="mt-6 space-y-4">
-            {publishedCourses.map((course: CourseMyResponse) => (
+          <TabsContent value="public" className="mt-6 space-y-4">
+            {publishCourses.map((course: CourseMyResponse) => (
               <CourseCard
                 key={course.courseId}
                 course={course}
@@ -327,8 +327,8 @@ export default function CreatorCoursesPage() {
             ))}
           </TabsContent>
 
-          <TabsContent value="draft" className="mt-6 space-y-4">
-            {draftCourses.map((course: CourseMyResponse) => (
+          <TabsContent value="private" className="mt-6 space-y-4">
+            {privateCourses.map((course: CourseMyResponse) => (
               <CourseCard
                 key={course.courseId}
                 course={course}
