@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -24,10 +22,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/shared/components/ui/sheet';
+import { Spinner } from '@/shared/components/ui/spinner';
 import { useGetCourseCommunityPostsInfinite, useDeleteCourseCommunityPostById, usePostCourseCommunityPostById, usePostCourseCommunityPostLike, useDeleteCourseCommunityPostLike } from '@/shared/services/community/community.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
+import { usePostCommunityThoughtDraft } from '@/shared/services/ai-community/ai-community.hook';
 import dayjs from 'dayjs';
-import { ArrowLeft, Calendar, MessageCircle, Heart, MoreHorizontal, Sparkles } from 'lucide-react';
+import { ArrowLeft, Calendar, MessageCircle, Heart, MoreHorizontal, Sparkles, Copy, Check, X } from 'lucide-react';
 
 type Props = {
   courseId: string;
@@ -83,6 +90,15 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
   const [isPolishing, setIsPolishing] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
   
+  // AI panel states
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+  const [aiInput, setAiInput] = useState('');
+  const [aiFiles, setAiFiles] = useState<File[]>([]);
+  const [aiResult, setAiResult] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+  
   const {
     data: postsData,
     isLoading,
@@ -94,6 +110,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
 
   const { mutate: deletePost } = useDeleteCourseCommunityPostById(Number(courseId));
   const { mutate: createPost, isPending: isPosting } = usePostCourseCommunityPostById(Number(courseId));
+  const { mutate: generateThoughtDraft, isPending: isGeneratingDraft } = usePostCommunityThoughtDraft();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
 
@@ -142,6 +159,70 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
       setPostContent(polishedContent);
       setIsPolishing(false);
     }, 1500);
+  };
+
+  const handleOpenAiPanel = () => {
+    setIsAiPanelOpen(true);
+    setAiInput('');
+    setAiFiles([]);
+    setAiResult('');
+    setAiError('');
+    setIsCopied(false);
+  };
+
+  const handleCloseAiPanel = () => {
+    setIsAiPanelOpen(false);
+  };
+
+  const handleGenerateAiContent = async () => {
+    if (!aiInput.trim()) return;
+    
+    setIsGenerating(true);
+    setAiError('');
+    setAiResult('');
+    setIsCopied(false);
+    
+    generateThoughtDraft(
+      {
+        course_id: Number(courseId),
+        query: aiInput,
+        has_attachment: aiFiles.length > 0,
+        files: aiFiles.length > 0 ? aiFiles : undefined,
+      },
+      {
+        onSuccess: (response) => {
+          const { post_content } = response.data;
+          setAiResult(post_content);
+          setIsGenerating(false);
+        },
+        onError: (error) => {
+          setAiError('Something went wrong. Please try again.');
+          setIsGenerating(false);
+        },
+      },
+    );
+  };
+
+  const handleApplyResult = async () => {
+    if (!aiResult) return;
+    
+    try {
+      await navigator.clipboard.writeText(aiResult);
+      
+      setIsCopied(true);
+      
+      setTimeout(() => {
+        if (aiFiles.length > 0) {
+          setUploadedFiles(prev => [...prev, ...aiFiles]);
+          setEditorKey(prev => prev + 1);
+        }
+        setIsCopied(false);
+        setIsAiPanelOpen(false);
+      }, 500);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      setAiError('Failed to copy text. Please try again.');
+    }
   };
 
   const posts = useMemo(() => postsData?.items?.map((post) => {
@@ -233,18 +314,17 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
                     isSending={isPosting}
                     className="rounded-md"
                   />
-                  {postContent.trim() && (
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handlePolishPost}
-                      disabled={isPolishing}
+                      onClick={handleOpenAiPanel}
                       className="gap-2"
                     >
                       <Sparkles className="size-4" />
-                      {isPolishing ? 'Polishing...' : 'Polish with AI'}
+                      Help me organize my thoughts (optional)
                     </Button>
-                  )}
+                  </div>
                 </div>
               </div>
             {posts.map((post, index) => (
@@ -375,6 +455,99 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 커뮤니티 포스트 AI 초안 작성 패널 */}
+      <Sheet open={isAiPanelOpen} onOpenChange={setIsAiPanelOpen}>
+        <SheetContent side="right" className="w-[600px] sm:w-[600px] !max-w-none overflow-y-auto px-8">
+          <SheetHeader>
+            <SheetTitle>Help me organize my thoughts</SheetTitle>
+            <SheetDescription>
+              Jot down a few thoughts and let AI help you organize them into a clear post.
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="mt-6 space-y-4">
+            {/* AI Input */}
+            <div className="space-y-2">
+              <CommunityTextArea
+                value={aiInput}
+                onChange={setAiInput}
+                placeholder="Jot down a few thoughts…"
+                showSendButton={false}
+                showAttachButton={true}
+                onFilesChange={setAiFiles}
+                className="min-h-[80px]"
+                isDisabled={isGenerating}
+              />
+            </div>
+            
+            {/* Generate Button */}
+            <Button
+              onClick={handleGenerateAiContent}
+              disabled={!aiInput.trim() || isGenerating}
+              className="w-full gap-2"
+            >
+              {isGenerating ? (
+                <>
+                  <Spinner className="size-4" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  Generate
+                </>
+              )}
+            </Button>
+            
+            {/* AI Result */}
+            {aiResult && (
+              <div className="space-y-3 rounded-lg border p-4 bg-muted/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">AI suggestion:</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleApplyResult}
+                    className="gap-2 h-8"
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check className="size-4" />
+                        Applied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-4" />
+                        Apply to Post
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {aiResult}
+                </div>
+              </div>
+            )}
+            
+            {/* Error Message */}
+            {aiError && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                <p className="text-sm text-destructive">{aiError}</p>
+              </div>
+            )}
+            
+            {/* Instructions */}
+            {!aiResult && !aiError && !isGenerating && (
+              <div className="rounded-lg border p-4 bg-muted/30">
+                <p className="text-sm text-muted-foreground">
+                  💡 Tip: After generating, click "Apply to Post" to use the AI-generated content and attached files in your post. You can edit it as needed.
+                </p>
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

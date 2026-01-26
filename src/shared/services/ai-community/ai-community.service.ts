@@ -15,6 +15,8 @@ import {
   FormCheckResponse,
   QuestionDraftRequest,
   QuestionDraftResponse,
+  CommunityThoughtDraftRequest,
+  CommunityThoughtDraftResponse,
 } from './ai-community.type';
 
 import { api } from '@/shared/services/api';
@@ -124,6 +126,7 @@ export const POST_community_question_draft = async (
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    timeout: 60_000,
   });
   return response.data;
 };
@@ -147,6 +150,31 @@ export const POST_community_answer_draft = async (
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    timeout: 60_000,
+  });
+  return response.data;
+};
+
+/** 커뮤니티 초안 작성 */
+export const POST_community_thought_draft = async (
+  data: CommunityThoughtDraftRequest,
+): Promise<ApiResponse<CommunityThoughtDraftResponse>> => {
+  const formData = new FormData();
+  formData.append('course_id', data.course_id.toString());
+  formData.append('query', data.query);
+  formData.append('has_attachment', (data.has_attachment ?? false).toString());
+
+  if (data.files && data.files.length > 0) {
+    data.files.forEach((file) => {
+      formData.append('files', file);
+    });
+  }
+
+  const response = await api.post('/api/v1/ai/community/thought-draft', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 60_000,
   });
   return response.data;
 };
