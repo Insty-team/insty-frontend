@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { LoginRequiredLink } from '@/shared/components/LoginRequiredLink';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -226,9 +227,13 @@ export default function Home() {
                             <Separator />
                             <CardFooter className="flex items-center justify-between">
                               <span className="text-sm font-medium text-slate-500">무료</span>
-                              <Button variant="ghost" size="sm">
-                                <Link href={`/course/${course.course_id}`}>수강하기</Link>
-                              </Button>
+                              <LoginRequiredLink
+                                href={`/course/${course.course_id}`}
+                                className="text-sm font-medium underline-offset-4 hover:underline"
+                                dialogDescription="강의를 수강하려면 먼저 로그인해 주세요."
+                              >
+                                수강하기
+                              </LoginRequiredLink>
                             </CardFooter>
                           </Card>
                         ))}
