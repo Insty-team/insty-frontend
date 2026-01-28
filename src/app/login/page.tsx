@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import Image from 'next/image';
@@ -27,6 +27,30 @@ import instyPng from '@/assets/Logo.png';
 import naverSvg from '@/assets/naver.svg';
 
 export default function Login() {
+  return (
+    <Suspense fallback={<LoginSkeleton />}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginSkeleton() {
+  return (
+    <section className="flex min-h-screen">
+      <div className="hidden flex-1 flex-col items-center justify-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 p-12 lg:flex" />
+      <div className="flex flex-1 flex-col items-center justify-center bg-gray-50 p-8">
+        <div className="flex w-full max-w-[420px] flex-col justify-center gap-6 rounded-2xl bg-white px-10 py-10 shadow-lg">
+          <div className="flex animate-pulse flex-col items-center gap-4">
+            <div className="h-10 w-24 rounded bg-gray-200" />
+            <div className="h-6 w-32 rounded bg-gray-200" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/home';
