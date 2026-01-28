@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
@@ -28,6 +28,8 @@ import naverSvg from '@/assets/naver.svg';
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/home';
   const isLoadingRef = useRef<boolean>(false);
   const { mutateAsync: postLogin } = usePostLogin();
   const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +53,7 @@ export default function Login() {
         authStore.setRefreshToken(response.data.token.refreshToken);
 
         userStore.setNickname(response.data.nickname);
-        router.push('/');
+        router.push(redirectTo);
       })
       .finally(() => {
         isLoadingRef.current = false;

@@ -22,7 +22,7 @@ export const useAuthStore = create(
       setRefreshToken: (refreshToken: AuthState['refreshToken']) => set({ refreshToken }),
       logout: () => {
         set({ accessToken: null, refreshToken: null });
-        window.location.href = '/login';
+        window.location.href = '/';
       },
     }),
     {

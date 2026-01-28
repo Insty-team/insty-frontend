@@ -1,6 +1,7 @@
 import { DELETE_withdraw, GET_email_check, GET_nickname_check, GET_profile, PUT_profile } from './user.service';
 import { UserRequest } from './user.type';
 
+import { useAuthStore } from '@/shared/stores/auth';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 /** 내 사용자 정보 수정 */
@@ -18,10 +19,12 @@ export const usePutProfile = () => {
 
 /** 내 사용자 정보 조회 */
 export const useGetProfile = () => {
+  const { accessToken } = useAuthStore((state) => state);
   return useQuery({
     queryKey: [GET_profile.name],
     queryFn: () => GET_profile(),
     select: ({ data }) => data,
+    enabled: !!accessToken,
   });
 };
 
