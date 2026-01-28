@@ -105,12 +105,12 @@ api.interceptors.response.use(
       // 로그아웃 처리
       const { logout } = useAuthStore.getState();
       try {
-        await POST_logout();
+        // await POST_logout();
       } catch (logoutError) {
         // 로그아웃 API 실패해도 클라이언트에서 로그아웃 처리
         console.error('Logout API error:', logoutError);
       } finally {
-        logout();
+        // logout();
       }
 
       return Promise.reject(err);

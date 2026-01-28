@@ -16,11 +16,20 @@ export default function Home() {
       {/* 로그인 버튼 - 글래스 효과 */}
       <Link
         href="/login"
-        className="fixed-login-button fixed top-4 right-4 z-50 rounded-full bg-white/80 px-6 py-2.5 font-semibold text-gray-800 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-white hover:shadow-xl"
+        className="fixed-login-button fixed top-4 right-36 z-50 rounded-full bg-white/80 px-6 py-2.5 font-semibold text-gray-800 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-white hover:shadow-xl"
       >
         <span className="flex items-center gap-2">
           <Sparkles className="text-primary-green-500 h-4 w-4" />
           로그인
+        </span>
+      </Link>
+      <Link
+        href="/home"
+        className="fixed-guest-button fixed top-4 right-4 z-50 rounded-full bg-white/80 px-6 py-2.5 font-semibold text-gray-800 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-white hover:shadow-xl"
+      >
+        <span className="flex items-center gap-2">
+          <Sparkles className="text-primary-green-500 h-4 w-4" />
+          게스트
         </span>
       </Link>
 

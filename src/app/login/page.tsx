@@ -51,7 +51,7 @@ export default function Login() {
         authStore.setRefreshToken(response.data.token.refreshToken);
 
         userStore.setNickname(response.data.nickname);
-        router.push('/');
+        router.push('/home');
       })
       .finally(() => {
         isLoadingRef.current = false;
