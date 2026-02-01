@@ -11,15 +11,16 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { useGetCoursesProgressByMe } from '@/shared/services/course/course.hook';
 import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import dayjs from 'dayjs';
-import { Calendar, Play } from 'lucide-react';
+import { Calendar, Play, MessageCircle } from 'lucide-react';
 import CommunityFeed from './_components/CommunityFeed';
-import CommunityDetail from './_components/CommuniryDetail';
+import CommunityDetail from './_components/CommunityDetail';
 
 type CommunityRow = {
   id: string;
   title: string;
   createdDate: string;
   thumbnail: string;
+  communityPostCount: number;
 };
 
 export default function LearnerCommunityPage() {
@@ -54,19 +55,17 @@ export default function LearnerCommunityPage() {
     const extended = post as ExtendedPost;
 
     const rawCreatedDate = extended.createdDate ?? extended.createdAt;
-    let formattedCreatedDate = 'Date info unavailable';
-    if (rawCreatedDate) {
-      const date = new Date(rawCreatedDate);
-      formattedCreatedDate = Number.isNaN(date.getTime()) ? rawCreatedDate : date.toLocaleDateString('en-US');
-    }
+    const formattedCreatedDate = rawCreatedDate ? dayjs(rawCreatedDate).format('MMM D, YYYY h:mm A') : 'Date info unavailable';
 
     const thumbnail = extended.thumbnail ?? extended.thumbnailUrl ?? '';
+    const communityPostCount = (post as any).communityPostCount ?? 0;
 
     return {
       id: post.courseId,
       title: post.title ?? 'Untitled Post',
       createdDate: formattedCreatedDate,
       thumbnail,
+      communityPostCount,
     };
   });
 }, [communityResponse]);
@@ -147,7 +146,7 @@ export default function LearnerCommunityPage() {
       ) : (
         <>
           <div>
-            <h2 className="text-2xl font-bold">Community Activity</h2>
+            <h2 className="text-2xl font-bold">COMMUNITY ACTIVITY</h2>
             <p className="text-muted-foreground mt-1">Check your community activity by purchased course</p>
           </div>
 
@@ -206,7 +205,11 @@ export default function LearnerCommunityPage() {
                               <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="h-4 w-4" />
-                                  {dayjs(post.createdDate).format('YYYY.MM.DD')}
+                                  {post.createdDate}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <MessageCircle className="h-4 w-4" />
+                                  {post.communityPostCount} {post.communityPostCount === 1 ? 'Post' : 'Posts'}
                                 </span>
                               </div>
                             </div>
