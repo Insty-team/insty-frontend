@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import Image from 'next/image';
@@ -15,11 +15,12 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
 import { emailReg, passwordReg } from '@/shared/lib/regex';
-import { usePostLogin } from '@/shared/services/auth/auth.hook';
+import { usePostLogin, useSocialLogin } from '@/shared/services/auth/auth.hook';
 import { LoginRequest } from '@/shared/services/auth/auth.type';
 import { useAuthStore, useUserStore } from '@/shared/stores/auth';
 import { SocialLoginType } from '@/shared/types/auth.enum';
 import { BookOpen, Eye, EyeOff, Play, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import googleSvg from '@/assets/google.svg';
 import kakaoSvg from '@/assets/kakao.svg';
@@ -54,9 +55,27 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/home';
+  const errorParam = searchParams.get('error');
   const isLoadingRef = useRef<boolean>(false);
   const { mutateAsync: postLogin } = usePostLogin();
   const [showPassword, setShowPassword] = useState(false);
+
+  // URL에 에러 파라미터가 있는 경우 토스트 표시
+  useEffect(() => {
+    if (errorParam) {
+      const errorMessages: Record<string, string> = {
+        invalid_callback: '잘못된 로그인 콜백입니다. 다시 시도해주세요.',
+        login_failed: '소셜 로그인에 실패했습니다. 다시 시도해주세요.',
+        access_denied: '로그인이 취소되었습니다.',
+      };
+      toast.error(errorMessages[errorParam] || '로그인 중 오류가 발생했습니다.');
+
+      // URL에서 에러 파라미터 제거
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('error');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  }, [errorParam, router]);
 
   const form = useForm({
     defaultValues: {
@@ -67,6 +86,10 @@ function LoginContent() {
 
   const authStore = useAuthStore((state) => state);
   const userStore = useUserStore((state) => state);
+
+  // 소셜 로그인 훅 (책임분리: 비즈니스 로직은 훅에서 처리)
+  const { startLogin: startSocialLogin, isLoading: isSocialLoading, isError: isSocialError } = useSocialLogin();
+
   const onSubmit = async (data: LoginRequest) => {
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
@@ -83,7 +106,19 @@ function LoginContent() {
         isLoadingRef.current = false;
       });
   };
-  const handleSocialLogin = (type: SocialLoginType) => {};
+
+  /**
+   * 소셜 로그인 핸들러
+   * - UI 이벤트만 처리하고, 비즈니스 로직은 useSocialLogin 훅에 위임
+   * - redirectTo를 state에 포함하여 로그인 후 원래 페이지로 이동
+   */
+  const handleSocialLogin = (type: SocialLoginType) => {
+    if (isSocialLoading) {
+      toast.info('로그인 처리 중입니다. 잠시만 기다려주세요.');
+      return;
+    }
+    startSocialLogin(type, redirectTo);
+  };
 
   return (
     <section className="flex min-h-screen">
@@ -223,21 +258,27 @@ function LoginContent() {
               <button
                 type="button"
                 onClick={() => handleSocialLogin('KAKAO')}
-                className="cursor-pointer transition-transform hover:scale-110"
+                disabled={isSocialLoading}
+                className="cursor-pointer transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="카카오 로그인"
               >
                 <Image src={kakaoSvg} alt="kakao" className="rounded-full" width={40} height={40} />
               </button>
               <button
                 type="button"
                 onClick={() => handleSocialLogin('GOOGLE')}
-                className="cursor-pointer transition-transform hover:scale-110"
+                disabled={isSocialLoading}
+                className="cursor-pointer transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="구글 로그인"
               >
                 <Image src={googleSvg} alt="google" className="rounded-full" width={40} height={40} />
               </button>
               <button
                 type="button"
                 onClick={() => handleSocialLogin('NAVER')}
-                className="cursor-pointer transition-transform hover:scale-110"
+                disabled={isSocialLoading}
+                className="cursor-pointer transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="네이버 로그인"
               >
                 <Image src={naverSvg} alt="naver" className="rounded-full" width={40} height={40} />
               </button>
