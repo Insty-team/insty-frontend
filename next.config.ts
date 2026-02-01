@@ -16,8 +16,12 @@ const nextConfig: NextConfig = {
   rewrites: async () => {
     return [
       {
-        source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_BACK_BASE_URL + '/api/:path*',
+        source: '/api/v1/ai/:path*',
+        destination: process.env.NEXT_PUBLIC_BACK_AI_URL + '/:path*',
+      },
+      {
+        source: '/api/v1/:path*',
+        destination: process.env.NEXT_PUBLIC_BACK_BASE_URL + '/:path*',
       },
     ];
   },
