@@ -1,71 +1,90 @@
 'use client';
 
+import Withdrawal from '../../_components/Withdrawal';
+
 import Link from 'next/link';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Label } from '@/shared/components/ui/label';
+import { Separator } from '@/shared/components/ui/separator';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { useGetProfile } from '@/shared/services/user/user.hook';
+import { Mail, Pencil, User } from 'lucide-react';
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = useGetProfile();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center py-8 sm:py-16">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* 헤더 섹션 */}
+    <div className="space-y-5 sm:space-y-6">
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">프로필</h2>
-          <p className="text-muted-foreground mt-1">나의 프로필 정보를 확인하세요</p>
+          <h2 className="text-base font-bold sm:text-lg">기본 정보</h2>
+          <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">나의 프로필 정보를 확인하고 수정하세요</p>
         </div>
-        <Link href="/learner/profile/edit">
-          <Button variant="outline">수정하기</Button>
+        <Link href="/mypage/profile/edit" className="sm:hidden">
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Pencil className="h-3.5 w-3.5" />
+            수정
+          </Button>
         </Link>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>기본 정보</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {/* 프로필 사진 섹션 */}
-            <div className="space-y-1">
-              <Label className="text-muted-foreground text-sm font-medium">프로필 사진</Label>
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={profile?.thumbnailUrl} alt={profile?.nickname} />
-                <AvatarFallback className="text-2xl">{profile?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
-              </Avatar>
-            </div>
-
-            {/* 기본 정보 섹션 */}
-            <div className="space-y-1">
-              <Label className="text-muted-foreground text-sm font-medium">닉네임</Label>
-              <p className="text-lg font-medium">{profile?.nickname || '닉네임이 없습니다'}</p>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-muted-foreground text-sm font-medium">이메일</Label>
-              <p className="text-lg">{profile?.email || '이메일이 없습니다'}</p>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-muted-foreground text-sm font-medium">소개</Label>
-              <p className="text-lg leading-relaxed">{profile?.introduce || '소개가 없습니다'}</p>
-            </div>
+      {/* 기본 정보 섹션 */}
+      <div className="space-y-4">
+        {/* 닉네임 */}
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 sm:h-9 sm:w-9">
+            <User className="h-4 w-4 text-slate-600" />
           </div>
-        </CardContent>
-      </Card>
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-xs sm:text-sm">닉네임</p>
+            <p className="truncate text-sm font-medium sm:text-base">{profile?.nickname || '-'}</p>
+          </div>
+        </div>
+
+        {/* 이메일 */}
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 sm:h-9 sm:w-9">
+            <Mail className="h-4 w-4 text-slate-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-xs sm:text-sm">이메일</p>
+            <p className="truncate text-sm font-medium sm:text-base">{profile?.email || '-'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 소개 섹션 */}
+      <Separator />
+
+      <div>
+        <h3 className="mb-3 text-base font-bold sm:text-lg">소개</h3>
+
+        {profile?.introduce ? (
+          <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-wrap sm:text-sm">
+            {profile.introduce}
+          </p>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-center sm:p-5">
+            <p className="text-muted-foreground text-xs sm:text-sm">아직 소개가 작성되지 않았어요</p>
+            <Link href="/mypage/profile/edit">
+              <Button variant="link" size="sm" className="mt-1 h-auto p-0 text-xs sm:text-sm">
+                소개 작성하기
+              </Button>
+            </Link>
+          </div>
+        )}
+      </div>
+      {/* 계정 관리 */}
+      <Withdrawal />
     </div>
   );
 }

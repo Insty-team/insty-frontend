@@ -4,7 +4,7 @@ export const LEARNER_NAVIGATION = [
   { name: '프로필 관리', href: '/mypage/profile', icon: User },
   { name: '강의 수강내역', href: '/mypage/purchases', icon: BookOpen },
   { name: 'Q&A · 커뮤니티 · 챗봇', href: '/mypage/history', icon: Bot },
-  { name: '설정', href: '/mypage/settings', icon: Settings },
+  { name: '알림 설정', href: '/mypage/settings', icon: Settings },
   { name: '강의 요청하기', href: '/mypage/course-request', icon: MessageSquare },
 ];
 export const CREATOR_NAVIGATION = [

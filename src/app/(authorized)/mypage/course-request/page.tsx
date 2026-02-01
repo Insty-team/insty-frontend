@@ -18,7 +18,6 @@ import {
 } from '@/shared/components/ui/alert-dialog';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
 import {
   useDeleteCommunityCourseRequest,
   useGetCommunityCourseRequests,
@@ -173,32 +172,28 @@ export default function LearnerCourseRequestPage() {
       </div>
 
       {isLoading ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <p className="text-muted-foreground">강의 요청 목록을 불러오는 중입니다...</p>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16">
+          <p className="text-muted-foreground">강의 요청 목록을 불러오는 중입니다...</p>
+        </div>
       ) : !courseRequests || courseRequests.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <FileText className="text-muted-foreground mb-4 h-12 w-12" />
-            <p className="text-muted-foreground mb-4">아직 요청한 강의가 없습니다</p>
-            <Button asChild>
-              <Link href="/learner/course-request/new">
-                <Plus className="mr-2 h-4 w-4" />
-                강의 요청하기
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16">
+          <FileText className="text-muted-foreground mb-4 h-12 w-12" />
+          <p className="text-muted-foreground mb-4">아직 요청한 강의가 없습니다</p>
+          <Button asChild>
+            <Link href="/learner/course-request/new">
+              <Plus className="mr-2 h-4 w-4" />
+              강의 요청하기
+            </Link>
+          </Button>
+        </div>
       ) : (
         <>
           <div className="space-y-4">
             {table.getRowModel().rows.map((row) => {
               const courseRequest = row.original;
               return (
-                <Card key={courseRequest.request_id}>
-                  <CardContent className="pt-6">
+                <div key={courseRequest.request_id}>
+                  <div className="pt-6">
                     <div className="flex flex-col gap-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
@@ -239,8 +234,8 @@ export default function LearnerCourseRequestPage() {
                         </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>

@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 
 import { TanstackTablePagination } from '@/shared/components/TanstackTablePagination';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
 import { formatViewCount } from '@/shared/lib/utils';
 import { useGetCoursesProgressByMe } from '@/shared/services/course/course.hook';
 import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
@@ -152,85 +151,77 @@ export default function LearnerPurchasesPage() {
       </div>
 
       {showLoadingState ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <p className="text-muted-foreground">구매내역을 불러오는 중입니다...</p>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16">
+          <p className="text-muted-foreground">구매내역을 불러오는 중입니다...</p>
+        </div>
       ) : isError ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <p className="text-muted-foreground mb-4">구매내역을 불러오지 못했습니다</p>
-            <Button variant="outline" onClick={() => refetch()}>
-              다시 시도하기
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16">
+          <p className="text-muted-foreground mb-4">구매내역을 불러오지 못했습니다</p>
+          <Button variant="outline" onClick={() => refetch()}>
+            다시 시도하기
+          </Button>
+        </div>
       ) : purchases.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <p className="text-muted-foreground mb-4">아직 구매한 강의가 없습니다</p>
-            <Button>강의 둘러보기</Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-16">
+          <p className="text-muted-foreground mb-4">아직 구매한 강의가 없습니다</p>
+          <Button>강의 둘러보기</Button>
+        </div>
       ) : (
         <div className="space-y-4">
           {purchases.map((purchase) => (
-            <Card key={purchase.id}>
-              <CardContent>
-                <div className="flex gap-8">
-                  <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-36 sm:w-48">
-                    {purchase.thumbnail ? (
-                      <Image
-                        src={purchase.thumbnail}
-                        alt={purchase.courseName}
-                        fill
-                        className="object-contain transition-transform duration-200"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <Play className="text-muted-foreground h-8 w-8" />
-                      </div>
-                    )}
-                  </div>
+            <div key={purchase.id}>
+              <div className="flex gap-8">
+                <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-36 sm:w-48">
+                  {purchase.thumbnail ? (
+                    <Image
+                      src={purchase.thumbnail}
+                      alt={purchase.courseName}
+                      fill
+                      className="object-contain transition-transform duration-200"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <Play className="text-muted-foreground h-8 w-8" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
                   <div className="min-w-0 flex-1">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
-                          {/* 제목 */}
-                          <h3 className="mb-2 line-clamp-2 text-lg font-semibold transition-colors">
-                            {purchase.courseName}
-                          </h3>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        {/* 제목 */}
+                        <h3 className="mb-2 line-clamp-2 text-lg font-semibold transition-colors">
+                          {purchase.courseName}
+                        </h3>
 
-                          {/* 통계 정보 */}
-                          <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
-                            <span className="flex items-center gap-1">
-                              <Eye className="h-4 w-4" />
-                              {formatViewCount(0)}회
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {dayjs(purchase.purchaseDate).format('YYYY.MM.DD')}
-                            </span>
-                          </div>
+                        {/* 통계 정보 */}
+                        <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-4 w-4" />
+                            {formatViewCount(0)}회
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {dayjs(purchase.purchaseDate).format('YYYY.MM.DD')}
+                          </span>
+                        </div>
 
-                          {/* 가격 */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground text-sm">판매가:</span>
-                            <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(0)}원</span>
-                          </div>
+                        {/* 가격 */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground text-sm">판매가:</span>
+                          <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(0)}원</span>
                         </div>
                       </div>
                     </div>
-                    <div className="mt-2 flex gap-2">
-                      <Button size="sm" onClick={() => router.push(`/course/${purchase.id}`)}>
-                        강의 보기
-                      </Button>
-                    </div>
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <Button size="sm" onClick={() => router.push(`/course/${purchase.id}`)}>
+                      강의 보기
+                    </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}
