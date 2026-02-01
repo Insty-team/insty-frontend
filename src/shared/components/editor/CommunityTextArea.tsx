@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 
 import Image from 'next/image';
 
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { Spinner } from '@/shared/components/ui/spinner';
+import { usePostCommunityThoughtDraft } from '@/shared/services/ai-community/ai-community.hook';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +22,7 @@ import {
   Plus,
   Send,
   X,
+  Sparkles,
 } from 'lucide-react';
 
 type ExistingAttachment = {
@@ -40,12 +43,19 @@ type Props = {
   readonly showAttachButton?: boolean;
   readonly maxImages?: number;
   readonly maxVideos?: number;
+  readonly files?: File[];
   readonly onFilesChange?: (files: File[]) => void;
   readonly existingAttachments?: ExistingAttachment[];
   readonly onRemoveExistingAttachment?: (id: number) => void;
+  readonly showAiAssistant?: boolean;
+  readonly aiCourseId?: number;
 };
 
-export default function CommunityTextArea({
+export type CommunityTextAreaRef = {
+  addFiles: (files: File[]) => void;
+};
+
+const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
   value,
   onChange,
   placeholder = 'Write something...',
@@ -57,10 +67,13 @@ export default function CommunityTextArea({
   showAttachButton = false,
   maxImages = 2,
   maxVideos = 1,
+  files,
   onFilesChange,
   existingAttachments = [],
   onRemoveExistingAttachment,
-}: Props) {
+  showAiAssistant = false,
+  aiCourseId,
+}, ref) => {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -68,6 +81,29 @@ export default function CommunityTextArea({
   const [uploadedFilePreviews, setUploadedFilePreviews] = useState<string[]>([]);
   const [uploadErrorMessage, setUploadErrorMessage] = useState('');
   const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
+  
+  // AI 초안 작성 관련 state
+  const [isAiPanelExpanded, setIsAiPanelExpanded] = useState(false);
+  const [aiInput, setAiInput] = useState('');
+  const [aiFiles, setAiFiles] = useState<File[]>([]);
+  const [aiResult, setAiResult] = useState('');
+  const [aiError, setAiError] = useState('');
+  
+  const { mutate: generateThoughtDraft, isPending: isGeneratingDraft } = usePostCommunityThoughtDraft();
+
+  useImperativeHandle(ref, () => ({
+    addFiles: (newFiles: File[]) => {
+      const imageFiles = newFiles.filter(f => f.type.startsWith('image/'));
+      const videoFiles = newFiles.filter(f => f.type.startsWith('video/'));
+      
+      if (imageFiles.length > 0) {
+        setUploadedFiles(prev => [...prev, ...imageFiles].slice(0, maxImages));
+      }
+      if (videoFiles.length > 0 && !uploadedVideoFile) {
+        setUploadedVideoFile(videoFiles[0]);
+      }
+    },
+  }));
 
   useEffect(() => {
     const previews = uploadedFiles.map((file) => URL.createObjectURL(file));
@@ -80,7 +116,8 @@ export default function CommunityTextArea({
       ? [...uploadedFiles, ...(uploadedVideoFile ? [uploadedVideoFile] : [])]
       : [];
     onFilesChange?.(allFiles);
-  }, [uploadedFiles, uploadedVideoFile, onFilesChange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadedFiles, uploadedVideoFile]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -110,6 +147,54 @@ export default function CommunityTextArea({
 
   const handleRemoveVideo = () => {
     setUploadedVideoFile(null);
+  };
+
+  const handleToggleAiPanel = () => {
+    setIsAiPanelExpanded(!isAiPanelExpanded);
+    if (!isAiPanelExpanded) {
+      setAiInput('');
+      setAiFiles([]);
+      setAiResult('');
+      setAiError('');
+    }
+  };
+
+  const handleGenerateAiContent = () => {
+    if (!aiInput.trim() || !aiCourseId) return;
+    
+    setAiError('');
+    setAiResult('');
+    
+    generateThoughtDraft(
+      {
+        course_id: aiCourseId,
+        query: aiInput,
+        has_attachment: aiFiles.length > 0,
+        files: aiFiles.length > 0 ? aiFiles : undefined,
+      },
+      {
+        onSuccess: (response) => {
+          const { post_content } = response.data;
+          setAiResult(post_content);
+        },
+        onError: () => {
+          setAiError('Failed to generate content. Please try again.');
+        },
+      },
+    );
+  };
+
+  const handleApplyAiResult = () => {
+    if (!aiResult) return;
+    
+    onChange(aiResult);
+    if (aiFiles.length > 0) {
+      setUploadedFiles(prev => [...prev, ...aiFiles].slice(0, maxImages));
+    }
+    setIsAiPanelExpanded(false);
+    setAiInput('');
+    setAiFiles([]);
+    setAiResult('');
   };
 
   const isEmpty = !value.trim();
@@ -282,6 +367,127 @@ export default function CommunityTextArea({
           )}
         </div>
       </div>
+
+      {/* AI 초안 작성 패널 */}
+      {showAiAssistant && (
+        <div className="border-t bg-gradient-to-br from-[#e8fbd9] via-[#f6fdf1] to-[#e8fbd9] dark:from-[#244a08]/20 dark:via-[#244a08]/10 dark:to-[#244a08]/20 rounded-b-xl">
+          {!isAiPanelExpanded ? (
+            <div className="px-3 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleAiPanel}
+                className="w-full gap-2 group hover:bg-[#d1f8b4]/30 dark:hover:bg-[#3b780c]/30 transition-all duration-300 rounded-lg"
+              >
+                <div className="relative">
+                  <Sparkles className="h-4 w-4 text-[#67d215] dark:text-[#9bef5b] group-hover:scale-110 transition-transform" />
+                  <div className="absolute inset-0 blur-sm bg-[#67d215] opacity-0 group-hover:opacity-50 transition-opacity" />
+                </div>
+                <span className="text-[#51a611] dark:text-[#9bef5b] font-medium">
+                  Help me organize my thoughts
+                </span>
+                <span className="ml-auto text-xs text-muted-foreground">(optional)</span>
+              </Button>
+            </div>
+          ) : (
+            <div className="p-4 space-y-4">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Sparkles className="h-5 w-5 text-[#67d215] dark:text-[#9bef5b] animate-pulse" />
+                    <div className="absolute inset-0 blur-md bg-[#67d215] opacity-50" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-[#51a611] dark:text-[#9bef5b]">
+                      AI Writing Assistant
+                    </h3>
+                    <p className="text-xs text-muted-foreground">Powered by AI</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-full hover:bg-[#d1f8b4]/30 dark:hover:bg-[#3b780c]/30"
+                  onClick={handleToggleAiPanel}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* AI Input */}
+              <div className="relative">
+                <div className="absolute -inset-0.5 bg-[#67d215] rounded-xl opacity-20 blur" />
+                <div className="relative">
+                  <CommunityTextArea
+                    value={aiInput}
+                    onChange={setAiInput}
+                    placeholder="What would you like to write about? (e.g., summarize today's lesson, questions, etc.)"
+                    showSendButton={false}
+                    showAttachButton={true}
+                    onFilesChange={setAiFiles}
+                    className="min-h-[80px] bg-white dark:bg-gray-950"
+                  />
+                </div>
+              </div>
+
+              {/* Generate Button */}
+              <Button
+                onClick={handleGenerateAiContent}
+                disabled={!aiInput.trim() || isGeneratingDraft}
+                className="w-full gap-2 bg-[#67d215] hover:bg-[#51a611] text-white shadow-lg shadow-[#67d215]/50 dark:shadow-[#67d215]/30 transition-all duration-300 hover:shadow-xl hover:shadow-[#67d215]/60"
+              >
+                {isGeneratingDraft ? (
+                  <>
+                    <Spinner className="h-4 w-4" />
+                    <span className="font-medium">Generating magic...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    <span className="font-medium">Generate Draft</span>
+                  </>
+                )}
+              </Button>
+
+              {/* AI Result */}
+              {aiResult && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-[#67d215] rounded-xl opacity-30 blur group-hover:opacity-40 transition-opacity" />
+                    <div className="relative p-4 bg-white dark:bg-gray-950 rounded-lg border border-[#b2f381]/50 dark:border-[#51a611]/50">
+                      <div className="flex items-start gap-2 mb-2">
+                        <Sparkles className="h-4 w-4 text-[#67d215] dark:text-[#9bef5b] mt-0.5 flex-shrink-0" />
+                        <span className="text-xs font-medium text-[#51a611] dark:text-[#9bef5b]">AI Generated Content</span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{aiResult}</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleApplyAiResult}
+                    variant="default"
+                    className="w-full gap-2 bg-[#67d215] hover:bg-[#51a611] text-white shadow-lg shadow-[#67d215]/50 dark:shadow-[#67d215]/30 transition-all duration-300 hover:shadow-xl"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span className="font-medium">Apply to Editor</span>
+                  </Button>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {aiError && (
+                <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg animate-in fade-in slide-in-from-bottom-2">
+                  <p className="text-red-600 dark:text-red-400 text-sm font-medium">{aiError}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
-}
+});
+
+CommunityTextArea.displayName = 'CommunityTextArea';
+
+export default CommunityTextArea;
