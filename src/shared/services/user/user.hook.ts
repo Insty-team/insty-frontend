@@ -36,9 +36,7 @@ export const usePostEmailSignup = (
 
 /** 내 사용자 정보 조회 */
 export const useGetProfile = () => {
-  console.log('useGetProfile start');
   const { accessToken } = useAuthStore((state) => state);
-  console.log('accessToken', accessToken, !!accessToken);
   return useQuery({
     queryKey: [GET_profile.name],
     queryFn: () => GET_profile(),
