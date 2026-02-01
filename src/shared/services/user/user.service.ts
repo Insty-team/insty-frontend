@@ -1,4 +1,4 @@
-import { UserRequest, UserResponse } from './user.type';
+import { EmailSignupRequest, EmailSignupResponse, UserRequest, UserResponse } from './user.type';
 
 import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
@@ -12,7 +12,13 @@ export const PUT_profile = async (formData: UserRequest) => {
   });
   return response.data;
 };
+
 /** 이메일 회원 가입 */
+export const POST_email_signup = async (data: EmailSignupRequest): Promise<ApiResponse<EmailSignupResponse>> => {
+  const response = await api.post('/api/v1/users', data);
+  return response.data;
+};
+
 /** 사용자 타입 변경 */
 /** 내 비밀번호 수정 수정 */
 /** 사용자 이메일 수신 동의 상태 값 변경 */

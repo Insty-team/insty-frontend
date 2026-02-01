@@ -1,4 +1,11 @@
-import { EmailVerifyCheckRequest, LoginRequest, LoginResponse, SocialLoginRequest } from './auth.type';
+import {
+  EmailVerifyCheckRequest,
+  EmailVerifyCodeRequest,
+  LoginRequest,
+  LoginResponse,
+  PasswordResetRequest,
+  SocialLoginRequest,
+} from './auth.type';
 
 import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
@@ -12,6 +19,26 @@ export const POST_reissue = async (refreshToken: string) => {
     {},
     { headers: { Authorization: `Bearer ${refreshToken}` } },
   );
+  return response.data;
+};
+
+/** 이메일 인증코드 기반으로 인증 */
+export const POST_email_verify_password_reset_code = async (
+  data: EmailVerifyCodeRequest,
+): Promise<ApiResponse<string>> => {
+  const response = await axios.post('/api/v1/auth/password-reset/verify', data);
+  return response.data;
+};
+
+/** 이메일 인증된 상태에서 비밀번호 변경 */
+export const POST_password_reset = async (data: PasswordResetRequest): Promise<ApiResponse<string>> => {
+  const response = await axios.post('/api/v1/auth/password-reset/update', data);
+  return response.data;
+};
+
+/** 비밀번호 찾기 이메일 전송 */
+export const POST_password_reset_send_email = async (email: string): Promise<ApiResponse<string>> => {
+  const response = await axios.post('/api/v1/auth/password-reset/send-email', { email });
   return response.data;
 };
 

@@ -35,3 +35,13 @@ export type EmailVerifyCheckRequest = {
   email: string;
   code: string;
 };
+
+export type EmailVerifyCodeRequest = {
+  email: string;
+  code: string;
+};
+
+export type PasswordResetRequest = {
+  email: string;
+  newPassword: string;
+};
