@@ -96,6 +96,7 @@ function LoginContent() {
 
     await postLogin(data)
       .then((response) => {
+        console.log('onSubmit success', response);
         authStore.setAccessToken(response.data.token.accessToken);
         authStore.setRefreshToken(response.data.token.refreshToken);
 

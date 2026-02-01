@@ -27,8 +27,8 @@ export default function Withdrawal() {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild className="flex justify-end">
-        <span className="cursor-pointer text-sm text-gray-500 underline">회원 탈퇴</span>
+      <AlertDialogTrigger asChild>
+        <span className="ml-auto block w-fit cursor-pointer text-sm text-gray-500 underline">회원 탈퇴</span>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
