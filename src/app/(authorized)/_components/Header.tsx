@@ -35,7 +35,6 @@ export default function Header() {
   const isGuest = !accessToken;
 
   const { data: profile } = useGetProfile();
-  console.log('profile in header', profile);
 
   const handleLogout = () => {
     logout();
