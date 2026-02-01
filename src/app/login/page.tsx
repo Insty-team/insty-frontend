@@ -19,8 +19,8 @@ import { usePostLogin, useSocialLogin } from '@/shared/services/auth/auth.hook';
 import { LoginRequest } from '@/shared/services/auth/auth.type';
 import { useAuthStore, useUserStore } from '@/shared/stores/auth';
 import { SocialLoginType } from '@/shared/types/auth.enum';
-import { toast } from 'sonner';
 import { BookOpen, Eye, EyeOff, Play, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import googleSvg from '@/assets/google.svg';
 import kakaoSvg from '@/assets/kakao.svg';
@@ -283,9 +283,6 @@ function LoginContent() {
                 <Image src={naverSvg} alt="naver" className="rounded-full" width={40} height={40} />
               </button>
             </div>
-            {isSocialLoading && (
-              <p className="text-xs text-emerald-600">소셜 로그인 페이지로 이동 중...</p>
-            )}
           </div>
 
           <Separator />
