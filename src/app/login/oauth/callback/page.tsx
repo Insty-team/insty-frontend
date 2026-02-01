@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -18,6 +18,35 @@ import instyPng from '@/assets/Logo.png';
  * - 책임: UI 렌더링만 담당, 비즈니스 로직은 useSocialLoginCallback 훅에 위임
  */
 export default function OAuthCallbackPage() {
+  return (
+    <Suspense fallback={<OAuthCallbackLoading />}>
+      <OAuthCallbackContent />
+    </Suspense>
+  );
+}
+
+/**
+ * 로딩 폴백 컴포넌트
+ */
+function OAuthCallbackLoading() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50">
+      <Image src={instyPng} alt="logo" width={100} priority />
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        <div className="text-center">
+          <h2 className="text-lg font-medium text-gray-900">로그인 처리 중...</h2>
+          <p className="mt-1 text-sm text-gray-500">잠시만 기다려주세요</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * OAuth 콜백 실제 처리 컴포넌트
+ */
+function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isProcessingRef = useRef(false);
@@ -84,18 +113,7 @@ export default function OAuthCallbackPage() {
   }
 
   // 로딩 상태 렌더링
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50">
-      <Image src={instyPng} alt="logo" width={100} priority />
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-        <div className="text-center">
-          <h2 className="text-lg font-medium text-gray-900">로그인 처리 중...</h2>
-          <p className="mt-1 text-sm text-gray-500">잠시만 기다려주세요</p>
-        </div>
-      </div>
-    </div>
-  );
+  return <OAuthCallbackLoading />;
 }
 
 /**

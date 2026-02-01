@@ -21,3 +21,15 @@ export type UserResponse = {
   socialType: SocialLoginType;
   createdAt: string;
 };
+
+export type EmailSignupRequest = {
+  nickname: string;
+  email: string;
+  password: string;
+};
+
+export type EmailSignupResponse = {
+  id: number;
+  email: string;
+  nickname: string;
+};
