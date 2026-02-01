@@ -180,7 +180,7 @@ export const PATCH_course_question_by_id = async (
 ): Promise<ApiResponse<CourseQuestionDetailResponse>> => {
   const formData = new FormData();
 
-  const courseQuestionReq = {
+  const courseQuestionUpdateReq = {
     title: data.title,
     content: data.content,
     videoUuid: data.videoUuid,
@@ -188,8 +188,8 @@ export const PATCH_course_question_by_id = async (
   };
 
   formData.append(
-    'courseQuestionReq',
-    new Blob([JSON.stringify(courseQuestionReq)], { type: 'application/json' }),
+    'courseQuestionUpdateReq',
+    new Blob([JSON.stringify(courseQuestionUpdateReq)], { type: 'application/json' }),
   );
 
   const attachments = data.attachments ?? [];

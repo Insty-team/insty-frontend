@@ -28,6 +28,7 @@ export type CourseCommunityPostResponse = {
     originFileName: string;
   } | null;
   likeCount?: number;
+  likedByMe?: boolean;
 };
 
 export type CourseCommunityPostRequest = {
@@ -60,8 +61,16 @@ export type MyCourseCommunityPostsResponse = {
   postId: number;
   courseId: number;
   title: string;
+  content: string;
   createdAt: string;
   updatedAt: string;
+  user?: {
+    id: number;
+    nickname: string;
+  };
+  attachments?: Attachment[];
+  likeCount?: number;
+  commentCount?: number;
 };
 
 export type CourseCommunityPostCommentResponse = {

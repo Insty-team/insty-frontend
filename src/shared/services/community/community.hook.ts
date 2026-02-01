@@ -113,6 +113,28 @@ export const useGetMyCourseCommunityPosts = (page: number = 1, pageSize: number 
   });
 };
 
+/** 내 커뮤니티 글 무한 스크롤 */
+export const useGetMyCourseCommunityPostsInfinite = (pageSize: number = 10) => {
+  return useInfiniteQuery({
+    queryKey: [GET_my_course_community_posts.name, 'infinite', pageSize],
+    queryFn: ({ pageParam = 1 }) => GET_my_course_community_posts(pageParam, pageSize),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+      const pagination = lastPage?.data?.pagination;
+      if (pagination && lastPageParam < pagination.totalPages) {
+        return lastPageParam + 1;
+      }
+      return undefined;
+    },
+    select: (data) => ({
+      pages: data.pages,
+      pageParams: data.pageParams,
+      items: data.pages.flatMap((page) => page.data?.items || []),
+      pagination: data.pages[data.pages.length - 1]?.data?.pagination,
+    }),
+  });
+};
+
 /** 커뮤니티 댓글 목록 조회 */
 export const useGetCourseCommunityPostCommentsById = (
   courseId: number,
@@ -226,6 +248,30 @@ export const useDeleteCourseCommunityPostLike = (courseId: number, postId: numbe
     mutationFn: () => DELETE_course_community_post_like_by_id(courseId, postId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
+    },
+  });
+};
+
+/** 커뮤니티 포스트 좋아요 (리스트용 - postId를 파라미터로 받음) */
+export const usePostCourseCommunityPostLikeForList = (courseId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (postId: number) => POST_course_community_post_like_by_id(courseId, postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
+    },
+  });
+};
+
+/** 커뮤니티 포스트 좋아요 취소 (리스트용 - postId를 파라미터로 받음) */
+export const useDeleteCourseCommunityPostLikeForList = (courseId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (postId: number) => DELETE_course_community_post_like_by_id(courseId, postId),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
     },
   });

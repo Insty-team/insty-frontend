@@ -151,6 +151,29 @@ export const useGetCourseQuestions = (courseId: number, params: CourseQuestionSe
   });
 };
 
+/** 강의 질문 목록 무한 스크롤 */
+export const useGetCourseQuestionsInfinite = (courseId: number, params: Omit<CourseQuestionSearchParams, 'page'>) => {
+  return useInfiniteQuery({
+    queryKey: [GET_course_questions_by_id.name, courseId, 'infinite', params],
+    queryFn: ({ pageParam = 1 }) => GET_course_questions_by_id(courseId, { ...params, page: pageParam }),
+    initialPageParam: 1,
+    enabled: !!courseId,
+    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+      const pagination = lastPage?.data?.pagination;
+      if (pagination && lastPageParam < pagination.totalPages) {
+        return lastPageParam + 1;
+      }
+      return undefined;
+    },
+    select: (data) => ({
+      pages: data.pages,
+      pageParams: data.pageParams,
+      items: data.pages.flatMap(page => page.data?.items || []),
+      pagination: data.pages[data.pages.length - 1]?.data?.pagination,
+    }),
+  });
+};
+
 /** 질문 작성 */
 export const usePostCourseQuestion = () => {
   const queryClient = useQueryClient();
@@ -229,6 +252,27 @@ export const useGetCourseQuestionAnswers = (
     queryFn: () => GET_course_question_answers_by_id(courseId, questionId, page, pageSize),
     select: ({ data }) => data,
     placeholderData: (previousData) => previousData,
+  });
+};
+
+/** 답변 목록 조회 (무한 스크롤) */
+export const useGetCourseQuestionAnswersInfinite = (
+  courseId: number,
+  questionId: number,
+  pageSize: number = 10,
+) => {
+  return useInfiniteQuery({
+    queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId, pageSize],
+    queryFn: ({ pageParam = 1 }) => GET_course_question_answers_by_id(courseId, questionId, pageParam, pageSize),
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage.data.pagination;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
+    select: (data) => ({
+      pages: data.pages.map((page) => page.data),
+      pageParams: data.pageParams,
+    }),
   });
 };
 
@@ -321,5 +365,27 @@ export const useGetMyCourseQuestions = (params: CourseQuestionSearchParams) => {
     queryKey: [GET_my_course_questions.name, params],
     queryFn: () => GET_my_course_questions(params),
     select: ({ data }) => data,
+  });
+};
+
+/** 내 QA 질문 무한 스크롤 */
+export const useGetMyCourseQuestionsInfinite = (params: Omit<CourseQuestionSearchParams, 'page'>) => {
+  return useInfiniteQuery({
+    queryKey: [GET_my_course_questions.name, 'infinite', params],
+    queryFn: ({ pageParam = 1 }) => GET_my_course_questions({ ...params, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+      const pagination = lastPage?.data?.pagination;
+      if (pagination && lastPageParam < pagination.totalPages) {
+        return lastPageParam + 1;
+      }
+      return undefined;
+    },
+    select: (data) => ({
+      pages: data.pages,
+      pageParams: data.pageParams,
+      items: data.pages.flatMap((page) => page.data?.items || []),
+      pagination: data.pages[data.pages.length - 1]?.data?.pagination,
+    }),
   });
 };
