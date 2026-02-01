@@ -167,11 +167,11 @@ export default function Home() {
     <div className="flex min-h-screen w-full flex-col">
       {/* 채팅 영역 */}
       <div className="flex-1 bg-gray-100">
-        <div className="mx-auto max-w-5xl px-4 py-6">
+        <div className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">
           <div className="pb-4">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {errorMessage && (
-                <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 sm:px-4 sm:py-3 sm:text-sm">
                   {errorMessage}
                 </div>
               )}
@@ -179,42 +179,44 @@ export default function Home() {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {message.role === 'assistant' && (
-                    <Avatar className="size-8 shrink-0">
-                      <AvatarFallback className="bg-gray-200 text-gray-700">AI</AvatarFallback>
+                    <Avatar className="size-7 shrink-0 sm:size-8">
+                      <AvatarFallback className="bg-gray-200 text-xs text-gray-700 sm:text-sm">AI</AvatarFallback>
                     </Avatar>
                   )}
 
                   <div
-                    className={`flex max-w-[80%] flex-col gap-2 ${
+                    className={`flex max-w-[85%] flex-col gap-2 sm:max-w-[80%] ${
                       message.role === 'user' ? 'items-end' : 'items-start'
                     }`}
                   >
                     <div
-                      className={`rounded-xl px-4 py-3 ${
+                      className={`rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
                         message.role === 'user'
                           ? 'rounded-tr-none bg-gray-200 text-gray-700'
                           : 'rounded-tl-none bg-white shadow-sm'
                       }`}
                     >
-                      <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                      <div className="text-xs leading-relaxed whitespace-pre-wrap sm:text-sm">
                         <Markdown>{message.content}</Markdown>
                       </div>
                     </div>
                     {/* 강의 추천 카드 */}
                     {message.courses && message.courses.length > 0 && (
-                      <div className="grid w-full grid-cols-3 gap-3">
+                      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
                         {message.courses.map((course) => (
                           <Card
                             key={course.course_id}
                             className="w-full justify-between overflow-hidden transition-all hover:shadow-md"
                           >
-                            <CardHeader>
-                              <CardTitle className="h-12 text-base font-semibold">{course.course_title}</CardTitle>
+                            <CardHeader className="p-3 sm:p-4 lg:p-6">
+                              <CardTitle className="line-clamp-2 h-10 text-sm font-semibold sm:h-12 sm:text-base">
+                                {course.course_title}
+                              </CardTitle>
                             </CardHeader>
-                            <CardContent className="bg-muted relative h-48 w-full flex-shrink-0">
+                            <CardContent className="bg-muted relative h-32 w-full flex-shrink-0 sm:h-40 lg:h-48">
                               {course.thumbnail_url && (
                                 <Image
                                   src={course.thumbnail_url}
@@ -225,11 +227,11 @@ export default function Home() {
                               )}
                             </CardContent>
                             <Separator />
-                            <CardFooter className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-slate-500">무료</span>
+                            <CardFooter className="flex items-center justify-between p-3 sm:p-4 lg:p-6">
+                              <span className="text-xs font-medium text-slate-500 sm:text-sm">무료</span>
                               <LoginRequiredLink
                                 href={`/course/${course.course_id}`}
-                                className="text-sm font-medium underline-offset-4 hover:underline"
+                                className="text-xs font-medium underline-offset-4 hover:underline sm:text-sm"
                                 dialogDescription="강의를 수강하려면 먼저 로그인해 주세요."
                               >
                                 수강하기
@@ -240,7 +242,7 @@ export default function Home() {
                       </div>
                     )}
 
-                    <span className="text-xs text-slate-400">
+                    <span className="text-[10px] text-slate-400 sm:text-xs">
                       {message.timestamp.toLocaleTimeString('ko-KR', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -249,8 +251,8 @@ export default function Home() {
                   </div>
 
                   {message.role === 'user' && (
-                    <Avatar className="size-8 shrink-0">
-                      <AvatarFallback className="bg-slate-200 text-slate-700">나</AvatarFallback>
+                    <Avatar className="size-7 shrink-0 sm:size-8">
+                      <AvatarFallback className="bg-slate-200 text-xs text-slate-700 sm:text-sm">나</AvatarFallback>
                     </Avatar>
                   )}
                 </div>
@@ -258,15 +260,16 @@ export default function Home() {
 
               {/* 로딩 인디케이터 */}
               {isLoading && (
-                <div className="flex gap-3">
-                  <Avatar className="size-8 shrink-0">
-                    <AvatarFallback className="bg-gray-200 text-gray-700">AI</AvatarFallback>
+                <div className="flex gap-2 sm:gap-3">
+                  <Avatar className="size-7 shrink-0 sm:size-8">
+                    <AvatarFallback className="bg-gray-200 text-xs text-gray-700 sm:text-sm">AI</AvatarFallback>
                   </Avatar>
-                  <div className="rounded-2xl border bg-white px-4 py-3 shadow-sm">
+                  <div className="rounded-2xl border bg-white px-3 py-2 shadow-sm sm:px-4 sm:py-3">
                     <div className="flex items-center gap-2">
                       <Spinner className="size-3 text-slate-500" />
-                      <p className="text-sm text-slate-500">
-                        최고의 결과를 위해 생각을 정리 중이에요... 잠시만 기다려주세요 ✨
+                      <p className="text-xs text-slate-500 sm:text-sm">
+                        <span className="hidden sm:inline">최고의 결과를 위해 생각을 정리 중이에요... 잠시만 기다려주세요 ✨</span>
+                        <span className="sm:hidden">생각 중이에요... ✨</span>
                       </p>
                     </div>
                   </div>
@@ -279,26 +282,26 @@ export default function Home() {
 
       {/* 입력 영역 */}
       <div className="sticky bottom-0 border-t bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-4">
+        <div className="mx-auto max-w-5xl px-3 py-3 sm:px-4 sm:py-4">
           <div className="flex gap-2">
             <Textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="어떤 강의를 찾고 계신가요? (Shift + Enter로 줄바꿈)"
-              className="max-h-[200px] min-h-[60px] resize-none"
+              placeholder="어떤 강의를 찾고 계신가요?"
+              className="max-h-[120px] min-h-[48px] resize-none text-sm sm:max-h-[200px] sm:min-h-[60px] sm:text-base"
               disabled={isLoading}
             />
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isLoading}
               size="icon"
-              className="size-[60px] shrink-0"
+              className="size-12 shrink-0 sm:size-[60px]"
             >
-              <Send className="size-5" />
+              <Send className="size-4 sm:size-5" />
             </Button>
           </div>
-          <p className="mt-2 text-center text-xs text-slate-500">
+          <p className="mt-2 text-center text-[10px] text-slate-500 sm:text-xs">
             AI가 제공하는 정보는 참고용이며, 실제 강의 내용과 다를 수 있습니다.
           </p>
         </div>
