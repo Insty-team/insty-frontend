@@ -261,13 +261,11 @@ export const SignupForm = () => {
                             <span>인증완료</span>
                           </div>
                         ) : (
-                          <Button
+                          <InputGroupButton
                             type="button"
-                            size="sm"
-                            variant="outline"
+                            variant="secondary"
                             onClick={handleSendVerificationCode}
                             disabled={!canSendVerificationCode || isSendingCode}
-                            className="mr-1"
                           >
                             {isSendingCode ? (
                               <Spinner className="size-4" />
@@ -276,7 +274,7 @@ export const SignupForm = () => {
                             ) : (
                               '인증번호 발송'
                             )}
-                          </Button>
+                          </InputGroupButton>
                         )}
                       </InputGroupAddon>
                     </InputGroup>
