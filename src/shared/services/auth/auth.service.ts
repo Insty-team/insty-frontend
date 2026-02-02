@@ -38,7 +38,7 @@ export const POST_password_reset = async (data: PasswordResetRequest): Promise<A
 
 /** 비밀번호 찾기 이메일 전송 */
 export const POST_password_reset_send_email = async (email: string): Promise<ApiResponse<string>> => {
-  const response = await axios.post('/api/v1/auth/password-reset/send-email', { email });
+  const response = await axios.post('/api/v1/auth/password-reset/send-mail', { email });
   return response.data;
 };
 

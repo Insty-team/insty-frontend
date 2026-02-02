@@ -15,6 +15,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
 import { emailReg, passwordReg } from '@/shared/lib/regex';
+import { PasswordResetDialog } from '@/app/login/_components/PasswordResetDialog';
 import { usePostLogin, useSocialLogin } from '@/shared/services/auth/auth.hook';
 import { LoginRequest } from '@/shared/services/auth/auth.type';
 import { useAuthStore, useUserStore } from '@/shared/stores/auth';
@@ -59,6 +60,7 @@ function LoginContent() {
   const isLoadingRef = useRef<boolean>(false);
   const { mutateAsync: postLogin } = usePostLogin();
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordResetOpen, setPasswordResetOpen] = useState(false);
 
   // URL에 에러 파라미터가 있는 경우 토스트 표시
   useEffect(() => {
@@ -245,13 +247,22 @@ function LoginContent() {
                   <Checkbox />
                   아이디 저장
                 </Label>
-                <span className="cursor-pointer text-sm text-gray-600 hover:underline">비밀번호 찾기</span>
+                <button
+                  type="button"
+                  onClick={() => setPasswordResetOpen(true)}
+                  className="text-sm text-gray-600 hover:underline"
+                  aria-label="비밀번호 찾기"
+                >
+                  비밀번호 찾기
+                </button>
               </div>
               <Button variant="default" size="lg" className="mt-4 bg-emerald-500 hover:bg-emerald-600" type="submit">
                 로그인
               </Button>
             </form>
           </Form>
+
+          <PasswordResetDialog open={passwordResetOpen} onOpenChange={setPasswordResetOpen} />
 
           <div className="mt-2 flex flex-col items-center gap-3">
             <div className="text-xs font-medium text-gray-500">소셜 로그인으로 간편하게 시작하기</div>
