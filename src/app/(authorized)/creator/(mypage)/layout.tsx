@@ -2,21 +2,19 @@
 
 import ProfileSidebar from '@/shared/components/ProfileSidebar';
 
-import { NAVIGATIONS } from '@/app/_components/navigations';
+import { CREATOR_CENTER_NAVIGATION } from '@/app/_components/navigations';
 
-export default function CommonMyPageLayout({ children }: { children: React.ReactNode }) {
+export default function CreatorMyPageLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-5">
         <h1 className="text-3xl font-bold">크리에이터 센터</h1>
+        <p className="text-muted-foreground mt-1">강의를 제작하고 수강생과 소통하세요</p>
       </div>
 
       <div className="flex flex-col lg:flex-row">
-        {/* 프로필 사이드바 */}
-        <ProfileSidebar navigation={NAVIGATIONS} />
-
-        {/* 메인 컨텐츠 */}
-        <main className="min-w-0 flex-1 rounded-sm bg-gray-400/10 px-8 py-6">{children}</main>
+        <ProfileSidebar navigation={CREATOR_CENTER_NAVIGATION} />
+        <main className="min-w-0 flex-1 rounded-lg bg-gray-400/10 px-6 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>
     </div>
   );
