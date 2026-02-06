@@ -12,9 +12,11 @@ import {
   QuestionVideoUploadRequest,
   VideoPlaylistRequest,
   VideoPreviewRequest,
+  VideoThumbnailResponse,
 } from './video.type';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { ApiResponse } from '@/shared/types/api.type';
+import { Query, useMutation, useQuery } from '@tanstack/react-query';
 
 /** 질문 영상 업로드 */
 export const usePostQuestionVideoUpload = () => {
@@ -55,11 +57,20 @@ export const usePostVideoPlaylist = () => {
   });
 };
 /** 영상 썸네일 조회 */
-export const useGetVideoThumbnail = (videoUuid: string) => {
+export const useGetVideoThumbnail = (
+  videoUuid: string,
+  options?: {
+    enabled?: boolean;
+    refetchInterval?: number | ((query: Query<ApiResponse<VideoThumbnailResponse>, Error>) => number | false);
+    retry?: boolean;
+  },
+) => {
   return useQuery({
     queryKey: [GET_video_thumbnail.name, videoUuid],
     queryFn: () => GET_video_thumbnail(videoUuid),
-    enabled: !!videoUuid,
-    select: ({ data }) => data,
+    enabled: options?.enabled !== undefined ? options.enabled : !!videoUuid,
+    select: (response) => response.data,
+    refetchInterval: options?.refetchInterval,
+    retry: options?.retry,
   });
 };

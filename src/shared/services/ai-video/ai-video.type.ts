@@ -9,7 +9,7 @@ export type TranscribeVideoResponse = {
 };
 
 // STT 상태 타입
-export type TranscriptionStatus = 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'PENDING';
+export type TranscriptionStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'PENDING' | 'PROCESSING';
 
 // STT 상태 조회 응답
 export type TranscriptionStatusResponse = {
@@ -69,4 +69,3 @@ export type PracticeGuideSuggestionResponse = {
 export type VideoBatchDeleteRequest = {
   video_uuids: string[];
 };
-

@@ -22,6 +22,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { Plus, Video } from 'lucide-react';
+import { Tabs } from '@/shared/components/ui/tabs';
 
 export default function CreatorCoursesPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,7 +64,7 @@ export default function CreatorCoursesPage() {
   } = useGetCoursesMy({
     page: pageIndex + 1,
     pageSize,
-    isShow: statusFilter === 'published' ? true : statusFilter === 'draft' ? false : undefined,
+    isShow: statusFilter === 'public' ? true : statusFilter === 'private' ? false : undefined,
     sortType: sortBy,
   });
   const courses = coursesData?.items || [];
@@ -148,11 +149,11 @@ export default function CreatorCoursesPage() {
     setColumnFilters((prev) => {
       const filtersWithoutIsShow = prev.filter((filter) => filter.id !== 'isShow');
 
-      if (statusFilter === 'published') {
+      if (statusFilter === 'public') {
         return [...filtersWithoutIsShow, { id: 'isShow', value: true }];
       }
 
-      if (statusFilter === 'draft') {
+      if (statusFilter === 'private') {
         return [...filtersWithoutIsShow, { id: 'isShow', value: false }];
       }
 
@@ -208,12 +209,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">내 강의 관리</h2>
-            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+            <h2 className="text-2xl font-bold">My Lectures</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-muted-foreground">강의 목록을 불러오는 중...</div>
+          <div className="text-muted-foreground">Loading lectures...</div>
         </div>
       </div>
     );
@@ -224,12 +225,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">내 강의 관리</h2>
-            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+            <h2 className="text-2xl font-bold">My Lectures</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-destructive">강의 목록을 불러오는데 실패했습니다.</div>
+          <div className="text-destructive">Failed to load lectures.</div>
         </div>
       </div>
     );
@@ -240,12 +241,12 @@ export default function CreatorCoursesPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">내 강의 관리</h2>
-          <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+          <h2 className="text-2xl font-bold">My Lectures</h2>
+          <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
         </div>
         <Button asChild>
           <Link href="/creator/courses/new">
-            <Plus className="mr-2 h-4 w-4" />새 강의 만들기
+            New Lecture <Plus className="h-4 w-4" />
           </Link>
         </Button>
       </div>

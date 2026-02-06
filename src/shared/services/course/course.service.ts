@@ -49,9 +49,35 @@ export const GET_courses = async (): Promise<PaginatedResponse<CoursesResponse>>
 };
 
 /** 강의 게시 */
-// TODO: multipart/form-data 형식으로 수정
 export const POST_course = async (data: CourseRequest): Promise<ApiResponse<CourseDetailResponse>> => {
-  const response = await api.post('/api/v1/courses', data);
+  const formData = new FormData();
+
+  // JSON 파트
+  const courseBody = {
+    keyPoints: data.keyPoints,
+    isShow: data.isShow,
+    price: 0,
+    installEnvChecklist: data.installEnvChecklist,
+    targetAudience: data.targetAudience,
+    videoUuid: data.videoUuid,
+    title: data.title,
+    tags: data.tags,
+    description: data.description,
+  };
+  // 일부 서버는 RequestPart JSON을 Blob보다 "문자열(JSON)"로 받는 걸 선호합니다.
+  formData.append('coursePostReq', JSON.stringify(courseBody));
+
+  // 파일 파트
+  if (data.thumbnail) {
+    formData.append('thumbnail', data.thumbnail);
+  }
+
+  if (data.practiceFile && data.practiceFile.length > 0) {
+    data.practiceFile.forEach((file) => formData.append('practiceFile', file));
+  }
+
+  // NOTE: Content-Type을 직접 지정하지 말아야 boundary가 자동으로 붙습니다.
+  const response = await api.post('/api/v1/courses', formData);
   return response.data;
 };
 

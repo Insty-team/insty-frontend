@@ -1,6 +1,6 @@
 'use client';
 
-import { CourseDraft, CourseFormData, InstallationRequirement, UploadProgress, UploadStep } from '../types';
+import { CourseFormData, InstallationRequirement, UploadProgress, UploadStep } from '../types';
 import { CoreContents } from './CoreContents';
 import { CoursePreview } from './CoursePreview';
 import { CourseTags } from './CourseTags';
@@ -16,20 +16,26 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { Separator } from '@/shared/components/ui/separator';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { usePostVideoMetadataSuggestion } from '@/shared/services/ai-video/ai-video.hook';
+import { usePostCourse } from '@/shared/services/course/course.hook';
+import { GET_courses, GET_courses_my } from '@/shared/services/course/course.service';
+import { useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Edit3, FileVideo, Sparkles } from 'lucide-react';
 
 export function CourseUploadForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<UploadStep>('UPLOAD');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUuid, setVideoUuid] = useState<string>('');
   const [installationRequirements, setInstallationRequirements] = useState<InstallationRequirement[]>([]);
   const [coreContents, setCoreContents] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [isVideoReadyToProceed, setIsVideoReadyToProceed] = useState(false);
   const [installationRequirementsError, setInstallationRequirementsError] = useState<string | null>(null);
 
   const [thumbnailProgress, setThumbnailProgress] = useState<UploadProgress>({
@@ -44,6 +50,10 @@ export function CourseUploadForm() {
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string>('');
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string>('');
+
+  const videoMetadataSuggestionMutation = usePostVideoMetadataSuggestion(videoUuid);
+  const postCourseMutation = usePostCourse();
 
   const {
     register,
@@ -63,88 +73,74 @@ export function CourseUploadForm() {
   const title = watch('title');
   const targetAudience = watch('targetAudience');
 
-  // 파일 업로드 시뮬레이션 (실제로는 API 호출)
-  const simulateUpload = async (
-    file: File,
-    type: 'thumbnail' | 'video',
-    setProgress: (progress: UploadProgress) => void,
-  ) => {
-    setProgress({ status: 'PROCESSING', progress: 0 });
-
-    // 업로드 진행률 시뮬레이션
-    for (let i = 0; i <= 100; i += 10) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      setProgress({ status: 'PROCESSING', progress: i });
+  // 사용자가 직접 썸네일 파일을 올린 경우, 미리보기에서 보이도록 objectURL 생성
+  useEffect(() => {
+    if (!thumbnailFile) {
+      setThumbnailPreviewUrl('');
+      return;
     }
+    const url = URL.createObjectURL(thumbnailFile);
+    setThumbnailPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [thumbnailFile]);
 
-    setProgress({ status: 'COMPLETED', progress: 100 });
-
-    // 파일 URL 생성 (실제로는 서버에서 받아온 URL)
-    const url = URL.createObjectURL(file);
-    if (type === 'thumbnail') {
-      setThumbnailUrl(url);
-    } else {
-      setVideoUrl(url);
+  // Base64(data:) → File 변환
+  const base64ToFile = (base64String: string, filename: string): File => {
+    const arr = base64String.split(',');
+    const mime = arr[0]?.match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1] || '');
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
     }
-  };
-
-  // AI 초안 생성 시뮬레이션
-  const generateAIDraft = async (): Promise<CourseDraft> => {
-    await new Promise((resolve) => setTimeout(resolve, 3000)); // 3초 대기
-
-    // AI가 생성한 초안 데이터 시뮬레이션
-    return {
-      title: `${videoFile?.name.replace('.mp4', '') || '강의'}에 대한 AI 생성 제목`,
-      targetAudience: '초보자',
-      description: `이 강의는 ${videoFile?.name.replace('.mp4', '') || '주제'}에 대한 포괄적인 가이드를 제공합니다. 
-      
-주요 학습 내용:
-- 기본 개념 이해
-- 실전 예제와 함께하는 단계별 설명
-- 베스트 프랙티스와 팁
-
-${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들에게 적합합니다.`,
-      installationRequirements: [
-        { id: '1', name: 'Node.js', isSupported: true },
-        { id: '2', name: 'npm 또는 yarn', isSupported: true },
-      ],
-      coreContents: ['기본 개념 이해', '실전 프로젝트', '베스트 프랙티스', '문제 해결 방법'],
-      tags: ['초보자', '튜토리얼', '실전'],
-    };
+    return new File([u8arr], filename, { type: mime });
   };
 
   // Step 1: 영상 업로드 후 AI 생성으로 이동
   const handleVideoUploadComplete = async () => {
     if (!videoFile) {
-      alert('강의 영상을 먼저 업로드해주세요.');
+      alert('Please upload the lecture video first.');
       return;
     }
-
-    // 업로드 시뮬레이션
-    await simulateUpload(videoFile, 'video', setVideoProgress);
+    if (!isVideoReadyToProceed) {
+      alert('Please wait until the video upload, AI processing, and thumbnail generation are complete.');
+      return;
+    }
+    // 썸네일은 "직접 업로드(thumbnailFile)" 또는 "서버 생성 썸네일(thumbnailUrl)" 중 하나만 있으면 OK
+    if (!thumbnailFile && !thumbnailUrl) {
+      alert('Please provide a course thumbnail.');
+      return;
+    }
+    if (!videoUuid) {
+      alert('Video upload is not finished yet. Please try again in a moment.');
+      return;
+    }
 
     // AI 생성 단계로 이동
     setCurrentStep('AI_GENERATING');
 
     // AI 초안 생성
     try {
-      const aiDraft = await generateAIDraft();
+      const res = await videoMetadataSuggestionMutation.mutateAsync();
+      const aiDraft = res.data;
 
       // AI 초안을 폼에 채우기
       setValue('title', aiDraft.title);
-      setValue('targetAudience', aiDraft.targetAudience);
+      setValue('targetAudience', aiDraft.target);
       setValue('description', aiDraft.description);
-      setInstallationRequirements(aiDraft.installationRequirements);
-      setCoreContents(aiDraft.coreContents);
-      setTags(aiDraft.tags);
-
-      // 썸네일도 업로드 시도
-      if (thumbnailFile) {
-        await simulateUpload(thumbnailFile, 'thumbnail', setThumbnailProgress);
-      }
+      setInstallationRequirements(
+        (aiDraft.installation_checklist ?? []).map((name, idx) => ({
+          id: `${Date.now()}-${idx}`,
+          name,
+          isSupported: true,
+        })),
+      );
+      setCoreContents(aiDraft.core_contents ?? []);
+      setTags(aiDraft.tags ?? []);
     } catch (error) {
-      console.error('AI 초안 생성 실패:', error);
-      alert('AI 초안 생성 중 오류가 발생했습니다.');
+      console.error('Failed to generate AI draft:', error);
+      alert('An error occurred while generating the AI draft.');
     } finally {
       setCurrentStep('EDIT');
     }
@@ -161,24 +157,53 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
     setIsSubmitting(true);
 
     try {
-      // 실제 API 호출 로직은 여기에 구현
+      // thumbnail:
+      // - 사용자가 직접 올렸으면 그 파일 사용
+      // - 없고 thumbnailUrl이 data: (Base64)면 File로 변환해서 전송
+      // - 그 외(서버 썸네일 https://...)면 전송하지 않음(null)
+      let finalThumbnailFile: File | null = thumbnailFile;
+      if (!finalThumbnailFile && thumbnailUrl && thumbnailUrl.startsWith('data:')) {
+        try {
+          finalThumbnailFile = base64ToFile(thumbnailUrl, 'thumbnail.jpg');
+        } catch (e) {
+          console.error('Base64 썸네일 변환 실패:', e);
+        }
+      }
+
+      // 스펙:
+      // - 코스 JSON + thumbnail(File|null) + practiceFile(null 가능)
+      // - 서버 생성 썸네일을 쓰면 thumbnail은 null로 전송
       const courseData = {
-        ...data,
-        thumbnail: thumbnailFile,
-        video: videoFile,
-        installationRequirements,
-        coreContents,
+        keyPoints: coreContents,
+        isShow: true,
+        price: 0,
+        installEnvChecklist: installationRequirements.map((r) => ({
+          content: r.name,
+          isSupported: r.isSupported,
+        })),
+        targetAudience: data.targetAudience,
+        videoUuid,
+        title: data.title,
         tags,
+        description: data.description,
+        thumbnail: finalThumbnailFile ?? null,
+        practiceFile: null,
       };
 
-      console.log('강의 데이터:', courseData);
+      await postCourseMutation.mutateAsync(courseData);
+
+      // 강의 목록 캐시 갱신
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [GET_courses_my.name] }),
+        queryClient.invalidateQueries({ queryKey: [GET_courses.name] }),
+      ]);
 
       // 성공 시 강의 목록으로 이동
-      alert('강의가 성공적으로 업로드되었습니다!');
+      alert('Your course has been uploaded successfully.');
       router.push('/creator/courses');
     } catch (error) {
-      console.error('업로드 실패:', error);
-      alert('업로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error('Upload failed:', error);
+      alert('An error occurred during upload. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -208,13 +233,13 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
   const getStepInfo = (step: UploadStep) => {
     switch (step) {
       case 'UPLOAD':
-        return { label: '강의 영상 업로드', icon: FileVideo };
+        return { label: 'Upload Video', icon: FileVideo };
       case 'AI_GENERATING':
-        return { label: 'AI 초안 생성', icon: Sparkles };
+        return { label: 'Generate Draft', icon: Sparkles };
       case 'EDIT':
-        return { label: '내용 수정', icon: Edit3 };
+        return { label: 'Edit Details', icon: Edit3 };
       case 'PREVIEW':
-        return { label: '미리보기', icon: CheckCircle2 };
+        return { label: 'Preview', icon: CheckCircle2 };
     }
   };
 
@@ -224,8 +249,8 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
       {/* 헤더 섹션 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">새 강의 업로드</h2>
-          <p className="text-muted-foreground mt-1">단계별로 강의를 생성하세요</p>
+          <h2 className="text-2xl font-bold">New Lecture Upload</h2>
+          <p className="text-muted-foreground mt-1">Create your lecture step by step</p>
         </div>
       </div>
 
@@ -257,13 +282,12 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
                 {/* 아이콘 영역 */}
                 <div className="relative">
                   <div
-                    className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white transition-all duration-300 ${
-                      isActive
-                        ? 'border-primary bg-primary shadow-primary/40 text-white shadow-md'
-                        : isCompleted
-                          ? 'border-green-500 bg-green-500 text-green-500'
-                          : 'border-gray-300 bg-white text-gray-400'
-                    }`}
+                    className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white transition-all duration-300 ${isActive
+                      ? 'border-primary bg-primary shadow-primary/40 text-white shadow-md'
+                      : isCompleted
+                        ? 'border-green-500 bg-green-500 text-green-500'
+                        : 'border-gray-300 bg-white text-gray-400'
+                      }`}
                   >
                     {isCompleted ? (
                       <CheckCircle2 className="h-6 w-6" />
@@ -278,18 +302,16 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
                 {/* 라벨 영역 */}
                 <div className="flex flex-col items-center gap-1 text-center">
                   <span
-                    className={`text-sm font-semibold transition-colors ${
-                      isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                    }`}
+                    className={`text-sm font-semibold transition-colors ${isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                      }`}
                   >
                     {stepInfo.label}
                   </span>
                   <span
-                    className={`text-xs transition-colors ${
-                      isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                    }`}
+                    className={`text-xs transition-colors ${isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                      }`}
                   >
-                    {index + 1}단계
+                    Step {index + 1}
                   </span>
                 </div>
               </div>
@@ -302,32 +324,38 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
       {currentStep === 'UPLOAD' && (
         <Card>
           <CardHeader>
-            <CardTitle>1️⃣ 강의 영상 업로드</CardTitle>
-            <CardDescription>강의 영상을 먼저 업로드해주세요 (필수)</CardDescription>
+            <CardTitle>1️⃣ Upload Lecture Video</CardTitle>
+            <CardDescription>Please upload your lecture video first (required).</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <FileUpload
               type="video"
               file={videoFile}
-              onFileSelect={setVideoFile}
-              uploadProgress={videoProgress.progress}
-              uploadStatus={videoProgress.status}
-              error={videoProgress.message}
+              onFileSelect={(f) => {
+                setVideoFile(f);
+                // 파일을 바꾸면 다시 준비 상태를 false로 (준비되면 FileUpload가 true로 올려줌)
+                setIsVideoReadyToProceed(false);
+                setVideoUuid('');
+                setThumbnailUrl('');
+                setVideoUrl(f ? URL.createObjectURL(f) : '');
+              }}
+              onReadyChange={setIsVideoReadyToProceed}
+              onVideoUuidChange={setVideoUuid}
+              onThumbnailUrlChange={setThumbnailUrl}
             />
             <FileUpload
               type="thumbnail"
               file={thumbnailFile}
               onFileSelect={setThumbnailFile}
-              uploadProgress={thumbnailProgress.progress}
-              uploadStatus={thumbnailProgress.status}
-              error={thumbnailProgress.message}
+              thumbnailUrl={thumbnailUrl}
+              onThumbnailUrlClear={() => setThumbnailUrl('')}
             />
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={handleCancel}>
-                취소
+                Cancel
               </Button>
-              <Button type="button" onClick={handleVideoUploadComplete} disabled={!videoFile}>
-                다음 단계로 진행
+              <Button type="button" onClick={handleVideoUploadComplete} disabled={!videoFile || !isVideoReadyToProceed}>
+                Continue
               </Button>
             </div>
           </CardContent>
@@ -338,14 +366,14 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
       {currentStep === 'AI_GENERATING' && (
         <Card>
           <CardHeader>
-            <CardTitle>2️⃣ AI 초안 생성 중...</CardTitle>
-            <CardDescription>영상을 분석하여 강의 초안을 자동으로 생성하고 있습니다</CardDescription>
+            <CardTitle>2️⃣ Generate AI Draft...</CardTitle>
+            <CardDescription>We’re analyzing your video and generating a draft automatically.</CardDescription>
           </CardHeader>
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center space-y-4">
               <Sparkles className="h-16 w-16 animate-pulse text-purple-600" />
-              <p className="text-lg font-medium">AI가 강의 초안을 생성 중입니다...</p>
-              <p className="text-muted-foreground text-sm">잠시만 기다려주세요</p>
+              <p className="text-lg font-medium">Generating your draft…</p>
+              <p className="text-muted-foreground text-sm">This may take a moment.</p>
             </div>
           </CardContent>
         </Card>
@@ -356,57 +384,57 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>3️⃣ AI 초안 수정</CardTitle>
-              <CardDescription>AI가 생성한 초안을 확인하고 필요한 내용을 수정하세요</CardDescription>
+              <CardTitle>3️⃣ Edit Content</CardTitle>
+              <CardDescription>Review the AI-generated draft and make any necessary edits.</CardDescription>
             </CardHeader>
           </Card>
 
           {/* 기본 정보 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>기본 정보</CardTitle>
-              <CardDescription>강의의 기본 정보를 입력하세요</CardDescription>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>Enter the basic details of your course.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">강의 제목 *</Label>
+                <Label htmlFor="title">Lecture Title *</Label>
                 <Input
                   id="title"
                   {...register('title', {
-                    required: '강의 제목을 입력해주세요',
-                    minLength: { value: 2, message: '제목은 2자 이상이어야 합니다' },
-                    maxLength: { value: 100, message: '제목은 100자 이하여야 합니다' },
+                    required: 'Please enter a course title.',
+                    minLength: { value: 2, message: 'Title must be at least 2 characters.' },
+                    maxLength: { value: 100, message: 'Title must be 100 characters or fewer.' },
                   })}
-                  placeholder="강의 제목을 입력하세요"
+                  placeholder="Enter a course title"
                 />
                 {errors.title && <p className="text-destructive text-sm">{errors.title.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="targetAudience">대상자 *</Label>
+                <Label htmlFor="targetAudience">Target Audience *</Label>
                 <Input
                   id="targetAudience"
                   {...register('targetAudience', {
-                    required: '대상자를 입력해주세요',
-                    minLength: { value: 2, message: '대상자는 2자 이상이어야 합니다' },
-                    maxLength: { value: 100, message: '대상자는 100자 이하여야 합니다' },
+                    required: 'Please specify the target audience.',
+                    minLength: { value: 2, message: 'Target audience must be at least 2 characters.' },
+                    maxLength: { value: 100, message: 'Target audience must be 100 characters or fewer.' },
                   })}
-                  placeholder="예: 초보자, 중급자, 개발자 등"
+                  placeholder="e.g., Beginners, Intermediate learners, Developers"
                 />
                 {errors.targetAudience && <p className="text-destructive text-sm">{errors.targetAudience.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">강의 설명 *</Label>
+                <Label htmlFor="description">Lecture Description *</Label>
                 <Textarea
                   id="description"
                   {...register('description', {
-                    required: '강의 설명을 입력해주세요',
-                    minLength: { value: 10, message: '설명은 10자 이상이어야 합니다' },
-                    maxLength: { value: 500, message: '설명은 500자 이하여야 합니다' },
+                    required: 'Please enter a course description.',
+                    minLength: { value: 10, message: 'Description must be at least 10 characters.' },
+                    maxLength: { value: 500, message: 'Description must be 500 characters or fewer.' },
                   })}
                   rows={4}
-                  placeholder="강의에 대한 자세한 설명을 입력하세요"
+                  placeholder="Write a detailed description of your course"
                   maxLength={500}
                   className="h-48"
                 />
@@ -423,8 +451,8 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
           {/* 설치 환경 요구사항 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>설치 환경 요구사항</CardTitle>
-              <CardDescription>강의에 필요한 설치 환경을 추가하세요</CardDescription>
+              <CardTitle>Prerequisites</CardTitle>
+              <CardDescription>Add any environment or installation requirements for this course.</CardDescription>
             </CardHeader>
             <CardContent>
               <InstallationRequirements
@@ -440,8 +468,8 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
           {/* 핵심 내용 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>핵심 내용</CardTitle>
-              <CardDescription>이 강의에서 다루는 핵심 내용을 추가하세요</CardDescription>
+              <CardTitle>Key Points</CardTitle>
+              <CardDescription>Add the key topics learners will cover in this course.</CardDescription>
             </CardHeader>
             <CardContent>
               <CoreContents contents={coreContents} onContentsChange={setCoreContents} />
@@ -451,8 +479,8 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
           {/* 태그 섹션 */}
           <Card>
             <CardHeader>
-              <CardTitle>태그</CardTitle>
-              <CardDescription>강의를 찾기 쉽게 태그를 추가하세요</CardDescription>
+              <CardTitle>Tags</CardTitle>
+              <CardDescription>Add tags to help learners discover your course.</CardDescription>
             </CardHeader>
             <CardContent>
               <CourseTags tags={tags} onTagsChange={setTags} />
@@ -462,10 +490,10 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
           {/* 버튼 */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              취소
+              Cancel
             </Button>
-            <Button type="button" variant="outline" onClick={handlePreview}>
-              미리보기
+            <Button type="button" variant="outline" onClick={() => setCurrentStep('PREVIEW')}>
+              Preview
             </Button>
           </div>
         </form>
@@ -476,29 +504,29 @@ ${videoFile?.name.replace('.mp4', '') || '주제'}를 처음 배우시는 분들
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>4️⃣ 미리보기</CardTitle>
-              <CardDescription>강의가 사용자에게 어떻게 보여질지 확인하세요</CardDescription>
+              <CardTitle>4️⃣ Preview</CardTitle>
+              <CardDescription>Preview how your course will appear to learners.</CardDescription>
             </CardHeader>
           </Card>
 
           <CoursePreview
             formData={{ title, targetAudience, description, installationRequirements, coreContents, tags }}
-            thumbnailUrl={thumbnailUrl}
+            thumbnailUrl={thumbnailPreviewUrl || thumbnailUrl}
             videoUrl={videoUrl}
           />
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => setCurrentStep('EDIT')}>
-              다시 수정하기
+              Back to Edit
             </Button>
             <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
-                  업로드 중...
+                  Uploading...
                 </>
               ) : (
-                '강의 업로드 완료'
+                'Publish Lecture'
               )}
             </Button>
           </div>
