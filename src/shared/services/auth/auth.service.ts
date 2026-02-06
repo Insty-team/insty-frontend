@@ -1,7 +1,9 @@
 import {
   EmailVerifyCheckRequest,
+  EmailVerifyCodeRequest,
   LoginRequest,
   LoginResponse,
+  PasswordResetRequest,
   SocialLoginRequest,
 } from './auth.type';
 
@@ -17,6 +19,26 @@ export const POST_reissue = async (refreshToken: string) => {
     {},
     { headers: { Authorization: `Bearer ${refreshToken}` } },
   );
+  return response.data;
+};
+
+/** 이메일 인증코드 기반으로 인증 */
+export const POST_email_verify_password_reset_code = async (
+  data: EmailVerifyCodeRequest,
+): Promise<ApiResponse<string>> => {
+  const response = await axios.post('/api/v1/auth/password-reset/verify', data);
+  return response.data;
+};
+
+/** 이메일 인증된 상태에서 비밀번호 변경 */
+export const POST_password_reset = async (data: PasswordResetRequest): Promise<ApiResponse<string>> => {
+  const response = await axios.post('/api/v1/auth/password-reset/update', data);
+  return response.data;
+};
+
+/** 비밀번호 찾기 이메일 전송 */
+export const POST_password_reset_send_email = async (email: string): Promise<ApiResponse<string>> => {
+  const response = await axios.post('/api/v1/auth/password-reset/send-mail', { email });
   return response.data;
 };
 
@@ -42,9 +64,7 @@ export const POST_social_login = async (
 };
 
 /** 이메일 인증 확인 */
-export const POST_email_verify_check = async (
-  data: EmailVerifyCheckRequest,
-): Promise<ApiResponse<string>> => {
+export const POST_email_verify_check = async (data: EmailVerifyCheckRequest): Promise<ApiResponse<string>> => {
   const response = await axios.post(`/api/v1/auth/email-verification/verify`, data);
   return response.data;
 };
@@ -54,10 +74,43 @@ export const POST_email_verify_send = async (email: string): Promise<ApiResponse
   const response = await axios.post(`/api/v1/auth/email-verification/send`, { email });
   return response.data;
 };
-/** 사용자 소셜 로그인 인가코드 얻기 */
-export const GET_social_login_authorize_code = async (
+/**
+ * 소셜 로그인 인가 URL 조회
+ *
+ * @param socialName - 소셜 로그인 제공자 (KAKAO, GOOGLE, NAVER)
+ * @param state - CSRF 방지용 state 파라미터 (Base64 인코딩된 JSON)
+ * @returns 인가 URL (사용자를 리다이렉트할 OAuth 제공자 페이지 URL)
+ */
+export const GET_social_login_authorize = async (
   socialName: SocialLoginType,
+  state?: string,
 ): Promise<ApiResponse<string>> => {
-  const response = await axios.get(`/api/v1/auth/login/authorize/${socialName}`);
+  const params = new URLSearchParams();
+
+  // state 파라미터 추가 (CSRF 방지)
+  if (state) {
+    params.append('state', state);
+  }
+
+  // 콜백 URL 설정 (현재 origin 기준)
+  const callbackUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/login/oauth/callback`
+      : process.env.NEXT_PUBLIC_APP_URL + '/login/oauth/callback';
+
+  params.append('redirect_uri', callbackUrl);
+
+  const queryString = params.toString();
+  const url = `/api/v1/auth/login/authorize/${socialName}${queryString ? `?${queryString}` : ''}`;
+
+  const response = await axios.get(url);
   return response.data;
+};
+
+/**
+ * @deprecated GET_social_login_authorize 사용을 권장합니다.
+ * 소셜 로그인 인가코드 조회 (레거시)
+ */
+export const GET_social_login_authorize_code = async (socialName: SocialLoginType): Promise<ApiResponse<string>> => {
+  return GET_social_login_authorize(socialName);
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   AlertDialog,
@@ -18,11 +18,54 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
 import { Switch } from '@/shared/components/ui/switch';
+import {
+  useGetNotificationSettings,
+  usePutNotificationSettings,
+} from '@/shared/services/notification/notification.hook';
+import {
+  NOTIFICATION_TYPE,
+  NotificationSettingsRequest,
+  NotificationSettingsResponseForLearner,
+} from '@/shared/services/notification/notification.type';
+
+import Withdrawal from '@/app/(authorized)/_components/Withdrawal';
 
 export default function LearnerSettingsPage() {
-  const [emailNotification, setEmailNotification] = useState(true);
-  const [pushNotification, setPushNotification] = useState(true);
-  const [marketingEmail, setMarketingEmail] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationSettingsResponseForLearner['settings']>({
+    [NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+    [NOTIFICATION_TYPE.NEW_COURSE]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+    [NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+    [NOTIFICATION_TYPE.USER_MENTIONED]: {
+      inAppEnabled: false,
+      emailEnabled: false,
+    },
+  });
+
+  const { data: notificationSettings } = useGetNotificationSettings();
+  const { mutateAsync: updateNotificationSettings } = usePutNotificationSettings();
+
+  const handleNotificationChange = async (data: NotificationSettingsRequest) => {
+    setNotifications((prev) => ({
+      ...prev,
+      [data.notificationType]: { inAppEnabled: data.inAppEnabled, emailEnabled: data.emailEnabled },
+    }));
+    await updateNotificationSettings(data);
+  };
+
+  useEffect(() => {
+    if (notificationSettings?.settings) {
+      setNotifications(notificationSettings.settings as NotificationSettingsResponseForLearner['settings']);
+    }
+  }, [notificationSettings]);
 
   return (
     <div className="space-y-6">
@@ -35,35 +78,127 @@ export default function LearnerSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>알림 설정</CardTitle>
-          <CardDescription>수신할 알림을 선택하세요</CardDescription>
+          <CardDescription>이벤트 별 푸시 알림과 이메일 수신 여부를 설정하세요</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="email-notification">이메일 알림</Label>
-              <p className="text-muted-foreground text-sm">새로운 강의 및 업데이트 소식을 이메일로 받습니다</p>
-            </div>
-            <Switch id="email-notification" checked={emailNotification} onCheckedChange={setEmailNotification} />
+          <div className="text-muted-foreground flex justify-end px-2 text-xs font-medium">
+            <div className="w-[100px] text-center">푸시 알림</div>
+            <div className="w-[100px] text-center">이메일 수신</div>
           </div>
 
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="push-notification">푸시 알림</Label>
-              <p className="text-muted-foreground text-sm">새로운 댓글 및 답변 알림을 받습니다</p>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 space-y-0.5">
+                  <Label htmlFor="mention-web-notification">사용자 멘션</Label>
+                  <p className="text-muted-foreground text-sm">댓글이나 답변에서 @멘션을 받으면 알려드려요</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="mention-web-notification"
+                      checked={notifications[NOTIFICATION_TYPE.USER_MENTIONED].inAppEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.USER_MENTIONED,
+                          inAppEnabled: value,
+                          emailEnabled: notifications[NOTIFICATION_TYPE.USER_MENTIONED].emailEnabled,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="mention-email-notification"
+                      checked={notifications[NOTIFICATION_TYPE.USER_MENTIONED].emailEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.USER_MENTIONED,
+                          inAppEnabled: notifications[NOTIFICATION_TYPE.USER_MENTIONED].inAppEnabled,
+                          emailEnabled: value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+              <Separator />
             </div>
-            <Switch id="push-notification" checked={pushNotification} onCheckedChange={setPushNotification} />
-          </div>
 
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="marketing-email">마케팅 수신 동의</Label>
-              <p className="text-muted-foreground text-sm">이벤트 및 할인 정보를 받습니다</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 space-y-0.5">
+                  <Label htmlFor="new-answer-web-notification">새 답변</Label>
+                  <p className="text-muted-foreground text-sm">내 질문에 새로운 답변이 달리면 알려드려요</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="new-answer-web-notification"
+                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].inAppEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER,
+                          inAppEnabled: value,
+                          emailEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].emailEnabled,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="new-answer-email-notification"
+                      checked={notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].emailEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER,
+                          inAppEnabled: notifications[NOTIFICATION_TYPE.NEW_COMMUNITY_ANSWER].inAppEnabled,
+                          emailEnabled: value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+              <Separator />
             </div>
-            <Switch id="marketing-email" checked={marketingEmail} onCheckedChange={setMarketingEmail} />
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 space-y-0.5">
+                  <Label htmlFor="answer-accepted-web-notification">답변 채택</Label>
+                  <p className="text-muted-foreground text-sm">내 답변이 채택되면 바로 알려드려요</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="answer-accepted-web-notification"
+                      checked={notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].inAppEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT,
+                          inAppEnabled: value,
+                          emailEnabled: notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].emailEnabled,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center gap-2">
+                    <Switch
+                      id="answer-accepted-email-notification"
+                      checked={notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].emailEnabled}
+                      onCheckedChange={(value) =>
+                        handleNotificationChange({
+                          notificationType: NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT,
+                          inAppEnabled: notifications[NOTIFICATION_TYPE.COMMUNITY_ANSWER_ACCEPT].inAppEnabled,
+                          emailEnabled: value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -80,34 +215,7 @@ export default function LearnerSettingsPage() {
       </Card>
 
       {/* 계정 관리 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>계정 관리</CardTitle>
-          <CardDescription>계정 삭제 및 탈퇴</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">회원 탈퇴</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>정말 탈퇴하시겠습니까?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다. 구매한 강의에 대한 접근 권한도
-                  함께 사라집니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  탈퇴하기
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+      <Withdrawal />
     </div>
   );
 }

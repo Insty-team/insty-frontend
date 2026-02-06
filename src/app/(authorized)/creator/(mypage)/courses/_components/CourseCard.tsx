@@ -12,20 +12,10 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { Separator } from '@/shared/components/ui/separator';
+import { cn, formatViewCount } from '@/shared/lib/utils';
 import { CourseMyResponse } from '@/shared/services/course/course.type';
 import dayjs from 'dayjs';
-import {
-  BarChart3,
-  Calendar,
-  Edit,
-  Eye,
-  EyeOff,
-  MessageCircle,
-  MoreVertical,
-  Play,
-  Settings,
-  Trash2,
-} from 'lucide-react';
+import { BarChart3, Calendar, Edit, Eye, EyeOff, MessageCircle, MoreVertical, Play, Trash2 } from 'lucide-react';
 
 interface CourseCardProps {
   course: CourseMyResponse;
@@ -36,13 +26,6 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisibility }: CourseCardProps) {
-  const formatViewCount = (count: number) => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`;
-    }
-    return count.toString();
-  };
-
   return (
     <Card className="transition-shadow duration-200 hover:shadow-lg">
       <CardContent>
@@ -63,8 +46,11 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
             )}
             <div className="absolute top-2 right-2">
               <Badge
-                variant={course.isShow ? 'default' : 'secondary'}
-                className="bg-primary-green-100 text-primary-green-800 text-xs"
+                variant="default"
+                className={cn(
+                  'text-xs',
+                  course.isShow ? 'bg-primary-green-100 text-primary-green-800' : 'bg-orange-100 text-orange-800',
+                )}
               >
                 {course.isShow ? 'Public' : 'Private'}
               </Badge>
@@ -112,7 +98,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                 {/* 가격 */}
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">판매가:</span>
-                  <span className="text-lg font-semibold">{course.price.toLocaleString()}원</span>
+                  <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(course.price)}원</span>
                 </div>
               </div>
 

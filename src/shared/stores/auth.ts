@@ -1,7 +1,4 @@
-import { UserType } from '../types/auth.enum';
-
 import cookieStorage from '@/shared/lib/cookie-storage';
-import { UserResponse } from '@/shared/services/user/user.type';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -13,6 +10,7 @@ type AuthState = {
 type AuthActions = {
   setAccessToken: (accessToken: AuthState['accessToken']) => void;
   setRefreshToken: (refreshToken: AuthState['refreshToken']) => void;
+  logout: () => void;
 };
 
 export const useAuthStore = create(
@@ -22,6 +20,10 @@ export const useAuthStore = create(
       refreshToken: null,
       setAccessToken: (accessToken: AuthState['accessToken']) => set({ accessToken }),
       setRefreshToken: (refreshToken: AuthState['refreshToken']) => set({ refreshToken }),
+      logout: () => {
+        set({ accessToken: null, refreshToken: null });
+        window.location.href = '/';
+      },
     }),
     {
       name: '@insty-app.token',
@@ -32,17 +34,13 @@ export const useAuthStore = create(
 
 type UserState = {
   nickname: string | null;
-  userType: UserType | null;
 };
 
 type UserActions = {
   setNickname: (nickname: string) => void;
-  setUserType: (userType: UserType) => void;
 };
 
 export const useUserStore = create<UserState & UserActions>((set) => ({
   nickname: null,
-  userType: null,
   setNickname: (nickname: string) => set({ nickname }),
-  setUserType: (userType: UserType) => set({ userType }),
 }));

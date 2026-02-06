@@ -1,6 +1,6 @@
 'use client';
 
-import { CourseFormData, InstallationRequirement, UploadStep } from '../types';
+import { CourseFormData, InstallationRequirement, UploadProgress, UploadStep } from '../types';
 import { CoreContents } from './CoreContents';
 import { CoursePreview } from './CoursePreview';
 import { CourseTags } from './CourseTags';
@@ -36,6 +36,17 @@ export function CourseUploadForm() {
   const [coreContents, setCoreContents] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [isVideoReadyToProceed, setIsVideoReadyToProceed] = useState(false);
+  const [installationRequirementsError, setInstallationRequirementsError] = useState<string | null>(null);
+
+  const [thumbnailProgress, setThumbnailProgress] = useState<UploadProgress>({
+    status: 'IDLE',
+    progress: 0,
+  });
+
+  const [videoProgress, setVideoProgress] = useState<UploadProgress>({
+    status: 'IDLE',
+    progress: 0,
+  });
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string>('');
@@ -137,6 +148,12 @@ export function CourseUploadForm() {
 
   // 최종 제출
   const onSubmit = async (data: CourseFormData) => {
+    if (installationRequirements.length === 0) {
+      setInstallationRequirementsError('설치 환경 요구사항을 최소 1개 이상 입력해주세요.');
+      setCurrentStep('EDIT');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -192,8 +209,24 @@ export function CourseUploadForm() {
     }
   };
 
+  useEffect(() => {
+    if (installationRequirements.length > 0 && installationRequirementsError) {
+      setInstallationRequirementsError(null);
+    }
+  }, [installationRequirements, installationRequirementsError]);
+
   const handleCancel = () => {
     router.push('/creator/courses');
+  };
+
+  const handlePreview = () => {
+    if (installationRequirements.length === 0) {
+      setInstallationRequirementsError('설치 환경 요구사항을 최소 1개 이상 입력해주세요.');
+      return;
+    }
+
+    setInstallationRequirementsError(null);
+    setCurrentStep('PREVIEW');
   };
 
   // 단계별 네비게이션
@@ -249,13 +282,12 @@ export function CourseUploadForm() {
                 {/* 아이콘 영역 */}
                 <div className="relative">
                   <div
-                    className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white transition-all duration-300 ${
-                      isActive
-                        ? 'border-primary bg-primary shadow-primary/40 text-white shadow-md'
-                        : isCompleted
-                          ? 'border-green-500 bg-green-500 text-green-500'
-                          : 'border-gray-300 bg-white text-gray-400'
-                    }`}
+                    className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white transition-all duration-300 ${isActive
+                      ? 'border-primary bg-primary shadow-primary/40 text-white shadow-md'
+                      : isCompleted
+                        ? 'border-green-500 bg-green-500 text-green-500'
+                        : 'border-gray-300 bg-white text-gray-400'
+                      }`}
                   >
                     {isCompleted ? (
                       <CheckCircle2 className="h-6 w-6" />
@@ -270,16 +302,14 @@ export function CourseUploadForm() {
                 {/* 라벨 영역 */}
                 <div className="flex flex-col items-center gap-1 text-center">
                   <span
-                    className={`text-sm font-semibold transition-colors ${
-                      isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                    }`}
+                    className={`text-sm font-semibold transition-colors ${isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                      }`}
                   >
                     {stepInfo.label}
                   </span>
                   <span
-                    className={`text-xs transition-colors ${
-                      isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                    }`}
+                    className={`text-xs transition-colors ${isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                      }`}
                   >
                     Step {index + 1}
                   </span>
@@ -429,6 +459,9 @@ export function CourseUploadForm() {
                 requirements={installationRequirements}
                 onRequirementsChange={setInstallationRequirements}
               />
+              {installationRequirementsError && (
+                <p className="text-destructive mt-3 text-sm">{installationRequirementsError}</p>
+              )}
             </CardContent>
           </Card>
 

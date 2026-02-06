@@ -1,22 +1,10 @@
-import { UserRequest, UserResponse } from './user.type';
+import { EmailSignupRequest, EmailSignupResponse, UserRequest, UserResponse } from './user.type';
 
 import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
 
 /** 내 사용자 정보 수정 */
-export const PUT_profile = async (data: UserRequest) => {
-  const formData = new FormData();
-
-  if (data.nickname) {
-    formData.append('nickname', data.nickname);
-  }
-  if (data.introduce) {
-    formData.append('introduce', data.introduce);
-  }
-  if (data.thumbnail) {
-    formData.append('thumbnail', data.thumbnail);
-  }
-
+export const PUT_profile = async (formData: UserRequest) => {
   const response = await api.put('/api/v1/users/profile', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -24,7 +12,13 @@ export const PUT_profile = async (data: UserRequest) => {
   });
   return response.data;
 };
+
 /** 이메일 회원 가입 */
+export const POST_email_signup = async (data: EmailSignupRequest): Promise<ApiResponse<EmailSignupResponse>> => {
+  const response = await api.post('/api/v1/users', data);
+  return response.data;
+};
+
 /** 사용자 타입 변경 */
 /** 내 비밀번호 수정 수정 */
 /** 사용자 이메일 수신 동의 상태 값 변경 */

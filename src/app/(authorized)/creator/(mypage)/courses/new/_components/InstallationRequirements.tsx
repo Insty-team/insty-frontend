@@ -19,9 +19,14 @@ interface InstallationRequirementsProps {
 
 export function InstallationRequirements({ requirements, onRequirementsChange }: InstallationRequirementsProps) {
   const [inputValue, setInputValue] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleAddRequirement = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim()) {
+      setErrorMessage('설치 환경을 입력해주세요.');
+      return;
+    }
+    setErrorMessage(null);
     if (requirements.some((req) => req.name === inputValue.trim())) {
       alert('This prerequisite has already been added.');
       return;
@@ -39,6 +44,7 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
 
     onRequirementsChange([...requirements, newRequirement]);
     setInputValue('');
+    setErrorMessage(null);
   };
 
   const handleRemoveRequirement = (id: string) => {
@@ -63,19 +69,18 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
       <div className="flex gap-2">
         <Input
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            if (e.target.value.trim() && errorMessage) {
+              setErrorMessage(null);
+            }
+          }}
           onKeyPress={handleKeyPress}
           placeholder="e.g., Node.js, Python, Docker"
           maxLength={50}
           className="flex-1"
         />
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-lg"
-          onClick={handleAddRequirement}
-          disabled={!inputValue.trim()}
-        >
+        <Button type="button" variant="outline" size="icon-lg" onClick={handleAddRequirement}>
           <Plus className="h-4 w-4" />
         </Button>
       </div>

@@ -15,9 +15,16 @@ interface CoreContentsProps {
 
 export function CoreContents({ contents, onContentsChange }: CoreContentsProps) {
   const [inputValue, setInputValue] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleAddContent = () => {
-    if (!inputValue.trim() || contents.includes(inputValue.trim())) return;
+    if (!inputValue.trim()) {
+      setErrorMessage('핵심 내용을 입력해주세요.');
+      return;
+    }
+    if (contents.includes(inputValue.trim())) {
+      return;
+    }
     if (contents.length >= 8) {
       alert('You can add up to 8 items.');
       return;
@@ -29,6 +36,7 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
 
     onContentsChange([...contents, inputValue.trim()]);
     setInputValue('');
+    setErrorMessage(null);
   };
 
   const handleRemoveContent = (index: number) => {
@@ -49,7 +57,12 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
       <div className="flex gap-2">
         <Input
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            if (e.target.value.trim() && errorMessage) {
+              setErrorMessage(null);
+            }
+          }}
           onKeyDown={handleKeyPress}
           placeholder="e.g., React fundamentals, component design, state management, routing"
           maxLength={60}
@@ -60,7 +73,6 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
           variant="outline"
           size="icon-lg"
           onClick={handleAddContent}
-          disabled={!inputValue.trim() || contents.includes(inputValue.trim())}
         >
           <Plus className="h-4 w-4" />
         </Button>

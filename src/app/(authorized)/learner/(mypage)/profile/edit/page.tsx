@@ -14,14 +14,9 @@ import { Label } from '@/shared/components/ui/label';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useGetProfile, usePutProfile } from '@/shared/services/user/user.hook';
+import { UserRequest } from '@/shared/services/user/user.type';
 
-type ProfileFormData = {
-  nickname: string;
-  email: string;
-  oldPassword: string;
-  newPassword: string;
-  profileImage?: File;
-};
+type ProfileFormData = UserRequest;
 
 export default function ProfileEditPage() {
   const router = useRouter();
@@ -33,28 +28,32 @@ export default function ProfileEditPage() {
 
   const form = useForm<ProfileFormData>({
     values: {
-      nickname: profile?.nickname || '',
-      email: profile?.email || '',
-      oldPassword: '',
-      newPassword: '',
+      userUpdateReq: {
+        nickname: profile?.nickname || '',
+        email: profile?.email || '',
+        introduce: profile?.introduce || '',
+        currentPassword: '',
+        newPassword: '',
+      },
+      profileImage: null,
     },
   });
 
   const onSubmit = (data: ProfileFormData) => {
     const formData = new FormData();
-    formData.append('userUpdateReq', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    formData.append('userUpdateReq', new Blob([JSON.stringify(data.userUpdateReq)], { type: 'application/json' }));
 
     formData.append('profileImage', selectedFile || '');
 
-    // updateProfile(formData, {
-    //   onSuccess: () => {
-    //     alert('프로필이 업데이트되었습니다!');
-    //     router.push('/learner/profile'); // 프로필 보기 페이지로 이동
-    //   },
-    //   onError: () => {
-    //     alert('프로필 업데이트에 실패했습니다.');
-    //   },
-    // });
+    updateProfile(formData as unknown as UserRequest, {
+      onSuccess: () => {
+        alert('프로필이 업데이트되었습니다!');
+        router.push('/learner/profile'); // 프로필 보기 페이지로 이동
+      },
+      onError: () => {
+        alert('프로필 업데이트에 실패했습니다.');
+      },
+    });
   };
 
   const handleCancel = () => {
@@ -144,7 +143,7 @@ export default function ProfileEditPage() {
               {/* 기본 정보 섹션 */}
               <FormField
                 control={form.control}
-                name="nickname"
+                name="userUpdateReq.nickname"
                 rules={{
                   required: { value: true, message: '닉네임을 입력해주세요.' },
                   minLength: { value: 2, message: '닉네임은 2자 이상이어야 합니다' },
@@ -163,7 +162,7 @@ export default function ProfileEditPage() {
 
               <FormField
                 control={form.control}
-                name="email"
+                name="userUpdateReq.email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>이메일</FormLabel>
@@ -175,9 +174,9 @@ export default function ProfileEditPage() {
                 )}
               />
 
-              {/* <FormField
+              <FormField
                 control={form.control}
-                name="introduce"
+                name="userUpdateReq.introduce"
                 rules={{
                   maxLength: { value: 500, message: '소개는 500자 이하여야 합니다' },
                 }}
@@ -190,7 +189,7 @@ export default function ProfileEditPage() {
                     <FormMessage />
                   </FormItem>
                 )}
-              /> */}
+              />
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={handleCancel}>

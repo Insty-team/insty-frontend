@@ -1,33 +1,149 @@
 'use client';
 
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Separator } from '@/shared/components/ui/separator';
+import { useMemo, useState } from 'react';
 
-// 임시 데이터 - 추후 API 연동
-const mockPurchases = [
-  {
-    id: 1,
-    courseName: 'Next.js 완벽 가이드',
-    instructor: '김개발',
-    purchaseDate: '2025-10-15',
-    price: 59000,
-    thumbnail: '/placeholder-course.jpg',
-    status: 'completed',
-  },
-  {
-    id: 2,
-    courseName: 'React 기초부터 실전까지',
-    instructor: '박코딩',
-    purchaseDate: '2025-10-10',
-    price: 49000,
-    thumbnail: '/placeholder-course.jpg',
-    status: 'completed',
-  },
-];
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+
+import { TanstackTablePagination } from '@/shared/components/TanstackTablePagination';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { formatViewCount } from '@/shared/lib/utils';
+import { useGetCoursesProgressByMe } from '@/shared/services/course/course.hook';
+import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
+import dayjs from 'dayjs';
+import { Calendar, Eye, Play } from 'lucide-react';
+
+type PurchaseRow = {
+  id: string;
+  courseName: string;
+  instructor: string;
+  purchaseDate: string;
+  price: number;
+  thumbnail: string;
+};
 
 export default function LearnerPurchasesPage() {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(3);
+  const router = useRouter();
+
+  const {
+    data: purchasesResponse,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useGetCoursesProgressByMe(pageIndex + 1, pageSize);
+
+  const pagination = purchasesResponse?.pagination;
+
+  const purchases = useMemo<PurchaseRow[]>(() => {
+    const items = purchasesResponse?.items;
+    if (!items?.length) {
+      return [];
+    }
+
+    return items.map((purchase) => {
+      type ExtendedPurchase = typeof purchase & {
+        price?: number;
+        instructorName?: string;
+        instructor?: string;
+        purchaseDate?: string;
+        thumbnail?: string;
+      };
+
+      const extended = purchase as ExtendedPurchase;
+
+      const price = typeof extended.price === 'number' && Number.isFinite(extended.price) ? extended.price : 0;
+
+      const instructor = extended.instructor?.trim() ?? extended.instructorName?.trim() ?? '강사 정보 없음';
+
+      const rawPurchaseDate = extended.purchaseDate ?? extended.createdAt;
+      let formattedPurchaseDate = '구매일 정보 없음';
+      if (rawPurchaseDate) {
+        const date = new Date(rawPurchaseDate);
+        formattedPurchaseDate = Number.isNaN(date.getTime()) ? rawPurchaseDate : date.toLocaleDateString('ko-KR');
+      }
+
+      const thumbnail = extended.thumbnail ?? extended.thumbnailUrl ?? '';
+
+      return {
+        id: purchase.courseId,
+        courseName: purchase.title ?? '제목 없는 강의',
+        instructor,
+        purchaseDate: formattedPurchaseDate,
+        price,
+        thumbnail,
+      };
+    });
+  }, [purchasesResponse]);
+
+  const columns = useMemo<ColumnDef<PurchaseRow>[]>(
+    () => [
+      {
+        accessorKey: 'id',
+        header: '강의 ID',
+      },
+      {
+        accessorKey: 'courseName',
+        header: '강의명',
+      },
+      {
+        accessorKey: 'instructor',
+        header: '강사명',
+      },
+      {
+        accessorKey: 'purchaseDate',
+        header: '구매일',
+      },
+      {
+        accessorKey: 'price',
+        header: '가격',
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    data: purchases,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: pagination?.totalPages ?? 0,
+    rowCount: pagination?.totalItems ?? purchases.length,
+    state: {
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
+    },
+    onPaginationChange: (updater) => {
+      if (typeof updater === 'function') {
+        const newPagination = updater({ pageIndex, pageSize });
+        if (newPagination.pageIndex !== pageIndex) {
+          setPageIndex(newPagination.pageIndex);
+        }
+        if (newPagination.pageSize !== pageSize) {
+          setPageSize(newPagination.pageSize);
+        }
+        return;
+      }
+
+      if (updater.pageIndex !== pageIndex) {
+        setPageIndex(updater.pageIndex);
+      }
+      if (updater.pageSize !== pageSize) {
+        setPageSize(updater.pageSize);
+      }
+    },
+  });
+
+  const totalPages = pagination?.totalPages ?? 0;
+
+  const showLoadingState = isLoading || (isFetching && purchases.length === 0);
+
   return (
     <div className="space-y-6">
       <div>
@@ -35,7 +151,22 @@ export default function LearnerPurchasesPage() {
         <p className="text-muted-foreground mt-1">구매한 강의 목록을 확인하세요</p>
       </div>
 
-      {mockPurchases.length === 0 ? (
+      {showLoadingState ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <p className="text-muted-foreground">구매내역을 불러오는 중입니다...</p>
+          </CardContent>
+        </Card>
+      ) : isError ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <p className="text-muted-foreground mb-4">구매내역을 불러오지 못했습니다</p>
+            <Button variant="outline" onClick={() => refetch()}>
+              다시 시도하기
+            </Button>
+          </CardContent>
+        </Card>
+      ) : purchases.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <p className="text-muted-foreground mb-4">아직 구매한 강의가 없습니다</p>
@@ -44,28 +175,56 @@ export default function LearnerPurchasesPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {mockPurchases.map((purchase) => (
+          {purchases.map((purchase) => (
             <Card key={purchase.id}>
-              <CardContent className="p-6">
-                <div className="flex gap-4">
-                  <div className="bg-muted h-20 w-32 flex-shrink-0 rounded-lg" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="mb-1 text-lg font-semibold">{purchase.courseName}</h3>
-                        <p className="text-muted-foreground mb-2 text-sm">{purchase.instructor}</p>
-                        <p className="text-muted-foreground text-sm">구매일: {purchase.purchaseDate}</p>
+              <CardContent>
+                <div className="flex gap-8">
+                  <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-36 sm:w-48">
+                    {purchase.thumbnail ? (
+                      <Image
+                        src={purchase.thumbnail}
+                        alt={purchase.courseName}
+                        fill
+                        className="object-contain transition-transform duration-200"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <Play className="text-muted-foreground h-8 w-8" />
                       </div>
-                      <div className="flex-shrink-0 text-right">
-                        <p className="mb-2 text-lg font-bold">{purchase.price.toLocaleString()}원</p>
-                        <Badge variant="secondary">결제완료</Badge>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          {/* 제목 */}
+                          <h3 className="mb-2 line-clamp-2 text-lg font-semibold transition-colors">
+                            {purchase.courseName}
+                          </h3>
+
+                          {/* 통계 정보 */}
+                          <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
+                            <span className="flex items-center gap-1">
+                              <Eye className="h-4 w-4" />
+                              {formatViewCount(0)}회
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              {dayjs(purchase.purchaseDate).format('YYYY.MM.DD')}
+                            </span>
+                          </div>
+
+                          {/* 가격 */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-sm">판매가:</span>
+                            <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(0)}원</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <Separator className="my-4" />
-                    <div className="flex gap-2">
-                      <Button size="sm">강의 보기</Button>
-                      <Button size="sm" variant="outline">
-                        영수증 보기
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" onClick={() => router.push(`/course/${purchase.id}`)}>
+                        강의 보기
                       </Button>
                     </div>
                   </div>
@@ -75,6 +234,7 @@ export default function LearnerPurchasesPage() {
           ))}
         </div>
       )}
+      {totalPages > 1 && <TanstackTablePagination table={table} />}
     </div>
   );
 }

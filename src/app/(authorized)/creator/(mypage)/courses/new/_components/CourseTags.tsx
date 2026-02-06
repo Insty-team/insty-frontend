@@ -15,9 +15,16 @@ interface CourseTagsProps {
 
 export function CourseTags({ tags, onTagsChange }: CourseTagsProps) {
   const [inputValue, setInputValue] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleAddTag = () => {
-    if (!inputValue.trim() || tags.includes(inputValue.trim())) return;
+    if (!inputValue.trim()) {
+      setErrorMessage('태그를 입력해주세요.');
+      return;
+    }
+    if (tags.includes(inputValue.trim())) {
+      return;
+    }
     if (tags.length >= 12) {
       alert('You can add up to 12 tags.');
       return;
@@ -29,6 +36,7 @@ export function CourseTags({ tags, onTagsChange }: CourseTagsProps) {
 
     onTagsChange([...tags, inputValue.trim()]);
     setInputValue('');
+    setErrorMessage(null);
   };
 
   const handleRemoveTag = (index: number) => {
@@ -51,20 +59,19 @@ export function CourseTags({ tags, onTagsChange }: CourseTagsProps) {
           <Hash className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              if (e.target.value.trim() && errorMessage) {
+                setErrorMessage(null);
+              }
+            }}
             onKeyDown={handleKeyPress}
             placeholder="e.g., React, JavaScript, frontend, web development, beginner"
             maxLength={15}
             className="pl-10"
           />
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-lg"
-          onClick={handleAddTag}
-          disabled={!inputValue.trim() || tags.includes(inputValue.trim())}
-        >
+        <Button type="button" variant="outline" size="icon-lg" onClick={handleAddTag}>
           <Plus className="h-4 w-4" />
         </Button>
       </div>
