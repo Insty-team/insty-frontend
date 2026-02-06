@@ -37,9 +37,9 @@ export function CourseFilters({
   ];
 
   const statusOptions = [
-    { value: 'all', label: '전체' },
-    { value: 'published', label: '공개' },
-    { value: 'draft', label: '비공개' },
+    { value: 'all', label: 'All' },
+    { value: 'public', label: 'Public' },
+    { value: 'private', label: 'Private' },
   ];
 
   return (
