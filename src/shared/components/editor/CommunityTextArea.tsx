@@ -55,6 +55,7 @@ export type CommunityTextAreaRef = {
   addFiles: (files: File[]) => void;
 };
 
+// 커뮤니티 글/댓글 입력용 텍스트 영역 컴포넌트(이미지/비디오 첨부, AI 초안 작성 기능 포함)
 const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
   value,
   onChange,
@@ -91,13 +92,22 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
   
   const { mutate: generateThoughtDraft, isPending: isGeneratingDraft } = usePostCommunityThoughtDraft();
 
+  const remainingImageSlots = Math.max(0, maxImages - existingAttachments.length);
+
+  // 부모 컴포넌트에서 ref로 파일을 주입(addFiles)할 수 있도록 imperative API를 제공
   useImperativeHandle(ref, () => ({
+    // 외부에서 전달된 파일들을 현재 업로드 목록에 병합(이미지/비디오 분리 및 제한 적용)
     addFiles: (newFiles: File[]) => {
       const imageFiles = newFiles.filter(f => f.type.startsWith('image/'));
       const videoFiles = newFiles.filter(f => f.type.startsWith('video/'));
       
       if (imageFiles.length > 0) {
-        setUploadedFiles(prev => [...prev, ...imageFiles].slice(0, maxImages));
+        setUploadedFiles((prev) => {
+          const merged = [...prev, ...imageFiles];
+          const limited = merged.slice(0, remainingImageSlots);
+          setUploadErrorMessage(merged.length > remainingImageSlots ? `You can attach up to ${maxImages} images.` : '');
+          return limited;
+        });
       }
       if (videoFiles.length > 0 && !uploadedVideoFile) {
         setUploadedVideoFile(videoFiles[0]);
@@ -105,12 +115,14 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
     },
   }));
 
+  // 업로드된 이미지 파일에 대한 미리보기 URL을 생성/정리
   useEffect(() => {
     const previews = uploadedFiles.map((file) => URL.createObjectURL(file));
     setUploadedFilePreviews(previews);
     return () => previews.forEach(URL.revokeObjectURL);
   }, [uploadedFiles]);
 
+  // 업로드 파일 상태(이미지/비디오)를 합쳐 부모로 전달
   useEffect(() => {
     const allFiles = uploadedFiles.length > 0 || uploadedVideoFile 
       ? [...uploadedFiles, ...(uploadedVideoFile ? [uploadedVideoFile] : [])]
@@ -119,25 +131,28 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadedFiles, uploadedVideoFile]);
 
+  // 이미지 파일 업로드 처리(기존 첨부 포함 최대 개수 제한 적용)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     setUploadedFiles((prev) => {
       const merged = [...prev, ...Array.from(files)];
-      const limited = merged.slice(0, maxImages);
-      setUploadErrorMessage(merged.length > maxImages ? `You can attach up to ${maxImages} images.` : '');
+      const limited = merged.slice(0, remainingImageSlots);
+      setUploadErrorMessage(merged.length > remainingImageSlots ? `You can attach up to ${maxImages} images.` : '');
       return limited;
     });
 
     e.target.value = '';
   };
 
+  // 선택한 이미지 파일을 업로드 목록에서 제거
   const handleRemoveFile = (index: number) => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
     setUploadErrorMessage('');
   };
 
+  // 비디오 파일 업로드 처리(1개만 허용)
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -145,10 +160,12 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
     e.target.value = '';
   };
 
+  // 업로드된 비디오 파일 제거
   const handleRemoveVideo = () => {
     setUploadedVideoFile(null);
   };
 
+  // AI 초안 작성 패널 열기/닫기 및 관련 입력/결과 상태 초기화
   const handleToggleAiPanel = () => {
     setIsAiPanelExpanded(!isAiPanelExpanded);
     if (!isAiPanelExpanded) {
@@ -159,6 +176,7 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
     }
   };
 
+  // AI 초안 생성 요청(텍스트 + 첨부 파일 전달)
   const handleGenerateAiContent = () => {
     if (!aiInput.trim() || !aiCourseId) return;
     
@@ -184,12 +202,19 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
     );
   };
 
+  // AI 생성 결과를 에디터에 적용(가능하면 첨부 이미지도 병합)
   const handleApplyAiResult = () => {
     if (!aiResult) return;
     
     onChange(aiResult);
     if (aiFiles.length > 0) {
-      setUploadedFiles(prev => [...prev, ...aiFiles].slice(0, maxImages));
+      setUploadedFiles((prev) => {
+        const imageFiles = aiFiles.filter((f) => f.type.startsWith('image/'));
+        const merged = [...prev, ...imageFiles];
+        const limited = merged.slice(0, remainingImageSlots);
+        setUploadErrorMessage(merged.length > remainingImageSlots ? `You can attach up to ${maxImages} images.` : '');
+        return limited;
+      });
     }
     setIsAiPanelExpanded(false);
     setAiInput('');
@@ -199,6 +224,7 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
 
   const isEmpty = !value.trim();
 
+  // Ctrl/Cmd + Enter로 전송(onSend) 처리
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (!onSend) return;
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -335,7 +361,7 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
                 <DropdownMenuContent align="start" side="top">
                   <DropdownMenuItem
                     onClick={() => imageInputRef.current?.click()}
-                    disabled={uploadedFiles.length >= maxImages}
+                    disabled={existingAttachments.length + uploadedFiles.length >= maxImages}
                     className="gap-2 text-xs"
                   >
                     <ImagePlus className="size-3" />

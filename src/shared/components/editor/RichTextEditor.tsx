@@ -35,6 +35,12 @@ import {
   X,
 } from 'lucide-react';
 
+type ExistingAttachment = {
+  id: number;
+  url: string;
+  name?: string;
+};
+
 type Props = {
   readonly value: string;
   readonly onChange: (nextValue: string) => void;
@@ -51,9 +57,13 @@ type Props = {
   readonly showAttachButton?: boolean;
   readonly maxImages?: number;
   readonly maxVideos?: number;
+  readonly initialFiles?: File[];
   readonly onFilesChange?: (files: File[]) => void;
+  readonly existingAttachments?: ExistingAttachment[];
+  readonly onRemoveExistingAttachment?: (id: number) => void;
 };
 
+// plain text를 안전한 HTML로 정규화(줄바꿈/특수문자 escape 포함)
 function normalizeToHtml(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return '';
@@ -69,6 +79,7 @@ function normalizeToHtml(value: string) {
   return `<p>${escaped.replaceAll('\n', '<br />')}</p>`;
 }
 
+// valueFormat=json 일 때 editor content로 사용할 수 있는 JSON을 안전하게 파싱
 function tryParseJson(value: string): unknown | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -96,21 +107,33 @@ export default function RichTextEditor({
   showAttachButton = false,
   maxImages = 2,
   maxVideos = 1,
+  initialFiles = [],
   onFilesChange,
+  existingAttachments = [],
+  onRemoveExistingAttachment,
 }: Props) {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>(() =>
+    initialFiles.filter((f) => f.type.startsWith('image/')).slice(0, maxImages),
+  );
   const [uploadedFilePreviews, setUploadedFilePreviews] = useState<string[]>([]);
   const [uploadErrorMessage, setUploadErrorMessage] = useState('');
-  const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
+  const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(() => {
+    if (maxVideos <= 0) return null;
+    return initialFiles.find((f) => f.type.startsWith('video/')) ?? null;
+  });
 
+  const remainingImageSlots = Math.max(0, maxImages - existingAttachments.length);
+
+  // 업로드된 이미지 파일에 대한 미리보기 URL을 생성/정리
   useEffect(() => {
     const previews = uploadedFiles.map((file) => URL.createObjectURL(file));
     setUploadedFilePreviews(previews);
     return () => previews.forEach(URL.revokeObjectURL);
   }, [uploadedFiles]);
 
+  // 업로드 파일 상태(이미지/비디오)를 합쳐 부모로 전달
   useEffect(() => {
     const allFiles = uploadedFiles.length > 0 || uploadedVideoFile 
       ? [...uploadedFiles, ...(uploadedVideoFile ? [uploadedVideoFile] : [])]
@@ -118,25 +141,28 @@ export default function RichTextEditor({
     onFilesChange?.(allFiles);
   }, [uploadedFiles, uploadedVideoFile, onFilesChange]);
 
+  // 이미지 파일 업로드 처리(기존 첨부 포함 최대 개수 제한 적용)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     setUploadedFiles((prev) => {
       const merged = [...prev, ...Array.from(files)];
-      const limited = merged.slice(0, maxImages);
-      setUploadErrorMessage(merged.length > maxImages ? `You can attach up to ${maxImages} images.` : '');
+      const limited = merged.slice(0, remainingImageSlots);
+      setUploadErrorMessage(merged.length > remainingImageSlots ? `You can attach up to ${maxImages} images.` : '');
       return limited;
     });
 
     e.target.value = '';
   };
 
+  // 선택한 이미지 파일을 업로드 목록에서 제거
   const handleRemoveFile = (index: number) => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
     setUploadErrorMessage('');
   };
 
+  // 비디오 파일 업로드 처리(1개만 허용)
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -144,6 +170,7 @@ export default function RichTextEditor({
     e.target.value = '';
   };
 
+  // 업로드된 비디오 파일 제거
   const handleRemoveVideo = () => {
     setUploadedVideoFile(null);
   };
@@ -152,12 +179,15 @@ export default function RichTextEditor({
   const normalizedHtml = useMemo(() => (valueFormat === 'html' ? normalizeToHtml(value) : ''), [value, valueFormat]);
   const [isEmpty, setIsEmpty] = useState(true);
 
+  // Tiptap 에디터 인스턴스 생성 및 업데이트 핸들링(onChange/onTextLengthChange)
   const editor = useEditor({
     immediatelyRender: false,
     editable: !isDisabled,
     extensions: [
       StarterKit.configure({
         heading: { levels: [2] },
+        link: false,
+        underline: false,
       }),
       Underline,
       Link.configure({
@@ -178,6 +208,7 @@ export default function RichTextEditor({
     },
   });
 
+  // 외부 value 변경을 에디터에 반영(valueFormat에 따라 HTML/JSON 처리)
   useEffect(() => {
     if (!editor) return;
     setIsEmpty(editor.getText().trim().length === 0);
@@ -192,11 +223,13 @@ export default function RichTextEditor({
     if (editor.getHTML() !== next) editor.commands.setContent(next);
   }, [editor, normalizedHtml, value, valueFormat, jsonContent]);
 
+  // disabled 변경 시 에디터 편집 가능 여부 동기화
   useEffect(() => {
     if (!editor) return;
     editor.setEditable(!isDisabled);
   }, [editor, isDisabled]);
 
+  // 링크 삽입/수정 UI 처리(prompt로 URL 입력 후 link mark 적용)
   const setLink = () => {
     if (!editor) return;
     const previousUrl = editor.getAttributes('link').href as string | undefined;
@@ -319,28 +352,55 @@ export default function RichTextEditor({
         </ScrollArea>
 
         {/* 첨부 파일 미리보기*/}
-        {(uploadedFilePreviews.length > 0 || uploadedVideoFile) && (
+        {(uploadedFilePreviews.length > 0 || uploadedVideoFile || existingAttachments.length > 0) && (
           <div className="mb-8 space-y-2">
-            {uploadedFilePreviews.length > 0 && (
-              <div className="flex gap-2 flex-wrap">
-                {uploadedFilePreviews.map((preview, index) => (
-                  <div key={index} className="relative h-16 w-16 overflow-hidden rounded border">
+            {(existingAttachments.length > 0 || uploadedFiles.length > 0) && (
+              <div className="flex flex-wrap gap-1">
+                {existingAttachments.map((attachment) => (
+                  <div key={`existing-${attachment.id}`} className="relative inline-block">
                     <Image
-                      src={preview}
-                      alt={`Upload ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="64px"
+                      src={attachment.url}
+                      alt={attachment.name ?? 'Attachment'}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      className="h-20 w-auto rounded border object-contain"
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile(index)}
-                      className="absolute right-1 top-1 rounded-full bg-background/80 p-0.5 hover:bg-background"
-                    >
-                      <X className="h-2 w-2" />
-                    </button>
+                    {onRemoveExistingAttachment && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveExistingAttachment(attachment.id)}
+                        className="absolute right-1 top-1 rounded-full bg-white/90 p-1 hover:bg-white shadow-sm transition-colors"
+                      >
+                        <X className="h-3 w-3 text-gray-700" />
+                      </button>
+                    )}
                   </div>
                 ))}
+                {uploadedFiles.map((file, index) => {
+                  const previewUrl = uploadedFilePreviews[index];
+                  if (!previewUrl) return null;
+                  
+                  return (
+                    <div key={`new-${index}`} className="relative inline-block">
+                      <Image
+                        src={previewUrl}
+                        alt={`Uploaded ${index + 1}`}
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        className="h-20 w-auto rounded border object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(index)}
+                        className="absolute right-1 top-1 rounded-full bg-white/90 p-1 hover:bg-white shadow-sm transition-colors"
+                      >
+                        <X className="h-3 w-3 text-gray-700" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
             
@@ -403,7 +463,7 @@ export default function RichTextEditor({
                 <DropdownMenuContent align="start" side="top">
                   <DropdownMenuItem
                     onClick={() => imageInputRef.current?.click()}
-                    disabled={uploadedFiles.length >= maxImages}
+                    disabled={existingAttachments.length + uploadedFiles.length >= maxImages}
                     className="gap-2 text-xs"
                   >
                     <ImagePlus className="size-3" />
