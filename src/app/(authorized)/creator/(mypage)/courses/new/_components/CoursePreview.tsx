@@ -21,7 +21,7 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
       {/* Thumbnail Preview */}
       <Card>
         <CardHeader>
-          <CardTitle>Lecture Thumbnail</CardTitle>
+          <CardTitle>Contents Thumbnail</CardTitle>
         </CardHeader>
         <CardContent>
           {thumbnailUrl ? (
@@ -29,7 +29,7 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
               className="relative w-full overflow-hidden rounded-lg border-2 border-dashed"
               style={{ aspectRatio: '16/9', maxHeight: '400px' }}
             >
-              <Image src={thumbnailUrl} alt="Lecture thumbnail" fill className="object-cover" sizes="100vw" />
+              <Image src={thumbnailUrl} alt="Contents thumbnail" fill className="object-cover" sizes="100vw" />
             </div>
           ) : (
             <div className="flex h-48 items-center justify-center rounded-lg border-2 border-dashed">
@@ -46,7 +46,7 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-muted-foreground text-sm font-medium">Lecture Title</p>
+            <p className="text-muted-foreground text-sm font-medium">Contents Title</p>
             <p className="text-lg font-semibold">{formData.title || 'Untitled'}</p>
           </div>
           <div>
@@ -56,7 +56,7 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
             </Badge>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm font-medium">Lecture Description</p>
+            <p className="text-muted-foreground text-sm font-medium">Contents Description</p>
             <p className="mt-1 whitespace-pre-wrap">{formData.description || 'No description'}</p>
           </div>
         </CardContent>
@@ -133,8 +133,8 @@ export function CoursePreview({ formData, thumbnailUrl, videoUrl }: CoursePrevie
       {videoUrl && (
         <Card>
           <CardHeader>
-            <CardTitle>Lecture Video</CardTitle>
-            <CardDescription>This is the uploaded lecture video.</CardDescription>
+            <CardTitle>Contents Video</CardTitle>
+            <CardDescription>This is the uploaded contents video.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="relative w-full overflow-hidden rounded-lg border-2 border-dashed">

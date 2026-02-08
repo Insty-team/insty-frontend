@@ -32,8 +32,8 @@ export function CourseFilters({
   onStatusFilterChange,
 }: CourseFiltersProps) {
   const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'LATEST', label: '최신순' },
-    { value: 'VIEW_COUNT', label: '조회수순' },
+    { value: 'LATEST', label: 'Latest' },
+    { value: 'VIEW_COUNT', label: 'Most Viewed' },
   ];
 
   const statusOptions = [
@@ -45,10 +45,10 @@ export function CourseFilters({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-lg font-semibold">강의 목록</h3>
+        <h3 className="text-lg font-semibold">Contents List</h3>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {/* 정렬 옵션 */}
+          {/* Sort Options */}
           <Select value={sortBy} onValueChange={onSortChange}>
             <SelectTrigger>
               <SelectValue />
@@ -62,7 +62,7 @@ export function CourseFilters({
             </SelectContent>
           </Select>
 
-          {/* 상태 필터 */}
+          {/* Status Filter */}
           <Select value={statusFilter} onValueChange={onStatusFilterChange}>
             <SelectTrigger>
               <SelectValue />
@@ -78,11 +78,11 @@ export function CourseFilters({
         </div>
       </div>
 
-      {/* 검색바 */}
+      {/* Search Bar */}
       <div className="relative">
         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
-          placeholder="강의 제목으로 검색..."
+          placeholder="Search by contents title..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10"

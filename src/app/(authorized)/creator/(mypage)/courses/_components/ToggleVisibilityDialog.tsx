@@ -55,8 +55,8 @@ export function ToggleVisibilityDialog({
   const newVisibility = !currentVisibility;
   const actionText = newVisibility ? 'Public' : 'Private';
   const actionDescription = newVisibility
-    ? 'The lecture will be visible to all users.'
-    : 'The lecture will be hidden from users.';
+    ? 'The contents will be visible to all users.'
+    : 'The contents will be hidden from users.';
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -68,7 +68,7 @@ export function ToggleVisibilityDialog({
             ) : (
               <EyeOff className="h-5 w-5 text-orange-600" />
             )}
-            Change Lecture Visibility to {actionText}
+            Change Contents Visibility to {actionText}
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             <p>

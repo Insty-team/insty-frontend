@@ -4,7 +4,7 @@ import { POST_logout, POST_reissue } from './auth/auth.service';
 import axios, { InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_BACK_BASE_URL || '',
+  baseURL: process.env.NEXT_PUBLIC_BACK_BASE_URL || '',
   withCredentials: true,
   timeout: 10000, // 10초 타임아웃 설정
 });

@@ -100,7 +100,7 @@ export function CourseUploadForm() {
   // Step 1: 영상 업로드 후 AI 생성으로 이동
   const handleVideoUploadComplete = async () => {
     if (!videoFile) {
-      alert('Please upload the lecture video first.');
+      alert('Please upload the contents video first.');
       return;
     }
     if (!isVideoReadyToProceed) {
@@ -249,8 +249,8 @@ export function CourseUploadForm() {
       {/* 헤더 섹션 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">New Lecture Upload</h2>
-          <p className="text-muted-foreground mt-1">Create your lecture step by step</p>
+          <h2 className="text-2xl font-bold">New Contents Upload</h2>
+          <p className="text-muted-foreground mt-1">Create your contents step by step</p>
         </div>
       </div>
 
@@ -324,8 +324,8 @@ export function CourseUploadForm() {
       {currentStep === 'UPLOAD' && (
         <Card>
           <CardHeader>
-            <CardTitle>1️⃣ Upload Lecture Video</CardTitle>
-            <CardDescription>Please upload your lecture video first (required).</CardDescription>
+            <CardTitle>1️⃣ Upload Contents Video</CardTitle>
+            <CardDescription>Please upload your contents video first (required).</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <FileUpload
@@ -397,7 +397,7 @@ export function CourseUploadForm() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Lecture Title *</Label>
+                <Label htmlFor="title">Contents Title *</Label>
                 <Input
                   id="title"
                   {...register('title', {
@@ -425,7 +425,7 @@ export function CourseUploadForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Lecture Description *</Label>
+                <Label htmlFor="description">Contents Description *</Label>
                 <Textarea
                   id="description"
                   {...register('description', {
@@ -526,7 +526,7 @@ export function CourseUploadForm() {
                   Uploading...
                 </>
               ) : (
-                'Publish Lecture'
+                'Publish Contents'
               )}
             </Button>
           </div>

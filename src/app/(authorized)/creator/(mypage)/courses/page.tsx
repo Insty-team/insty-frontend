@@ -209,12 +209,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">My Lectures</h2>
-            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
+            <h2 className="text-2xl font-bold">My Contents</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your contents</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-muted-foreground">Loading lectures...</div>
+          <div className="text-muted-foreground">Loading contents...</div>
         </div>
       </div>
     );
@@ -225,12 +225,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">My Lectures</h2>
-            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
+            <h2 className="text-2xl font-bold">My Contents</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your contents</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-destructive">Failed to load lectures.</div>
+          <div className="text-destructive">Failed to load contents.</div>
         </div>
       </div>
     );
@@ -241,12 +241,12 @@ export default function CreatorCoursesPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">My Lectures</h2>
-          <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
+          <h2 className="text-2xl font-bold">My Contents</h2>
+          <p className="text-muted-foreground mt-1">Create and manage your contents</p>
         </div>
         <Button asChild>
           <Link href="/creator/courses/new">
-            New Lecture <Plus className="h-4 w-4" />
+            New Contents <Plus className="h-4 w-4" />
           </Link>
         </Button>
       </div>

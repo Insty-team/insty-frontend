@@ -284,7 +284,7 @@ export function FileUpload({
 
   return (
     <div className="space-y-2">
-      <Label>{isThumbnail ? 'Thumbnail' : 'Lecture Video'}</Label>
+      <Label>{isThumbnail ? 'Thumbnail' : 'Contents Video'}</Label>
 
       <Card
         className={`cursor-pointer rounded-md border-2 py-6 shadow-none transition-colors ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-dashed'}`}

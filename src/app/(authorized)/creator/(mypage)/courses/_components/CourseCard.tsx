@@ -30,7 +30,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
     <Card className="transition-shadow duration-200 hover:shadow-lg">
       <CardContent>
         <div className="flex flex-col gap-8 sm:flex-row">
-          {/* 썸네일 */}
+          {/* Thumbnail */}
           <div className="bg-muted relative h-48 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-36 sm:w-48">
             {course.thumbnailUrl ? (
               <Image
@@ -57,14 +57,14 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
             </div>
           </div>
 
-          {/* 강의 정보 */}
+          {/* Course Information */}
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                {/* 제목 */}
+                {/* Title */}
                 <h3 className="mb-2 line-clamp-2 text-lg font-semibold transition-colors">{course.title}</h3>
 
-                {/* 태그 */}
+                {/* Tags */}
                 {course.tags && course.tags.length > 0 && (
                   <div className="mb-3 flex flex-wrap gap-1.5">
                     {course.tags.map((tag, index) => (
@@ -79,15 +79,15 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                   </div>
                 )}
 
-                {/* 통계 정보 */}
+                {/* Statistics */}
                 <div className="text-muted-foreground mb-3 flex items-center gap-4 text-sm">
                   <span className="flex items-center gap-1">
                     <Eye className="h-4 w-4" />
-                    {formatViewCount(course.viewCount)}회
+                    {formatViewCount(course.viewCount)} views
                   </span>
                   <span className="flex items-center gap-1">
                     <MessageCircle className="h-4 w-4" />
-                    {course.commentCount}개
+                    {course.commentCount} comments
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
@@ -95,14 +95,14 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                   </span>
                 </div>
 
-                {/* 가격 */}
+                {/* Price */}
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">판매가:</span>
-                  <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(course.price)}원</span>
+                  <span className="text-muted-foreground text-sm">Price:</span>
+                  <span className="text-lg font-semibold">₩{Intl.NumberFormat('ko-KR').format(course.price)}</span>
                 </div>
               </div>
 
-              {/* 액션 메뉴 */}
+              {/* Action Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
@@ -112,15 +112,15 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onEdit?.(course.courseId)}>
                     <Edit className="mr-2 h-4 w-4" />
-                    수정하기
+                    Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onViewStats?.(course.courseId)}>
                     <BarChart3 className="mr-2 h-4 w-4" />
-                    통계 보기
+                    View Stats
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onViewStats?.(course.courseId)}>
                     <Play className="mr-2 h-4 w-4" />
-                    미리보기
+                    Preview
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onToggleVisibility?.(course.courseId)}>
                     {course.isShow ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
@@ -132,7 +132,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                     className="text-destructive focus:text-destructive"
                   >
                     <Trash2 className="text-destructive mr-2 h-4 w-4" />
-                    삭제
+                    Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
