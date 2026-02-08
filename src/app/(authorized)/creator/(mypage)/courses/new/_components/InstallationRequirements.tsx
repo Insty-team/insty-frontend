@@ -1,0 +1,155 @@
+'use client';
+
+import { InstallationRequirement } from '../types';
+
+import { useState } from 'react';
+
+import { Badge } from '@/shared/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Checkbox } from '@/shared/components/ui/checkbox';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Check, Plus, X, XCircle } from 'lucide-react';
+
+interface InstallationRequirementsProps {
+  requirements: InstallationRequirement[];
+  onRequirementsChange: (requirements: InstallationRequirement[]) => void;
+}
+
+export function InstallationRequirements({ requirements, onRequirementsChange }: InstallationRequirementsProps) {
+  const [inputValue, setInputValue] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleAddRequirement = () => {
+    if (!inputValue.trim()) {
+      setErrorMessage('설치 환경을 입력해주세요.');
+      return;
+    }
+    setErrorMessage(null);
+    if (requirements.some((req) => req.name === inputValue.trim())) {
+      alert('This prerequisite has already been added.');
+      return;
+    }
+    if (requirements.length >= 10) {
+      alert('You can add up to 10 prerequisites.');
+      return;
+    }
+
+    const newRequirement: InstallationRequirement = {
+      id: Date.now().toString(),
+      name: inputValue.trim(),
+      isSupported: true,
+    };
+
+    onRequirementsChange([...requirements, newRequirement]);
+    setInputValue('');
+    setErrorMessage(null);
+  };
+
+  const handleRemoveRequirement = (id: string) => {
+    onRequirementsChange(requirements.filter((req) => req.id !== id));
+  };
+
+  const handleToggleSupport = (id: string) => {
+    onRequirementsChange(requirements.map((req) => (req.id === id ? { ...req, isSupported: !req.isSupported } : req)));
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddRequirement();
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <Label>Prerequisites</Label>
+
+      <div className="flex gap-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            if (e.target.value.trim() && errorMessage) {
+              setErrorMessage(null);
+            }
+          }}
+          onKeyPress={handleKeyPress}
+          placeholder="e.g., Node.js, Python, Docker"
+          maxLength={50}
+          className="flex-1"
+        />
+        <Button type="button" variant="outline" size="icon-lg" onClick={handleAddRequirement}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {requirements.length > 0 && (
+        <div className="space-y-2">
+          {requirements.map((requirement) => (
+            <Card key={requirement.id} className="py-3 pr-3 pl-4">
+              <CardContent className="p-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{requirement.name}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* 체크박스 없이, 배지 클릭(또는 Enter/Space)로 지원/미지원 토글 */}
+                    <div className="flex items-center">
+                      <Checkbox
+                        className="sr-only"
+                        checked={requirement.isSupported}
+                        onCheckedChange={() => handleToggleSupport(requirement.id)}
+                        aria-label={`${requirement.name} support status`}
+                      />
+                      <Badge
+                        variant={requirement.isSupported ? 'default' : 'secondary'}
+                        className="flex cursor-pointer items-center gap-1 select-none"
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={requirement.isSupported}
+                        onClick={() => handleToggleSupport(requirement.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleToggleSupport(requirement.id);
+                          }
+                        }}
+                      >
+                        {requirement.isSupported ? (
+                          <>
+                            <Check className="h-3 w-3" />
+                            Supported
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-3 w-3" />
+                            Not supported
+                          </>
+                        )}
+                      </Badge>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-lg"
+                      onClick={() => handleRemoveRequirement(requirement.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <p className="text-muted-foreground text-xs">
+        {requirements.length} added • Click the badge to toggle support status
+      </p>
+    </div>
+  );
+}

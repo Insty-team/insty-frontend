@@ -2,8 +2,6 @@
 
 # dependencies
 /node_modules
-.github/actions/assignReviewer/node_modules/
-
 /.pnp
 .pnp.*
 .yarn/*
@@ -41,8 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.idea/**
-.secrets
-docker-compose.yml
-
