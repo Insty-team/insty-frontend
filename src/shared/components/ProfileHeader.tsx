@@ -76,12 +76,7 @@ export default function ProfileHeader({ navigation }: ProfileHeaderProps) {
               <p className="text-muted-foreground text-xs sm:text-sm">{profile?.email}</p>
             </div>
 
-            <Link href="/mypage/profile/edit" className="hidden sm:block">
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <Pencil className="h-3.5 w-3.5" />
-                프로필 수정
-              </Button>
-            </Link>
+
           </div>
         </div>
 
