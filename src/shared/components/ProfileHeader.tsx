@@ -85,30 +85,31 @@ export default function ProfileHeader({ navigation }: ProfileHeaderProps) {
           </div>
         </div>
 
-        {/* 탭 네비게이션 */}
-        <nav className="scrollbar-hide -mx-4 mt-5 flex gap-1 overflow-x-auto px-4 sm:-mx-6 sm:mt-6 sm:gap-2 sm:px-6">
-          {navigation.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  'flex shrink-0 items-center gap-1.5 rounded-sm px-3 py-2 text-xs font-medium transition-colors sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm',
-                  isActive
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900',
-                )}
-              >
-                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="whitespace-nowrap">{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
       </div>
+      {/* 탭 네비게이션 (마이페이지 상단 탭 패턴) */}
+      <nav className="scrollbar-hide -mx-4 mt-5 flex overflow-x-auto border-b border-slate-200 px-4 sm:-mx-6 sm:mt-6 sm:px-6 lg:flex md:grid md:grid-cols-5">
+        {navigation.map((item) => {
+          const isActive = pathname.startsWith(item.href);
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                'relative shrink-0 items-center hidden md:flex gap-1.5 border-b-2 border-transparent px-4 pb-3 pt-2 text-xs font-medium text-slate-500 transition-all sm:gap-2 sm:px-5 sm:text-sm md:justify-center',
+                isActive
+                  ? 'border-slate-900 text-slate-900'
+                  : 'hover:border-slate-300 hover:text-slate-900',
+              )}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 hidden sm:block" />
+              <span className="whitespace-nowrap">{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
