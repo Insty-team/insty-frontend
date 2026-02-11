@@ -154,6 +154,10 @@ export default function CoursePage() {
 
   const getVideoPlaylistUrl = useCallback(async () => {
     if (!videoPlaylistResponse?.data?.signedUrl) return;
+    // 개발 환경에서는 비디오 플레이리스트 요청 안함 -> 비용 문제로 로컬에서는 재생 안되도록 조치
+    if (process.env.NODE_ENV === 'development') {
+      return;
+    }
     try {
       setIsFetchingVideoUrl(true);
       const signedUrl = videoPlaylistResponse.data.signedUrl;
