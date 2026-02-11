@@ -5,7 +5,7 @@ import { ApiResponse } from '@/shared/types/api.type';
 
 /** 내 사용자 정보 수정 */
 export const PUT_profile = async (formData: UserRequest) => {
-  const response = await api.put('/api/v1/users/profile', formData, {
+  const response = await api.put('/api/v1/users/profile/me', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
