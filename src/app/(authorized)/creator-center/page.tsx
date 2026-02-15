@@ -40,13 +40,13 @@ const QUICK_ACTIONS = [
     icon: Video,
     accent: 'default',
   },
-  {
-    title: '판매 대시보드',
-    description: '수익과 판매 현황을 확인하세요',
-    href: '/creator/dashboard',
-    icon: BarChart3,
-    accent: 'default',
-  },
+  // {
+  //   title: '판매 대시보드',
+  //   description: '수익과 판매 현황을 확인하세요',
+  //   href: '/creator/dashboard',
+  //   icon: BarChart3,
+  //   accent: 'default',
+  // },
   {
     title: 'Q&A · 답변하기',
     description: '수강생 질문에 답변하세요',
@@ -61,20 +61,13 @@ const QUICK_ACTIONS = [
     icon: MessageSquare,
     accent: 'default',
   },
-  {
-    title: '프로필 관리',
-    description: '프로필 정보를 수정하세요',
-    href: '/creator/profile',
-    icon: User,
-    accent: 'default',
-  },
-  {
-    title: '계좌 정보',
-    description: '정산 계좌를 설정하세요',
-    href: '/creator/account',
-    icon: CreditCard,
-    accent: 'default',
-  },
+  // {
+  //   title: '계좌 정보',
+  //   description: '정산 계좌를 설정하세요',
+  //   href: '/creator/account',
+  //   icon: CreditCard,
+  //   accent: 'default',
+  // },
   {
     title: '알림 설정',
     description: '알림 수신 설정을 관리하세요',

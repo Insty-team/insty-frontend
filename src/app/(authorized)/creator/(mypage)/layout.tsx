@@ -14,7 +14,7 @@ export default function CreatorMyPageLayout({ children }: { children: React.Reac
 
       <div className="flex flex-col lg:flex-row">
         <ProfileSidebar navigation={CREATOR_CENTER_NAVIGATION} />
-        <main className="min-w-0 flex-1 rounded-lg bg-gray-400/10 px-6 py-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="min-w-0 flex-1 rounded-lg bg-gray-50 px-6 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>
     </div>
   );

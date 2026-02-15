@@ -453,7 +453,7 @@ export default function LearnerCourseRequestNewPage() {
               {/* 동적으로 생성되는 폼 필드들 */}
               {sortedFields.map((field) => renderField(field))}
 
-              <div className="flex gap-2">
+              <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
                   취소
                 </Button>

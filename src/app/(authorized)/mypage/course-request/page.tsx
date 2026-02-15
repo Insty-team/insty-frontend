@@ -164,7 +164,7 @@ export default function LearnerCourseRequestPage() {
           <p className="text-muted-foreground mt-1">제출한 강의 요청 목록을 확인하세요</p>
         </div>
         <Button asChild>
-          <Link href="/learner/course-request/new">
+          <Link href="/mypage/course-request/new">
             <Plus className="mr-2 h-4 w-4" />
             강의 요청하기
           </Link>
@@ -180,7 +180,7 @@ export default function LearnerCourseRequestPage() {
           <FileText className="text-muted-foreground mb-4 h-12 w-12" />
           <p className="text-muted-foreground mb-4">아직 요청한 강의가 없습니다</p>
           <Button asChild>
-            <Link href="/learner/course-request/new">
+            <Link href="/mypage/course-request/new">
               <Plus className="mr-2 h-4 w-4" />
               강의 요청하기
             </Link>
@@ -219,7 +219,7 @@ export default function LearnerCourseRequestPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/learner/course-request/${courseRequest.request_id}`)}
+                          onClick={() => router.push(`/mypage/course-request/${courseRequest.request_id}`)}
                         >
                           상세히 보기
                         </Button>
