@@ -98,7 +98,8 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                 {/* 가격 */}
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">판매가:</span>
-                  <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(course.price)}원</span>
+                  {/* <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(course.price)}원</span> */}
+                  <span className="text-lg font-semibold">무료</span>
                 </div>
               </div>
 

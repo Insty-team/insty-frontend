@@ -209,7 +209,8 @@ export default function LearnerPurchasesPage() {
                         {/* 가격 */}
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground text-sm">판매가:</span>
-                          <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(0)}원</span>
+                          {/* <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(0)}원</span> */}
+                          <span className="text-lg font-semibold">무료</span>
                         </div>
                       </div>
                     </div>
