@@ -67,7 +67,7 @@ export default function LearnerCourseRequestDetailPage() {
           <FileText className="text-muted-foreground mb-4 h-12 w-12" />
           <p className="mb-2 text-lg font-semibold">강의 요청을 찾을 수 없습니다</p>
           <p className="text-muted-foreground mb-4">요청하신 강의 요청이 존재하지 않거나 삭제되었을 수 있습니다.</p>
-          <Button variant="outline" onClick={() => router.push('/learner/course-request')}>
+          <Button variant="outline" onClick={() => router.push('/mypage/course-request')}>
             목록으로 돌아가기
           </Button>
         </div>
@@ -77,13 +77,6 @@ export default function LearnerCourseRequestDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          뒤로가기
-        </Button>
-      </div>
-
       <div>
         <h2 className="text-2xl font-bold">강의 요청 상세</h2>
         <p className="text-muted-foreground mt-1">요청한 강의의 상세 정보를 확인하세요</p>
@@ -161,14 +154,13 @@ export default function LearnerCourseRequestDetailPage() {
           </div>
 
           <Separator />
-
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => router.push('/learner/course-request')}>
-              목록으로 돌아가기
-            </Button>
-          </div>
         </CardContent>
       </Card>
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={() => router.back()}>
+          뒤로가기
+        </Button>
+      </div>
     </div>
   );
 }

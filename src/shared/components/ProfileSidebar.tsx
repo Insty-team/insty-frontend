@@ -76,7 +76,8 @@ export default function ProfileSidebar({ navigation }: ProfileSidebarProps) {
   const NavigationMenu = ({ onItemClick }: { onItemClick?: () => void }) => (
     <nav className="space-y-1">
       {navigation.map((item) => {
-        const isActive = pathname.startsWith(item.href);
+        console.log(pathname);
+        const isActive = pathname === item.href;
         const Icon = item.icon;
         return (
           <Link

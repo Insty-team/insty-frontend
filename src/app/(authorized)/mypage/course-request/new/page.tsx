@@ -164,7 +164,7 @@ export default function LearnerCourseRequestNewPage() {
     submitCourseRequest(courseRequest, {
       onSuccess: () => {
         toast.success('강의 요청이 제출되었습니다!');
-        router.push('/learner/course-request');
+        router.push('/mypage/course-request');
       },
       onError: (error) => {
         console.error('강의 요청 제출 실패:', error);
@@ -453,7 +453,7 @@ export default function LearnerCourseRequestNewPage() {
               {/* 동적으로 생성되는 폼 필드들 */}
               {sortedFields.map((field) => renderField(field))}
 
-              <div className="flex gap-2">
+              <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
                   취소
                 </Button>
