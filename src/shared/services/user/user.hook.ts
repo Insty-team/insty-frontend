@@ -34,7 +34,7 @@ export const usePostEmailSignup = (
 /** 내 비밀번호 수정 수정 */
 /** 사용자 이메일 수신 동의 상태 값 변경 */
 
-const PROFILE_QUERY_KEY = ['user', 'profile'] as const;
+export const PROFILE_QUERY_KEY = ['user', 'profile'] as const;
 
 /** 내 사용자 정보 조회 */
 export const useGetProfile = () => {

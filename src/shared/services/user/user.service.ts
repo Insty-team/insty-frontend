@@ -30,7 +30,7 @@ export const GET_profile = async (): Promise<ApiResponse<UserResponse>> => {
 };
 
 /** 닉네임 중복 체크 */
-export const GET_nickname_check = async (nickname: string): Promise<ApiResponse<boolean>> => {
+export const GET_nickname_check = async (nickname: string): Promise<ApiResponse<{ available: boolean }>> => {
   const response = await api.get(`/api/v1/users/nickname/check?nickname=${nickname}`);
   return response.data;
 };
