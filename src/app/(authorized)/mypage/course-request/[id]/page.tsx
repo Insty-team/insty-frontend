@@ -67,7 +67,7 @@ export default function LearnerCourseRequestDetailPage() {
           <FileText className="text-muted-foreground mb-4 h-12 w-12" />
           <p className="mb-2 text-lg font-semibold">강의 요청을 찾을 수 없습니다</p>
           <p className="text-muted-foreground mb-4">요청하신 강의 요청이 존재하지 않거나 삭제되었을 수 있습니다.</p>
-          <Button variant="outline" onClick={() => router.push('/learner/course-request')}>
+          <Button variant="outline" onClick={() => router.push('/mypage/course-request')}>
             목록으로 돌아가기
           </Button>
         </div>
