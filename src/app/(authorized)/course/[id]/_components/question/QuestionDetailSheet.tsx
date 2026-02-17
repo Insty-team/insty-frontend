@@ -183,8 +183,12 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
 
     toggleAcceptAnswer(selectedAnswerId, {
       onSuccess: () => {
+        toast.success('Answer accepted successfully.');
         setAcceptConfirmOpen(false);
         setSelectedAnswerId(null);
+      },
+      onError: () => {
+        toast.error('Failed to accept answer.');
       },
     });
   };
@@ -194,8 +198,12 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
 
     toggleAcceptAnswer(selectedAnswerId, {
       onSuccess: () => {
+        toast.success('Answer acceptance canceled.');
         setCancelAcceptConfirmOpen(false);
         setSelectedAnswerId(null);
+      },
+      onError: () => {
+        toast.error('Failed to cancel acceptance.');
       },
     });
   };

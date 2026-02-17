@@ -54,6 +54,10 @@ export default function QuestionDetailDialog({
 
   const [deletingAnswerId, setDeletingAnswerId] = useState<number | null>(null);
   const [alertOpen, setAlertOpen] = useState(false);
+  
+  const [acceptConfirmOpen, setAcceptConfirmOpen] = useState(false);
+  const [cancelAcceptConfirmOpen, setCancelAcceptConfirmOpen] = useState(false);
+  const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
 
   const [isQuestionEditing, setIsQuestionEditing] = useState(false);
   const [isQuestionDeleteOpen, setIsQuestionDeleteOpen] = useState(false);
@@ -123,6 +127,45 @@ export default function QuestionDetailDialog({
   const handleDeleteAnswer = (answerId: number) => {
     setDeletingAnswerId(answerId);
     setAlertOpen(true);
+  };
+
+  const handleAcceptAnswer = (answerId: number) => {
+    setSelectedAnswerId(answerId);
+    if (acceptedAnswerItem) {
+      setCancelAcceptConfirmOpen(true);
+      return;
+    }
+    setAcceptConfirmOpen(true);
+  };
+
+  const handleConfirmAccept = () => {
+    if (!selectedAnswerId) return;
+
+    acceptAnswer(selectedAnswerId, {
+      onSuccess: () => {
+        toast.success('Answer accepted successfully.');
+        setAcceptConfirmOpen(false);
+        setSelectedAnswerId(null);
+      },
+      onError: () => {
+        toast.error('Failed to accept answer.');
+      },
+    });
+  };
+
+  const handleConfirmCancelAccept = () => {
+    if (!selectedAnswerId) return;
+
+    acceptAnswer(selectedAnswerId, {
+      onSuccess: () => {
+        toast.success('Answer acceptance canceled.');
+        setCancelAcceptConfirmOpen(false);
+        setSelectedAnswerId(null);
+      },
+      onError: () => {
+        toast.error('Failed to cancel acceptance.');
+      },
+    });
   };
 
   const confirmDelete = () => {
@@ -373,7 +416,7 @@ export default function QuestionDetailDialog({
               totalCount={firstPagePagination?.totalItems}
               currentUserId={currentUserId}
               questionAuthorId={questionAuthorId}
-              onAccept={acceptAnswer}
+              onAccept={handleAcceptAnswer}
               onUpdate={handleUpdateAnswer}
               onDelete={handleDeleteAnswer}
               isAccepting={isAccepting}
@@ -411,6 +454,30 @@ export default function QuestionDetailDialog({
         destructive
         isConfirming={isDeleting}
         onConfirm={confirmDelete}
+      />
+
+      {/* 답변 채택 확인 모달 */}
+      <ConfirmModal
+        open={acceptConfirmOpen}
+        onOpenChange={setAcceptConfirmOpen}
+        title="Accept Answer"
+        description="Are you sure you want to accept this answer?"
+        confirmText="Confirm"
+        cancelText="Cancel"
+        isConfirming={isAccepting}
+        onConfirm={handleConfirmAccept}
+      />
+
+      {/* 답변 채택 취소 확인 모달 */}
+      <ConfirmModal
+        open={cancelAcceptConfirmOpen}
+        onOpenChange={setCancelAcceptConfirmOpen}
+        title="Cancel Acceptance"
+        description="Are you sure you want to cancel the acceptance?"
+        confirmText="Confirm"
+        cancelText="Cancel"
+        isConfirming={isAccepting}
+        onConfirm={handleConfirmCancelAccept}
       />
 
       {/* 질문 삭제 모달 */}
