@@ -188,10 +188,17 @@ export default function QuestionAnswers({
 
     const run = async () => {
       try {
-        let videoUuid: string | null | undefined = editingVideoUuidOverride;
+        let videoUuid: string | null | undefined;
 
         if (videoFile) {
+          // 새 비디오 업로드
           videoUuid = await uploadVideo({ kind: 'ANSWER', file: videoFile });
+        } else if (editingVideoUuidOverride === null) {
+          // 기존 비디오 삭제
+          videoUuid = null;
+        } else if (editingExistingVideoUuid) {
+          // 기존 비디오 유지
+          videoUuid = editingExistingVideoUuid;
         }
 
         onUpdate?.(editingAnswerId, editingContent, images, editingDeleteAttachmentIds, videoUuid);

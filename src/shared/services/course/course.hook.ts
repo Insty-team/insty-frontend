@@ -356,6 +356,7 @@ export const usePatchCourseQuestionAnswerById = (courseId: number, questionId: n
     }) => PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
     },
   });
