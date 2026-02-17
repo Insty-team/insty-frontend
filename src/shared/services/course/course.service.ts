@@ -284,7 +284,33 @@ export const DELETE_course_question_answer_by_id = async (courseId: number, ques
 
 /** 답변 수정 */
 export const PATCH_course_question_answer_by_id = async (courseId: number, questionId: number, answerId: number, data: CourseQuestionAnswerUpdateRequest): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
-  const response = await api.patch(`/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}`, data);
+  const formData = new FormData();
+
+  const courseAnswerUpdateReq = {
+    content: data.content,
+    videoUuid: data.videoUuid,
+    deleteFileIds: data.deleteFileIds,
+  };
+
+  formData.append(
+    'courseAnswerUpdateReq',
+    new Blob([JSON.stringify(courseAnswerUpdateReq)], { type: 'application/json' }),
+  );
+
+  const attachments = data.attachments ?? [];
+  if (attachments.length > 2) {
+    throw new Error('attachments는 최대 2개까지 업로드할 수 있습니다.');
+  }
+
+  attachments.forEach((file) => {
+    formData.append('attachments', file);
+  });
+
+  const response = await api.patch(`/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 

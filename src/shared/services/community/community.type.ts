@@ -1,4 +1,4 @@
-export type VideoType = 'COURSE' | 'ANSWER' | 'QUESTION';
+export type VideoType = 'COURSE' | 'ANSWER' | 'QUESTION' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT';
 
 export type Attachment = {
   id: number;
@@ -6,6 +6,12 @@ export type Attachment = {
   contentType: string;
   size: number;
   url: string;
+};
+
+export type VideoInfo = {
+  videoType: VideoType;
+  videoUuid: string;
+  originFileName: string;
 };
 
 export type CourseCommunityPostResponse = {
@@ -16,41 +22,27 @@ export type CourseCommunityPostResponse = {
     userType?: string;
   };
   courseId?: number;
-  title: string;
   content: string;
   createdAt: string;
   updatedAt: string;
   commentCount?: number;
   attachments?: Attachment[];
-  videoInfo?: {
-    videoType: VideoType;
-    videoUuid: string;
-    originFileName: string;
-  } | null;
+  videoInfo: VideoInfo | null;
   likeCount?: number;
   likedByMe?: boolean;
 };
 
 export type CourseCommunityPostRequest = {
-  title: string;
   content: string;
   videoUuid?: string;
   attachments?: File[];
 };
 
 export type CourseCommunityPostDetailResponse = CourseCommunityPostResponse & {
-  attachments: Attachment[];
-  videoInfo: {
-    videoType: VideoType;
-    videoUuid: string;
-    originFileName: string;
-  };
-  likeCount?: number;
-  likedByMe?: boolean;
+  courseName: string;
 };
 
 export type CourseCommunityPostUpdateRequest = {
-  title: string;
   content: string;
   videoUuid?: string;
   deleteFileIds?: number[];
@@ -60,17 +52,11 @@ export type CourseCommunityPostUpdateRequest = {
 export type MyCourseCommunityPostsResponse = {
   postId: number;
   courseId: number;
-  title: string;
   content: string;
+  attachments: Attachment[];
+  videoInfo: VideoInfo | null;
   createdAt: string;
   updatedAt: string;
-  user?: {
-    id: number;
-    nickname: string;
-  };
-  attachments?: Attachment[];
-  likeCount?: number;
-  commentCount?: number;
 };
 
 export type CourseCommunityPostCommentResponse = {
@@ -84,6 +70,7 @@ export type CourseCommunityPostCommentResponse = {
   createdAt: string;
   updatedAt: string;
   attachments?: Attachment[];
+  videoInfo: VideoInfo | null;
   likeCount?: number;
   likedByMe?: boolean;
 };

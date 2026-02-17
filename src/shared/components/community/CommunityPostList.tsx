@@ -1,0 +1,273 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import dayjs from 'dayjs';
+import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
+import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
+import { Calendar, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
+
+type Attachment = {
+  id: number;
+  name: string;
+  url: string;
+};
+
+type Post = {
+  postId: number;
+  courseId?: number;
+  user?: {
+    id: number;
+    nickname: string;
+  };
+  content: string;
+  createdAt: string;
+  attachments?: Attachment[];
+  likeCount?: number;
+  commentCount?: number;
+  likedByMe?: boolean;
+};
+
+type CommunityPostListActions = {
+  onPostClick?: (postId: number) => void;
+  onLike?: (postId: number, isLiked: boolean, e: React.MouseEvent) => void;
+  onEdit?: (post: Post, e: React.MouseEvent) => void;
+  onDelete?: (postId: number, e: React.MouseEvent) => void;
+};
+
+type CommunityPostListEdit = {
+  editingPostId: number | null;
+  editPostContent: string;
+  editPostFiles: File[];
+  editPostExistingAttachments: any[];
+  onEditContentChange: (content: string) => void;
+  onEditFilesChange: (files: File[]) => void;
+  onRemoveExistingAttachment: (id: number) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  isUpdatingPost?: boolean;
+};
+
+type CommunityPostListPaging = {
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+};
+
+type CommunityPostListStatus = {
+  isLoading?: boolean;
+  isError?: boolean;
+};
+
+type CommunityPostListProps = {
+  posts: Post[];
+  currentUserId?: number;
+  actions?: CommunityPostListActions;
+  edit?: CommunityPostListEdit;
+  paging?: CommunityPostListPaging;
+  status?: CommunityPostListStatus;
+};
+
+export default function CommunityPostList({
+  posts,
+  currentUserId,
+  actions,
+  edit,
+  paging,
+  status,
+}: CommunityPostListProps) {
+  const isLoading = status?.isLoading ?? false;
+  const isError = status?.isError ?? false;
+  const hasMore = paging?.hasMore ?? false;
+  const onLoadMore = paging?.onLoadMore;
+  const isLoadingMore = paging?.isLoadingMore ?? false;
+  const currentPage = paging?.currentPage;
+  const totalPages = paging?.totalPages;
+
+  if (isLoading) {
+    return (
+      <div className="text-muted-foreground flex items-center justify-center py-8 text-sm">
+        Loading...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-muted-foreground py-8 text-center text-sm">
+        Failed to load community posts.
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <Card className="shadow-none">
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <p className="text-muted-foreground">No posts yet. Be the first to start a conversation!</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-0">
+      {posts.map((item, index) => (
+        <Card
+          key={item.postId}
+          className={`shadow-none rounded-none cursor-pointer ${
+            index < posts.length - 1 ? 'border-b' : ''
+          }`}
+          onClick={() => actions?.onPostClick?.(item.postId)}
+        >
+          <CardContent className="p-4">
+            {/* 포스트 헤더 */}
+            <div className="flex items-start gap-3 mb-3">
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {item.user?.nickname?.charAt(0)?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium">{item.user?.nickname}</div>
+                <div className="flex gap-1 items-center text-muted-foreground text-sm">
+                  <Calendar className="h-3 w-3" />
+                  {item.createdAt ? dayjs(item.createdAt).format('MMM D, YYYY h:mm A') : ''}
+                </div>
+              </div>
+              {item.user?.id === currentUserId && (actions?.onEdit || actions?.onDelete) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                    {actions?.onEdit && (
+                      <DropdownMenuItem onClick={(e) => actions.onEdit?.(item, e)}>Edit</DropdownMenuItem>
+                    )}
+                    {actions?.onDelete && (
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={(e) => actions.onDelete?.(item.postId, e)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+
+            {/* 포스트 내용 */}
+            {edit?.editingPostId === item.postId ? (
+              <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                <CommunityTextArea
+                  value={edit.editPostContent}
+                  onChange={edit.onEditContentChange}
+                  placeholder="Edit your post..."
+                  showAttachButton={true}
+                  onFilesChange={edit.onEditFilesChange}
+                  existingAttachments={edit.editPostExistingAttachments}
+                  onRemoveExistingAttachment={edit.onRemoveExistingAttachment}
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" size="sm" onClick={edit.onCancelEdit}>
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={edit.onSaveEdit}
+                    disabled={!edit.editPostContent.trim() || (edit.isUpdatingPost ?? false)}
+                  >
+                    {edit.isUpdatingPost ? 'Saving...' : 'Save'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="text-muted-foreground leading-relaxed line-clamp-3 whitespace-pre-wrap">
+                  {item.content}
+                </div>
+
+                {/* 이미지 */}
+                {item.attachments && item.attachments.length > 0 && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {item.attachments
+                      .filter((file) => file?.url)
+                      .slice(0, 2)
+                      .map((file) => (
+                        <div
+                          key={file.id}
+                          className="relative aspect-square overflow-hidden rounded-lg border"
+                        >
+                          <Image
+                            src={file.url}
+                            alt={file.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 50vw, 200px"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 포스트 푸터 */}
+            {edit?.editingPostId !== item.postId && (
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  className={`flex items-center gap-2 transition-all duration-300 ${
+                    item.likedByMe
+                      ? 'text-red-500 hover:text-red-600'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={(e) => actions?.onLike?.(item.postId, item.likedByMe || false, e)}
+                >
+                  <Heart
+                    className={`h-5 w-5 transition-all duration-300 ${
+                      item.likedByMe ? 'fill-current scale-110' : 'scale-100'
+                    }`}
+                  />
+                  <span className="text-sm">{item.likeCount || 0}</span>
+                </button>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MessageCircle className="h-5 w-5" />
+                  <span className="text-sm">{item.commentCount || 0}</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* 더보기 버튼 */}
+      {hasMore && onLoadMore && (
+        <div className="flex justify-center p-4">
+          <Button
+            variant="outline"
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="w-full"
+          >
+            {isLoadingMore
+              ? 'Loading...'
+              : `Load More${typeof currentPage === 'number' && typeof totalPages === 'number' ? ` (${currentPage} / ${totalPages})` : ''}`}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

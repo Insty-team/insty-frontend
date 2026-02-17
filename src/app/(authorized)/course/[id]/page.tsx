@@ -1,30 +1,26 @@
 'use client';
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactPlayer from 'react-player';
+import QuestionDetailSheet from '@/app/(authorized)/course/[id]/_components/question/QuestionDetailSheet';
+import CommunityDetailSheet from '@/app/(authorized)/course/[id]/_components/community/CommunityDetailSheet';
+import QuestionListSheet from '@/app/(authorized)/course/[id]/_components/question/QuestionListSheet';
+import CommunityListSheet from '@/app/(authorized)/course/[id]/_components/community/CommunityListSheet';
+import WriteQuestionSheet from '@/app/(authorized)/course/[id]/_components/question/WriteQuestionSheet';
 
 import { useParams } from 'next/navigation';
 
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/shared/components/ui/sheet';
+
 import { Skeleton } from '@/shared/components/ui/skeleton';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/ui/sheet';
 import { Spinner } from '@/shared/components/ui/spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Textarea } from '@/shared/components/ui/textarea';
 import { cn } from '@/shared/lib/utils';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import {
   useGetCourseById,
   useGetCourseProgressExistsById,
@@ -32,7 +28,7 @@ import {
 } from '@/shared/services/course/course.hook';
 import { usePostVideoPlaylist } from '@/shared/services/video/video.hook';
 import { GET_video_playlist_by_signed_url } from '@/shared/services/video/video.service';
-import { Check, Download, FileText, GraduationCap, Hash, PlayCircle, Users, X } from 'lucide-react';
+import { MessageCircle,Check, Download, FileText, GraduationCap, Hash, PlayCircle, Users, X } from 'lucide-react';
 
 function formatFileSize(bytes: number) {
   if (!bytes) return '0 B';
@@ -47,65 +43,6 @@ function formatFileSize(bytes: number) {
 
   return `${size % 1 === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
 }
-
-const qaHistory = [
-  {
-    id: 'qa-1',
-    courseTitle: 'React 서버 컴포넌트 심화',
-    question: 'use server에서 클라이언트 상태를 어떻게 관리하나요?',
-    answerSnippet:
-      'React 19에서는 서버 데이터를 선물아도, 클라이언트 상태는 use client 컴포넌트에서 useState/유효한 store로 분리하면 됩니다.',
-    status: '답변 완료',
-    answeredAt: '2025년 11월 22일',
-  },
-  {
-    id: 'qa-2',
-    courseTitle: 'Next.js 성능 최적화',
-    question: 'prefetch와 use client 경계 처리는 어떻게 정하는 게 좋을까요?',
-    answerSnippet:
-      '기본은 서버 컴포넌트로 두고, prefetch가 필요한 interactive 내는 use client로 따로 묶어서 필요한 시점에만 상태를 관리하세요.',
-    status: '답변 중',
-    answeredAt: '2025년 11월 24일',
-  },
-  {
-    id: 'qa-3',
-    courseTitle: '테스트 자동화',
-    question: 'React Query의 isFetching과 isLoading을 같이 쓰는 팁이 있을까요?',
-    answerSnippet: '전자는 백그라운드 갱신, 후자는 첫 로딩이므로 버튼 disable 등 UI 영향 구분해서 쓰면 됩니다.',
-    status: '일시 보류',
-    answeredAt: '2025년 11월 20일',
-  },
-];
-
-const communityComments = [
-  {
-    id: 'community-1',
-    courseTitle: 'TypeScript 완전정복',
-    content: '함께 복습할 모각코 파트너 구합니다! 마음 맞으신 분 DM 주세요.',
-    author: '수강생 김하나',
-    postedAt: '2시간 전',
-    likes: 8,
-    replies: 3,
-  },
-  {
-    id: 'community-2',
-    courseTitle: 'AI 기반 콘텐츠 제작',
-    content: '이번 챕터에서 추천해준 생성형 프롬프트 템플릿 잘 써먹고 있어요.',
-    author: '수강생 정민우',
-    postedAt: '어제',
-    likes: 12,
-    replies: 5,
-  },
-  {
-    id: 'community-3',
-    courseTitle: 'Next.js 마스터',
-    content: '코드 리뷰 파트에서 사용한 디렉토리 구조로 시작해도 될까요?',
-    author: '수강생 박유진',
-    postedAt: '2025년 11월 24일',
-    likes: 4,
-    replies: 1,
-  },
-];
 
 export default function CoursePage() {
   const params = useParams();
@@ -123,6 +60,51 @@ export default function CoursePage() {
     isPending: isVideoPlaylistLoading,
   } = usePostVideoPlaylist();
 
+  const [activeSheetTab, setActiveSheetTab] = useState<'qa' | 'community'>('qa');
+  const [sheetView, setSheetView] = useState<'list' | 'write' | 'detail'>('list');
+  const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const handleBackToList = useCallback(() => {
+    setSheetView('list');
+    setSelectedQuestionId(null);
+  }, []);
+
+  const handleSheetOpenChange = useCallback(
+    (open: boolean) => {
+      setIsSheetOpen(open);
+      if (!open) {
+        handleBackToList();
+      }
+    },
+    [handleBackToList],
+  );
+
+  const handleSelectQuestion = useCallback(
+    (questionId: number) => {
+      setActiveSheetTab('qa');
+      setSelectedQuestionId(questionId);
+      setSheetView('detail');
+    },
+    [],
+  );
+
+  const handleSelectCommunityPost = useCallback((postId: number) => {
+    setActiveSheetTab('community');
+    setSelectedQuestionId(postId);
+    setSheetView('detail');
+  }, []);
+
+  const handleClickWriteQuestion = useCallback(() => {
+    setActiveSheetTab('qa');
+    setSheetView('write');
+  }, []);
+
+  const handleEnroll = () => {
+    if (!course) return;
+    enrollCourse();
+  };
+
   const installEnvChecklist = useMemo(() => {
     if (!course?.installEnvChecklist) return [];
     return Array.isArray(course.installEnvChecklist) ? course.installEnvChecklist : [course.installEnvChecklist];
@@ -134,23 +116,7 @@ export default function CoursePage() {
   }, [course?.practiceFile]);
 
   const keyPoints = useMemo(() => course?.keyPoints?.filter(Boolean) ?? [], [course?.keyPoints]);
-
-  const [activeSheetTab, setActiveSheetTab] = useState<'qa' | 'community'>('qa');
-
-  const handleSheetSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-  };
-
-  const sheetInputId = activeSheetTab === 'qa' ? 'course-sheet-question' : 'course-sheet-comment';
-  const sheetLabel = activeSheetTab === 'qa' ? '새 질문 등록' : '새 댓글 작성';
-  const sheetPlaceholder =
-    activeSheetTab === 'qa' ? '궁금한 내용을 간단히 정리해 주세요.' : '커뮤니티 의견을 간단히 작성해 주세요.';
-  const sheetButtonLabel = activeSheetTab === 'qa' ? '질문 등록' : '댓글 등록';
-
-  const handleEnroll = () => {
-    if (!course) return;
-    enrollCourse();
-  };
+  const creatorInitial = course?.creatorInfo.nickname?.[0] ?? 'I';
 
   const getVideoPlaylistUrl = useCallback(async () => {
     if (!videoPlaylistResponse?.data?.signedUrl) return;
@@ -186,7 +152,7 @@ export default function CoursePage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-muted-foreground flex flex-col items-center gap-3">
           <Spinner className="size-6" />
-          <p>강의 정보를 불러오는 중입니다...</p>
+          <p>Loading course information...</p>
         </div>
       </div>
     );
@@ -196,15 +162,15 @@ export default function CoursePage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-semibold">강의 정보를 찾을 수 없습니다.</p>
-          <p className="text-muted-foreground mt-2 text-sm">주소를 다시 확인하거나 잠시 후 다시 시도해주세요.</p>
+          <p className="text-lg font-semibold">Course information not found.</p>
+          <p className="text-muted-foreground mt-2 text-sm">Please check the address or try again later.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto flex flex-col gap-12 px-4 py-16">
+    <div className="container mx-auto flex flex-col gap-8 px-4 py-16">
       <div className="flex items-end justify-between gap-5">
         <div>
           <div className="mb-6">
@@ -239,13 +205,12 @@ export default function CoursePage() {
         <div className="flex flex-wrap items-center gap-3">
           <Button size="lg" onClick={handleEnroll} disabled={isCourseProgressExists || isEnrolling} className="gap-2">
             {isEnrolling ? <Spinner className="size-5" /> : <PlayCircle className="size-5" />}
-            {isCourseProgressExists ? '수강 중인 강의입니다' : '지금 수강 시작하기'}
+            {isCourseProgressExists ? 'Currently enrolled' : 'Start Learning Now'}
           </Button>
         </div>
-
         {isCourseProgressExistsError && (
           <div className="bg-destructive/10 text-destructive mt-4 rounded-lg px-4 py-3 text-sm">
-            수강 신청에 실패했습니다. 잠시 후 다시 시도해주세요.
+            Enrollment failed. Please try again later.
           </div>
         )}
       </div>
@@ -275,8 +240,8 @@ export default function CoursePage() {
           {/* 실습 자료 */}
           <Card id="practice-files">
             <CardHeader>
-              <CardTitle className="text-xl">실습 자료</CardTitle>
-              <CardDescription>강의와 함께 제공되는 참고 자료를 확인하세요.</CardDescription>
+              <CardTitle className="text-xl">Practice Files</CardTitle>
+              <CardDescription>Check the reference materials provided with the course.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {practiceFiles.length > 0 ? (
@@ -297,13 +262,13 @@ export default function CoursePage() {
                     <Button variant="outline" size="sm" className="gap-2" asChild>
                       <a href={file.url} target="_blank" rel="noopener noreferrer" download>
                         <Download className="size-4" />
-                        다운로드
+                        Download
                       </a>
                     </Button>
                   </div>
                 ))
               ) : (
-                <div className="text-muted-foreground text-sm">제공된 실습 자료가 없습니다.</div>
+                <div className="text-muted-foreground text-sm">No practice files provided.</div>
               )}
             </CardContent>
           </Card>
@@ -314,23 +279,23 @@ export default function CoursePage() {
           {/* 2. 설치 환경 요구사항 */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">수강 준비</CardTitle>
-              <CardDescription>수강 전 필요한 환경을 확인하세요.</CardDescription>
+              <CardTitle className="text-xl">Course Preparation</CardTitle>
+              <CardDescription>Check the required environment before taking the course.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
                 <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
                   <Users className="text-primary size-4" />
-                  추천 대상
+                  Recommended Audience
                 </h3>
                 <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{course.targetAudience}</p>
               </div>
 
               <Separator />
               <div>
-                <h3 className="text-foreground text-sm font-semibold">설치 환경 체크리스트</h3>
+                <h3 className="text-foreground text-sm font-semibold">Installation Environment Checklist</h3>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {installEnvChecklist.length > 0 ? (
+                  {installEnvChecklist.length ? (
                     installEnvChecklist.map((req) => (
                       <Badge
                         key={req.content}
@@ -345,7 +310,7 @@ export default function CoursePage() {
                       </Badge>
                     ))
                   ) : (
-                    <div className="text-muted-foreground text-sm">별도의 준비물이 필요하지 않습니다.</div>
+                    <div className="text-muted-foreground text-sm">No special preparation required.</div>
                   )}
                 </div>
               </div>
@@ -355,120 +320,110 @@ export default function CoursePage() {
           {/* 3. 핵심내용 */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">이 강의에서 배울 내용</CardTitle>
-              <CardDescription>핵심 포인트를 통해 강의 결과물을 미리 확인하세요.</CardDescription>
+              <CardTitle className="text-xl">What You'll Learn</CardTitle>
+              <CardDescription>Preview the course results through key points.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-4">
-                {keyPoints.length > 0 ? (
-                  keyPoints.map((content, index) => (
+              {keyPoints.length ? (
+                <ul className="space-y-4">
+                  {keyPoints.map((content, index) => (
                     <li key={index} className="text-primary-green-800 flex items-center gap-2">
                       <span className="bg-primary-green-800 rounded-full p-1"></span>
                       <span className="text-sm font-medium">{content}</span>
                     </li>
-                  ))
-                ) : (
-                  <div className="text-muted-foreground text-sm">등록된 핵심 포인트가 없습니다.</div>
-                )}
-              </ul>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-muted-foreground text-sm">No key points registered.</div>
+              )}
             </CardContent>
           </Card>
 
           <Card className="border-border/60 bg-background/70 border-dashed">
             <CardHeader>
-              <CardTitle className="text-xl">Q&A · 커뮤니티</CardTitle>
-              <CardDescription>질문과 댓글을 슬라이드 창으로 확인하고 바로 의견을 남겨보세요.</CardDescription>
+              <CardTitle className="text-xl">Q&A · Community</CardTitle>
+              <CardDescription>Questions and comments to the slide window and leave your opinion right away.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-muted-foreground text-sm">
-                강의를 들으며 생긴 궁금한 점을 질문하고, 커뮤니티 의견도 함께 살펴보세요.
+                Ask questions while listening to the lecture and check community comments together.
               </p>
 
-              <Sheet>
+              <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
                 <SheetTrigger asChild>
                   <Button variant="secondary" className="w-full">
-                    질문 · 댓글 창 열기
+                    Open Q&A & Community
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="px-6 py-6">
+                <SheetContent className="w-full px-6 py-6 sm:max-w-[800px]">
                   <SheetHeader>
-                    <SheetTitle>Q&A · 커뮤니티</SheetTitle>
-                    <SheetDescription className="text-sm">
-                      최신 질문과 댓글을 확인하고 바로 의견을 남기세요.
-                    </SheetDescription>
+                    <SheetTitle>Q&A · Community</SheetTitle>
+                    <SheetDescription>Check questions and community posts and share your opinions.</SheetDescription>
                   </SheetHeader>
+                  {/* Sheet List */}
+                  {sheetView === 'list' ? (
+                    <Tabs
+                      value={activeSheetTab}
+                      onValueChange={(value) => setActiveSheetTab(value as 'qa' | 'community')}
+                      className="w-full h-[calc(100vh-180px)] flex flex-col"
+                    >
+                      <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+                        <TabsTrigger value="qa" className="flex-1">
+                          <div className="flex items-center justify-center gap-2">
+                            <MessageCircle className="size-4" />
+                            <span>Q&A</span>
+                          </div>
+                        </TabsTrigger>
+                        <TabsTrigger value="community" className="flex-1">
+                          <div className="flex items-center justify-center gap-2">
+                            <Users className="size-4" />
+                            <span>Community</span>
+                          </div>
+                        </TabsTrigger>
+                      </TabsList>
 
-                  <Tabs
-                    value={activeSheetTab}
-                    onValueChange={(value) => setActiveSheetTab(value as 'qa' | 'community')}
-                    className="space-y-4"
-                  >
-                    <TabsList>
-                      <TabsTrigger value="qa">Q&A</TabsTrigger>
-                      <TabsTrigger value="community">커뮤니티</TabsTrigger>
-                    </TabsList>
+                      <TabsContent value="qa" className="flex-1 mt-4 overflow-hidden">
+                        <QuestionListSheet
+                          courseId={courseId}
+                          onSelectQuestion={handleSelectQuestion}
+                          onClickWrite={handleClickWriteQuestion}
+                          sheetIsOpen={isSheetOpen}
+                          isActive={activeSheetTab === 'qa'}
+                        />
+                      </TabsContent>
 
-                    <TabsContent value="qa" className="space-y-4 overflow-y-auto pt-1 pb-4">
-                      <div className="space-y-3">
-                        {qaHistory.slice(0, 3).map((item) => (
-                          <article key={item.id} className="border-border/80 bg-background/80 rounded-2xl border p-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-muted-foreground text-[11px] tracking-[0.4em] uppercase">
-                                  {item.courseTitle}
-                                </p>
-                                <h4 className="text-foreground text-sm font-semibold">{item.question}</h4>
-                              </div>
-                              <span className="border-border/80 text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] tracking-widest uppercase">
-                                {item.status}
-                              </span>
-                            </div>
-                            <p className="text-muted-foreground mt-2 text-xs">{item.answerSnippet}</p>
-                          </article>
-                        ))}
+                      <TabsContent value="community" className="flex-1 mt-4 overflow-hidden">
+                        <CommunityListSheet
+                          courseId={courseId}
+                          onSelectPost={handleSelectCommunityPost}
+                          sheetIsOpen={isSheetOpen}
+                          isActive={activeSheetTab === 'community'}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  ) : sheetView === 'write' ? (
+                    activeSheetTab === 'qa' && (
+                      <div className="h-[calc(100vh-180px)] overflow-hidden">
+                        <WriteQuestionSheet courseId={courseId} onBack={handleBackToList} />
                       </div>
-                    </TabsContent>
-
-                    <TabsContent value="community" className="space-y-4 overflow-y-auto pt-1 pb-4">
-                      <div className="space-y-3">
-                        {communityComments.slice(0, 3).map((comment) => (
-                          <article
-                            key={comment.id}
-                            className="border-border/80 bg-background/70 rounded-2xl border p-3"
-                          >
-                            <div className="text-muted-foreground flex items-center justify-between text-[11px] tracking-[0.3em] uppercase">
-                              <span>{comment.courseTitle}</span>
-                              <span>{comment.postedAt}</span>
-                            </div>
-                            <p className="text-foreground mt-2 text-sm font-semibold">{comment.content}</p>
-                            <div className="text-muted-foreground mt-2 flex items-center gap-3 text-[11px]">
-                              <span>좋아요 {comment.likes}</span>
-                              <span>댓글 {comment.replies}</span>
-                            </div>
-                          </article>
-                        ))}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-
-                  <SheetFooter className="space-y-3">
-                    <form onSubmit={handleSheetSubmit} className="space-y-3">
-                      <div className="space-y-1 text-sm">
-                        <Label htmlFor={sheetInputId}>{sheetLabel}</Label>
-                        <Textarea id={sheetInputId} placeholder={sheetPlaceholder} rows={3} />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button className="flex-1" type="submit">
-                          {sheetButtonLabel}
-                        </Button>
-                        <SheetClose asChild>
-                          <Button variant="outline" type="button">
-                            닫기
-                          </Button>
-                        </SheetClose>
-                      </div>
-                    </form>
-                  </SheetFooter>
+                    )
+                  ) : selectedQuestionId ? (
+                    activeSheetTab === 'qa' ? (
+                      <QuestionDetailSheet
+                        courseId={Number(courseId)}
+                        questionId={selectedQuestionId}
+                        onBack={handleBackToList}
+                      />
+                    ) : (
+                      <CommunityDetailSheet
+                        courseId={Number(courseId)}
+                        postId={selectedQuestionId}
+                        onBack={handleBackToList}
+                      />
+                    )
+                  ) : (
+                    <div className="text-muted-foreground py-8 text-center text-sm">Please select a question.</div>
+                  )}
                 </SheetContent>
               </Sheet>
             </CardContent>

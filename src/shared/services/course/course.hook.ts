@@ -208,6 +208,8 @@ export const useGetCourseQuestion = (
 
 /** 질문 수정 */
 export const usePatchCourseQuestion = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationKey: [PATCH_course_question_by_id.name],
     mutationFn: ({
@@ -219,15 +221,28 @@ export const usePatchCourseQuestion = () => {
       questionId: number;
       data: CourseQuestionUpdateRequest;
     }) => PATCH_course_question_by_id(courseId, questionId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, variables.courseId, variables.questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, variables.courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
+    },
   });
 };
 
 /** 질문 삭제 */
 export const useDeleteCourseQuestion = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationKey: [DELETE_course_question_by_id.name],
     mutationFn: ({ courseId, questionId }: { courseId: number; questionId: number }) =>
       DELETE_course_question_by_id(courseId, questionId),
+    onSuccess: (_response, variables) => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, variables.courseId, variables.questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, variables.courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_questions_my_by_id.name, variables.courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
+    },
   });
 };
 
@@ -285,6 +300,7 @@ export const usePostCourseQuestionAnswer = (courseId: number, questionId: number
     mutationFn: (data: CourseQuestionAnswerRequest) => POST_course_question_answer_by_id(courseId, questionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId] });
     },
   });
 };
@@ -315,34 +331,29 @@ export const useDeleteCourseQuestionAnswer = (courseId: number, questionId: numb
     mutationFn: (answerId: number) => DELETE_course_question_answer_by_id(courseId, questionId, answerId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
+
+      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
     },
   });
 };
 
-/** 답변 수정 */
-export const usePatchCourseQuestionAnswerUpdate = (courseId: number, questionId: number, answerId: number) => {
+/** 답변 수정 (answerId) */
+export const usePatchCourseQuestionAnswerById = (courseId: number, questionId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: [PATCH_course_question_answer_by_id.name, courseId, questionId, answerId],
-    mutationFn: (data: CourseQuestionAnswerUpdateRequest) =>
-      PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
-      queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
-    },
-  });
-};
-
-/** 답변 수정 */
-export const usePatchCourseQuestionAnswer = (courseId: number, questionId: number, answerId: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationKey: [PATCH_course_question_answer_by_id.name, courseId, questionId, answerId],
-    mutationFn: (data: CourseQuestionAnswerUpdateRequest) =>
-      PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
+    mutationKey: [PATCH_course_question_answer_by_id.name, courseId, questionId],
+    mutationFn: ({
+      answerId,
+      data,
+    }: {
+      answerId: number;
+      data: CourseQuestionAnswerUpdateRequest;
+    }) => PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });

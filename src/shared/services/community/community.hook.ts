@@ -67,6 +67,30 @@ export const usePostCourseCommunityPostById = (courseId: number) => {
   });
 };
 
+/** 커뮤니티 댓글 좋아요 (commentId를 파라미터로 받음) */
+export const usePostCourseCommunityPostCommentLikeForList = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (commentId: number) => POST_course_community_post_comment_like_by_id(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
+    },
+  });
+};
+
+/** 커뮤니티 댓글 좋아요 취소 (commentId를 파라미터로 받음) */
+export const useDeleteCourseCommunityPostCommentLikeForList = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (commentId: number) => DELETE_course_community_post_comment_like_by_id(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
+    },
+  });
+};
+
 /** 커뮤니티 글 조회 (상세) */
 export const useGetCourseCommunityPostById = (
   courseId: number,
@@ -84,23 +108,33 @@ export const useGetCourseCommunityPostById = (
 };
 
 /** 커뮤니티 글 삭제 */
-export const useDeleteCourseCommunityPostById = (courseId: number) => {
+export const useDeleteCourseCommunityPostById = (courseId?: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationKey: [DELETE_course_community_post_by_id.name],
-    mutationFn: (postId: number) => DELETE_course_community_post_by_id(courseId, postId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
+    mutationFn: ({ courseId: cId, postId }: { courseId: number; postId: number }) => 
+      DELETE_course_community_post_by_id(cId, postId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, variables.courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_my_course_community_posts.name] });
     },
   });
 };
 
-/** 커뮤니티 글 수정 */
-export const usePatchCourseCommunityPostById = (courseId: number, postId: number) => {
-  return useMutation({
+/** 커뮤니티 글 수정 (postId를 파라미터로 받음) */
+export const usePatchCourseCommunityPost = (courseId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({  
     mutationKey: [PATCH_course_community_post_by_id.name],
-    mutationFn: (data: CourseCommunityPostUpdateRequest) => PATCH_course_community_post_by_id(courseId, postId, data),
+    mutationFn: ({ postId, data }: { postId: number; data: CourseCommunityPostUpdateRequest }) =>
+      PATCH_course_community_post_by_id(courseId, postId, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, variables.postId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
+      queryClient.invalidateQueries({ queryKey: [GET_my_course_community_posts.name] });
+    },
   });
 };
 
@@ -185,6 +219,8 @@ export const usePostCourseCommunityPostCommentById = (courseId: number, postId: 
       POST_course_community_post_comment_by_id(courseId, postId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
     },
   });
 };
@@ -198,20 +234,23 @@ export const useDeleteCourseCommunityPostCommentById = () => {
     mutationFn: (commentId: number) => DELETE_course_community_post_comment_by_id(commentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name] });
     },
   });
 };
 
-/** 커뮤니티 댓글 수정 */
-export const usePatchCourseCommunityPostCommentById = (commentId: number) => {
+/** 커뮤니티 댓글 수정 (commentId를 파라미터로 받음) */
+export const usePatchCourseCommunityPostCommentForList = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: [PATCH_course_community_post_comment_by_id.name],
-    mutationFn: (data: CourseCommunityPostCommentUpdateRequest) =>
+    mutationFn: ({ commentId, data }: { commentId: number; data: CourseCommunityPostCommentUpdateRequest }) =>
       PATCH_course_community_post_comment_by_id(commentId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name] });
     },
   });
 };
@@ -225,80 +264,28 @@ export const useGetMyCourseCommunityPostComments = () => {
   });
 };
 
-/** 커뮤니티 포스트 좋아요 */
-export const usePostCourseCommunityPostLike = (courseId: number, postId: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationKey: [POST_course_community_post_like_by_id.name, courseId, postId],
-    mutationFn: () => POST_course_community_post_like_by_id(courseId, postId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
-      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
-    },
-  });
-};
-
-/** 커뮤니티 포스트 좋아요 취소 */
-export const useDeleteCourseCommunityPostLike = (courseId: number, postId: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationKey: [DELETE_course_community_post_like_by_id.name, courseId, postId],
-    mutationFn: () => DELETE_course_community_post_like_by_id(courseId, postId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
-      queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
-    },
-  });
-};
-
-/** 커뮤니티 포스트 좋아요 (리스트용 - postId를 파라미터로 받음) */
+/** 커뮤니티 포스트 좋아요 (postId를 파라미터로 받음) */
 export const usePostCourseCommunityPostLikeForList = (courseId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (postId: number) => POST_course_community_post_like_by_id(courseId, postId),
-    onSuccess: () => {
+    onSuccess: (_data, postId) => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
     },
   });
 };
 
-/** 커뮤니티 포스트 좋아요 취소 (리스트용 - postId를 파라미터로 받음) */
+/** 커뮤니티 포스트 좋아요 취소 (postId를 파라미터로 받음) */
 export const useDeleteCourseCommunityPostLikeForList = (courseId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (postId: number) => DELETE_course_community_post_like_by_id(courseId, postId),
-    onSuccess: () => {
+    onSuccess: (_data, postId) => {
+      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_by_id.name, courseId, postId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, courseId] });
-    },
-  });
-};
-
-/** 커뮤니티 댓글 좋아요 */
-export const usePostCourseCommunityPostCommentLike = (commentId: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationKey: [POST_course_community_post_comment_like_by_id.name, commentId],
-    mutationFn: () => POST_course_community_post_comment_like_by_id(commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
-    },
-  });
-};
-
-/** 커뮤니티 댓글 좋아요 취소 */
-export const useDeleteCourseCommunityPostCommentLike = (commentId: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationKey: [DELETE_course_community_post_comment_like_by_id.name, commentId],
-    mutationFn: () => DELETE_course_community_post_comment_like_by_id(commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_community_post_comments_by_id.name] });
     },
   });
 };

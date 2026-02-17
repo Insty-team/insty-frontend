@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import dayjs from 'dayjs';
+import ReactPlayer from 'react-player';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import RichTextEditor from '@/shared/components/editor/RichTextEditor';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +17,38 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import { Star, MoreHorizontal } from 'lucide-react';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
+import { VideoType } from '@/shared/services/course/course.type';
+
+const AnswerVideoPlayer = ({ answerId, videoType }: { answerId: number; videoType: VideoType }) => {
+  const { m3u8Url, isLoading } = useVideoPlaylist({
+    type: videoType,
+    id: answerId.toString(),
+    enabled: !!answerId,
+  });
+
+  return (
+    <div className="mt-3 overflow-hidden rounded-lg border">
+      {isLoading || !m3u8Url ? (
+        <Skeleton className="aspect-video w-full" />
+      ) : (
+        <ReactPlayer
+          src={m3u8Url}
+          controls
+          width="100%"
+          height="100%"
+          config={{
+            hls: {
+              enableWorker: true,
+              lowLatencyMode: true,
+            },
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
 type Attachment = {
   id: number;
@@ -31,7 +65,12 @@ type Answer = {
   };
   content: string;
   createdAt: string;
-  attachments?: Attachment[];
+  attachments: Attachment[];
+  videoInfo: {
+    videoType: VideoType;
+    videoUuid: string;
+    originFileName?: string;
+  } | null;
 };
 
 type QuestionAnswersProps = {
@@ -47,7 +86,13 @@ type QuestionAnswersProps = {
   // 액션 핸들러
   onAccept?: (answerId: number) => void;
   onEdit?: (answerId: number, content: string) => void;
-  onUpdate?: (answerId: number, content: string, files: File[], deleteAttachmentIds: number[]) => void;
+  onUpdate?: (
+    answerId: number,
+    content: string,
+    files: File[],
+    deleteAttachmentIds: number[],
+    videoUuid?: string | null,
+  ) => void;
   onDelete?: (answerId: number) => void;
   
   // 로딩 상태
@@ -76,20 +121,34 @@ export default function QuestionAnswers({
   onLoadMore,
   isLoadingMore = false,
 }: QuestionAnswersProps) {
+  const { uploadVideo } = usePresignedVideoUpload();
+
   // 인라인 수정 상태(답변 1개만 동시에 수정 가능)
   const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [editingFiles, setEditingFiles] = useState<File[]>([]);
   const [editingExistingAttachments, setEditingExistingAttachments] = useState<Attachment[]>([]);
   const [editingDeleteAttachmentIds, setEditingDeleteAttachmentIds] = useState<number[]>([]);
+  const [editingExistingVideoUuid, setEditingExistingVideoUuid] = useState<string | null>(null);
+  const [editingExistingVideoName, setEditingExistingVideoName] = useState<string | null>(null);
+  const [editingVideoUuidOverride, setEditingVideoUuidOverride] = useState<string | null | undefined>(undefined);
 
   // 답변 인라인 수정 시작: 기존 내용/기존 첨부를 상태로 복사하고, 새로 올린 파일/삭제 목록은 초기화
-  const startInlineEdit = (answerId: number, content: string, attachments?: Attachment[]) => {
+  const startInlineEdit = (
+    answerId: number,
+    content: string,
+    attachments?: Attachment[],
+    videoUuid?: string,
+    videoName?: string,
+  ) => {
     setEditingAnswerId(answerId);
     setEditingContent(content);
     setEditingFiles([]);
     setEditingExistingAttachments(attachments ?? []);
     setEditingDeleteAttachmentIds([]);
+    setEditingExistingVideoUuid(videoUuid ?? null);
+    setEditingExistingVideoName(videoName ?? null);
+    setEditingVideoUuidOverride(undefined);
   };
 
   // 답변 인라인 수정 취소: 편집 상태 초기화
@@ -99,6 +158,9 @@ export default function QuestionAnswers({
     setEditingFiles([]);
     setEditingExistingAttachments([]);
     setEditingDeleteAttachmentIds([]);
+    setEditingExistingVideoUuid(null);
+    setEditingExistingVideoName(null);
+    setEditingVideoUuidOverride(undefined);
   };
 
   // 기존 첨부 삭제 처리(서버에 deleteFileIds로 전달): 화면에서 제거 + 삭제 목록에 id 누적
@@ -117,8 +179,29 @@ export default function QuestionAnswers({
       .replaceAll('&nbsp;', ' ')
       .trim();
     if (!textOnly) return;
-    onUpdate?.(editingAnswerId, editingContent, editingFiles, editingDeleteAttachmentIds);
-    cancelInlineEdit();
+
+    // RichTextEditor에서 넘어오는 파일은 이미지/비디오가 섞여 있을 수 있습니다.
+    // - 이미지는 attachments로 전달
+    // - 비디오는 presigned 업로드 후 videoUuid로만 전달
+    const images = editingFiles.filter((f) => f.type.startsWith('image/'));
+    const videoFile = editingFiles.find((f) => f.type.startsWith('video/')) ?? null;
+
+    const run = async () => {
+      try {
+        let videoUuid: string | null | undefined = editingVideoUuidOverride;
+
+        if (videoFile) {
+          videoUuid = await uploadVideo({ kind: 'ANSWER', file: videoFile });
+        }
+
+        onUpdate?.(editingAnswerId, editingContent, images, editingDeleteAttachmentIds, videoUuid);
+        cancelInlineEdit();
+      } catch (e) {
+        console.error('답변 비디오 업로드/수정 실패:', e);
+      }
+    };
+
+    void run();
   };
 
   // 답변(및 채택 답변) 첨부 이미지 렌더링
@@ -144,7 +227,7 @@ export default function QuestionAnswers({
   };
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-0">
       {/* 헤더 */}
       <div className="flex items-center gap-2">
         <h3 className="text-lg font-semibold">Answers</h3>
@@ -191,6 +274,7 @@ export default function QuestionAnswers({
               dangerouslySetInnerHTML={{ __html: getDisplayContent(acceptedAnswer.content) }}
             />
             {renderAttachments(acceptedAnswer.attachments)}
+            {acceptedAnswer.videoInfo?.videoUuid && <AnswerVideoPlayer answerId={acceptedAnswer.answerId} videoType={acceptedAnswer.videoInfo.videoType} />}
           </div>
         </div>
       )}
@@ -251,7 +335,13 @@ export default function QuestionAnswers({
                                 // onUpdate가 있으면: 모달 대신 현재 컴포넌트에서 인라인 수정 모드
                                 // onUpdate가 없고 onEdit만 있으면: 외부(부모)에서 편집 UI를 처리
                                 if (onUpdate) {
-                                  startInlineEdit(answer.answerId, answer.content, answer.attachments);
+                                  startInlineEdit(
+                                    answer.answerId,
+                                    answer.content,
+                                    answer.attachments,
+                                    answer.videoInfo?.videoUuid,
+                                    answer.videoInfo?.originFileName,
+                                  );
                                   return;
                                 }
                                 onEdit?.(answer.answerId, answer.content);
@@ -281,6 +371,7 @@ export default function QuestionAnswers({
                       dangerouslySetInnerHTML={{ __html: getDisplayContent(answer.content) }}
                     />
                     {renderAttachments(answer.attachments)}
+                    {answer.videoInfo?.videoUuid && <AnswerVideoPlayer answerId={answer.answerId} videoType={answer.videoInfo.videoType} />}
                   </>
                 )}
 
@@ -296,6 +387,16 @@ export default function QuestionAnswers({
                       onFilesChange={setEditingFiles}
                       existingAttachments={editingExistingAttachments}
                       onRemoveExistingAttachment={handleRemoveExistingAttachment}
+                      existingVideo={
+                        editingVideoUuidOverride === null
+                          ? null
+                          : editingExistingVideoUuid
+                            ? { name: editingExistingVideoName ?? undefined }
+                            : null
+                      }
+                      onRemoveExistingVideo={() => {
+                        setEditingVideoUuidOverride(null);
+                      }}
                       isDisabled={isUpdating}
                     />
                     {/* Save/Cancel */}

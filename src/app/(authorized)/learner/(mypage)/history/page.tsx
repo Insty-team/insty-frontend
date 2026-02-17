@@ -1,162 +1,395 @@
 'use client';
 
+import { useState } from 'react';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import {
+  useDeleteCourseQuestion,
+  useGetMyCourseQuestionsInfinite,
+} from '@/shared/services/course/course.hook';
+import { useGetMyCourseCommunityPostsInfinite, useDeleteCourseCommunityPostById } from '@/shared/services/community/community.hook';
+import { useGetProfile } from '@/shared/services/user/user.hook';
+import dayjs from 'dayjs';
+import { getDisplayContent } from '@/shared/lib/tiptap-content';
+import {QuestionDetailDialog, CommunityDetailDialog, CommunityUpdateDialog} from './_components';
+import QuestionLabel from '@/shared/components/question/QuestionLabel';
+import CommunityPostList from '@/shared/components/community/CommunityPostList';
+import { Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
-const qaHistory = [
-  {
-    id: 'qa-1',
-    courseTitle: 'React 서버 컴포넌트 심화',
-    question: 'use server에서 클라이언트 상태를 어떻게 관리하나요?',
-    answerSnippet:
-      'React 19에서는 서버 데이터를 선물아도, 클라이언트 상태는 use client 컴포넌트에서 useState/유효한 store로 분리하면 됩니다.',
-    status: '답변 완료',
-    answeredAt: '2025년 11월 22일',
-  },
-  {
-    id: 'qa-2',
-    courseTitle: 'Next.js 성능 최적화',
-    question: 'prefetch와 use client 경계 처리는 어떻게 정하는 게 좋을까요?',
-    answerSnippet:
-      '기본은 서버 컴포넌트로 두고, prefetch가 필요한 interactive 내는 use client로 따로 묶어서 필요한 시점에만 상태를 관리하세요.',
-    status: '답변 중',
-    answeredAt: '2025년 11월 24일',
-  },
-  {
-    id: 'qa-3',
-    courseTitle: '테스트 자동화',
-    question: 'React Query의 isFetching과 isLoading을 같이 쓰는 팁이 있을까요?',
-    answerSnippet: '전자는 백그라운드 갱신, 후자는 첫 로딩이므로 버튼 disable 등 UI 영향 구분해서 쓰면 됩니다.',
-    status: '일시 보류',
-    answeredAt: '2025년 11월 20일',
-  },
-];
-
-const communityComments = [
-  {
-    id: 'community-1',
-    courseTitle: 'TypeScript 완전정복',
-    content: '함께 복습할 모각코 파트너 구합니다! 마음 맞으신 분 DM 주세요.',
-    author: '수강생 김하나',
-    postedAt: '2시간 전',
-    likes: 8,
-    replies: 3,
-  },
-  {
-    id: 'community-2',
-    courseTitle: 'AI 기반 콘텐츠 제작',
-    content: '이번 챕터에서 추천해준 생성형 프롬프트 템플릿 잘 써먹고 있어요.',
-    author: '수강생 정민우',
-    postedAt: '어제',
-    likes: 12,
-    replies: 5,
-  },
-  {
-    id: 'community-3',
-    courseTitle: 'Next.js 마스터',
-    content: '코드 리뷰 파트에서 사용한 디렉토리 구조로 시작해도 될까요?',
-    author: '수강생 박유진',
-    postedAt: '2025년 11월 24일',
-    likes: 4,
-    replies: 1,
-  },
-];
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/components/ui/alert-dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { GET_my_course_questions } from '@/shared/services/course/course.service';
+import {
+  POST_course_community_post_like_by_id,
+  DELETE_course_community_post_like_by_id,
+} from '@/shared/services/community/community.service';
 
 const chatbotHistory = [
   {
-    date: '2025년 11월 26일',
+    date: 'November 26, 2025',
     questions: [
       {
         id: 'chat-1',
-        courseTitle: 'AI 챗봇 헬퍼',
+        courseTitle: 'AI Chatbot Helper',
         time: '13:42',
-        text: 'CSV 데이터가 깨끗하지 않을 때 Next.js에서 미리 검증하는 패턴이 궁금해요.',
+        text: 'How can I validate CSV data in Next.js before processing when the data is not clean?',
       },
       {
         id: 'chat-2',
-        courseTitle: 'AI 챗봇 헬퍼',
+        courseTitle: 'AI Chatbot Helper',
         time: '14:10',
-        text: '파일 업로드 전용 인풋에 focus 유지하는 방법 알려주세요.',
+        text: 'How do I maintain focus on a file upload input field?',
       },
     ],
   },
   {
-    date: '2025년 11월 25일',
+    date: 'November 25, 2025',
     questions: [
       {
         id: 'chat-3',
-        courseTitle: '실전 React',
+        courseTitle: 'Practical React',
         time: '10:05',
-        text: 'useMemo 대신 use client 상태를 분리하는 기준이 뭐죠?',
+        text: 'What are the criteria for separating client state instead of using useMemo?',
       },
     ],
   },
 ];
 
 export default function LearnerHistoryPage() {
+  const queryClient = useQueryClient();
+  const { data: profile } = useGetProfile();
+  const [searchQueryInput, setSearchQueryInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [likeStateByPostKey, setLikeStateByPostKey] = useState<
+    Record<string, { likeCount: number; likedByMe: boolean }>
+  >({});
+  const [selectedQuestion, setSelectedQuestion] = useState<{
+    courseId: number;
+    questionId: number;
+  } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    courseId: number;
+    questionId: number;
+    title: string;
+  } | null>(null);
+  const [deletePostTarget, setDeletePostTarget] = useState<{
+    courseId: number;
+    postId: number;
+  } | null>(null);
+  const [editingPost, setEditingPost] = useState<{
+    courseId: number;
+    postId: number;
+    content: string;
+  } | null>(null);
+  const [selectedPost, setSelectedPost] = useState<{
+    courseId: number;
+    postId: number;
+  } | null>(null);
+
+  const {
+    data: myCourseQuestions,
+    fetchNextPage: fetchNextQuestions,
+    hasNextPage: hasNextQuestions,
+    isFetchingNextPage: isFetchingNextQuestions,
+  } = useGetMyCourseQuestionsInfinite({
+    pageSize: 10,
+    orderBy: 'createdAt',
+    order: 'desc',
+    keyword: searchQuery || undefined,
+  });
+
+  const {
+    data: myCoursePosts,
+    fetchNextPage: fetchNextPosts,
+    hasNextPage: hasNextPosts,
+    isFetchingNextPage: isFetchingNextPosts,
+  } = useGetMyCourseCommunityPostsInfinite(10);
+  const { mutate: deleteQuestion, isPending: isDeleting } = useDeleteCourseQuestion();
+  const { mutate: deletePost, isPending: isDeletingPost } = useDeleteCourseCommunityPostById();
+
+  const myCommunityPosts = myCoursePosts?.items ?? [];
+  const myCommunityPostsPagination = myCoursePosts?.pagination;
+
+  const { mutate: likePost, isPending: isLikingPost } = useMutation({
+    mutationFn: ({ courseId, postId }: { courseId: number; postId: number }) =>
+      POST_course_community_post_like_by_id(courseId, postId),
+    onSuccess: (response, variables) => {
+      const likeInfo = (response as any)?.data;
+      if (!likeInfo) return;
+      const key = `${variables.courseId}:${variables.postId}`;
+      setLikeStateByPostKey((prev) => ({
+        ...prev,
+        [key]: {
+          likeCount: likeInfo.likeCount,
+          likedByMe: likeInfo.likedByMe,
+        },
+      }));
+    },
+  });
+
+  const { mutate: unlikePost, isPending: isUnlikingPost } = useMutation({
+    mutationFn: ({ courseId, postId }: { courseId: number; postId: number }) =>
+      DELETE_course_community_post_like_by_id(courseId, postId),
+    onSuccess: (response, variables) => {
+      const likeInfo = (response as any)?.data;
+      if (!likeInfo) return;
+      const key = `${variables.courseId}:${variables.postId}`;
+      setLikeStateByPostKey((prev) => ({
+        ...prev,
+        [key]: {
+          likeCount: likeInfo.likeCount,
+          likedByMe: likeInfo.likedByMe,
+        },
+      }));
+    },
+  });
+
+  const myCommunityPostsData = myCommunityPosts.map((item) => {
+    const key = `${item.courseId}:${item.postId}`;
+    const likeOverride = likeStateByPostKey[key];
+
+    return {
+      postId: item.postId,
+      courseId: item.courseId,
+      content: item.content,
+      createdAt: item.createdAt,
+      user: profile
+        ? {
+            id: profile.id,
+            nickname: profile.nickname,
+          }
+        : undefined,
+      attachments: item.attachments ?? [],
+      videoInfo: item.videoInfo ?? null,
+    };
+  });
+
+  const findMyCommunityPostById = (postId: number) => {
+    return myCoursePosts?.items?.find((p) => p.postId === postId);
+  };
+
+  const handleMyCommunityPostClick = (postId: number) => {
+    const post = findMyCommunityPostById(postId);
+    if (!post) return;
+    setSelectedPost({ courseId: post.courseId, postId: post.postId });
+  };
+
+  const handleMyCommunityPostEdit = (post: { postId: number; courseId?: number; content: string }, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!post.courseId) return;
+    setEditingPost({
+      courseId: post.courseId,
+      postId: post.postId,
+      content: post.content,
+    });
+  };
+
+  const handleMyCommunityPostDelete = (postId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const post = findMyCommunityPostById(postId);
+    if (!post) return;
+    setDeletePostTarget({ courseId: post.courseId, postId: post.postId });
+  };
+
+  const handleMyCommunityPostLike = (postId: number, isLiked: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isLikingPost || isUnlikingPost) return;
+    const post = findMyCommunityPostById(postId);
+    if (!post) return;
+
+    if (isLiked) {
+      unlikePost({ courseId: post.courseId, postId: post.postId });
+      return;
+    }
+
+    likePost({ courseId: post.courseId, postId: post.postId });
+  };
+
+  const handleDeleteQuestion = () => {
+    if (!deleteTarget) return;
+
+    deleteQuestion(
+      {
+        courseId: deleteTarget.courseId,
+        questionId: deleteTarget.questionId,
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
+          setDeleteTarget(null);
+          if (
+            selectedQuestion?.courseId === deleteTarget.courseId &&
+            selectedQuestion?.questionId === deleteTarget.questionId
+          ) {
+            setSelectedQuestion(null);
+          }
+
+          toast.success('Question deleted.');
+        },
+        onError: (error: any) => {
+          console.error('질문 삭제 실패:', error);
+          toast.error('Failed to delete question.');
+        },
+      },
+    );
+  };
+
+  const handleDeletePost = () => {
+    if (!deletePostTarget) return;
+
+    deletePost(
+      {
+        courseId: deletePostTarget.courseId,
+        postId: deletePostTarget.postId,
+      },
+      {
+        onSuccess: () => {
+          setDeletePostTarget(null);
+        },
+        onError: (error: any) => {
+          console.error('커뮤니티 글 삭제 실패:', error);
+          toast.error('Failed to delete post.');
+        },
+      },
+    );
+  };
+
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Q&amp;A · 커뮤니티 · 챗봇</h2>
+        <h2 className="text-2xl font-bold">HISTORY</h2>
         <p className="text-muted-foreground mt-1">
-          강의별로 남긴 질문과 커뮤니티 코멘트, AI 챗봇에 묻고 답한 히스토리를 탭으로 확인하세요.
+          View your questions, community comments, and AI chatbot conversation history organized by course.
         </p>
       </div>
 
       <Tabs defaultValue="qa" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="qa">Q&amp;A 히스토리</TabsTrigger>
-          <TabsTrigger value="community">커뮤니티 댓글</TabsTrigger>
-          <TabsTrigger value="chatbot">챗봇 질문</TabsTrigger>
+          <TabsTrigger value="qa">Q&amp;A</TabsTrigger>
+          <TabsTrigger value="community">Community</TabsTrigger>
+          <TabsTrigger value="chatbot">Chatbot</TabsTrigger>
         </TabsList>
 
         <TabsContent value="qa">
           <div className="space-y-4">
-            {qaHistory.map((item) => (
+            <Input
+              placeholder="Search questions..."
+              value={searchQueryInput}
+              onChange={(e) => setSearchQueryInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  setSearchQuery(searchQueryInput);
+                }
+              }}
+            />
+            <ScrollArea className="h-[calc(100vh-20rem)] rounded-lg">
+              <div className="space-y-3 pr-4">
+                {myCourseQuestions?.items?.map((item) => (
               <article
-                key={item.id}
-                className="border-border bg-card/60 rounded-2xl border p-5 shadow-sm transition-shadow hover:shadow-lg"
+                key={item.questionId}
+                className="bg-background cursor-pointer rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedQuestion({ courseId: item.courseId, questionId: item.questionId })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedQuestion({ courseId: item.courseId, questionId: item.questionId });
+                  }
+                }}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                      {item.courseTitle}
-                    </p>
-                    <h2 className="text-foreground mt-1 text-lg font-semibold">{item.question}</h2>
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex items-center gap-2">
+                    <QuestionLabel status={item.status} />
+                    <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                      <Clock className="h-3 w-3" />
+                      {dayjs(item.createdAt).format('MMM D, YYYY h:mm A')}
+                    </span>
                   </div>
-                  <span className="border-border text-muted-foreground rounded-full border px-3 py-1 text-xs font-medium tracking-widest uppercase">
-                    {item.status}
-                  </span>
                 </div>
-                <p className="text-muted-foreground mt-3 text-sm leading-relaxed">{item.answerSnippet}</p>
-                <p className="text-muted-foreground mt-4 text-xs">답변일 {item.answeredAt}</p>
+                <h3 className="text-foreground font-semibold line-clamp-2">{item.title}</h3>
+                <p
+                  className="text-muted-foreground mt-2 text-sm leading-relaxed line-clamp-2"
+                  dangerouslySetInnerHTML={{ __html: getDisplayContent(item.content) }}
+                />
               </article>
-            ))}
+                ))}
+                
+                {/* 더보기 버튼 */}
+                {hasNextQuestions && (
+                  <div className="flex justify-center pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => fetchNextQuestions()}
+                      disabled={isFetchingNextQuestions}
+                      className="w-full"
+                    >
+                      {isFetchingNextQuestions ? 'Loading...' : 'Load More'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            {selectedQuestion && (
+              <QuestionDetailDialog
+                open={true}
+                onOpenChange={(open) => {
+                  if (!open) setSelectedQuestion(null);
+                }}
+                courseId={selectedQuestion.courseId}
+                questionId={selectedQuestion.questionId}
+              />
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="community">
-          <div className="space-y-4">
-            {communityComments.map((comment) => (
-              <article key={comment.id} className="border-border bg-background/50 rounded-2xl border p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                      {comment.courseTitle}
-                    </p>
-                    <h2 className="text-foreground mt-1 text-lg font-semibold">{comment.content}</h2>
-                  </div>
-                  <div className="text-muted-foreground text-right text-xs">
-                    <p>{comment.author}</p>
-                    <p className="mt-1">{comment.postedAt}</p>
-                  </div>
-                </div>
-                <div className="text-muted-foreground mt-4 flex items-center gap-4 text-xs">
-                  <span>좋아요 {comment.likes}</span>
-                  <span>댓글 {comment.replies}</span>
-                </div>
-              </article>
-            ))}
-          </div>
+          <ScrollArea className="h-[calc(100vh-20rem)]">
+            <div className="space-y-3 pr-4">
+              <CommunityPostList
+                posts={myCommunityPostsData}
+                currentUserId={profile?.id}
+                paging={{
+                  hasMore: hasNextPosts,
+                  onLoadMore: () => fetchNextPosts(),
+                  isLoadingMore: isFetchingNextPosts,
+                  currentPage: myCommunityPostsPagination?.currentPage,
+                  totalPages: myCommunityPostsPagination?.totalPages,
+                }}
+                actions={{
+                  onPostClick: handleMyCommunityPostClick,
+                  onLike: handleMyCommunityPostLike,
+                  onEdit: handleMyCommunityPostEdit,
+                  onDelete: handleMyCommunityPostDelete,
+                }}
+              />
+            </div>
+          </ScrollArea>
+
+          {selectedPost && (
+            <CommunityDetailDialog
+              courseId={selectedPost.courseId}
+              postId={selectedPost.postId}
+              open={true}
+              onOpenChange={(open) => {
+                if (!open) setSelectedPost(null);
+              }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="chatbot">
@@ -180,6 +413,64 @@ export default function LearnerHistoryPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {editingPost && (
+        <CommunityUpdateDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setEditingPost(null);
+          }}
+          courseId={editingPost.courseId}
+          postId={editingPost.postId}
+          initialContent={editingPost.content}
+          onUpdated={() => {
+            setEditingPost(null);
+          }}
+        />
+      )}
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Question?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. Are you sure you want to delete
+              <span className="font-semibold text-foreground">{deleteTarget?.title}</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteQuestion}
+              disabled={isDeleting}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={Boolean(deletePostTarget)} onOpenChange={(open) => !open && setDeletePostTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. Are you sure you want to delete this post?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingPost}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeletePost}
+              disabled={isDeletingPost}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
 import { TanstackTablePagination } from '@/shared/components/TanstackTablePagination';
 import { Button } from '@/shared/components/ui/button';
@@ -28,7 +27,6 @@ export default function LearnerCommunityPage() {
   const [pageSize, setPageSize] = useState(3);
   const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
   const [selectedPost, setSelectedPost] = useState<number | null>(null);
-  const router = useRouter();
 
   const {
     data: communityResponse,

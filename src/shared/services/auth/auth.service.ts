@@ -1,9 +1,4 @@
-import {
-  EmailVerifyCheckRequest,
-  LoginRequest,
-  LoginResponse,
-  SocialLoginRequest,
-} from './auth.type';
+import { EmailVerifyCheckRequest, LoginRequest, LoginResponse, SocialLoginRequest } from './auth.type';
 
 import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
@@ -42,9 +37,7 @@ export const POST_social_login = async (
 };
 
 /** 이메일 인증 확인 */
-export const POST_email_verify_check = async (
-  data: EmailVerifyCheckRequest,
-): Promise<ApiResponse<string>> => {
+export const POST_email_verify_check = async (data: EmailVerifyCheckRequest): Promise<ApiResponse<string>> => {
   const response = await axios.post(`/api/v1/auth/email-verification/verify`, data);
   return response.data;
 };
@@ -55,9 +48,7 @@ export const POST_email_verify_send = async (email: string): Promise<ApiResponse
   return response.data;
 };
 /** 사용자 소셜 로그인 인가코드 얻기 */
-export const GET_social_login_authorize_code = async (
-  socialName: SocialLoginType,
-): Promise<ApiResponse<string>> => {
+export const GET_social_login_authorize_code = async (socialName: SocialLoginType): Promise<ApiResponse<string>> => {
   const response = await axios.get(`/api/v1/auth/login/authorize/${socialName}`);
   return response.data;
 };

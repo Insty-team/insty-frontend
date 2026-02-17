@@ -31,7 +31,6 @@ export const POST_course_community_posts_by_id = async (courseId: number, data: 
   const formData = new FormData();
 
   const post = {
-    title: data.title,
     content: data.content,
     videoUuid: data.videoUuid,
   };
@@ -68,7 +67,6 @@ export const PATCH_course_community_post_by_id = async (courseId: number, postId
   const formData = new FormData();
 
   const post = {
-    title: data.title,
     content: data.content,
     videoUuid: data.videoUuid,
     deleteFileIds: data.deleteFileIds,

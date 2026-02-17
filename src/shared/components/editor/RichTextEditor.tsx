@@ -41,6 +41,11 @@ type ExistingAttachment = {
   name?: string;
 };
 
+type ExistingVideo = {
+  name?: string;
+  originFileName?: string;
+};
+
 type Props = {
   readonly value: string;
   readonly onChange: (nextValue: string) => void;
@@ -61,6 +66,8 @@ type Props = {
   readonly onFilesChange?: (files: File[]) => void;
   readonly existingAttachments?: ExistingAttachment[];
   readonly onRemoveExistingAttachment?: (id: number) => void;
+  readonly existingVideo?: ExistingVideo | null;
+  readonly onRemoveExistingVideo?: () => void;
 };
 
 // plain text를 안전한 HTML로 정규화(줄바꿈/특수문자 escape 포함)
@@ -111,6 +118,8 @@ export default function RichTextEditor({
   onFilesChange,
   existingAttachments = [],
   onRemoveExistingAttachment,
+  existingVideo = null,
+  onRemoveExistingVideo,
 }: Props) {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
@@ -139,7 +148,8 @@ export default function RichTextEditor({
       ? [...uploadedFiles, ...(uploadedVideoFile ? [uploadedVideoFile] : [])]
       : [];
     onFilesChange?.(allFiles);
-  }, [uploadedFiles, uploadedVideoFile, onFilesChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadedFiles, uploadedVideoFile]);
 
   // 이미지 파일 업로드 처리(기존 첨부 포함 최대 개수 제한 적용)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,7 +253,7 @@ export default function RichTextEditor({
   };
 
   return (
-    <div className={cn('bg-background rounded-xl border', className)}>
+    <div className={cn('bg-background rounded-lg border', className)}>
       {/* 툴바 */}
       <div className="flex flex-wrap items-center gap-1 border-b px-1">
         <div className="flex flex-1 flex-wrap items-center gap-0">
@@ -337,7 +347,7 @@ export default function RichTextEditor({
             editor={editor}
             className={cn(
               'prose prose-sm max-w-none',
-              'min-h-[60px] overflow-y-auto rounded-md',
+              'min-h-[60px] overflow-y-auto',
               '[&>.ProseMirror]:outline-none',
               '[&>.ProseMirror]:border-none',
               (showSendButton || showAttachButton) && 'pb-10',
@@ -352,7 +362,7 @@ export default function RichTextEditor({
         </ScrollArea>
 
         {/* 첨부 파일 미리보기*/}
-        {(uploadedFilePreviews.length > 0 || uploadedVideoFile || existingAttachments.length > 0) && (
+        {(uploadedFilePreviews.length > 0 || uploadedVideoFile || existingAttachments.length > 0 || existingVideo) && (
           <div className="mb-8 space-y-2">
             {(existingAttachments.length > 0 || uploadedFiles.length > 0) && (
               <div className="flex flex-wrap gap-1">
@@ -421,6 +431,26 @@ export default function RichTextEditor({
                 </div>
               </div>
             )}
+
+            {existingVideo && !uploadedVideoFile && (
+              <div className="relative rounded border p-2">
+                <div className="flex items-center gap-2">
+                  <Film className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground truncate max-w-60">
+                    {existingVideo.originFileName ?? existingVideo.name ?? 'Video'}
+                  </span>
+                  {onRemoveExistingVideo && (
+                    <button
+                      type="button"
+                      onClick={onRemoveExistingVideo}
+                      className="ml-auto rounded-full bg-background/80 p-0.5 hover:bg-background"
+                    >
+                      <X className="h-2 w-2" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             
             {uploadErrorMessage && (
               <p className="text-xs text-destructive">{uploadErrorMessage}</p>
@@ -471,7 +501,7 @@ export default function RichTextEditor({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => videoInputRef.current?.click()}
-                    disabled={Boolean(uploadedVideoFile)}
+                    disabled={Boolean(uploadedVideoFile || existingVideo)}
                     className="gap-2 text-xs"
                   >
                     <Film className="size-3" />

@@ -1,24 +1,56 @@
 import dayjs from 'dayjs';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { getDisplayContent } from '@/shared/lib/tiptap-content';
-import { Attachment, CourseQuestionStatus } from '@/shared/services/course/course.type';
+import { Attachment, CourseQuestionStatus, VideoType } from '@/shared/services/course/course.type';
 import { Calendar } from 'lucide-react';
 import QuestionLabel from '@/shared/components/question/QuestionLabel';
+import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
+import ReactPlayer from 'react-player';
+
+const QuestionVideoPlayer = ({ questionId, videoType }: { questionId: number; videoType: VideoType }) => {
+  const { m3u8Url, isLoading: isLoadingVideo } = useVideoPlaylist({
+    type: videoType,
+    id: questionId.toString(),
+    enabled: !!questionId,
+  });
+
+  return (
+    <div className="mt-3 overflow-hidden rounded-lg border">
+      {isLoadingVideo || !m3u8Url ? (
+        <div className="flex items-center justify-center bg-muted py-20">
+          <Spinner className="size-6" />
+        </div>
+      ) : (
+        <div className="aspect-video">
+          <ReactPlayer src={m3u8Url} controls width="100%" height="100%" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 type QuestionDetailProps = {
   questionData: {
     title: string;
     content: string;
     status?: CourseQuestionStatus;
+    courseName?: string;
     user?: {
       id?: number;
       nickname?: string;
     };
     createdAt?: string;
     attachments?: Attachment[];
+    videoInfo?: {
+      videoType: VideoType;
+      videoUuid: string;
+      originFileName: string;
+    } | null;
+    questionId?: number;
   } | null | undefined;
   isLoading?: boolean;
   isError?: boolean;
@@ -112,6 +144,9 @@ export default function QuestionDetail({
           dangerouslySetInnerHTML={{ __html: getDisplayContent(questionData.content) }}
         />
         {questionData.attachments && renderAttachments(questionData.attachments)}
+        {questionData.videoInfo?.videoUuid && questionData.questionId && (
+          <QuestionVideoPlayer questionId={questionData.questionId} videoType={questionData.videoInfo.videoType} />
+        )}
       </div>
     </>
   );

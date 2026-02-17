@@ -1,0 +1,510 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+import ConfirmModal from '@/shared/components/ConfirmModal';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
+import { Input } from '@/shared/components/ui/input';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import RichTextEditor from '@/shared/components/editor/RichTextEditor';
+import {
+  useGetCourseQuestion,
+  useGetCourseQuestionAnswers,
+  useGetCourseQuestionAnswerAccepted,
+  usePostCourseQuestionAnswer,
+  usePostCourseQuestionAnswerAccept,
+  useDeleteCourseQuestionAnswer,
+  usePatchCourseQuestionAnswerById,
+  usePatchCourseQuestion,
+  useDeleteCourseQuestion,
+} from '@/shared/services/course/course.hook';
+import { useGetProfile } from '@/shared/services/user/user.hook';
+import type { Attachment } from '@/shared/services/course/course.type';
+import { ChevronLeft, MoreHorizontal } from 'lucide-react';
+import { toast } from 'sonner';
+import QuestionAnswers from '@/shared/components/question/QuestionAnswers';
+import QuestionDetail from '@/shared/components/question/QuestionDetail';
+import { getDisplayContent } from '@/shared/lib/tiptap-content';
+import QuestionLabel from '@/shared/components/question/QuestionLabel';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+
+type Props = {
+  readonly courseId: number;
+  readonly questionId: number;
+  readonly onBack: () => void;
+};
+
+export default function QuestionDetailSheet({ courseId, questionId, onBack }: Props) {
+  const [answerContent, setAnswerContent] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+  const [isQuestionEditing, setIsQuestionEditing] = useState(false);
+  const [isQuestionDeleteOpen, setIsQuestionDeleteOpen] = useState(false);
+
+  const [questionTitle, setQuestionTitle] = useState('');
+  const [questionContent, setQuestionContent] = useState('');
+  const [questionAttachedFiles, setQuestionAttachedFiles] = useState<File[]>([]);
+  const [questionVideoFile, setQuestionVideoFile] = useState<File | null>(null);
+  const [questionExistingAttachments, setQuestionExistingAttachments] = useState<Attachment[]>([]);
+  const [questionExistingVideo, setQuestionExistingVideo] = useState<{ originFileName?: string } | null>(null);
+  const [questionDeletedAttachmentIds, setQuestionDeletedAttachmentIds] = useState<number[]>([]);
+  const [questionEditorKey, setQuestionEditorKey] = useState(0);
+  
+  // 답변 관련 state
+  const [acceptConfirmOpen, setAcceptConfirmOpen] = useState(false);
+  const [cancelAcceptConfirmOpen, setCancelAcceptConfirmOpen] = useState(false);
+  const [deleteAnswerConfirmOpen, setDeleteAnswerConfirmOpen] = useState(false);
+  const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const [answers, setAnswers] = useState<any[]>([]);
+  const [editorKey, setEditorKey] = useState(0);
+
+  const { data: userProfile } = useGetProfile();
+  const currentUserId = userProfile?.id;
+
+  const { mutate: postAnswer, isPending: isPosting } = usePostCourseQuestionAnswer(courseId, questionId);
+  const { uploadVideo } = usePresignedVideoUpload();
+  const { data: answersData, isFetching: isAnswersFetching } = useGetCourseQuestionAnswers(courseId, questionId, page, pageSize);
+  const { data: acceptedAnswer } = useGetCourseQuestionAnswerAccepted(courseId, questionId);
+  const { mutate: toggleAcceptAnswer, isPending: isAccepting } = usePostCourseQuestionAnswerAccept(courseId, questionId);
+  const { mutate: deleteAnswer, isPending: isDeletingAnswer } = useDeleteCourseQuestionAnswer(courseId, questionId);
+  const { mutate: patchAnswer, isPending: isPatchingAnswer } = usePatchCourseQuestionAnswerById(courseId, questionId);
+  const { mutate: patchQuestion, isPending: isPatchingQuestion } = usePatchCourseQuestion();
+  const { mutate: deleteQuestion, isPending: isDeletingQuestion } = useDeleteCourseQuestion();
+
+  const pagination = answersData?.pagination;
+  const acceptedAnswerItem = Array.isArray(acceptedAnswer) ? acceptedAnswer[0] : acceptedAnswer;
+
+  useEffect(() => {
+    if (answersData?.items) {
+      if (page === 1) {
+        setAnswers(answersData.items);
+      } else {
+        setAnswers(prev => {
+          const existingIds = new Set(prev.map(a => a.answerId));
+          const newAnswers = answersData.items.filter((item: any) => !existingIds.has(item.answerId));
+          return [...prev, ...newAnswers];
+        });
+      }
+    }
+  }, [answersData, page]);
+
+  useEffect(() => {
+    if (pagination) {
+      setHasMore(page < pagination.totalPages);
+    }
+  }, [pagination, page]);
+
+  const handleSubmitAnswer = async () => {
+    if (!answerContent.trim()) return;
+
+    const images = uploadedFiles.filter((f) => f.type.startsWith('image/'));
+    const videoFile = uploadedFiles.find((f) => f.type.startsWith('video/')) ?? null;
+
+    try {
+      let videoUuid: string | undefined;
+
+      if (videoFile) {
+        videoUuid = await uploadVideo({ kind: 'ANSWER', file: videoFile });
+      }
+
+      postAnswer(
+        {
+          content: answerContent,
+          videoUuid,
+          attachments: images.length > 0 ? images : undefined,
+        },
+        {
+          onSuccess: () => {
+            setAnswerContent('');
+            setUploadedFiles([]);
+            setPage(1);
+            setAnswers([]);
+            setEditorKey((prev) => prev + 1);
+          },
+        },
+      );
+    } catch (e) {
+      console.error('답변 비디오 업로드/등록 실패:', e);
+      toast.error('Failed to upload video.');
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!isAnswersFetching && hasMore) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  const handleUpdateAnswer = (
+    answerId: number,
+    content: string,
+    files: File[],
+    deleteAttachmentIds: number[],
+    videoUuid?: string | null,
+  ) => {
+    patchAnswer({
+      answerId,
+      data: {
+        content,
+        attachments: files.length > 0 ? files : undefined,
+        deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : undefined,
+        videoUuid,
+      },
+    });
+  };
+
+  const handleAcceptAnswer = (answerId: number) => {
+    setSelectedAnswerId(answerId);
+    if (acceptedAnswerItem) {
+      setCancelAcceptConfirmOpen(true);
+      return;
+    }
+
+    setAcceptConfirmOpen(true);
+  };
+
+  const handleDeleteAnswer = (answerId: number) => {
+    setSelectedAnswerId(answerId);
+    setDeleteAnswerConfirmOpen(true);
+  };
+
+  const handleConfirmAccept = () => {
+    if (!selectedAnswerId) return;
+
+    toggleAcceptAnswer(selectedAnswerId, {
+      onSuccess: () => {
+        setAcceptConfirmOpen(false);
+        setSelectedAnswerId(null);
+      },
+    });
+  };
+
+  const handleConfirmCancelAccept = () => {
+    if (!selectedAnswerId) return;
+
+    toggleAcceptAnswer(selectedAnswerId, {
+      onSuccess: () => {
+        setCancelAcceptConfirmOpen(false);
+        setSelectedAnswerId(null);
+      },
+    });
+  };
+
+  const handleConfirmDeleteAnswer = () => {
+    if (!selectedAnswerId) return;
+
+    deleteAnswer(selectedAnswerId, {
+      onSuccess: () => {
+        setDeleteAnswerConfirmOpen(false);
+        setSelectedAnswerId(null);
+        setPage(1);
+        setAnswers([]);
+      },
+    });
+  };
+
+  const handleOpenChangeAcceptConfirm = (nextOpen: boolean) => {
+    setAcceptConfirmOpen(nextOpen);
+    if (!nextOpen) setSelectedAnswerId(null);
+  };
+
+  const handleOpenChangeCancelAcceptConfirm = (nextOpen: boolean) => {
+    setCancelAcceptConfirmOpen(nextOpen);
+    if (!nextOpen) setSelectedAnswerId(null);
+  };
+
+  const handleOpenChangeDeleteAnswerConfirm = (nextOpen: boolean) => {
+    setDeleteAnswerConfirmOpen(nextOpen);
+    if (!nextOpen) setSelectedAnswerId(null);
+  };
+
+  const handleConfirmDeleteQuestion = () => {
+    deleteQuestion(
+      { courseId, questionId },
+      {
+        onSuccess: () => {
+          setIsQuestionDeleteOpen(false);
+          toast.success('Question deleted.');
+          onBack();
+        },
+        onError: (error: any) => {
+          console.error('질문 삭제 실패:', error);
+          toast.error('Failed to delete question.');
+        },
+      },
+    );
+  };
+
+  const startQuestionEdit = () => {
+    if (!questionData) return;
+    setQuestionTitle(questionData.title ?? '');
+    setQuestionContent(getDisplayContent(questionData.content ?? ''));
+    setQuestionExistingAttachments(questionData.attachments ?? []);
+    setQuestionExistingVideo(questionData.videoInfo ? { originFileName: questionData.videoInfo.originFileName } : null);
+    setQuestionAttachedFiles([]);
+    setQuestionDeletedAttachmentIds([]);
+    setQuestionEditorKey((prev) => prev + 1);
+    setIsQuestionEditing(true);
+  };
+
+  const cancelQuestionEdit = () => {
+    setIsQuestionEditing(false);
+    setQuestionTitle('');
+    setQuestionContent('');
+    setQuestionAttachedFiles([]);
+    setQuestionVideoFile(null);
+    setQuestionExistingAttachments([]);
+    setQuestionExistingVideo(null);
+    setQuestionDeletedAttachmentIds([]);
+    setQuestionEditorKey((prev) => prev + 1);
+  };
+
+  const handleQuestionFilesChange = (files: File[]) => {
+    const images = files.filter((f) => f.type.startsWith('image/'));
+    const video = files.find((f) => f.type.startsWith('video/')) ?? null;
+    setQuestionAttachedFiles(images);
+    setQuestionVideoFile(video);
+  };
+
+  const handleRemoveQuestionExistingAttachment = (attachmentId: number) => {
+    setQuestionExistingAttachments((prev) => prev.filter((file) => file.id !== attachmentId));
+    setQuestionDeletedAttachmentIds((prev) => (prev.includes(attachmentId) ? prev : [...prev, attachmentId]));
+  };
+
+  const saveQuestionEdit = () => {
+    const nextTitle = questionTitle.trim();
+    const nextContent = questionContent.trim();
+    if (!nextTitle || !nextContent) return;
+
+    (async () => {
+      try {
+        let videoUuid: string | null | undefined;
+        if (questionVideoFile) {
+          // 새 비디오 업로드
+          videoUuid = await uploadVideo({ kind: 'QUESTION', file: questionVideoFile });
+        } else if (questionData?.videoInfo && !questionExistingVideo) {
+          // 기존 비디오 삭제
+          videoUuid = null;
+        } else if (questionExistingVideo && questionData?.videoInfo) {
+          // 기존 비디오 유지
+          videoUuid = questionData.videoInfo.videoUuid;
+        }
+
+        patchQuestion(
+          {
+            courseId,
+            questionId,
+            data: {
+              title: nextTitle,
+              content: nextContent,
+              videoUuid,
+              attachments: questionAttachedFiles.length > 0 ? questionAttachedFiles : undefined,
+              deleteFileIds: questionDeletedAttachmentIds.length > 0 ? questionDeletedAttachmentIds : undefined,
+            },
+          },
+          {
+            onSuccess: () => {
+              toast.success('Question updated.');
+              cancelQuestionEdit();
+            },
+            onError: (error: any) => {
+              console.error('질문 수정 실패:', error);
+              toast.error('Failed to update question.');
+            },
+          },
+        );
+      } catch (e) {
+        console.error('질문 비디오 업로드/수정 실패:', e);
+        toast.error('Failed to upload video.');
+      }
+    })();
+  };
+
+  const { data: questionData, isLoading: isQuestionLoading, isError: isQuestionError } = useGetCourseQuestion(courseId, questionId);
+
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={onBack} className="size-8" aria-label="Go back">
+            <ChevronLeft className="size-6" />
+          </Button>
+          <p className="text-lg font-base">Question List</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {questionData?.courseName && (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">Content</Badge>
+              <span className="text-sm text-muted-foreground">{questionData.courseName}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ScrollArea className="overflow-y-auto">
+        <div className="space-y-4 px-4">
+          <div className="relative">
+            {isQuestionEditing ? (
+              <div className="border rounded-sm px-6 py-4 space-y-4">
+                <div className="space-y-2">
+                  <Input value={questionTitle} onChange={(e) => setQuestionTitle(e.target.value)} disabled={isPatchingQuestion} />
+                </div>
+
+                <div className="space-y-2">
+                  <RichTextEditor
+                    key={questionEditorKey}
+                    value={questionContent}
+                    onChange={setQuestionContent}
+                    placeholder="Enter your question details..."
+                    showSendButton={false}
+                    showAttachButton={true}
+                    onFilesChange={handleQuestionFilesChange}
+                    existingAttachments={questionExistingAttachments}
+                    onRemoveExistingAttachment={handleRemoveQuestionExistingAttachment}
+                    existingVideo={questionExistingVideo}
+                    onRemoveExistingVideo={() => setQuestionExistingVideo(null)}
+                    isDisabled={isPatchingQuestion}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={cancelQuestionEdit} disabled={isPatchingQuestion}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={saveQuestionEdit} disabled={isPatchingQuestion}>
+                    {isPatchingQuestion ? 'Saving...' : 'Save'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="border rounded-sm px-6 py-4 space-y-4">
+                {(questionData?.status || (questionData?.user?.id && currentUserId === questionData.user.id)) && (
+                  <div className="flex items-center justify-between">
+                    <div>{questionData?.status && <QuestionLabel status={questionData.status} />}</div>
+                    <div>
+                      {questionData?.user?.id && currentUserId === questionData.user.id ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="size-8" aria-label="Manage question">
+                              <MoreHorizontal className="size-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={startQuestionEdit}>Edit</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setIsQuestionDeleteOpen(true)}>Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+
+                <QuestionDetail
+                  questionData={questionData}
+                  isLoading={isQuestionLoading}
+                  isError={isQuestionError}
+                  showStatus={false}
+                  variant="plain"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 답변 목록 */}
+          {questionData && (
+            <QuestionAnswers
+              answers={answers}
+              acceptedAnswer={acceptedAnswerItem}
+              totalCount={pagination?.totalItems}
+              currentUserId={currentUserId}
+              questionAuthorId={questionData.user?.id}
+              onAccept={handleAcceptAnswer}
+              onUpdate={handleUpdateAnswer}
+              onDelete={handleDeleteAnswer}
+              isAccepting={isAccepting}
+              isUpdating={isPatchingAnswer}
+              hasMore={hasMore}
+              onLoadMore={handleLoadMore}
+              isLoadingMore={isAnswersFetching}
+            />
+          )}
+        </div>
+      </ScrollArea>
+
+      <ConfirmModal
+        open={acceptConfirmOpen}
+        onOpenChange={handleOpenChangeAcceptConfirm}
+        title="Accept Answer"
+        description="Are you sure you want to accept this answer?"
+        confirmText="Confirm"
+        cancelText="Cancel"
+        isConfirming={isAccepting}
+        onConfirm={handleConfirmAccept}
+      />
+
+      <ConfirmModal
+        open={cancelAcceptConfirmOpen}
+        onOpenChange={handleOpenChangeCancelAcceptConfirm}
+        title="Cancel Acceptance"
+        description="Are you sure you want to cancel the acceptance?"
+        confirmText="Confirm"
+        cancelText="Cancel"
+        isConfirming={isAccepting}
+        onConfirm={handleConfirmCancelAccept}
+      />
+
+      <ConfirmModal
+        open={deleteAnswerConfirmOpen}
+        onOpenChange={handleOpenChangeDeleteAnswerConfirm}
+        title="Delete Answer"
+        description="Are you sure you want to delete this answer? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        destructive
+        isConfirming={isDeletingAnswer}
+        onConfirm={handleConfirmDeleteAnswer}
+      />
+
+      <ConfirmModal
+        open={isQuestionDeleteOpen}
+        onOpenChange={setIsQuestionDeleteOpen}
+        title="Delete Question"
+        description="Are you sure you want to delete this question? This action cannot be undone."
+        confirmText="Confirm"
+        cancelText="Cancel"
+        destructive
+        isConfirming={isDeletingQuestion}
+        onConfirm={handleConfirmDeleteQuestion}
+      />
+
+      {/* 답변 작성 폼 */}
+      <div className="sticky bottom-0 bg-background py-2 px-4">
+        <div className="space-y-3">
+          <RichTextEditor
+            key={editorKey}
+            value={answerContent}
+            onChange={setAnswerContent}
+            placeholder="Please write your answer"
+            onSend={handleSubmitAnswer}
+            showSendButton={true}
+            showAttachButton={true}
+            onFilesChange={setUploadedFiles}
+            isSending={isPosting}
+          />
+        </div>
+      </div>
+
+    </>
+  );
+}
