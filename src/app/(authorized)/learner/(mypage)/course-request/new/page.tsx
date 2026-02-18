@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
@@ -46,13 +45,7 @@ export default function LearnerCourseRequestNewPage() {
     };
 
     sortedFields.forEach((field) => {
-      if (field.type === 'checkbox') {
-        values[field.field_key] = [];
-        // Other 옵션이 있으면 other 필드도 추가
-        if (field.options.some((opt) => opt.label === 'Other' || opt.label === '기타')) {
-          values[`${field.field_key}_other`] = '';
-        }
-      } else if (field.type === 'radio') {
+      if (field.type === 'radio') {
         values[field.field_key] = '';
         // Other 옵션이 있으면 other 필드도 추가
         if (field.options.some((opt) => opt.label === 'Other' || opt.label === '기타')) {
@@ -107,41 +100,6 @@ export default function LearnerCourseRequestNewPage() {
             });
           }
         }
-      } else if (field.type === 'checkbox') {
-        // Checkbox 타입: 다중 선택
-        const selectedValues = (fieldValue as string[]) || [];
-        const optionIds: number[] = [];
-        let hasOther = false;
-        let otherText = '';
-
-        selectedValues.forEach((value: string) => {
-          const selectedOption = field.options.find((opt) => opt.label === value);
-          if (selectedOption) {
-            if (selectedOption.label === 'Other' || selectedOption.label === '기타') {
-              hasOther = true;
-              const otherValue = data[`${field.field_key}_other`] as string;
-              if (otherValue) {
-                otherText = otherValue;
-              }
-            } else {
-              optionIds.push(selectedOption.id);
-            }
-          }
-        });
-
-        if (hasOther && otherText) {
-          answers.push({
-            field_id: field.id,
-            answer_text: otherText,
-            answer_option_ids: optionIds.length > 0 ? optionIds : null,
-          });
-        } else if (optionIds.length > 0) {
-          answers.push({
-            field_id: field.id,
-            answer_text: null,
-            answer_option_ids: optionIds,
-          });
-        }
       } else if (field.type === 'input_text' || field.type === 'text_area') {
         // Input text 또는 Textarea 타입: 텍스트 입력
         const textValue = fieldValue as string;
@@ -163,12 +121,12 @@ export default function LearnerCourseRequestNewPage() {
 
     submitCourseRequest(courseRequest, {
       onSuccess: () => {
-        toast.success('강의 요청이 제출되었습니다!');
+        toast.success('Content request submitted successfully!');
         router.push('/learner/course-request');
       },
       onError: (error) => {
-        console.error('강의 요청 제출 실패:', error);
-        toast.error('강의 요청 제출에 실패했습니다. 다시 시도해주세요.');
+        console.error('Failed to submit content request:', error);
+        toast.error('Failed to submit content request. Please try again.');
       },
     });
   };
@@ -185,11 +143,14 @@ export default function LearnerCourseRequestNewPage() {
             control={form.control}
             name={field.field_key}
             rules={{
-              required: field.is_required ? `${field.label}을(를) 선택해주세요` : false,
+              required: field.is_required ? `Please select ${field.label.slice(0, field.label.length - 1)}.` : false,
             }}
             render={({ field: formField }) => (
               <FormItem className="space-y-3">
-                <FormLabel>{field.label}</FormLabel>
+                <FormLabel>
+                  {field.label}
+                  {field.is_required && <span className="text-destructive ml-0.5">*</span>}
+                </FormLabel>
                 <FormControl>
                   <RadioGroup onValueChange={formField.onChange} value={(formField.value as string) || ''}>
                     <div className="flex flex-col gap-3">
@@ -218,91 +179,13 @@ export default function LearnerCourseRequestNewPage() {
               control={form.control}
               name={`${field.field_key}_other`}
               rules={{
-                required: '기타 내용을 입력해주세요',
+                required: 'Please enter details for Other',
               }}
               render={({ field: otherField }) => (
                 <FormItem>
                   <FormControl>
                     <Input
-                      placeholder="기타 내용을 입력하세요"
-                      {...otherField}
-                      value={(otherField.value as string) || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-        </div>
-      );
-    }
-
-    if (field.type === 'checkbox') {
-      const hasOtherOption = field.options.some((opt) => opt.label === 'Other' || opt.label === '기타');
-      const fieldValue = form.watch(field.field_key) as string[];
-
-      return (
-        <div key={field.id}>
-          <FormField
-            control={form.control}
-            name={field.field_key}
-            rules={{
-              required: field.is_required ? `${field.label}을(를) 최소 1개 이상 선택해주세요` : false,
-              validate: (value) => {
-                if (field.is_required && (!value || (Array.isArray(value) && value.length === 0))) {
-                  return `${field.label}을(를) 최소 1개 이상 선택해주세요`;
-                }
-                return true;
-              },
-            }}
-            render={({ field: formField }) => (
-              <FormItem className="space-y-3">
-                <FormLabel>{field.label}</FormLabel>
-                <FormControl>
-                  <div className="flex flex-col gap-3">
-                    {field.options
-                      .sort((a, b) => a.order_no - b.order_no)
-                      .map((option) => (
-                        <div key={option.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`${field.field_key}-${option.id}`}
-                            checked={(formField.value as string[])?.includes(option.label)}
-                            onCheckedChange={(checked) => {
-                              const currentValue = (formField.value as string[]) || [];
-                              if (checked) {
-                                formField.onChange([...currentValue, option.label]);
-                              } else {
-                                formField.onChange(currentValue.filter((v: string) => v !== option.label));
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`${field.field_key}-${option.id}`}
-                            className="cursor-pointer text-sm leading-none font-normal"
-                          >
-                            {option.label}
-                          </label>
-                        </div>
-                      ))}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {hasOtherOption && fieldValue && (fieldValue.includes('Other') || fieldValue.includes('기타')) && (
-            <FormField
-              control={form.control}
-              name={`${field.field_key}_other`}
-              rules={{
-                required: '기타 내용을 입력해주세요',
-              }}
-              render={({ field: otherField }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      placeholder="기타 내용을 입력하세요"
+                      placeholder="Enter details for Other"
                       {...otherField}
                       value={(otherField.value as string) || ''}
                     />
@@ -323,11 +206,14 @@ export default function LearnerCourseRequestNewPage() {
           control={form.control}
           name={field.field_key}
           rules={{
-            required: field.is_required ? `${field.label}을(를) 입력해주세요` : false,
+            required: field.is_required ? `Please enter ${field.label.slice(0, field.label.length - 1)}.` : false,
           }}
           render={({ field: formField }) => (
             <FormItem>
-              <FormLabel>{field.label}</FormLabel>
+              <FormLabel>
+                {field.label}
+                {field.is_required && <span className="text-destructive ml-0.5">*</span>}
+              </FormLabel>
               <FormControl>
                 <Input placeholder={field.label} {...formField} value={(formField.value as string) || ''} />
               </FormControl>
@@ -345,11 +231,14 @@ export default function LearnerCourseRequestNewPage() {
           control={form.control}
           name={field.field_key}
           rules={{
-            required: field.is_required ? `${field.label}을(를) 입력해주세요` : false,
+            required: field.is_required ? `Please enter ${field.label.slice(0, field.label.length - 1)}.` : false,
           }}
           render={({ field: formField }) => (
             <FormItem>
-              <FormLabel>{field.label}</FormLabel>
+              <FormLabel>
+                {field.label}
+                {field.is_required && <span className="text-destructive ml-0.5">*</span>}
+              </FormLabel>
               <FormControl>
                 <Textarea placeholder={field.label} rows={4} {...formField} value={(formField.value as string) || ''} />
               </FormControl>
@@ -375,12 +264,12 @@ export default function LearnerCourseRequestNewPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold">강의 요청하기</h2>
-          <p className="text-muted-foreground mt-1">원하는 강의를 요청하세요</p>
+          <h2 className="text-2xl font-bold">Request Content</h2>
+          <p className="text-muted-foreground mt-1">Submit a request for the content you want</p>
         </div>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-destructive">폼 데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.</p>
+            <p className="text-destructive">Failed to load form data. Please try again.</p>
           </CardContent>
         </Card>
       </div>
@@ -391,12 +280,12 @@ export default function LearnerCourseRequestNewPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold">강의 요청하기</h2>
-          <p className="text-muted-foreground mt-1">원하는 강의를 요청하세요</p>
+          <h2 className="text-2xl font-bold">Request Content</h2>
+          <p className="text-muted-foreground mt-1">Submit a request for the content you want</p>
         </div>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">폼 데이터가 없습니다.</p>
+            <p className="text-muted-foreground">No form data available.</p>
           </CardContent>
         </Card>
       </div>
@@ -406,15 +295,15 @@ export default function LearnerCourseRequestNewPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">강의 요청하기</h2>
-        <p className="text-muted-foreground mt-1">원하는 강의를 요청하세요</p>
+        <h2 className="text-2xl font-bold">Request Content</h2>
+        <p className="text-muted-foreground mt-1">Submit a request for the content you want</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>강의 요청 작성</CardTitle>
+          <CardTitle>Content Request Form</CardTitle>
           <CardDescription>
-            어떤 강의를 듣고 싶으신가요? 여러분의 요청을 크리에이터들이 확인하고 강의를 제작할 수 있습니다.
+            What content would you like to learn? Creators will review your request and produce content for you.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -423,12 +312,14 @@ export default function LearnerCourseRequestNewPage() {
               <FormField
                 control={form.control}
                 name="title"
-                rules={{ required: '요청 제목을 입력해주세요' }}
+                rules={{ required: 'Please enter a request title.' }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>요청 제목</FormLabel>
+                    <FormLabel>
+                      Request Title <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="강의 요청 제목을 입력하세요" {...field} />
+                      <Input placeholder="Enter your content request title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -438,12 +329,14 @@ export default function LearnerCourseRequestNewPage() {
               <FormField
                 control={form.control}
                 name="description"
-                rules={{ required: '요청 상세 내용을 입력해주세요' }}
+                rules={{ required: 'Please enter request details.' }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>요청 상세 내용</FormLabel>
+                    <FormLabel>
+                      Request Details <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
-                      <Textarea placeholder="강의 요청에 대한 상세 내용을 작성해주세요" rows={6} {...field} />
+                      <Textarea placeholder="Describe your content request in detail" rows={6} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -455,10 +348,10 @@ export default function LearnerCourseRequestNewPage() {
 
               <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
-                  취소
+                  Cancel
                 </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? '제출 중...' : '요청 제출'}
+                <Button type="submit" disabled={isPending} className='cursor-pointer'>
+                  {isPending ? 'Submitting...' : 'Submit Request'}
                 </Button>
               </div>
             </form>

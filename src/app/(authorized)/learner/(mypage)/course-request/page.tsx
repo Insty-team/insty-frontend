@@ -47,16 +47,16 @@ const getStatusBadgeVariant = (status: string | null) => {
 };
 
 const getStatusLabel = (status: string | null) => {
-  if (!status) return '대기중';
+  if (!status) return 'Pending';
   switch (status.toUpperCase()) {
     case 'ACCEPTED':
-      return '수락됨';
+      return 'Accepted';
     case 'COMPLETED':
-      return '완료됨';
+      return 'Completed';
     case 'DECLINED':
-      return '거절됨';
+      return 'Declined';
     case 'IGNORED':
-      return '무시됨';
+      return 'Ignored';
     default:
       return status;
   }
@@ -90,19 +90,19 @@ export default function LearnerCourseRequestPage() {
       },
       {
         accessorKey: 'title',
-        header: '제목',
+        header: 'Title',
       },
       {
         accessorKey: 'description',
-        header: '설명',
+        header: 'Description',
       },
       {
         accessorKey: 'action_status',
-        header: '상태',
+        header: 'Status',
       },
       {
         accessorKey: 'created_at',
-        header: '생성일',
+        header: 'Created At',
       },
     ],
     [],
@@ -147,8 +147,8 @@ export default function LearnerCourseRequestPage() {
         setDeleteDialog({ isOpen: false, requestId: null, title: '' });
       },
       onError: (error) => {
-        console.error('강의 요청 삭제 실패:', error);
-        alert('강의 요청 삭제에 실패했습니다. 다시 시도해주세요.');
+        console.error('Failed to delete content request:', error);
+        alert('Failed to delete content request. Please try again.');
       },
     });
   };
@@ -161,13 +161,13 @@ export default function LearnerCourseRequestPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">내가 요청한 강의</h2>
-          <p className="text-muted-foreground mt-1">제출한 강의 요청 목록을 확인하세요</p>
+          <h2 className="text-2xl font-bold">Content Requests</h2>
+          <p className="text-muted-foreground mt-1">View your content requests</p>
         </div>
         <Button asChild>
           <Link href="/learner/course-request/new">
             <Plus className="mr-2 h-4 w-4" />
-            강의 요청하기
+            New Request
           </Link>
         </Button>
       </div>
@@ -175,18 +175,18 @@ export default function LearnerCourseRequestPage() {
       {isLoading ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <p className="text-muted-foreground">강의 요청 목록을 불러오는 중입니다...</p>
+            <p className="text-muted-foreground">Loading your content requests...</p>
           </CardContent>
         </Card>
       ) : !courseRequests || courseRequests.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <FileText className="text-muted-foreground mb-4 h-12 w-12" />
-            <p className="text-muted-foreground mb-4">아직 요청한 강의가 없습니다</p>
+            <p className="text-muted-foreground mb-4">No content requests yet.</p>
             <Button asChild>
               <Link href="/learner/course-request/new">
                 <Plus className="mr-2 h-4 w-4" />
-                강의 요청하기
+                New Request
               </Link>
             </Button>
           </CardContent>
@@ -211,7 +211,7 @@ export default function LearnerCourseRequestPage() {
                             </span>
                             {courseRequest.action_at && (
                               <span className="flex items-center gap-1">
-                                처리일: {dayjs(courseRequest.action_at).format('YYYY.MM.DD')}
+                                Processed: {dayjs(courseRequest.action_at).format('YYYY.MM.DD')}
                               </span>
                             )}
                           </div>
@@ -226,7 +226,7 @@ export default function LearnerCourseRequestPage() {
                           size="sm"
                           onClick={() => router.push(`/learner/course-request/${courseRequest.request_id}`)}
                         >
-                          상세히 보기
+                          View Details
                         </Button>
                         <Button
                           variant="outline"
@@ -235,7 +235,7 @@ export default function LearnerCourseRequestPage() {
                           disabled={isDeleting}
                           className="text-destructive hover:text-destructive"
                         >
-                          <Trash2 className="h-4 w-4" /> 요청 삭제
+                          <Trash2 className="h-4 w-4" /> Delete
                         </Button>
                       </div>
                     </div>
@@ -254,19 +254,19 @@ export default function LearnerCourseRequestPage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Trash2 className="text-destructive h-5 w-5" />
-              강의 요청 삭제 확인
+              Delete Content Request
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p>
-                <strong>"{deleteDialog.title}"</strong> 강의 요청을 삭제하시겠습니까?
+                Are you sure you want to delete <strong>"{deleteDialog.title}"</strong>?
               </p>
               <p className="text-muted-foreground text-sm">
-                이 작업은 되돌릴 수 없습니다. 강의 요청이 영구적으로 삭제됩니다.
+                This action cannot be undone. The content request will be permanently deleted.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
@@ -275,12 +275,12 @@ export default function LearnerCourseRequestPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  삭제 중...
+                  Deleting...
                 </>
               ) : (
                 <>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  삭제
+                  Delete
                 </>
               )}
             </AlertDialogAction>
