@@ -234,9 +234,9 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
   };
 
   return (
-    <div className={cn('bg-background rounded-xl border', className)}>
-      <div className="relative px-3 py-3">
-        <ScrollArea className="max-h-[320px]">
+    <div className={cn('bg-background rounded-lg border', className)}>
+      <div className="relative">
+        <div className="p-3">
           <Textarea
             ref={textareaRef}
             value={value}
@@ -244,15 +244,14 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
             placeholder={placeholder}
             disabled={isDisabled}
             onKeyDown={handleKeyDown}
+            style={{ height: 'auto', minHeight: '60px', maxHeight: '200px' }}
             className={cn(
-              'min-h-[60px] resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0',
-              (showSendButton || showAttachButton) && 'pb-10',
+              'w-full resize-none border-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none p-0 shadow-none overflow-y-auto'
             )}
           />
-        </ScrollArea>
 
-        {(uploadedFilePreviews.length > 0 || uploadedVideoFile || existingAttachments.length > 0) && (
-          <div className="mb-8 space-y-2">
+          {(uploadedFilePreviews.length > 0 || uploadedVideoFile || existingAttachments.length > 0) && (
+            <div className="mt-3 space-y-2">
             {(existingAttachments.length > 0 || uploadedFiles.length > 0) && (
               <div className="flex flex-wrap gap-1">
                 {existingAttachments.map((attachment) => (
@@ -326,8 +325,12 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
             )}
           </div>
         )}
+        </div>
 
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+        <div className={cn(
+          "flex items-center justify-between bg-white dark:bg-background px-3 py-2",
+          !showAiAssistant && "rounded-b-lg"
+        )}>
           {showAttachButton && (
             <div className="flex items-center gap-1">
               <input
@@ -396,7 +399,7 @@ const CommunityTextArea = forwardRef<CommunityTextAreaRef, Props>(({
 
       {/* AI 초안 작성 패널 */}
       {showAiAssistant && (
-        <div className="border-t bg-gradient-to-br from-[#e8fbd9] via-[#f6fdf1] to-[#e8fbd9] dark:from-[#244a08]/20 dark:via-[#244a08]/10 dark:to-[#244a08]/20 rounded-b-xl">
+        <div className="bg-gradient-to-br from-[#e8fbd9] via-[#f6fdf1] to-[#e8fbd9] dark:from-[#244a08]/20 dark:via-[#244a08]/10 dark:to-[#244a08]/20 rounded-b-lg">
           {!isAiPanelExpanded ? (
             <div className="px-3 py-2">
               <Button
