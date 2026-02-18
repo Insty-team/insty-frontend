@@ -5,7 +5,7 @@ import {
   GET_course_by_id,
   GET_course_by_id_for_creator,
   GET_course_progress_exists_by_id,
-  GET_course_question__by_id,
+  GET_course_question_by_id,
   GET_course_question_answer_accept_by_id,
   GET_course_question_answers_by_id,
   GET_course_questions_by_id,
@@ -199,8 +199,8 @@ export const useGetCourseQuestion = (
   },
 ) => {
   return useQuery({
-    queryKey: [GET_course_question__by_id.name, courseId, questionId],
-    queryFn: () => GET_course_question__by_id(courseId, questionId),
+    queryKey: [GET_course_question_by_id.name, courseId, questionId],
+    queryFn: () => GET_course_question_by_id(courseId, questionId),
     enabled: options?.enabled,
     select: ({ data }) => data,
   });
@@ -222,7 +222,7 @@ export const usePatchCourseQuestion = () => {
       data: CourseQuestionUpdateRequest;
     }) => PATCH_course_question_by_id(courseId, questionId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, variables.courseId, variables.questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_by_id.name, variables.courseId, variables.questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, variables.courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
     },
@@ -238,7 +238,7 @@ export const useDeleteCourseQuestion = () => {
     mutationFn: ({ courseId, questionId }: { courseId: number; questionId: number }) =>
       DELETE_course_question_by_id(courseId, questionId),
     onSuccess: (_response, variables) => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, variables.courseId, variables.questionId] });
+      queryClient.removeQueries({ queryKey: [GET_course_question_by_id.name, variables.courseId, variables.questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, variables.courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_my_by_id.name, variables.courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
@@ -315,7 +315,7 @@ export const usePostCourseQuestionAnswerAccept = (courseId: number, questionId: 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
-      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_by_id.name, courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
     },
@@ -334,7 +334,7 @@ export const useDeleteCourseQuestionAnswer = (courseId: number, questionId: numb
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
 
-      queryClient.invalidateQueries({ queryKey: [GET_course_question__by_id.name, courseId, questionId] });
+      queryClient.invalidateQueries({ queryKey: [GET_course_question_by_id.name, courseId, questionId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
     },

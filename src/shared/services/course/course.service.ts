@@ -167,7 +167,7 @@ export const POST_course_question_by_id= async (
 };
 
 /** 질문 상세 조회 - 질문의 본문, 상태, 첨부파일, 비디오 정보와 최신순 답변 요약 조회 */
-export const GET_course_question__by_id = async (courseId: number, questionId: number): Promise<ApiResponse<CourseQuestionDetailResponse>> => {
+export const GET_course_question_by_id = async (courseId: number, questionId: number): Promise<ApiResponse<CourseQuestionDetailResponse>> => {
   const response = await api.get(`/api/v1/courses/${courseId}/questions/${questionId}`);
   return response.data;
 };
