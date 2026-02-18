@@ -27,13 +27,14 @@ import {
 } from '@/shared/services/course/course.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import type { Attachment } from '@/shared/services/course/course.type';
-import { ChevronLeft, MoreHorizontal } from 'lucide-react';
+import { ChevronLeft, MoreHorizontal, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import QuestionAnswers from '@/shared/components/question/QuestionAnswers';
 import QuestionDetail from '@/shared/components/question/QuestionDetail';
 import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import QuestionLabel from '@/shared/components/question/QuestionLabel';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { usePostCommunityAnswerDraft } from '@/shared/services/ai-community/ai-community.hook';
 
 type Props = {
   readonly courseId: number;
@@ -44,6 +45,9 @@ type Props = {
 export default function QuestionDetailSheet({ courseId, questionId, onBack }: Props) {
   const [answerContent, setAnswerContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
+  const [draftPreview, setDraftPreview] = useState<string | null>(null);
+  const [originalContent, setOriginalContent] = useState<string>('');
 
   const [isQuestionEditing, setIsQuestionEditing] = useState(false);
   const [isQuestionDeleteOpen, setIsQuestionDeleteOpen] = useState(false);
@@ -73,6 +77,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
 
   const { mutate: postAnswer, isPending: isPosting } = usePostCourseQuestionAnswer(courseId, questionId);
   const { uploadVideo } = usePresignedVideoUpload();
+  const { mutateAsync: generateAnswerDraft } = usePostCommunityAnswerDraft();
   const { data: answersData, isFetching: isAnswersFetching } = useGetCourseQuestionAnswers(courseId, questionId, page, pageSize);
   const { data: acceptedAnswer } = useGetCourseQuestionAnswerAccepted(courseId, questionId);
   const { mutate: toggleAcceptAnswer, isPending: isAccepting } = usePostCourseQuestionAnswerAccept(courseId, questionId);
@@ -103,6 +108,53 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
       setHasMore(page < pagination.totalPages);
     }
   }, [pagination, page]);
+
+  const handleGenerateDraft = async () => {
+    const userInput = answerContent.trim();
+    if (!userInput) {
+      toast.error('Please enter some text to generate a draft.');
+      return;
+    }
+
+    setOriginalContent(answerContent);
+    setIsGeneratingDraft(true);
+    try {
+      const images = uploadedFiles.filter((f) => f.type.startsWith('image/'));
+      
+      const response = await generateAnswerDraft({
+        course_id: courseId,
+        query: userInput,
+        has_attachment: images.length > 0,
+        files: images.length > 0 ? images : undefined,
+      });
+
+      if (response.data?.answer_content) {
+        setDraftPreview(response.data.answer_content);
+      }
+    } catch (error) {
+      console.error('Failed to generate draft:', error);
+      toast.error('Failed to generate AI draft.');
+    } finally {
+      setIsGeneratingDraft(false);
+    }
+  };
+
+  const handleInsertDraft = () => {
+    if (draftPreview) {
+      setAnswerContent(draftPreview);
+      setDraftPreview(null);
+      toast.success('AI draft inserted.');
+    }
+  };
+
+  const handleDismissDraft = () => {
+    setDraftPreview(null);
+  };
+
+  const handleRetryDraft = () => {
+    setDraftPreview(null);
+    handleGenerateDraft();
+  };
 
   const handleSubmitAnswer = async () => {
     if (!answerContent.trim()) return;
@@ -499,6 +551,49 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
       {/* 답변 작성 폼 */}
       <div className="sticky bottom-0 bg-background py-2 px-4">
         <div className="space-y-3">
+          {draftPreview && (
+            <div className="p-4 rounded-lg bg-white dark:bg-gray-950 border border-[#b2f381]/50 dark:border-[#51a611]/50 relative">
+              <div className="absolute -inset-0.5 bg-[#67d215] rounded-lg opacity-20 blur" />
+              <div className="relative">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="size-4 text-[#67d215] dark:text-[#9bef5b]" />
+                    <span className="text-sm font-semibold text-[#51a611] dark:text-[#9bef5b]">AI Draft Ready</span>
+                  </div>
+                </div>
+                <div 
+                  className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3 mb-3"
+                  dangerouslySetInnerHTML={{ __html: draftPreview }}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleDismissDraft}
+                    className="border-[#b2f381]/50 dark:border-[#51a611]/50"
+                  >
+                    Dismiss
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRetryDraft}
+                    disabled={isGeneratingDraft}
+                    className="border-[#b2f381]/50 dark:border-[#51a611]/50"
+                  >
+                    Retry
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleInsertDraft}
+                    className="bg-[#67d215] hover:bg-[#51a611] text-white shadow-lg shadow-[#67d215]/50"
+                  >
+                    Insert
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           <RichTextEditor
             key={editorKey}
             value={answerContent}
@@ -507,6 +602,9 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
             onSend={handleSubmitAnswer}
             showSendButton={true}
             showAttachButton={true}
+            showAiDraftButton={true}
+            onGenerateDraft={handleGenerateDraft}
+            isGeneratingDraft={isGeneratingDraft}
             onFilesChange={setUploadedFiles}
             isSending={isPosting}
           />

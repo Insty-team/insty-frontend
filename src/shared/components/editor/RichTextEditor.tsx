@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { Spinner } from '@/shared/components/ui/spinner';
 import { cn } from '@/shared/lib/utils';
 import Link from '@tiptap/extension-link';
 import Mention from '@tiptap/extension-mention';
@@ -30,6 +31,7 @@ import {
   ListOrdered,
   Plus,
   Send,
+  Sparkles,
   Strikethrough,
   Underline as UnderlineIcon,
   X,
@@ -68,6 +70,9 @@ type Props = {
   readonly onRemoveExistingAttachment?: (id: number) => void;
   readonly existingVideo?: ExistingVideo | null;
   readonly onRemoveExistingVideo?: () => void;
+  readonly showAiDraftButton?: boolean;
+  readonly onGenerateDraft?: () => void;
+  readonly isGeneratingDraft?: boolean;
 };
 
 // plain text를 안전한 HTML로 정규화(줄바꿈/특수문자 escape 포함)
@@ -120,6 +125,9 @@ export default function RichTextEditor({
   onRemoveExistingAttachment,
   existingVideo = null,
   onRemoveExistingVideo,
+  showAiDraftButton = false,
+  onGenerateDraft,
+  isGeneratingDraft = false,
 }: Props) {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
@@ -341,16 +349,19 @@ export default function RichTextEditor({
       </div>
 
       {/* 에디터 */}
-      <div className="relative px-3 py-3">
+      <div className="relative px-3 py-2">
         <ScrollArea className="max-h-[320px]">
           <EditorContent
             editor={editor}
             className={cn(
+              'min-h-[60px] max-h-[300px] overflow-y-auto',
               'prose prose-sm max-w-none',
-              'min-h-[60px] overflow-y-auto',
               '[&>.ProseMirror]:outline-none',
               '[&>.ProseMirror]:border-none',
-              (showSendButton || showAttachButton) && 'pb-10',
+              '[&_p]:my-1',
+              '[&_ul]:my-1 [&_ol]:my-1',
+              '[&_li]:my-0.5',
+              (showSendButton || showAttachButton) && 'pb-12',
             )}
             onKeyDown={(e) => {
               if (!onSend || !sendOnEnter) return;
@@ -459,7 +470,7 @@ export default function RichTextEditor({
         )}
 
         {/* 하단 버튼 영역 */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-background px-3 py-2 rounded-b-lg">
           {showAttachButton && (
             <div className="flex items-center gap-1">
               <input
@@ -512,17 +523,42 @@ export default function RichTextEditor({
             </div>
           )}
 
-          {showSendButton && (
-            <Button
-              type="button"
-              size="icon"
-              className="size-6"
-              onClick={onSend}
-              disabled={!onSend || isDisabled || isSending || isEmpty}
-            >
-              <Send className="size-3" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1.5">
+            {showAiDraftButton && onGenerateDraft && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onGenerateDraft}
+                disabled={isDisabled || isGeneratingDraft || isEmpty}
+                className="gap-1.5 text-xs h-6 px-2"
+              >
+                {isGeneratingDraft ? (
+                  <>
+                    <Spinner className="size-3" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="size-3" />
+                    Generate AI Draft
+                  </>
+                )}
+              </Button>
+            )}
+
+            {showSendButton && (
+              <Button
+                type="button"
+                size="icon"
+                className="size-6"
+                onClick={onSend}
+                disabled={!onSend || isDisabled || isSending || isEmpty}
+              >
+                {isSending ? <Spinner className="size-3" /> : <Send className="size-3" />}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
