@@ -10,6 +10,10 @@ import {
   VideoPreviewRequest,
   VideoPreviewResponse,
   VideoThumbnailResponse,
+  CommunityCommentVideoUploadRequest,
+  CommunityCommentVideoUploadResponse,
+  CommunityPostVideoUploadRequest,
+  CommunityPostVideoUploadResponse,
 } from './video.type';
 
 import { api } from '@/shared/services/api';
@@ -37,6 +41,22 @@ export const POST_answer_video_upload = async (
   data: AnswerVideoUploadRequest,
 ): Promise<ApiResponse<AnswerVideoUploadResponse>> => {
   const response = await api.post('/api/v1/videos/upload/answer', data);
+  return response.data;
+};
+
+/** 커뮤니티 포스트 영상 업로드 */
+export const POST_community_post_video_upload = async (
+  data: CommunityPostVideoUploadRequest,
+): Promise<ApiResponse<CommunityPostVideoUploadResponse>> => {
+  const response = await api.post('/api/v1/videos/upload/community-post', data);
+  return response.data;
+};
+
+/** 커뮤니티 코멘트 영상 업로드 */
+export const POST_community_comment_video_upload = async (
+  data: CommunityCommentVideoUploadRequest,
+): Promise<ApiResponse<CommunityCommentVideoUploadResponse>> => {
+  const response = await api.post('/api/v1/videos/upload/community-comment', data);
   return response.data;
 };
 
