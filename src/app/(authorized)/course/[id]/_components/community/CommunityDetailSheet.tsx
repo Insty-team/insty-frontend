@@ -390,7 +390,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
       try {
         const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
         const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
-        let videoUuid: string | null | undefined;
+        let videoUuid: string | null;
 
         if (videoFile) {
           // 새 비디오 업로드
@@ -398,9 +398,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
         } else if (communityPostData?.videoInfo && !editPostExistingVideo) {
           // 기존 비디오 삭제
           videoUuid = null;
-        } else if (editPostExistingVideo && communityPostData?.videoInfo) {
+        } else if (communityPostData?.videoInfo) {
           // 기존 비디오 유지
           videoUuid = communityPostData.videoInfo.videoUuid;
+        } else {
+          // 비디오 없음
+          videoUuid = null;
         }
 
         await updatePostAsync(
@@ -619,31 +622,13 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                     </div>
                     
                     {/* 댓글 목록 */}
-                    {isCommentsLoading && (
-                      <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-sm">
-                        <Spinner className="size-4" />
-                        Loading comments...
-                      </div>
-                    )}
-
-                    {!isCommentsLoading && isCommentsError && (
-                      <div className="text-muted-foreground py-8 text-center text-sm">Failed to load comments.</div>
-                    )}
-
-                    {!isCommentsLoading && !isCommentsError && comments.length === 0 && (
-                      <Card className="shadow-none">
-                        <CardContent className="flex flex-col items-center justify-center py-8">
-                          <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {!isCommentsLoading && !isCommentsError && (
-                      <CommunityComments
-                        comments={comments}
-                        hasNextPage={hasMore}
-                        onLoadMore={handleLoadMore}
-                        isLoadingMore={isCommentsFetching}
+                    <CommunityComments
+                      comments={comments}
+                      hasNextPage={hasMore}
+                      onLoadMore={handleLoadMore}
+                      isLoadingMore={isCommentsFetching}
+                      isLoading={isCommentsLoading}
+                      isError={isCommentsError}
                         pagination={{
                           currentPage: pagination?.currentPage,
                           totalPages: pagination?.totalPages,
@@ -664,7 +649,6 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                         isSavingEdit={isPatching}
                         onDeleteComment={handleDeleteComment}
                       />
-                    )}
                   </div>
                 </div>
               )}

@@ -18,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { Calendar, Heart, MoreHorizontal } from 'lucide-react';
+import { Spinner } from '@/shared/components/ui/spinner';
+import { Card, CardContent } from '@/shared/components/ui/card';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
 
 const CommentVideoPlayer = ({ commentId, videoType }: { commentId: number; videoType: 'COURSE' | 'ANSWER' | 'QUESTION' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT' }) => {
@@ -85,6 +87,8 @@ type CommunityCommentsProps = {
   ) => void;
   isSavingEdit?: boolean;
   onEditStart?: (commentId: number) => void;
+  isLoading?: boolean;
+  isError?: boolean;
 };
 
 export default function CommunityComments({
@@ -98,6 +102,8 @@ export default function CommunityComments({
   currentUserId,
   onDeleteComment,
   enableEdit = false,
+  isLoading = false,
+  isError = false,
   onSaveEdit,
   isSavingEdit = false,
   onEditStart,
@@ -159,9 +165,12 @@ export default function CommunityComments({
         } else if (editingComment?.videoInfo && !editExistingVideo) {
           // 기존 비디오 삭제
           videoUuid = null;
-        } else if (editExistingVideo && editingComment?.videoInfo) {
+        } else if (editingComment?.videoInfo) {
           // 기존 비디오 유지
           videoUuid = editingComment.videoInfo.videoUuid;
+        } else {
+          // 비디오 없음
+          videoUuid = null;
         }
 
         onSaveEdit(editingCommentId, editContent, images, deleteAttachmentIds, videoUuid);
@@ -175,11 +184,30 @@ export default function CommunityComments({
     void run();
   };
 
+  if (isLoading) {
+    return (
+      <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-sm">
+        <Spinner className="size-4" />
+        Loading comments...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-muted-foreground py-8 text-center text-sm">
+        Failed to load comments.
+      </div>
+    );
+  }
+
   if (comments.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <p className="text-muted-foreground">No comments yet.</p>
-      </div>
+      <Card className="shadow-none">
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+        </CardContent>
+      </Card>
     );
   }
 

@@ -243,16 +243,19 @@ export default function QuestionDetailDialog({
     if (!nextTitle || !nextContent) return;
 
     try {
-      let videoUuid: string | null | undefined;
+      let videoUuid: string | null;
       if (questionVideoFile) {
         // 새 비디오 업로드
         videoUuid = await uploadVideo({ kind: 'QUESTION', file: questionVideoFile });
       } else if (question?.videoInfo && !questionExistingVideo) {
         // 기존 비디오 삭제
         videoUuid = null;
-      } else if (questionExistingVideo && question?.videoInfo) {
+      } else if (question?.videoInfo) {
         // 기존 비디오 유지
         videoUuid = question.videoInfo.videoUuid;
+      } else {
+        // 비디오 없음
+        videoUuid = null;
       }
 
       patchQuestion(

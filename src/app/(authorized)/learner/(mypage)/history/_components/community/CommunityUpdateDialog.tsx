@@ -14,6 +14,7 @@ import { useGetCourseCommunityPostById } from '@/shared/services/community/commu
 import { Attachment } from '@/shared/services/community/community.type';
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import { toast } from 'sonner';
 
 type CommunityUpdateDialogProps = {
@@ -37,16 +38,19 @@ export default function CommunityUpdateDialog({
   const { data: postData } = useGetCourseCommunityPostById(courseId, postId, {
     enabled: open,
   });
+  const { uploadVideo } = usePresignedVideoUpload();
 
   const [content, setContent] = useState(initialContent);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState<Attachment[]>([]);
+  const [existingVideo, setExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (open && postData) {
       setContent(postData.content ?? initialContent);
       setExistingAttachments(postData.attachments ?? []);
+      setExistingVideo(postData.videoInfo ? { originFileName: postData.videoInfo.originFileName } : null);
       setAttachedFiles([]);
       setDeletedAttachmentIds([]);
     }
@@ -60,21 +64,35 @@ export default function CommunityUpdateDialog({
   const handleSubmit = async () => {
     if (!content.trim()) return;
 
-    const derivedTitle = content.trim().split('\n')[0].substring(0, 50) || 'Updated Post';
-
     try {
+      const images = attachedFiles.filter((f) => f.type.startsWith('image/'));
+      const videoFile = attachedFiles.find((f) => f.type.startsWith('video/')) ?? null;
+      let videoUuid: string | null;
+
+      if (videoFile) {
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
+      } else if (postData?.videoInfo && !existingVideo) {
+        videoUuid = null;
+      } else if (postData?.videoInfo) {
+        videoUuid = postData.videoInfo.videoUuid;
+      } else {
+        videoUuid = null;
+      }
+
       await updatePost(
         postId,
         {
           content: content.trim(),
-          attachments: attachedFiles.length > 0 ? attachedFiles : undefined,
-          deleteFileIds: deletedAttachmentIds.length > 0 ? deletedAttachmentIds : undefined,
+          videoUuid,
+          attachments: images.length > 0 ? images : null,
+          deleteFileIds: deletedAttachmentIds.length > 0 ? deletedAttachmentIds : null,
         },
         {
           onSuccess: () => {
             setContent('');
             setAttachedFiles([]);
             setExistingAttachments([]);
+            setExistingVideo(null);
             setDeletedAttachmentIds([]);
             onUpdated?.();
             onOpenChange(false);
@@ -109,6 +127,8 @@ export default function CommunityUpdateDialog({
               onFilesChange={setAttachedFiles}
               existingAttachments={existingAttachments}
               onRemoveExistingAttachment={handleRemoveExistingAttachment}
+              existingVideo={existingVideo}
+              onRemoveExistingVideo={() => setExistingVideo(null)}
             />
           </div>
         </div>

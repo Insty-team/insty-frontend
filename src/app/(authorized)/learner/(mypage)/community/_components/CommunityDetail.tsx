@@ -224,29 +224,22 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
             )}
           </div>
           
-          {comments.length === 0 ? (
-            <Card className="shadow-none">
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <CommunityComments
-              comments={comments}
-              hasNextPage={hasNextPage}
-              onLoadMore={handleLoadMore}
-              isLoadingMore={isFetchingNextPage}
-              pagination={{
-                currentPage: pagination?.currentPage,
-                totalPages: pagination?.totalPages,
-              }}
-              currentUserId={currentUserId}
-              showLikeButton={true}
-              onLikeComment={handleToggleCommentLike}
-              enableEdit={true}
-              onSaveEdit={async (commentId, content, files, deleteAttachmentIds, videoUuid) => {
-                await updateComment(commentId, {
-                  content,
+          <CommunityComments
+            comments={comments}
+            hasNextPage={hasNextPage}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isFetchingNextPage}
+            pagination={{
+              currentPage: pagination?.currentPage,
+              totalPages: pagination?.totalPages,
+            }}
+            currentUserId={currentUserId}
+            showLikeButton={true}
+            onLikeComment={handleToggleCommentLike}
+            enableEdit={true}
+            onSaveEdit={async (commentId, content, files, deleteAttachmentIds, videoUuid) => {
+              await updateComment(commentId, {
+                content,
                   videoUuid: videoUuid ?? undefined,
                   attachments: files ?? null,
                   deleteFileIds:
@@ -256,7 +249,6 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
               isSavingEdit={isPatchingComment}
               onDeleteComment={handleDeleteComment}
             />
-          )}
         </div>
         </div>
       </ScrollArea>

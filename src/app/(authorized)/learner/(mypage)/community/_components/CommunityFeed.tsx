@@ -164,7 +164,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
     try {
       const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
       const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
-      let videoUuid: string | null | undefined;
+      let videoUuid: string | null;
 
       const editingPost = posts.find(p => p.postId === editingPostId);
       
@@ -174,9 +174,12 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
       } else if (editingPost?.videoInfo && !editPostExistingVideo) {
         // 기존 비디오 삭제
         videoUuid = null;
-      } else if (editPostExistingVideo && editingPost?.videoInfo) {
+      } else if (editingPost?.videoInfo) {
         // 기존 비디오 유지
         videoUuid = editingPost.videoInfo.videoUuid;
+      } else {
+        // 비디오 없음
+        videoUuid = null;
       }
 
       await updatePost(

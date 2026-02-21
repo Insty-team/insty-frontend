@@ -39,6 +39,8 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
   } = useGetCourseCommunityPostCommentsInfinite(courseId, postId, 20);
 
   const { togglePostLike, isLikingPost: isLiking, isUnlikingPost: isUnliking } = useCommunity({ courseId });
@@ -89,10 +91,12 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
     try {
       const images = commentFiles.filter((f) => f.type.startsWith('image/'));
       const videoFile = commentFiles.find((f) => f.type.startsWith('video/')) ?? null;
-      let videoUuid: string | undefined;
+      let videoUuid: string | null;
 
       if (videoFile) {
         videoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
+      } else {
+        videoUuid = null;
       }
 
       await createComment(
@@ -161,10 +165,22 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
 
     (async () => {
       try {
+        const images = files.filter((f) => f.type.startsWith('image/'));
+        const videoFile = files.find((f) => f.type.startsWith('video/')) ?? null;
+        let finalVideoUuid: string | null;
+
+        if (videoFile) {
+          finalVideoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
+        } else if (videoUuid !== undefined) {
+          finalVideoUuid = videoUuid;
+        } else {
+          finalVideoUuid = null;
+        }
+
         await updateComment(commentId, {
           content,
-          videoUuid: videoUuid ?? undefined,
-          attachments: files.length > 0 ? files : null,
+          videoUuid: finalVideoUuid,
+          attachments: images.length > 0 ? images : null,
           deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
         });
       } catch (error: any) {
@@ -223,6 +239,8 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
                   hasNextPage={hasNextPage}
                   onLoadMore={handleLoadMore}
                   isLoadingMore={isFetchingNextPage}
+                  isLoading={isCommentsLoading}
+                  isError={isCommentsError}
                   pagination={{
                     currentPage: pagination?.currentPage,
                     totalPages: pagination?.totalPages,

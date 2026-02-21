@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import Image from 'next/image';
 
@@ -19,7 +19,11 @@ import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
+import { ReactRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import tippy from 'tippy.js';
+import { GET_mention_search } from '@/shared/services/mention/mention.service';
+import type { MentionSearchResponse } from '@/shared/services/mention/mention.type';
 import {
   Bold,
   Code,
@@ -36,6 +40,75 @@ import {
   Underline as UnderlineIcon,
   X,
 } from 'lucide-react';
+
+const MentionDropdown = forwardRef<
+  { onKeyDown: (props: { event: KeyboardEvent }) => boolean },
+  { items: MentionSearchResponse[]; command: (item: { id: string; label: string }) => void }
+>((props, ref) => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const selectItem = (index: number, source: 'keyboard' | 'mouse' = 'keyboard') => {
+    const item = props.items[index];
+    if (!item) return;
+
+    props.command({ id: String(item.id), label: item.nickname });
+  };
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [props.items]);
+
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+      if (!props.items.length) return false;
+
+      if (event.key === 'ArrowUp') {
+        setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
+        return true;
+      }
+
+      if (event.key === 'ArrowDown') {
+        setSelectedIndex((selectedIndex + 1) % props.items.length);
+        return true;
+      }
+
+      if (event.key === 'Enter') {
+        selectItem(selectedIndex, 'keyboard');
+        return true;
+      }
+
+      return false;
+    },
+  }));
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-h-60 overflow-y-auto">
+      {props.items.length ? (
+        props.items.map((item, index) => (
+          <button
+            key={item.id}
+            type="button"
+            className={cn(
+              'w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
+              index === selectedIndex && 'bg-gray-100 dark:bg-gray-800'
+            )}
+            onMouseDownCapture={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectItem(index, 'mouse');
+            }}
+          >
+            {item.nickname}
+          </button>
+        ))
+      ) : (
+        <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No results</div>
+      )}
+    </div>
+  );
+});
+
+MentionDropdown.displayName = 'MentionDropdown';
 
 type ExistingAttachment = {
   id: number;
@@ -73,6 +146,7 @@ type Props = {
   readonly showAiDraftButton?: boolean;
   readonly onGenerateDraft?: () => void;
   readonly isGeneratingDraft?: boolean;
+  readonly enableMention?: boolean;
 };
 
 // plain text를 안전한 HTML로 정규화(줄바꿈/특수문자 escape 포함)
@@ -128,6 +202,7 @@ export default function RichTextEditor({
   showAiDraftButton = false,
   onGenerateDraft,
   isGeneratingDraft = false,
+  enableMention = false,
 }: Props) {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
@@ -214,13 +289,113 @@ export default function RichTextEditor({
         linkOnPaste: true,
       }),
       Placeholder.configure({ placeholder }),
-      Mention.configure({
-        HTMLAttributes: { class: 'mention' },
-      }),
+      ...(enableMention
+        ? [
+            Mention.extend({
+              addAttributes() {
+                return {
+                  id: {
+                    default: null,
+                    parseHTML: (element) => element.getAttribute('data-id'),
+                    renderHTML: (attributes) => {
+                      if (!attributes.id) return {};
+                      return { 'data-id': attributes.id };
+                    },
+                  },
+                  label: {
+                    default: null,
+                    parseHTML: (element) => element.getAttribute('data-label'),
+                    renderHTML: (attributes) => {
+                      if (!attributes.label) return {};
+                      return { 'data-label': attributes.label };
+                    },
+                  },
+                };
+              },
+            }).configure({
+              HTMLAttributes: {
+                class: 'mention',
+                'data-type': 'mention',
+              },
+              renderLabel({ node }) {
+                return `@${node.attrs.label}`;
+              },
+              suggestion: {
+                char: '@',
+                items: async ({ query }: { query: string }) => {
+                  if (query.length < 1) return [];
+
+                  try {
+                    const response = await GET_mention_search(query, 10);
+                    return response.data || [];
+                  } catch (error) {
+                    console.error('Failed to fetch mention users:', error);
+                    return [];
+                  }
+                },
+                render: () => {
+                  let component: ReactRenderer;
+                  let popup: any;
+
+                  return {
+                    onStart: (props: any) => {
+                      component = new ReactRenderer(MentionDropdown, {
+                        props,
+                        editor: props.editor,
+                      });
+
+                      popup = tippy('body', {
+                        getReferenceClientRect: props.clientRect,
+                        appendTo: () => document.body,
+                        content: component.element,
+                        showOnCreate: true,
+                        interactive: true,
+                        trigger: 'manual',
+                        placement: 'bottom-start',
+                      });
+                    },
+                    onUpdate(props: any) {
+                      component.updateProps(props);
+                      popup[0].setProps({ getReferenceClientRect: props.clientRect });
+                    },
+                    onKeyDown(props: any) {
+                      if (props.event.key === 'Escape') {
+                        popup[0].hide();
+                        return true;
+                      }
+                      return (
+                        (component.ref as { onKeyDown?: (keyProps: { event: KeyboardEvent }) => boolean } | null)?.onKeyDown?.(props) ??
+                        false
+                      );
+                    },
+                    onExit() {
+                      popup[0].destroy();
+                      component.destroy();
+                    },
+                  };
+                },
+              },
+            }),
+          ]
+        : []),
     ],
     content: valueFormat === 'json' ? (jsonContent ?? normalizeToHtml(value)) : normalizedHtml,
     onUpdate: ({ editor }) => {
-      onChange(valueFormat === 'json' ? JSON.stringify(editor.getJSON()) : editor.getHTML());
+      let html = editor.getHTML();
+
+      if (enableMention) {
+        html = html.replace(
+          /<span[^>]*class="mention"[^>]*>@([^<]*)<\/span>/g,
+          (match) => {
+            const idMatch = match.match(/data-id="([^"]*)"/);
+            const labelMatch = match.match(/data-label="([^"]*)"/);
+            if (idMatch && labelMatch) return `@[${labelMatch[1]}](${idMatch[1]})`;
+            return match;
+          }
+        );
+      }
+
+      onChange(valueFormat === 'json' ? JSON.stringify(editor.getJSON()) : html);
       onTextLengthChange?.(editor.getText().length);
       setIsEmpty(editor.getText().trim().length === 0);
     },

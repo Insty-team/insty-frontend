@@ -8,7 +8,7 @@ export const GET_mention_search = async (
   search: string,
   size: number,
 ): Promise<ApiResponse<MentionSearchResponse[]>> => {
-  const response = await api.get(`/api/v1/mentions/user/search `, {
+  const response = await api.get(`/api/v1/mentions/users/search`, {
     params: {
       search,
       size,

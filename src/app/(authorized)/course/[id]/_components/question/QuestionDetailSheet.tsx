@@ -348,16 +348,19 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
 
     (async () => {
       try {
-        let videoUuid: string | null | undefined;
+        let videoUuid: string | null;
         if (questionVideoFile) {
           // 새 비디오 업로드
           videoUuid = await uploadVideo({ kind: 'QUESTION', file: questionVideoFile });
         } else if (questionData?.videoInfo && !questionExistingVideo) {
           // 기존 비디오 삭제
           videoUuid = null;
-        } else if (questionExistingVideo && questionData?.videoInfo) {
+        } else if (questionData?.videoInfo) {
           // 기존 비디오 유지
           videoUuid = questionData.videoInfo.videoUuid;
+        } else {
+          // 비디오 없음
+          videoUuid = null;
         }
 
         patchQuestion(
@@ -426,6 +429,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
                     key={questionEditorKey}
                     value={questionContent}
                     onChange={setQuestionContent}
+                    enableMention={true}
                     placeholder="Enter your question details..."
                     showSendButton={false}
                     showAttachButton={true}
@@ -598,6 +602,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
             key={editorKey}
             value={answerContent}
             onChange={setAnswerContent}
+            enableMention={true}
             placeholder="Please write your answer"
             onSend={handleSubmitAnswer}
             showSendButton={true}

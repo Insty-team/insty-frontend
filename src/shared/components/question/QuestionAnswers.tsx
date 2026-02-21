@@ -188,7 +188,7 @@ export default function QuestionAnswers({
 
     const run = async () => {
       try {
-        let videoUuid: string | null | undefined;
+        let videoUuid: string | null;
 
         if (videoFile) {
           // 새 비디오 업로드
@@ -199,6 +199,9 @@ export default function QuestionAnswers({
         } else if (editingExistingVideoUuid) {
           // 기존 비디오 유지
           videoUuid = editingExistingVideoUuid;
+        } else {
+          // 비디오 없음
+          videoUuid = null;
         }
 
         onUpdate?.(editingAnswerId, editingContent, images, editingDeleteAttachmentIds, videoUuid);
@@ -388,6 +391,7 @@ export default function QuestionAnswers({
                     <RichTextEditor
                       value={editingContent}
                       onChange={setEditingContent}
+                      enableMention={true}
                       placeholder="Update your answer"
                       showSendButton={false}
                       showAttachButton={true}

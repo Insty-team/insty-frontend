@@ -34,7 +34,7 @@ export type CourseCommunityPostResponse = {
 
 export type CourseCommunityPostRequest = {
   content: string;
-  videoUuid?: string;
+  videoUuid?: string | null;
   attachments?: File[] | null;
 };
 
@@ -77,13 +77,13 @@ export type CourseCommunityPostCommentResponse = {
 
 export type CourseCommunityPostCommentRequest = {
   content: string;
-  videoUuid?: string;
+  videoUuid?: string | null;
   attachments?: File[] | null;
 };
 
 export type CourseCommunityPostCommentUpdateRequest = {
   content: string;
-  videoUuid?: string;
+  videoUuid?: string | null;
   deleteFileIds?: number[] | null;
   attachments?: File[] | null;
 };
