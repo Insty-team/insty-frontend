@@ -63,10 +63,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
   // 포스트 수정/삭제 관련 state
   const [isPostDeleteDialogOpen, setIsPostDeleteDialogOpen] = useState(false);
   const [isCancelPostEditDialogOpen, setIsCancelPostEditDialogOpen] = useState(false);
+  const [isSavePostEditDialogOpen, setIsSavePostEditDialogOpen] = useState(false);
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editPostContent, setEditPostContent] = useState('');
   const [editPostFiles, setEditPostFiles] = useState<File[]>([]);
   const [editPostExistingAttachments, setEditPostExistingAttachments] = useState<Attachment[]>([]);
+  const [editPostExistingVideo, setEditPostExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [editPostDeleteIds, setEditPostDeleteIds] = useState<number[]>([]);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -185,6 +187,13 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     }
   };
 
+  const handleCommentFilesChange = (files: File[]) => {
+    const images = files.filter((f) => f.type.startsWith('image/'));
+    const video = files.find((f) => f.type.startsWith('video/')) ?? null;
+    setUploadedFiles(images);
+    setUploadedVideoFile(video);
+  };
+
   const handleSubmitComment = async () => {
     if (!commentContent.trim()) return;
 
@@ -192,14 +201,14 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
       let videoUuid: string | undefined;
 
       if (uploadedVideoFile) {
-        videoUuid = await uploadVideo({ kind: 'ANSWER', file: uploadedVideoFile });
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: uploadedVideoFile });
       }
 
       await createComment(
         {
           content: commentContent,
           videoUuid,
-          attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          attachments: uploadedFiles.length > 0 ? uploadedFiles : null,
         },
         {
           onSuccess: () => {
@@ -246,12 +255,21 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     }
 
     try {
+      const images = editingFiles.filter((f) => f.type.startsWith('image/'));
+      const videoFile = editingFiles.find((f) => f.type.startsWith('video/')) ?? null;
+      let videoUuid: string | undefined;
+
+      if (videoFile) {
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
+      }
+
       await updateComment(
         editingCommentId,
         {
           content: editingContent,
-          attachments: editingFiles.length > 0 ? editingFiles : undefined,
-          deleteFileIds: editingDeleteIds.length > 0 ? editingDeleteIds : undefined,
+          videoUuid,
+          attachments: images.length > 0 ? images : null,
+          deleteFileIds: editingDeleteIds.length > 0 ? editingDeleteIds : null,
         },
         {
           onSuccess: () => {
@@ -325,6 +343,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
       setIsEditingPost(true);
       setEditPostContent(communityPostData.content);
       setEditPostExistingAttachments(communityPostData.attachments || []);
+      setEditPostExistingVideo(communityPostData.videoInfo ? { originFileName: communityPostData.videoInfo.originFileName } : null);
       setEditPostDeleteIds([]);
     }
   };
@@ -344,12 +363,19 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     setEditPostContent('');
     setEditPostFiles([]);
     setEditPostExistingAttachments([]);
+    setEditPostExistingVideo(null);
     setEditPostDeleteIds([]);
     setIsCancelPostEditDialogOpen(false);
   };
 
   const handleSavePost = () => {
     if (!editPostContent.trim()) return;
+    setIsSavePostEditDialogOpen(true);
+  };
+
+  const confirmSavePost = () => {
+    if (!editPostContent.trim()) return;
+    setIsSavePostEditDialogOpen(false);
 
     // 파일 크기 체크 (10MB 제한)
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -362,12 +388,28 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
     (async () => {
       try {
+        const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
+        const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
+        let videoUuid: string | null | undefined;
+
+        if (videoFile) {
+          // 새 비디오 업로드
+          videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
+        } else if (communityPostData?.videoInfo && !editPostExistingVideo) {
+          // 기존 비디오 삭제
+          videoUuid = null;
+        } else if (editPostExistingVideo && communityPostData?.videoInfo) {
+          // 기존 비디오 유지
+          videoUuid = communityPostData.videoInfo.videoUuid;
+        }
+
         await updatePostAsync(
           postId,
           {
             content: editPostContent,
-            attachments: editPostFiles.length > 0 ? editPostFiles : undefined,
-            deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : undefined,
+            videoUuid: videoUuid ?? null,
+            attachments: images.length > 0 ? images : null,
+            deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : null,
           },
           {
             onSuccess: () => {
@@ -375,6 +417,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
               setEditPostContent('');
               setEditPostFiles([]);
               setEditPostExistingAttachments([]);
+              setEditPostExistingVideo(null);
               setEditPostDeleteIds([]);
             },
           },
@@ -493,7 +536,6 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                       value={editPostContent}
                       onChange={setEditPostContent}
                       placeholder="Edit your post..."
-                      showSendButton={false}
                       showAttachButton={true}
                       onFilesChange={setEditPostFiles}
                       existingAttachments={editPostExistingAttachments}
@@ -501,6 +543,8 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                         setEditPostDeleteIds(prev => [...prev, id]);
                         setEditPostExistingAttachments(prev => prev.filter(att => att.id !== id));
                       }}
+                      existingVideo={editPostExistingVideo}
+                      onRemoveExistingVideo={() => setEditPostExistingVideo(null)}
                     />
                     <div className="flex gap-2 justify-end">
                       <Button variant="outline" size="sm" onClick={handleCancelEditPost}>
@@ -564,7 +608,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                               onSend={handleSubmitComment}
                               showSendButton={true}
                               showAttachButton={true}
-                              onFilesChange={setUploadedFiles}
+                              onFilesChange={handleCommentFilesChange}
                               isSending={isPosting}
                               className="min-h-[20px]"
                             />
@@ -612,9 +656,9 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                           await updateComment(commentId, {
                             content,
                             videoUuid: videoUuid ?? undefined,
-                            attachments: files.length > 0 ? files : undefined,
+                            attachments: files.length > 0 ? files : null,
                             deleteFileIds:
-                              deleteAttachmentIds.length > 0 ? deleteAttachmentIds : undefined,
+                              deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
                           });
                         }}
                         isSavingEdit={isPatching}
@@ -659,6 +703,17 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
         confirmText="Discard Changes"
         cancelText="Continue Editing"
         onConfirm={confirmCancelPostEdit}
+      />
+
+      <ConfirmModal
+        open={isSavePostEditDialogOpen}
+        onOpenChange={setIsSavePostEditDialogOpen}
+        title="Save Changes"
+        description="Are you sure you want to save these changes?"
+        confirmText="Save"
+        cancelText="Cancel"
+        isConfirming={isUpdatingPost}
+        onConfirm={confirmSavePost}
       />
 
       <ConfirmModal

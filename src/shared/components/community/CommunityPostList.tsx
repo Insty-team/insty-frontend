@@ -14,11 +14,43 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import { Calendar, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
+import { Spinner } from '@/shared/components/ui/spinner';
+import { VideoType } from '@/shared/services/community/community.type';
+import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
+import ReactPlayer from 'react-player';
+
+const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; videoType: VideoType }) => {
+  const { m3u8Url, isLoading: isLoadingVideo } = useVideoPlaylist({
+    type: videoType,
+    id: postId.toString(),
+    enabled: !!postId,
+  });
+
+  return (
+    <div className="mt-3 overflow-hidden rounded-lg border">
+      {isLoadingVideo || !m3u8Url ? (
+        <div className="flex items-center justify-center bg-muted py-12">
+          <Spinner className="size-6" />
+        </div>
+      ) : (
+        <div className="aspect-video">
+          <ReactPlayer src={m3u8Url} controls width="100%" height="100%" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 type Attachment = {
   id: number;
   name: string;
   url: string;
+};
+
+type VideoInfo = {
+  videoType: VideoType;
+  videoUuid: string;
+  originFileName: string;
 };
 
 type Post = {
@@ -31,6 +63,7 @@ type Post = {
   content: string;
   createdAt: string;
   attachments?: Attachment[];
+  videoInfo?: VideoInfo | null;
   likeCount?: number;
   commentCount?: number;
   likedByMe?: boolean;
@@ -48,9 +81,11 @@ type CommunityPostListEdit = {
   editPostContent: string;
   editPostFiles: File[];
   editPostExistingAttachments: any[];
+  editPostExistingVideo?: { originFileName?: string } | null;
   onEditContentChange: (content: string) => void;
   onEditFilesChange: (files: File[]) => void;
   onRemoveExistingAttachment: (id: number) => void;
+  onRemoveExistingVideo?: () => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   isUpdatingPost?: boolean;
@@ -180,6 +215,8 @@ export default function CommunityPostList({
                   onFilesChange={edit.onEditFilesChange}
                   existingAttachments={edit.editPostExistingAttachments}
                   onRemoveExistingAttachment={edit.onRemoveExistingAttachment}
+                  existingVideo={edit.editPostExistingVideo}
+                  onRemoveExistingVideo={edit.onRemoveExistingVideo}
                 />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" size="sm" onClick={edit.onCancelEdit}>
@@ -199,6 +236,11 @@ export default function CommunityPostList({
                 <div className="text-muted-foreground leading-relaxed line-clamp-3 whitespace-pre-wrap">
                   {item.content}
                 </div>
+
+                {/* 비디오 */}
+                {item.videoInfo?.videoUuid && item.postId && (
+                  <CommunityPostVideoPlayer postId={item.postId} videoType={item.videoInfo.videoType} />
+                )}
 
                 {/* 이미지 */}
                 {item.attachments && item.attachments.length > 0 && (

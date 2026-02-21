@@ -111,14 +111,14 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
     try {
       let videoUuid: string | undefined;
       if (videoFile) {
-        videoUuid = await uploadVideo({ kind: 'ANSWER', file: videoFile });
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
       }
 
       createComment(
         {
           content: commentContent,
           videoUuid,
-          attachments: images.length > 0 ? images : undefined,
+          attachments: images.length > 0 ? images : null,
         },
         {
           onSuccess: () => {
@@ -248,8 +248,9 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
                 await updateComment(commentId, {
                   content,
                   videoUuid: videoUuid ?? undefined,
-                  attachments: files.length > 0 ? files : undefined,
-                  deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : undefined,
+                  attachments: files ?? null,
+                  deleteFileIds:
+                    deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
                 });
               }}
               isSavingEdit={isPatchingComment}

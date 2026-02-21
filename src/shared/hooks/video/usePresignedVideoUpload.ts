@@ -1,4 +1,4 @@
-import { usePostAnswerVideoUpload, usePostCourseVideoUpload, usePostQuestionVideoUpload } from '@/shared/services/video/video.hook';
+import { usePostAnswerVideoUpload, usePostCourseVideoUpload, usePostQuestionVideoUpload, usePostCommunityPostVideoUpload, usePostCommunityCommentVideoUpload } from '@/shared/services/video/video.hook';
 
 export type PresignedVideoUploadKind = 'QUESTION' | 'ANSWER' | 'COURSE' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT';
 
@@ -11,6 +11,8 @@ export default function usePresignedVideoUpload() {
   const { mutateAsync: uploadQuestionVideo } = usePostQuestionVideoUpload();
   const { mutateAsync: uploadAnswerVideo } = usePostAnswerVideoUpload();
   const { mutateAsync: uploadCourseVideo } = usePostCourseVideoUpload();
+  const { mutateAsync: uploadCommunityPostVideo } = usePostCommunityPostVideoUpload();
+  const { mutateAsync: uploadCommunityCommentVideo } = usePostCommunityCommentVideoUpload();
 
   const uploadVideo = async ({ kind, file }: Params) => {
     const payload = { fileName: file.name, contentType: file.type };
@@ -18,13 +20,15 @@ export default function usePresignedVideoUpload() {
     const presignedRes = await (async () => {
       switch (kind) {
         case 'QUESTION':
-        case 'COMMUNITY_POST':
           return uploadQuestionVideo(payload);
         case 'ANSWER':
-        case 'COMMUNITY_COMMENT':
           return uploadAnswerVideo(payload);
         case 'COURSE':
           return uploadCourseVideo(payload);
+        case 'COMMUNITY_POST':
+          return uploadCommunityPostVideo(payload);
+        case 'COMMUNITY_COMMENT':
+          return uploadCommunityCommentVideo(payload);
         default:
           throw new Error('Unsupported video upload kind');
       }

@@ -92,14 +92,14 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
       let videoUuid: string | undefined;
 
       if (videoFile) {
-        videoUuid = await uploadVideo({ kind: 'ANSWER', file: videoFile });
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
       }
 
       await createComment(
         {
           content: commentContent,
           videoUuid,
-          attachments: images.length > 0 ? images : undefined,
+          attachments: images.length > 0 ? images : null,
         },
         {
           onSuccess: () => {
@@ -164,8 +164,8 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
         await updateComment(commentId, {
           content,
           videoUuid: videoUuid ?? undefined,
-          attachments: files.length > 0 ? files : undefined,
-          deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : undefined,
+          attachments: files.length > 0 ? files : null,
+          deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
         });
       } catch (error: any) {
         console.error('댓글 수정 실패:', error);

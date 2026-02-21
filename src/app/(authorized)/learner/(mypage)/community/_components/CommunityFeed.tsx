@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import ConfirmModal from '@/shared/components/ConfirmModal';
@@ -40,7 +41,10 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
   
   const [postContent, setPostContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
   const [editorKey, setEditorKey] = useState(0);
+  
+  const { uploadVideo } = usePresignedVideoUpload();
   
   const {
     data: postsData,
@@ -57,7 +61,9 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
   const [editPostContent, setEditPostContent] = useState('');
   const [editPostFiles, setEditPostFiles] = useState<File[]>([]);
   const [editPostExistingAttachments, setEditPostExistingAttachments] = useState<any[]>([]);
+  const [editPostExistingVideo, setEditPostExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [editPostDeleteIds, setEditPostDeleteIds] = useState<number[]>([]);
+  const [isSaveEditDialogOpen, setIsSaveEditDialogOpen] = useState(false);
 
   const handleDeletePost = (postId: number, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -81,22 +87,41 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
     }
   };
 
-  const handleCreatePost = () => {
+  const handlePostFilesChange = (files: File[]) => {
+    const images = files.filter((f) => f.type.startsWith('image/')).slice(0, 2);
+    const video = files.find((f) => f.type.startsWith('video/')) ?? null;
+    setUploadedFiles(images);
+    setUploadedVideoFile(video);
+  };
+
+  const handleCreatePost = async () => {
     if (!postContent.trim()) return;
 
-    createPost(
-      {
-        content: postContent,
-        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-      },
-      {
-        onSuccess: () => {
-          setPostContent('');
-          setUploadedFiles([]);
-          setEditorKey((prev) => prev + 1);
+    try {
+      let videoUuid: string | undefined;
+      if (uploadedVideoFile) {
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: uploadedVideoFile });
+      }
+
+      createPost(
+        {
+          content: postContent,
+          videoUuid,
+          attachments: uploadedFiles.length > 0 ? uploadedFiles : null,
         },
-      },
-    );
+        {
+          onSuccess: () => {
+            setPostContent('');
+            setUploadedFiles([]);
+            setUploadedVideoFile(null);
+            setEditorKey((prev) => prev + 1);
+          },
+        },
+      );
+    } catch (error: any) {
+      console.error('포스트 작성 실패:', error);
+      toast.error('Failed to create post.');
+    }
   };
 
   const posts = postsData?.items || [];
@@ -113,6 +138,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
     setEditingPostId(post.postId);
     setEditPostContent(post.content);
     setEditPostExistingAttachments(post.attachments || []);
+    setEditPostExistingVideo(post.videoInfo ? { originFileName: post.videoInfo.originFileName } : null);
     setEditPostFiles([]);
     setEditPostDeleteIds([]);
   };
@@ -122,19 +148,44 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
     setEditPostContent('');
     setEditPostFiles([]);
     setEditPostExistingAttachments([]);
+    setEditPostExistingVideo(null);
     setEditPostDeleteIds([]);
   };
 
-  const handleSaveEditPost = async () => {
+  const handleSaveEditPost = () => {
     if (!editPostContent.trim() || !editingPostId) return;
+    setIsSaveEditDialogOpen(true);
+  };
+
+  const confirmSaveEditPost = async () => {
+    if (!editPostContent.trim() || !editingPostId) return;
+    setIsSaveEditDialogOpen(false);
 
     try {
+      const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
+      const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
+      let videoUuid: string | null | undefined;
+
+      const editingPost = posts.find(p => p.postId === editingPostId);
+      
+      if (videoFile) {
+        // 새 비디오 업로드
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
+      } else if (editingPost?.videoInfo && !editPostExistingVideo) {
+        // 기존 비디오 삭제
+        videoUuid = null;
+      } else if (editPostExistingVideo && editingPost?.videoInfo) {
+        // 기존 비디오 유지
+        videoUuid = editingPost.videoInfo.videoUuid;
+      }
+
       await updatePost(
         editingPostId,
         {
           content: editPostContent,
-          attachments: editPostFiles.length > 0 ? editPostFiles : undefined,
-          deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : undefined,
+          videoUuid: videoUuid ?? null,
+          attachments: images.length > 0 ? images : null,
+          deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : null,
         },
         {
           onSuccess: () => {
@@ -142,6 +193,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
             setEditPostContent('');
             setEditPostFiles([]);
             setEditPostExistingAttachments([]);
+            setEditPostExistingVideo(null);
             setEditPostDeleteIds([]);
           },
         },
@@ -177,7 +229,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
               onSend={handleCreatePost}
               showSendButton={true}
               showAttachButton={true}
-              onFilesChange={setUploadedFiles}
+              onFilesChange={handlePostFilesChange}
               isSending={isCreatingPost}
               showAiAssistant={true}
               aiCourseId={courseIdNumber}
@@ -199,12 +251,14 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
               editPostContent,
               editPostFiles,
               editPostExistingAttachments,
+              editPostExistingVideo,
               onEditContentChange: setEditPostContent,
               onEditFilesChange: setEditPostFiles,
               onRemoveExistingAttachment: (id: number) => {
-                setEditPostDeleteIds((prev: number[]) => [...prev, id]);
+                setEditPostDeleteIds((prev) => [...prev, id]);
                 setEditPostExistingAttachments((prev) => prev.filter((att) => att.id !== id));
               },
+              onRemoveExistingVideo: () => setEditPostExistingVideo(null),
               onSaveEdit: handleSaveEditPost,
               onCancelEdit: handleCancelEditPost,
               isUpdatingPost,
@@ -223,6 +277,18 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
           />
         </Card>
       </div>
+
+      {/* 수정 저장 확인 다이얼로그 */}
+      <ConfirmModal
+        open={isSaveEditDialogOpen}
+        onOpenChange={setIsSaveEditDialogOpen}
+        title="Save Changes"
+        description="Are you sure you want to save these changes?"
+        confirmText="Save"
+        cancelText="Cancel"
+        isConfirming={isUpdatingPost}
+        onConfirm={confirmSaveEditPost}
+      />
 
       {/* 삭제 확인 다이얼로그 */}
       <ConfirmModal

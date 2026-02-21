@@ -37,8 +37,10 @@ export default function CommunityListSheet({
   const [editPostContent, setEditPostContent] = useState('');
   const [editPostFiles, setEditPostFiles] = useState<File[]>([]);
   const [editPostExistingAttachments, setEditPostExistingAttachments] = useState<any[]>([]);
+  const [editPostExistingVideo, setEditPostExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [editPostDeleteIds, setEditPostDeleteIds] = useState<number[]>([]);
   const [isCancelEditDialogOpen, setIsCancelEditDialogOpen] = useState(false);
+  const [isSaveEditDialogOpen, setIsSaveEditDialogOpen] = useState(false);
 
   const {
     data: communityData,
@@ -96,7 +98,7 @@ export default function CommunityListSheet({
         {
           content: postContent,
           videoUuid,
-          attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          attachments: uploadedFiles.length > 0 ? uploadedFiles : null,
         },
         {
           onSuccess: () => {
@@ -134,6 +136,7 @@ export default function CommunityListSheet({
     setEditingPostId(post.postId);
     setEditPostContent(post.content);
     setEditPostExistingAttachments(post.attachments || []);
+    setEditPostExistingVideo(post.videoInfo ? { originFileName: post.videoInfo.originFileName } : null);
     setEditPostFiles([]);
     setEditPostDeleteIds([]);
   };
@@ -153,29 +156,45 @@ export default function CommunityListSheet({
     setEditPostContent('');
     setEditPostFiles([]);
     setEditPostExistingAttachments([]);
+    setEditPostExistingVideo(null);
     setEditPostDeleteIds([]);
     setIsCancelEditDialogOpen(false);
   };
 
-  const handleSaveEditPost = async () => {
+  const handleSaveEditPost = () => {
     if (!editPostContent.trim() || !editingPostId) return;
+    setIsSaveEditDialogOpen(true);
+  };
+
+  const confirmSaveEditPost = async () => {
+    if (!editPostContent.trim() || !editingPostId) return;
+    setIsSaveEditDialogOpen(false);
     
     try {
       const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
       const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
-      let videoUuid: string | undefined;
+      let videoUuid: string | null | undefined;
 
+      const editingPost = posts.find(p => p.postId === editingPostId);
+      
       if (videoFile) {
+        // 새 비디오 업로드
         videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
+      } else if (editingPost?.videoInfo && !editPostExistingVideo) {
+        // 기존 비디오 삭제
+        videoUuid = null;
+      } else if (editPostExistingVideo && editingPost?.videoInfo) {
+        // 기존 비디오 유지
+        videoUuid = editingPost.videoInfo.videoUuid;
       }
 
       await updatePost(
         editingPostId,
         {
           content: editPostContent,
-          videoUuid,
-          attachments: images.length > 0 ? images : undefined,
-          deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : undefined,
+          videoUuid: videoUuid ?? null,
+          attachments: images.length > 0 ? images : null,
+          deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : null,
         },
         {
           onSuccess: () => {
@@ -183,6 +202,7 @@ export default function CommunityListSheet({
             setEditPostContent('');
             setEditPostFiles([]);
             setEditPostExistingAttachments([]);
+            setEditPostExistingVideo(null);
             setEditPostDeleteIds([]);
             refetchCommunity();
           },
@@ -260,12 +280,14 @@ export default function CommunityListSheet({
               editPostContent,
               editPostFiles,
               editPostExistingAttachments,
+              editPostExistingVideo,
               onEditContentChange: setEditPostContent,
               onEditFilesChange: setEditPostFiles,
               onRemoveExistingAttachment: (id: number) => {
                 setEditPostDeleteIds((prev) => [...prev, id]);
                 setEditPostExistingAttachments((prev) => prev.filter((att) => att.id !== id));
               },
+              onRemoveExistingVideo: () => setEditPostExistingVideo(null),
               onSaveEdit: handleSaveEditPost,
               onCancelEdit: handleCancelEditPost,
               isUpdatingPost,
@@ -293,6 +315,17 @@ export default function CommunityListSheet({
         confirmText="Discard Changes"
         cancelText="Continue Editing"
         onConfirm={confirmCancelEditPost}
+      />
+
+      <ConfirmModal
+        open={isSaveEditDialogOpen}
+        onOpenChange={setIsSaveEditDialogOpen}
+        title="Save Changes"
+        description="Are you sure you want to save these changes?"
+        confirmText="Save"
+        cancelText="Cancel"
+        isConfirming={isUpdatingPost}
+        onConfirm={confirmSaveEditPost}
       />
 
       <ConfirmModal

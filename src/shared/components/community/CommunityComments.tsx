@@ -7,6 +7,7 @@ import ReactPlayer from 'react-player';
 
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import ConfirmModal from '@/shared/components/ConfirmModal';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Skeleton } from '@/shared/components/ui/skeleton';
@@ -107,13 +108,16 @@ export default function CommunityComments({
   const [editContent, setEditContent] = useState('');
   const [editFiles, setEditFiles] = useState<File[]>([]);
   const [editExistingAttachments, setEditExistingAttachments] = useState<any[]>([]);
+  const [editExistingVideo, setEditExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [deleteAttachmentIds, setDeleteAttachmentIds] = useState<number[]>([]);
+  const [isSaveEditDialogOpen, setIsSaveEditDialogOpen] = useState(false);
 
   const handleStartEdit = (comment: Comment) => {
     setEditingCommentId(comment.commentId);
     setEditContent(comment.content);
     setEditFiles([]);
     setEditExistingAttachments(comment.attachments || []);
+    setEditExistingVideo(comment.videoInfo ? { originFileName: comment.videoInfo.originFileName } : null);
     setDeleteAttachmentIds([]);
     onEditStart?.(comment.commentId);
   };
@@ -123,6 +127,7 @@ export default function CommunityComments({
     setEditContent('');
     setEditFiles([]);
     setEditExistingAttachments([]);
+    setEditExistingVideo(null);
     setDeleteAttachmentIds([]);
   };
 
@@ -133,16 +138,30 @@ export default function CommunityComments({
 
   const handleSaveEdit = () => {
     if (!editingCommentId || !onSaveEdit || !editContent.trim()) return;
+    setIsSaveEditDialogOpen(true);
+  };
+
+  const confirmSaveEdit = () => {
+    if (!editingCommentId || !onSaveEdit || !editContent.trim()) return;
+    setIsSaveEditDialogOpen(false);
 
     const images = editFiles.filter((f) => f.type.startsWith('image/'));
     const videoFile = editFiles.find((f) => f.type.startsWith('video/')) ?? null;
 
     const run = async () => {
       try {
-        let videoUuid: string | null | undefined;
+        let videoUuid: string | null;
+        const editingComment = comments.find(c => c.commentId === editingCommentId);
 
         if (videoFile) {
-          videoUuid = await uploadVideo({ kind: 'ANSWER', file: videoFile });
+          // 새 비디오 업로드
+          videoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
+        } else if (editingComment?.videoInfo && !editExistingVideo) {
+          // 기존 비디오 삭제
+          videoUuid = null;
+        } else if (editExistingVideo && editingComment?.videoInfo) {
+          // 기존 비디오 유지
+          videoUuid = editingComment.videoInfo.videoUuid;
         }
 
         onSaveEdit(editingCommentId, editContent, images, deleteAttachmentIds, videoUuid);
@@ -221,12 +240,12 @@ export default function CommunityComments({
                     value={editContent}
                     onChange={setEditContent}
                     placeholder="Edit your comment..."
-                    onSend={handleSaveEdit}
-                    showSendButton={true}
                     showAttachButton={true}
                     onFilesChange={setEditFiles}
                     existingAttachments={editExistingAttachments}
                     onRemoveExistingAttachment={handleRemoveEditExistingAttachment}
+                    existingVideo={editExistingVideo}
+                    onRemoveExistingVideo={() => setEditExistingVideo(null)}
                     isSending={isSavingEdit}
                     className="rounded-md"
                   />
@@ -253,18 +272,6 @@ export default function CommunityComments({
                   <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                     {comment.content}
                   </div>
-
-                  {comment.attachments?.some((att) => att?.url && att.contentType?.startsWith('video/')) && (
-                    <div className="mt-3 space-y-2">
-                      {comment.attachments
-                        ?.filter((att) => att?.url && att.contentType?.startsWith('video/'))
-                        .map((att) => (
-                          <div key={att.id} className="overflow-hidden rounded-lg border">
-                            <ReactPlayer src={att.url} controls width="100%" height="100%" />
-                          </div>
-                        ))}
-                    </div>
-                  )}
 
                   {comment.videoInfo?.videoUuid && (
                     <CommentVideoPlayer commentId={comment.commentId} videoType={comment.videoInfo.videoType} />
@@ -325,6 +332,17 @@ export default function CommunityComments({
           </Button>
         </div>
       )}
+
+      <ConfirmModal
+        open={isSaveEditDialogOpen}
+        onOpenChange={setIsSaveEditDialogOpen}
+        title="Save Changes"
+        description="Are you sure you want to save these changes?"
+        confirmText="Save"
+        cancelText="Cancel"
+        isConfirming={isSavingEdit}
+        onConfirm={confirmSaveEdit}
+      />
     </div>
   );
 }
