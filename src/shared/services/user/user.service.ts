@@ -36,7 +36,7 @@ export const GET_nickname_check = async (nickname: string): Promise<ApiResponse<
 };
 
 /** 이메일 중복 체크 */
-export const GET_email_check = async (email: string): Promise<ApiResponse<boolean>> => {
+export const GET_email_check = async (email: string): Promise<ApiResponse<{ available: boolean }>> => {
   const response = await api.get(`/api/v1/users/email/check?email=${email}`);
   return response.data;
 };

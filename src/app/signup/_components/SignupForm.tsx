@@ -122,7 +122,7 @@ export const SignupForm = () => {
     if (!debouncedEmail || !isEmailValid) return 'idle';
     if (isEmailChecking) return 'checking';
     if (isEmailAvailable === undefined) return 'idle';
-    return isEmailAvailable ? 'available' : 'unavailable';
+    return isEmailAvailable.available ? 'available' : 'unavailable';
   };
 
   const nicknameStatus = getNicknameStatus();
