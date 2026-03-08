@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
+import ConfirmModal from '@/shared/components/ConfirmModal';
+import RichTextEditor from '@/shared/components/editor/RichTextEditor';
+import { QuestionAnswers, QuestionDetail, QuestionLabel } from '@/shared/components/question';
+import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import ConfirmModal from '@/shared/components/ConfirmModal';
-import { Badge } from '@/shared/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,27 +13,26 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { Input } from '@/shared/components/ui/input';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { getDisplayContent } from '@/shared/lib/tiptap-content';
+import { usePostCommunityAnswerDraft } from '@/shared/services/ai-community/ai-community.hook';
 import {
+  useDeleteCourseQuestion,
+  useDeleteCourseQuestionAnswer,
   useGetCourseQuestion,
   useGetCourseQuestionAnswerAccepted,
   useGetCourseQuestionAnswersInfinite,
-  useDeleteCourseQuestion,
-  useDeleteCourseQuestionAnswer,
-  usePatchCourseQuestionAnswerById,
   usePatchCourseQuestion,
+  usePatchCourseQuestionAnswerById,
   usePostCourseQuestionAnswer,
   usePostCourseQuestionAnswerAccept,
 } from '@/shared/services/course/course.hook';
-import { QuestionAnswers, QuestionDetail, QuestionLabel } from '@/shared/components/question';
-import { useGetProfile } from '@/shared/services/user/user.hook';
-import RichTextEditor from '@/shared/components/editor/RichTextEditor';
-import { MoreHorizontal } from 'lucide-react';
-import { toast } from 'sonner';
 import type { Attachment } from '@/shared/services/course/course.type';
-import { getDisplayContent } from '@/shared/lib/tiptap-content';
-import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
-import { usePostCommunityAnswerDraft } from '@/shared/services/ai-community/ai-community.hook';
+import { useGetProfile } from '@/shared/services/user/user.hook';
+import { MoreHorizontal } from 'lucide-react';
 import { Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 type QuestionDetailDialogProps = {
   open: boolean;
@@ -41,12 +41,7 @@ type QuestionDetailDialogProps = {
   questionId: number;
 };
 
-export default function QuestionDetailDialog({
-  open,
-  onOpenChange,
-  courseId,
-  questionId,
-}: QuestionDetailDialogProps) {
+export default function QuestionDetailDialog({ open, onOpenChange, courseId, questionId }: QuestionDetailDialogProps) {
   const { data: profile } = useGetProfile();
   const currentUserId = profile?.id;
 
@@ -59,7 +54,7 @@ export default function QuestionDetailDialog({
 
   const [deletingAnswerId, setDeletingAnswerId] = useState<number | null>(null);
   const [alertOpen, setAlertOpen] = useState(false);
-  
+
   const [acceptConfirmOpen, setAcceptConfirmOpen] = useState(false);
   const [cancelAcceptConfirmOpen, setCancelAcceptConfirmOpen] = useState(false);
   const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
@@ -79,16 +74,16 @@ export default function QuestionDetailDialog({
   const { data: question } = useGetCourseQuestion(courseId, questionId, {
     enabled: open,
   });
-  
+
   const pageSize = 10;
-  
+
   const {
     data: answersData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useGetCourseQuestionAnswersInfinite(courseId, questionId, pageSize);
-  
+
   const { data: acceptedAnswerData } = useGetCourseQuestionAnswerAccepted(courseId, questionId);
   const { mutate: acceptAnswer, isPending: isAccepting } = usePostCourseQuestionAnswerAccept(courseId, questionId);
 
@@ -99,7 +94,6 @@ export default function QuestionDetailDialog({
   const { mutate: postAnswer, isPending: isPosting } = usePostCourseQuestionAnswer(courseId, questionId);
   const { uploadVideo } = usePresignedVideoUpload();
   const { mutateAsync: generateAnswerDraft } = usePostCommunityAnswerDraft();
-
 
   const allAnswers = answersData?.pages.flatMap((page) => page.items) ?? [];
   const firstPagePagination = answersData?.pages[0]?.pagination;
@@ -298,7 +292,7 @@ export default function QuestionDetailDialog({
     setIsGeneratingDraft(true);
     try {
       const images = uploadedFiles.filter((f) => f.type.startsWith('image/'));
-      
+
       const response = await generateAnswerDraft({
         course_id: courseId,
         query: userInput,
@@ -369,9 +363,9 @@ export default function QuestionDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] w-full max-w-4xl sm:max-w-4xl p-0">
-        <ScrollArea className="max-h-[80vh] p-12">
-          <DialogHeader className="space-y-3 mb-6">
+      <DialogContent className="flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden p-0 sm:max-w-4xl">
+        <div className="px-12 pt-6 pb-3">
+          <DialogHeader className="mb-4 space-y-3">
             <div className="flex items-center justify-between gap-4">
               <DialogTitle className="text-left text-xl">Question Details</DialogTitle>
               <div className="flex items-center gap-2">
@@ -383,7 +377,7 @@ export default function QuestionDetailDialog({
                     className="flex items-center gap-2"
                   >
                     <Badge variant="secondary">Content</Badge>
-                    <span className="text-sm text-muted-foreground underline-offset-2 hover:underline">
+                    <span className="text-muted-foreground text-sm underline-offset-2 hover:underline">
                       {question.courseName}
                     </span>
                   </a>
@@ -391,10 +385,12 @@ export default function QuestionDetailDialog({
               </div>
             </div>
           </DialogHeader>
+        </div>
 
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 overflow-y-auto px-12" style={{ maxHeight: 'calc(80vh - 300px)' }}>
+          <div className="space-y-4 pr-4">
             {isQuestionEditing ? (
-              <div className="border rounded-sm px-6 py-4 space-y-4">
+              <div className="space-y-4 rounded-sm border px-6 py-4">
                 <div className="space-y-2">
                   <Input
                     value={questionTitle}
@@ -421,12 +417,7 @@ export default function QuestionDetailDialog({
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={cancelQuestionEdit}
-                    disabled={isPatchingQuestion}
-                  >
+                  <Button variant="outline" size="sm" onClick={cancelQuestionEdit} disabled={isPatchingQuestion}>
                     Cancel
                   </Button>
                   <Button size="sm" onClick={saveQuestionEdit} disabled={isPatchingQuestion}>
@@ -435,7 +426,7 @@ export default function QuestionDetailDialog({
                 </div>
               </div>
             ) : (
-              <div className="border rounded-sm px-6 py-4 space-y-4">
+              <div className="space-y-4 rounded-sm border px-6 py-4">
                 {(question?.status || (question?.user?.id && currentUserId === question.user.id)) && (
                   <div className="flex items-center justify-between">
                     <div>{question?.status && <QuestionLabel status={question.status} />}</div>
@@ -482,67 +473,67 @@ export default function QuestionDetailDialog({
               isLoadingMore={isFetchingNextPage}
             />
           </div>
+        </ScrollArea>
 
-          <div className="sticky bottom-0 bg-background py-2 border-t">
-            {draftPreview && (
-              <div className="mb-3 p-4 rounded-lg bg-white dark:bg-gray-950 border border-[#b2f381]/50 dark:border-[#51a611]/50 relative">
-                <div className="absolute -inset-0.5 bg-[#67d215] rounded-lg opacity-20 blur" />
-                <div className="relative">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="size-4 text-[#67d215] dark:text-[#9bef5b]" />
-                      <span className="text-sm font-semibold text-[#51a611] dark:text-[#9bef5b]">AI Draft Ready</span>
-                    </div>
-                  </div>
-                  <div 
-                    className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3 mb-3"
-                    dangerouslySetInnerHTML={{ __html: draftPreview }}
-                  />
+        <div className="bg-background px-12 pt-3 pb-6">
+          {draftPreview && (
+            <div className="relative mb-3 rounded-lg border border-[#b2f381]/50 bg-white p-4 dark:border-[#51a611]/50 dark:bg-gray-950">
+              <div className="absolute -inset-0.5 rounded-lg bg-[#67d215] opacity-20 blur" />
+              <div className="relative">
+                <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleDismissDraft}
-                      className="border-[#b2f381]/50 dark:border-[#51a611]/50"
-                    >
-                      Dismiss
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleRetryDraft}
-                      disabled={isGeneratingDraft}
-                      className="border-[#b2f381]/50 dark:border-[#51a611]/50"
-                    >
-                      Retry
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleInsertDraft}
-                      className="bg-[#67d215] hover:bg-[#51a611] text-white shadow-lg shadow-[#67d215]/50"
-                    >
-                      Insert
-                    </Button>
+                    <Sparkles className="size-4 text-[#67d215] dark:text-[#9bef5b]" />
+                    <span className="text-sm font-semibold text-[#51a611] dark:text-[#9bef5b]">AI Draft Ready</span>
                   </div>
                 </div>
+                <div
+                  className="mb-3 line-clamp-3 text-sm text-gray-700 dark:text-gray-300"
+                  dangerouslySetInnerHTML={{ __html: draftPreview }}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleDismissDraft}
+                    className="border-[#b2f381]/50 dark:border-[#51a611]/50"
+                  >
+                    Dismiss
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRetryDraft}
+                    disabled={isGeneratingDraft}
+                    className="border-[#b2f381]/50 dark:border-[#51a611]/50"
+                  >
+                    Retry
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleInsertDraft}
+                    className="bg-[#67d215] text-white shadow-lg shadow-[#67d215]/50 hover:bg-[#51a611]"
+                  >
+                    Insert
+                  </Button>
+                </div>
               </div>
-            )}
-            <RichTextEditor
-              key={editorKey}
-              value={answerContent}
-              onChange={setAnswerContent}
-              placeholder="Please write your answer"
-              onSend={handleSubmitAnswer}
-              showSendButton={true}
-              showAttachButton={true}
-              showAiDraftButton={true}
-              onGenerateDraft={handleGenerateDraft}
-              isGeneratingDraft={isGeneratingDraft}
-              onFilesChange={setUploadedFiles}
-              isSending={isPosting}
-            />
-          </div>
-        </ScrollArea>
+            </div>
+          )}
+          <RichTextEditor
+            key={editorKey}
+            value={answerContent}
+            onChange={setAnswerContent}
+            placeholder="Please write your answer"
+            onSend={handleSubmitAnswer}
+            showSendButton={true}
+            showAttachButton={true}
+            showAiDraftButton={true}
+            onGenerateDraft={handleGenerateDraft}
+            isGeneratingDraft={isGeneratingDraft}
+            onFilesChange={setUploadedFiles}
+            isSending={isPosting}
+          />
+        </div>
       </DialogContent>
 
       {/* 답변 삭제 모달 */}

@@ -1,28 +1,35 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dayjs from 'dayjs';
-import Image from 'next/image';
 import ReactPlayer from 'react-player';
 
-import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
-import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import Image from 'next/image';
+
 import ConfirmModal from '@/shared/components/ConfirmModal';
+import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
-import { Skeleton } from '@/shared/components/ui/skeleton';
+import { Card, CardContent } from '@/shared/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { Calendar, Heart, MoreHorizontal } from 'lucide-react';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Spinner } from '@/shared/components/ui/spinner';
-import { Card, CardContent } from '@/shared/components/ui/card';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
+import dayjs from 'dayjs';
+import { Calendar, Heart, MoreHorizontal } from 'lucide-react';
 
-const CommentVideoPlayer = ({ commentId, videoType }: { commentId: number; videoType: 'COURSE' | 'ANSWER' | 'QUESTION' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT' }) => {
+const CommentVideoPlayer = ({
+  commentId,
+  videoType,
+}: {
+  commentId: number;
+  videoType: 'COURSE' | 'ANSWER' | 'QUESTION' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT';
+}) => {
   const { m3u8Url, isLoading } = useVideoPlaylist({
     type: videoType,
     id: commentId.toString(),
@@ -157,7 +164,7 @@ export default function CommunityComments({
     const run = async () => {
       try {
         let videoUuid: string | null;
-        const editingComment = comments.find(c => c.commentId === editingCommentId);
+        const editingComment = comments.find((c) => c.commentId === editingCommentId);
 
         if (videoFile) {
           // 새 비디오 업로드
@@ -194,11 +201,7 @@ export default function CommunityComments({
   }
 
   if (isError) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Failed to load comments.
-      </div>
-    );
+    return <div className="text-muted-foreground py-8 text-center text-sm">Failed to load comments.</div>;
   }
 
   if (comments.length === 0) {
@@ -219,7 +222,7 @@ export default function CommunityComments({
 
         return (
           <div key={comment.commentId} className={`p-6 ${index < comments.length - 1 ? 'border-b' : ''}`}>
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-muted text-muted-foreground">
@@ -228,7 +231,7 @@ export default function CommunityComments({
                 </Avatar>
                 <div>
                   <div className="font-medium">{comment.user?.nickname}</div>
-                  <div className="flex gap-1 items-center text-muted-foreground text-sm">
+                  <div className="text-muted-foreground flex items-center gap-1 text-sm">
                     <Calendar className="h-4 w-4" />
                     {comment.createdAt ? dayjs(comment.createdAt).format('MMM D, YYYY h:mm A') : ''}
                   </div>
@@ -243,16 +246,9 @@ export default function CommunityComments({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {enableEdit && (
-                      <DropdownMenuItem onClick={() => handleStartEdit(comment)}>
-                        Edit
-                      </DropdownMenuItem>
-                    )}
+                    {enableEdit && <DropdownMenuItem onClick={() => handleStartEdit(comment)}>Edit</DropdownMenuItem>}
                     {onDeleteComment && (
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => onDeleteComment(comment.commentId)}
-                      >
+                      <DropdownMenuItem className="text-destructive" onClick={() => onDeleteComment(comment.commentId)}>
                         Delete
                       </DropdownMenuItem>
                     )}
@@ -277,52 +273,42 @@ export default function CommunityComments({
                     isSending={isSavingEdit}
                     className="rounded-md"
                   />
-                  <div className="flex gap-2 justify-end">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleCancelEdit}
-                      disabled={isSavingEdit}
-                    >
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={handleCancelEdit} disabled={isSavingEdit}>
                       Cancel
                     </Button>
-                    <Button 
-                      size="sm" 
-                      onClick={handleSaveEdit}
-                      disabled={!editContent.trim() || isSavingEdit}
-                    >
+                    <Button size="sm" onClick={handleSaveEdit} disabled={!editContent.trim() || isSavingEdit}>
                       {isSavingEdit ? 'Saving...' : 'Save'}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <>
-                  <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                    {comment.content}
-                  </div>
+                  <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{comment.content}</div>
 
                   {comment.videoInfo?.videoUuid && (
                     <CommentVideoPlayer commentId={comment.commentId} videoType={comment.videoInfo.videoType} />
                   )}
 
-                  {comment.attachments && comment.attachments.some((att) => att?.url && att.contentType?.startsWith('image/')) && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {comment.attachments
-                        .filter((attachment) => attachment?.url && attachment.contentType?.startsWith('image/'))
-                        .map((attachment) => (
-                          <div key={attachment.id} className="relative inline-block">
-                            <Image
-                              src={attachment.url}
-                              alt={attachment.name}
-                              width={0}
-                              height={0}
-                              sizes="100vw"
-                              className="h-20 w-auto rounded border object-contain"
-                            />
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                  {comment.attachments &&
+                    comment.attachments.some((att) => att?.url && att.contentType?.startsWith('image/')) && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {comment.attachments
+                          .filter((attachment) => attachment?.url && attachment.contentType?.startsWith('image/'))
+                          .map((attachment) => (
+                            <div key={attachment.id} className="relative inline-block">
+                              <Image
+                                src={attachment.url}
+                                alt={attachment.name}
+                                width={0}
+                                height={0}
+                                sizes="100vw"
+                                className="h-32 w-auto rounded border object-contain"
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    )}
 
                   {/* 댓글 좋아요 */}
                   {showLikeButton && onLikeComment ? (
@@ -338,7 +324,7 @@ export default function CommunityComments({
                       <span className="text-xs">{comment.likeCount ?? 0}</span>
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2">
                       <Heart className="h-4 w-4" />
                       <span className="text-xs">{comment.likeCount ?? 0}</span>
                     </div>
@@ -352,7 +338,7 @@ export default function CommunityComments({
 
       {/* 더보기 버튼 */}
       {hasNextPage && onLoadMore && (
-        <div className="flex justify-center py-4 px-6">
+        <div className="flex justify-center px-6 py-4">
           <Button variant="outline" onClick={onLoadMore} disabled={isLoadingMore} className="w-full">
             {isLoadingMore
               ? 'Loading...'

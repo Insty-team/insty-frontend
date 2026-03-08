@@ -4,7 +4,6 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 
 import Image from 'next/image';
 
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Button } from '@/shared/components/ui/button';
 import {
   DropdownMenu,
@@ -12,8 +11,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { cn } from '@/shared/lib/utils';
+import { GET_mention_search } from '@/shared/services/mention/mention.service';
+import type { MentionSearchResponse } from '@/shared/services/mention/mention.type';
 import Link from '@tiptap/extension-link';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -21,9 +23,6 @@ import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { ReactRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import tippy from 'tippy.js';
-import { GET_mention_search } from '@/shared/services/mention/mention.service';
-import type { MentionSearchResponse } from '@/shared/services/mention/mention.type';
 import {
   Bold,
   Code,
@@ -40,6 +39,7 @@ import {
   Underline as UnderlineIcon,
   X,
 } from 'lucide-react';
+import tippy from 'tippy.js';
 
 const MentionDropdown = forwardRef<
   { onKeyDown: (props: { event: KeyboardEvent }) => boolean },
@@ -82,15 +82,15 @@ const MentionDropdown = forwardRef<
   }));
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-h-60 overflow-y-auto">
+    <div className="max-h-60 overflow-hidden overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
       {props.items.length ? (
         props.items.map((item, index) => (
           <button
             key={item.id}
             type="button"
             className={cn(
-              'w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
-              index === selectedIndex && 'bg-gray-100 dark:bg-gray-800'
+              'w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800',
+              index === selectedIndex && 'bg-gray-100 dark:bg-gray-800',
             )}
             onMouseDownCapture={(e) => {
               e.preventDefault();
@@ -227,9 +227,10 @@ export default function RichTextEditor({
 
   // 업로드 파일 상태(이미지/비디오)를 합쳐 부모로 전달
   useEffect(() => {
-    const allFiles = uploadedFiles.length > 0 || uploadedVideoFile 
-      ? [...uploadedFiles, ...(uploadedVideoFile ? [uploadedVideoFile] : [])]
-      : [];
+    const allFiles =
+      uploadedFiles.length > 0 || uploadedVideoFile
+        ? [...uploadedFiles, ...(uploadedVideoFile ? [uploadedVideoFile] : [])]
+        : [];
     onFilesChange?.(allFiles);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadedFiles, uploadedVideoFile]);
@@ -364,8 +365,9 @@ export default function RichTextEditor({
                         return true;
                       }
                       return (
-                        (component.ref as { onKeyDown?: (keyProps: { event: KeyboardEvent }) => boolean } | null)?.onKeyDown?.(props) ??
-                        false
+                        (
+                          component.ref as { onKeyDown?: (keyProps: { event: KeyboardEvent }) => boolean } | null
+                        )?.onKeyDown?.(props) ?? false
                       );
                     },
                     onExit() {
@@ -384,15 +386,12 @@ export default function RichTextEditor({
       let html = editor.getHTML();
 
       if (enableMention) {
-        html = html.replace(
-          /<span[^>]*class="mention"[^>]*>@([^<]*)<\/span>/g,
-          (match) => {
-            const idMatch = match.match(/data-id="([^"]*)"/);
-            const labelMatch = match.match(/data-label="([^"]*)"/);
-            if (idMatch && labelMatch) return `@[${labelMatch[1]}](${idMatch[1]})`;
-            return match;
-          }
-        );
+        html = html.replace(/<span[^>]*class="mention"[^>]*>@([^<]*)<\/span>/g, (match) => {
+          const idMatch = match.match(/data-id="([^"]*)"/);
+          const labelMatch = match.match(/data-label="([^"]*)"/);
+          if (idMatch && labelMatch) return `@[${labelMatch[1]}](${idMatch[1]})`;
+          return match;
+        });
       }
 
       onChange(valueFormat === 'json' ? JSON.stringify(editor.getJSON()) : html);
@@ -529,12 +528,12 @@ export default function RichTextEditor({
           <EditorContent
             editor={editor}
             className={cn(
-              'min-h-[60px] max-h-[300px] overflow-y-auto',
+              'max-h-[300px] min-h-[60px] overflow-y-auto',
               'prose prose-sm max-w-none',
               '[&>.ProseMirror]:outline-none',
               '[&>.ProseMirror]:border-none',
               '[&_p]:my-1',
-              '[&_ul]:my-1 [&_ol]:my-1',
+              '[&_ol]:my-1 [&_ul]:my-1',
               '[&_li]:my-0.5',
               (showSendButton || showAttachButton) && 'pb-12',
             )}
@@ -566,7 +565,7 @@ export default function RichTextEditor({
                       <button
                         type="button"
                         onClick={() => onRemoveExistingAttachment(attachment.id)}
-                        className="absolute right-1 top-1 rounded-full bg-white/90 p-1 hover:bg-white shadow-sm transition-colors"
+                        className="absolute top-1 right-1 rounded-full bg-white/90 p-1 shadow-sm transition-colors hover:bg-white"
                       >
                         <X className="h-3 w-3 text-gray-700" />
                       </button>
@@ -576,7 +575,7 @@ export default function RichTextEditor({
                 {uploadedFiles.map((file, index) => {
                   const previewUrl = uploadedFilePreviews[index];
                   if (!previewUrl) return null;
-                  
+
                   return (
                     <div key={`new-${index}`} className="relative inline-block">
                       <Image
@@ -590,7 +589,7 @@ export default function RichTextEditor({
                       <button
                         type="button"
                         onClick={() => handleRemoveFile(index)}
-                        className="absolute right-1 top-1 rounded-full bg-white/90 p-1 hover:bg-white shadow-sm transition-colors"
+                        className="absolute top-1 right-1 rounded-full bg-white/90 p-1 shadow-sm transition-colors hover:bg-white"
                       >
                         <X className="h-3 w-3 text-gray-700" />
                       </button>
@@ -599,18 +598,16 @@ export default function RichTextEditor({
                 })}
               </div>
             )}
-            
+
             {uploadedVideoFile && (
               <div className="relative rounded border p-2">
                 <div className="flex items-center gap-2">
-                  <Film className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground truncate max-w-32">
-                    {uploadedVideoFile.name}
-                  </span>
+                  <Film className="text-muted-foreground h-3 w-3" />
+                  <span className="text-muted-foreground max-w-32 truncate text-xs">{uploadedVideoFile.name}</span>
                   <button
                     type="button"
                     onClick={handleRemoveVideo}
-                    className="ml-auto rounded-full bg-background/80 p-0.5 hover:bg-background"
+                    className="bg-background/80 hover:bg-background ml-auto rounded-full p-0.5"
                   >
                     <X className="h-2 w-2" />
                   </button>
@@ -621,15 +618,15 @@ export default function RichTextEditor({
             {existingVideo && !uploadedVideoFile && (
               <div className="relative rounded border p-2">
                 <div className="flex items-center gap-2">
-                  <Film className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground truncate max-w-60">
+                  <Film className="text-muted-foreground h-3 w-3" />
+                  <span className="text-muted-foreground max-w-60 truncate text-xs">
                     {existingVideo.originFileName ?? existingVideo.name ?? 'Video'}
                   </span>
                   {onRemoveExistingVideo && (
                     <button
                       type="button"
                       onClick={onRemoveExistingVideo}
-                      className="ml-auto rounded-full bg-background/80 p-0.5 hover:bg-background"
+                      className="bg-background/80 hover:bg-background ml-auto rounded-full p-0.5"
                     >
                       <X className="h-2 w-2" />
                     </button>
@@ -637,15 +634,13 @@ export default function RichTextEditor({
                 </div>
               </div>
             )}
-            
-            {uploadErrorMessage && (
-              <p className="text-xs text-destructive">{uploadErrorMessage}</p>
-            )}
+
+            {uploadErrorMessage && <p className="text-destructive text-xs">{uploadErrorMessage}</p>}
           </div>
         )}
 
         {/* 하단 버튼 영역 */}
-        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-background px-3 py-2 rounded-b-lg">
+        <div className="bg-background absolute right-0 bottom-0 left-0 flex items-center justify-between rounded-b-lg px-3 py-2">
           {showAttachButton && (
             <div className="flex items-center gap-1">
               <input
@@ -656,23 +651,11 @@ export default function RichTextEditor({
                 onChange={handleFileUpload}
                 className="hidden"
               />
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/*"
-                onChange={handleVideoUpload}
-                className="hidden"
-              />
-              
+              <input ref={videoInputRef} type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-6"
-                    disabled={isDisabled}
-                  >
+                  <Button type="button" variant="ghost" size="icon" className="size-6" disabled={isDisabled}>
                     <Plus className="size-3" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -706,7 +689,7 @@ export default function RichTextEditor({
                 size="sm"
                 onClick={onGenerateDraft}
                 disabled={isDisabled || isGeneratingDraft || isEmpty}
-                className="gap-1.5 text-xs h-6 px-2"
+                className="h-6 gap-1.5 px-2 text-xs"
               >
                 {isGeneratingDraft ? (
                   <>

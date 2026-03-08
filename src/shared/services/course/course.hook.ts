@@ -5,9 +5,9 @@ import {
   GET_course_by_id,
   GET_course_by_id_for_creator,
   GET_course_progress_exists_by_id,
-  GET_course_question_by_id,
   GET_course_question_answer_accept_by_id,
   GET_course_question_answers_by_id,
+  GET_course_question_by_id,
   GET_course_questions_by_id,
   GET_course_questions_my_by_id,
   GET_courses,
@@ -33,7 +33,7 @@ import {
   CourseRequest,
 } from './course.type';
 
-import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 /** 강의 상세조회 */
 export const useGetCourseById = (courseId: string) => {
@@ -168,7 +168,7 @@ export const useGetCourseQuestionsInfinite = (courseId: number, params: Omit<Cou
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,
-      items: data.pages.flatMap(page => page.data?.items || []),
+      items: data.pages.flatMap((page) => page.data?.items || []),
       pagination: data.pages[data.pages.length - 1]?.data?.pagination,
     }),
   });
@@ -222,7 +222,9 @@ export const usePatchCourseQuestion = () => {
       data: CourseQuestionUpdateRequest;
     }) => PATCH_course_question_by_id(courseId, questionId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [GET_course_question_by_id.name, variables.courseId, variables.questionId] });
+      queryClient.invalidateQueries({
+        queryKey: [GET_course_question_by_id.name, variables.courseId, variables.questionId],
+      });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, variables.courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
     },
@@ -238,7 +240,9 @@ export const useDeleteCourseQuestion = () => {
     mutationFn: ({ courseId, questionId }: { courseId: number; questionId: number }) =>
       DELETE_course_question_by_id(courseId, questionId),
     onSuccess: (_response, variables) => {
-      queryClient.removeQueries({ queryKey: [GET_course_question_by_id.name, variables.courseId, variables.questionId] });
+      queryClient.removeQueries({
+        queryKey: [GET_course_question_by_id.name, variables.courseId, variables.questionId],
+      });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_by_id.name, variables.courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_course_questions_my_by_id.name, variables.courseId] });
       queryClient.invalidateQueries({ queryKey: [GET_my_course_questions.name] });
@@ -271,11 +275,7 @@ export const useGetCourseQuestionAnswers = (
 };
 
 /** 답변 목록 조회 (무한 스크롤) */
-export const useGetCourseQuestionAnswersInfinite = (
-  courseId: number,
-  questionId: number,
-  pageSize: number = 10,
-) => {
+export const useGetCourseQuestionAnswersInfinite = (courseId: number, questionId: number, pageSize: number = 10) => {
   return useInfiniteQuery({
     queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId, pageSize],
     queryFn: ({ pageParam = 1 }) => GET_course_question_answers_by_id(courseId, questionId, pageParam, pageSize),
@@ -300,7 +300,9 @@ export const usePostCourseQuestionAnswer = (courseId: number, questionId: number
     mutationFn: (data: CourseQuestionAnswerRequest) => POST_course_question_answer_by_id(courseId, questionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
-      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId] });
+      queryClient.invalidateQueries({
+        queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId],
+      });
     },
   });
 };
@@ -331,7 +333,9 @@ export const useDeleteCourseQuestionAnswer = (courseId: number, questionId: numb
     mutationFn: (answerId: number) => DELETE_course_question_answer_by_id(courseId, questionId, answerId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
-      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId] });
+      queryClient.invalidateQueries({
+        queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId],
+      });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
 
       queryClient.invalidateQueries({ queryKey: [GET_course_question_by_id.name, courseId, questionId] });
@@ -347,16 +351,13 @@ export const usePatchCourseQuestionAnswerById = (courseId: number, questionId: n
 
   return useMutation({
     mutationKey: [PATCH_course_question_answer_by_id.name, courseId, questionId],
-    mutationFn: ({
-      answerId,
-      data,
-    }: {
-      answerId: number;
-      data: CourseQuestionAnswerUpdateRequest;
-    }) => PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
+    mutationFn: ({ answerId, data }: { answerId: number; data: CourseQuestionAnswerUpdateRequest }) =>
+      PATCH_course_question_answer_by_id(courseId, questionId, answerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, courseId, questionId] });
-      queryClient.invalidateQueries({ queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId] });
+      queryClient.invalidateQueries({
+        queryKey: [GET_course_question_answers_by_id.name, 'infinite', courseId, questionId],
+      });
       queryClient.invalidateQueries({ queryKey: [GET_course_question_answer_accept_by_id.name, courseId, questionId] });
     },
   });

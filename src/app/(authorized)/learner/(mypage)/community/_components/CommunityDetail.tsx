@@ -1,24 +1,23 @@
-
 'use client';
 
 import { useState } from 'react';
 
+import CommunityComments from '@/shared/components/community/CommunityComments';
+import CommunityPostDetail from '@/shared/components/community/CommunityPostDetail';
+import ConfirmModal from '@/shared/components/ConfirmModal';
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import ConfirmModal from '@/shared/components/ConfirmModal';
-import { ArrowLeft } from 'lucide-react';
+import { useCommunity } from '@/shared/hooks/community/useCommunity';
+import { useCommunityComments } from '@/shared/hooks/community/useCommunityComments';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import {
   useGetCourseCommunityPostById,
   useGetCourseCommunityPostCommentsInfinite,
 } from '@/shared/services/community/community.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import CommunityPostDetail from '@/shared/components/community/CommunityPostDetail';
-import CommunityComments from '@/shared/components/community/CommunityComments';
-import { useCommunity } from '@/shared/hooks/community/useCommunity';
-import { useCommunityComments } from '@/shared/hooks/community/useCommunityComments';
-import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { ArrowLeft } from 'lucide-react';
 
 type Props = {
   courseId: string;
@@ -31,7 +30,7 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
   const { data: profile } = useGetProfile();
   const currentUserId = profile?.id;
   const courseIdNumber = Number(courseId);
-  
+
   const { data: post, isLoading, isError } = useGetCourseCommunityPostById(courseIdNumber, postId);
   const {
     data: commentsData,
@@ -50,7 +49,7 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
 
   const { uploadVideo } = usePresignedVideoUpload();
-  
+
   const {
     togglePostLike,
     isLikingPost: isLiking,
@@ -168,7 +167,9 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
         <Card className="shadow-none">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <p className="text-muted-foreground">Failed to load post</p>
-            <Button variant="outline" onClick={onBack}>Go Back</Button>
+            <Button variant="outline" onClick={onBack}>
+              Go Back
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -178,20 +179,18 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
         <Button variant="ghost" size="icon" onClick={onBack} className="size-8">
           <ArrowLeft className="size-4" />
         </Button>
         <div className="flex-1 text-center">
-          <h3 className="text-lg font-semibold">
-            {courseName}
-          </h3>
+          <h3 className="text-lg font-semibold">{courseName}</h3>
         </div>
         <div className="size-8"></div>
       </div>
 
       {/* 포스트 상세 내용부터 스크롤 */}
-      <ScrollArea className="max-w-3xl mx-auto h-full rounded-lg h-[calc(100vh-20rem)] bg-white">
+      <ScrollArea className="mx-auto h-[calc(100vh-20rem)] h-full max-w-3xl rounded-lg bg-white">
         <div className="p-6">
           <CommunityPostDetail
             postData={post}
@@ -201,55 +200,56 @@ export default function CommunityDetail({ courseId, courseName, postId, onBack }
             isUnliking={isUnliking}
           />
 
-        {/* 댓글 섹션 */}
-        <div>
-          {/* 댓글 작성 폼 */}
-          <div className={`transition-all duration-300 ease-in-out ${isCommenting ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'}`}>
-            {isCommenting && (
-              <Card className="border-b shadow-none">
-                <CardContent className="">
-                  <CommunityTextArea
-                    key={editorKey}
-                    value={commentContent}
-                    onChange={setCommentContent}
-                    onSend={handleSubmitComment}
-                    placeholder="Write a comment..."
-                    showSendButton={true}
-                    showAttachButton={true}
-                    isSending={isPosting}
-                    onFilesChange={setAttachedFiles}
-                  />
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          
-          <CommunityComments
-            comments={comments}
-            hasNextPage={hasNextPage}
-            onLoadMore={handleLoadMore}
-            isLoadingMore={isFetchingNextPage}
-            pagination={{
-              currentPage: pagination?.currentPage,
-              totalPages: pagination?.totalPages,
-            }}
-            currentUserId={currentUserId}
-            showLikeButton={true}
-            onLikeComment={handleToggleCommentLike}
-            enableEdit={true}
-            onSaveEdit={async (commentId, content, files, deleteAttachmentIds, videoUuid) => {
-              await updateComment(commentId, {
-                content,
+          {/* 댓글 섹션 */}
+          <div>
+            {/* 댓글 작성 폼 */}
+            <div
+              className={`transition-all duration-300 ease-in-out ${isCommenting ? 'max-h-96 opacity-100' : 'max-h-0 overflow-hidden opacity-0'}`}
+            >
+              {isCommenting && (
+                <Card className="border-b shadow-none">
+                  <CardContent className="p-0">
+                    <CommunityTextArea
+                      key={editorKey}
+                      value={commentContent}
+                      onChange={setCommentContent}
+                      onSend={handleSubmitComment}
+                      placeholder="Write a comment..."
+                      showSendButton={true}
+                      showAttachButton={true}
+                      isSending={isPosting}
+                      onFilesChange={setAttachedFiles}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            <CommunityComments
+              comments={comments}
+              hasNextPage={hasNextPage}
+              onLoadMore={handleLoadMore}
+              isLoadingMore={isFetchingNextPage}
+              pagination={{
+                currentPage: pagination?.currentPage,
+                totalPages: pagination?.totalPages,
+              }}
+              currentUserId={currentUserId}
+              showLikeButton={true}
+              onLikeComment={handleToggleCommentLike}
+              enableEdit={true}
+              onSaveEdit={async (commentId, content, files, deleteAttachmentIds, videoUuid) => {
+                await updateComment(commentId, {
+                  content,
                   videoUuid: videoUuid ?? undefined,
                   attachments: files ?? null,
-                  deleteFileIds:
-                    deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
+                  deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
                 });
               }}
               isSavingEdit={isPatchingComment}
               onDeleteComment={handleDeleteComment}
             />
-        </div>
+          </div>
         </div>
       </ScrollArea>
 

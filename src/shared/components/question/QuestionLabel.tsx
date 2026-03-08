@@ -1,4 +1,4 @@
-import { Clock, MessageCircleQuestion, CheckCircle } from 'lucide-react';
+import { CheckCircle, Clock, MessageCircleQuestion } from 'lucide-react';
 
 type CourseQuestionStatus = 'WAITING' | 'ANSWERED' | 'ACCEPTED';
 

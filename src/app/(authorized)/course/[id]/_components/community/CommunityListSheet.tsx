@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
-import CommunityTextArea, { CommunityTextAreaRef } from '@/shared/components/editor/CommunityTextArea';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import CommunityPostList from '@/shared/components/community/CommunityPostList';
 import ConfirmModal from '@/shared/components/ConfirmModal';
-import { useGetCourseCommunityPostsInfinite } from '@/shared/services/community/community.hook';
+import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { useGetCourseCommunityPostsInfinite } from '@/shared/services/community/community.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import CommunityPostList from '@/shared/components/community/CommunityPostList';
 import { toast } from 'sonner';
 
 type Props = {
@@ -19,14 +19,8 @@ type Props = {
   readonly isActive: boolean;
 };
 
-export default function CommunityListSheet({
-  courseId,
-  onSelectPost,
-  sheetIsOpen,
-  isActive,
-}: Props) {
+export default function CommunityListSheet({ courseId, onSelectPost, sheetIsOpen, isActive }: Props) {
   const courseIdNumber = Number(courseId);
-  const editorRef = useRef<CommunityTextAreaRef>(null);
   const [postContent, setPostContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
@@ -143,7 +137,7 @@ export default function CommunityListSheet({
 
   const handleCancelEditPost = () => {
     const hasChanges = editPostContent !== '' || editPostFiles.length > 0 || editPostDeleteIds.length > 0;
-    
+
     if (hasChanges) {
       setIsCancelEditDialogOpen(true);
     } else {
@@ -169,14 +163,14 @@ export default function CommunityListSheet({
   const confirmSaveEditPost = async () => {
     if (!editPostContent.trim() || !editingPostId) return;
     setIsSaveEditDialogOpen(false);
-    
+
     try {
       const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
       const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
       let videoUuid: string | null;
 
-      const editingPost = posts.find(p => p.postId === editingPostId);
-      
+      const editingPost = posts.find((p) => p.postId === editingPostId);
+
       if (videoFile) {
         // 새 비디오 업로드
         videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
@@ -254,7 +248,6 @@ export default function CommunityListSheet({
         <div className="space-y-4 pr-4">
           {/* 글 작성 에디터 */}
           <CommunityTextArea
-            ref={editorRef}
             key={editorKey}
             value={postContent}
             onChange={setPostContent}

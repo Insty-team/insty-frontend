@@ -1,5 +1,5 @@
 import CommunityComments from './CommunityComments';
-import CommunityPostList from './CommunityPostList';
 import CommunityPostDetail from './CommunityPostDetail';
+import CommunityPostList from './CommunityPostList';
 
 export { CommunityComments, CommunityPostList, CommunityPostDetail };

@@ -1,13 +1,14 @@
-import dayjs from 'dayjs';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import ReactPlayer from 'react-player';
+
+import Image from 'next/image';
 
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Spinner } from '@/shared/components/ui/spinner';
-import { Attachment, VideoType } from '@/shared/services/community/community.type';
-import { Calendar, Heart, MessageCircle } from 'lucide-react';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
-import ReactPlayer from 'react-player';
+import { Attachment, VideoType } from '@/shared/services/community/community.type';
+import dayjs from 'dayjs';
+import { Calendar, Heart, MessageCircle } from 'lucide-react';
 
 const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; videoType: VideoType }) => {
   const { m3u8Url, isLoading: isLoadingVideo } = useVideoPlaylist({
@@ -19,7 +20,7 @@ const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; video
   return (
     <div className="mb-6 overflow-hidden rounded-lg border">
       {isLoadingVideo || !m3u8Url ? (
-        <div className="flex items-center justify-center bg-muted py-20">
+        <div className="bg-muted flex items-center justify-center py-20">
           <Spinner className="size-6" />
         </div>
       ) : (
@@ -32,24 +33,27 @@ const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; video
 };
 
 type CommunityPostDetailProps = {
-  postData: {
-    postId?: number;
-    user?: {
-      id?: number;
-      nickname?: string;
-    };
-    content: string;
-    createdAt?: string;
-    attachments?: Attachment[];
-    videoInfo?: {
-      videoType: VideoType;
-      videoUuid: string;
-      originFileName: string;
-    } | null;
-    likeCount?: number;
-    commentCount?: number;
-    likedByMe?: boolean;
-  } | null | undefined;
+  postData:
+    | {
+        postId?: number;
+        user?: {
+          id?: number;
+          nickname?: string;
+        };
+        content: string;
+        createdAt?: string;
+        attachments?: Attachment[];
+        videoInfo?: {
+          videoType: VideoType;
+          videoUuid: string;
+          originFileName: string;
+        } | null;
+        likeCount?: number;
+        commentCount?: number;
+        likedByMe?: boolean;
+      }
+    | null
+    | undefined;
   isLoading?: boolean;
   isError?: boolean;
   onToggleLike?: () => void;
@@ -99,25 +103,17 @@ export default function CommunityPostDetail({
   }
 
   if (isError) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Failed to load post details.
-      </div>
-    );
+    return <div className="text-muted-foreground py-8 text-center text-sm">Failed to load post details.</div>;
   }
 
   if (!postData) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Post information not found.
-      </div>
-    );
+    return <div className="text-muted-foreground py-8 text-center text-sm">Post information not found.</div>;
   }
 
   return (
-    <div className="p-6 border-b">
+    <div className="border-b p-6">
       {/* 포스트 헤더 */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-3">
           <Avatar className="h-12 w-12">
             <AvatarFallback className="bg-primary text-primary-foreground text-lg">
@@ -125,8 +121,8 @@ export default function CommunityPostDetail({
             </AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-medium text-lg">{postData.user?.nickname}</div>
-            <div className="flex gap-1 items-center text-muted-foreground text-sm">
+            <div className="text-lg font-medium">{postData.user?.nickname}</div>
+            <div className="text-muted-foreground flex items-center gap-1 text-sm">
               <Calendar className="h-4 w-4" />
               {postData.createdAt ? dayjs(postData.createdAt).format('MMM D, YYYY h:mm A') : ''}
             </div>
@@ -135,9 +131,7 @@ export default function CommunityPostDetail({
       </div>
 
       {/* 포스트 내용 */}
-      <div className="text-foreground leading-relaxed mb-6 whitespace-pre-wrap">
-        {postData.content}
-      </div>
+      <div className="text-foreground mb-6 leading-relaxed whitespace-pre-wrap">{postData.content}</div>
 
       {/* 비디오 */}
       {postData.videoInfo?.videoUuid && postData.postId && (
@@ -148,20 +142,18 @@ export default function CommunityPostDetail({
       {postData.attachments && renderAttachments(postData.attachments)}
 
       {/* 포스트 푸터 */}
-      <div className="flex items-center gap-3 mt-6 pt-4">
+      <div className="mt-6 flex items-center gap-3 pt-4">
         {onToggleLike && (
           <button
             className={`flex items-center gap-2 transition-all duration-300 ${
-              postData.likedByMe
-                ? 'text-red-500 hover:text-red-600'
-                : 'text-muted-foreground hover:text-foreground'
+              postData.likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={onToggleLike}
             disabled={isLiking || isUnliking}
           >
             <Heart
               className={`h-5 w-5 transition-all duration-300 ${
-                postData.likedByMe ? 'fill-current scale-110' : 'scale-100'
+                postData.likedByMe ? 'scale-110 fill-current' : 'scale-100'
               }`}
             />
             <span className="text-sm">{postData.likeCount ?? 0}</span>
@@ -169,14 +161,14 @@ export default function CommunityPostDetail({
         )}
         {onToggleComment ? (
           <button
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
             onClick={onToggleComment}
           >
             <MessageCircle className="h-5 w-5" />
             <span className="text-sm">{postData.commentCount ?? 0}</span>
           </button>
         ) : (
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
             <span className="text-sm">{postData.commentCount ?? 0}</span>
           </div>

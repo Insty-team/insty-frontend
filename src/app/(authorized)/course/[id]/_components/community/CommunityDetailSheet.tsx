@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 
-import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
+import CommunityComments from '@/shared/components/community/CommunityComments';
+import CommunityPostDetail from '@/shared/components/community/CommunityPostDetail';
 import ConfirmModal from '@/shared/components/ConfirmModal';
+import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -17,19 +19,17 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Spinner } from '@/shared/components/ui/spinner';
+import { useCommunity } from '@/shared/hooks/community/useCommunity';
+import { useCommunityComments } from '@/shared/hooks/community/useCommunityComments';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import {
   useGetCourseCommunityPostById,
   useGetCourseCommunityPostCommentsById,
 } from '@/shared/services/community/community.hook';
-import { useCommunity } from '@/shared/hooks/community/useCommunity';
-import { useCommunityComments } from '@/shared/hooks/community/useCommunityComments';
-import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { Attachment } from '@/shared/services/community/community.type';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import dayjs from 'dayjs';
-import { Attachment } from '@/shared/services/community/community.type';
-import { ChevronLeft, Heart, MessageCircle, Calendar, MoreHorizontal } from 'lucide-react';
-import CommunityPostDetail from '@/shared/components/community/CommunityPostDetail';
-import CommunityComments from '@/shared/components/community/CommunityComments';
+import { Calendar, ChevronLeft, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Props = {
@@ -45,7 +45,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
   const [uploadErrorMessage, setUploadErrorMessage] = useState('');
   const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
-  
+
   // 댓글 관련 state
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
@@ -59,7 +59,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
   const [pageSize] = useState(10);
   const [hasMore, setHasMore] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
-  
+
   // 포스트 수정/삭제 관련 state
   const [isPostDeleteDialogOpen, setIsPostDeleteDialogOpen] = useState(false);
   const [isCancelPostEditDialogOpen, setIsCancelPostEditDialogOpen] = useState(false);
@@ -122,13 +122,13 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
       if (page === 1) {
         setComments(commentsData.items);
       } else {
-        setComments(prev => {
-          const existingIds = new Set(prev.map(c => c.commentId));
+        setComments((prev) => {
+          const existingIds = new Set(prev.map((c) => c.commentId));
           const newComments = commentsData.items.filter((item: any) => !existingIds.has(item.commentId));
           return [...prev, ...newComments];
         });
       }
-      
+
       if (commentsData.pagination) {
         setHasMore(page < commentsData.pagination.totalPages);
       }
@@ -230,7 +230,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
   const handleLoadMore = () => {
     if (!isCommentsFetching && hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -247,10 +247,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
     // 파일 크기 체크 (10MB 제한)
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const oversizedFiles = editingFiles.filter(file => file.size > MAX_FILE_SIZE);
-    
+    const oversizedFiles = editingFiles.filter((file) => file.size > MAX_FILE_SIZE);
+
     if (oversizedFiles.length > 0) {
-      alert(`File size too large. Maximum file size is 10MB.\nLarge files: ${oversizedFiles.map(f => f.name).join(', ')}`);
+      alert(
+        `File size too large. Maximum file size is 10MB.\nLarge files: ${oversizedFiles.map((f) => f.name).join(', ')}`,
+      );
       return;
     }
 
@@ -293,7 +295,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
   const handleCancelEdit = () => {
     const hasChanges = editingContent !== '' || editingFiles.length > 0 || editingDeleteIds.length > 0;
-    
+
     if (hasChanges) {
       setIsCancelEditDialogOpen(true);
     } else {
@@ -311,8 +313,8 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
   };
 
   const handleRemoveExistingAttachment = (attachmentId: number) => {
-    setEditingDeleteIds(prev => [...prev, attachmentId]);
-    setEditingExistingAttachments(prev => prev.filter(att => att.id !== attachmentId));
+    setEditingDeleteIds((prev) => [...prev, attachmentId]);
+    setEditingExistingAttachments((prev) => prev.filter((att) => att.id !== attachmentId));
   };
 
   const handleDeleteComment = (commentId: number) => {
@@ -343,14 +345,16 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
       setIsEditingPost(true);
       setEditPostContent(communityPostData.content);
       setEditPostExistingAttachments(communityPostData.attachments || []);
-      setEditPostExistingVideo(communityPostData.videoInfo ? { originFileName: communityPostData.videoInfo.originFileName } : null);
+      setEditPostExistingVideo(
+        communityPostData.videoInfo ? { originFileName: communityPostData.videoInfo.originFileName } : null,
+      );
       setEditPostDeleteIds([]);
     }
   };
 
   const handleCancelEditPost = () => {
     const hasChanges = editPostContent !== '' || editPostFiles.length > 0 || editPostDeleteIds.length > 0;
-    
+
     if (hasChanges) {
       setIsCancelPostEditDialogOpen(true);
     } else {
@@ -379,10 +383,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
     // 파일 크기 체크 (10MB 제한)
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const oversizedFiles = editPostFiles.filter(file => file.size > MAX_FILE_SIZE);
-    
+    const oversizedFiles = editPostFiles.filter((file) => file.size > MAX_FILE_SIZE);
+
     if (oversizedFiles.length > 0) {
-      alert(`File size too large. Maximum file size is 10MB.\nLarge files: ${oversizedFiles.map(f => f.name).join(', ')}`);
+      alert(
+        `File size too large. Maximum file size is 10MB.\nLarge files: ${oversizedFiles.map((f) => f.name).join(', ')}`,
+      );
       return;
     }
 
@@ -456,7 +462,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     })();
   };
 
-  const { 
+  const {
     data: communityPostData,
     isLoading: isCommunityPostLoading,
     isError: isCommunityPostError,
@@ -514,7 +520,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
           {!isCommunityPostLoading && !isCommunityPostError && communityPostData && (
             <div className="space-y-4">
               {isEditingPost ? (
-                <div className="border rounded-sm p-6 space-y-4">
+                <div className="space-y-4 rounded-sm border p-6">
                   {/* 작성자 정보 */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -524,10 +530,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium text-lg">{communityPostData.user?.nickname}</div>
-                        <div className="flex gap-1 items-center text-muted-foreground text-sm">
+                        <div className="text-lg font-medium">{communityPostData.user?.nickname}</div>
+                        <div className="text-muted-foreground flex items-center gap-1 text-sm">
                           <Calendar className="h-4 w-4" />
-                          {communityPostData.createdAt ? dayjs(communityPostData.createdAt).format('MMM D, YYYY h:mm A') : ''}
+                          {communityPostData.createdAt
+                            ? dayjs(communityPostData.createdAt).format('MMM D, YYYY h:mm A')
+                            : ''}
                         </div>
                       </div>
                     </div>
@@ -543,21 +551,17 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                       onFilesChange={setEditPostFiles}
                       existingAttachments={editPostExistingAttachments}
                       onRemoveExistingAttachment={(id) => {
-                        setEditPostDeleteIds(prev => [...prev, id]);
-                        setEditPostExistingAttachments(prev => prev.filter(att => att.id !== id));
+                        setEditPostDeleteIds((prev) => [...prev, id]);
+                        setEditPostExistingAttachments((prev) => prev.filter((att) => att.id !== id));
                       }}
                       existingVideo={editPostExistingVideo}
                       onRemoveExistingVideo={() => setEditPostExistingVideo(null)}
                     />
-                    <div className="flex gap-2 justify-end">
+                    <div className="flex justify-end gap-2">
                       <Button variant="outline" size="sm" onClick={handleCancelEditPost}>
                         Cancel
                       </Button>
-                      <Button 
-                        size="sm" 
-                        onClick={handleSavePost}
-                        disabled={!editPostContent.trim() || isUpdatingPost}
-                      >
+                      <Button size="sm" onClick={handleSavePost} disabled={!editPostContent.trim() || isUpdatingPost}>
                         {isUpdatingPost ? 'Saving...' : 'Save'}
                       </Button>
                     </div>
@@ -578,9 +582,9 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                           <DropdownMenuItem onClick={handleEditPost} className="gap-2">
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={handleDeletePost}
-                            className="gap-2 text-destructive focus:text-destructive"
+                            className="text-destructive focus:text-destructive gap-2"
                           >
                             Delete
                           </DropdownMenuItem>
@@ -588,7 +592,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                       </DropdownMenu>
                     </div>
                   )}
-                  
+
                   <CommunityPostDetail
                     postData={communityPostData}
                     onToggleLike={handleToggleLike}
@@ -600,10 +604,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                   {/* 댓글 섹션 */}
                   <div>
                     {/* 댓글 작성 폼 */}
-                    <div className={`transition-all duration-300 ease-in-out ${isComposerOpen ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'}`}>
+                    <div
+                      className={`transition-all duration-300 ease-in-out ${isComposerOpen ? 'max-h-96 opacity-100' : 'max-h-0 overflow-hidden opacity-0'}`}
+                    >
                       {isComposerOpen && (
                         <Card className="border-b shadow-none">
-                          <CardContent className="">
+                          <CardContent className="p-0">
                             <CommunityTextArea
                               value={commentContent}
                               onChange={setCommentContent}
@@ -615,12 +621,14 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                               isSending={isPosting}
                               className="min-h-[20px]"
                             />
-                            {uploadErrorMessage && <p className="text-destructive text-xs mt-2">{uploadErrorMessage}</p>}
+                            {uploadErrorMessage && (
+                              <p className="text-destructive mt-2 text-xs">{uploadErrorMessage}</p>
+                            )}
                           </CardContent>
                         </Card>
                       )}
                     </div>
-                    
+
                     {/* 댓글 목록 */}
                     <CommunityComments
                       comments={comments}
@@ -629,26 +637,25 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                       isLoadingMore={isCommentsFetching}
                       isLoading={isCommentsLoading}
                       isError={isCommentsError}
-                        pagination={{
-                          currentPage: pagination?.currentPage,
-                          totalPages: pagination?.totalPages,
-                        }}
-                        currentUserId={currentUserId}
-                        showLikeButton={true}
-                        onLikeComment={handleToggleCommentLike}
-                        enableEdit={true}
-                        onSaveEdit={async (commentId, content, files, deleteAttachmentIds, videoUuid) => {
-                          await updateComment(commentId, {
-                            content,
-                            videoUuid: videoUuid ?? undefined,
-                            attachments: files.length > 0 ? files : null,
-                            deleteFileIds:
-                              deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
-                          });
-                        }}
-                        isSavingEdit={isPatching}
-                        onDeleteComment={handleDeleteComment}
-                      />
+                      pagination={{
+                        currentPage: pagination?.currentPage,
+                        totalPages: pagination?.totalPages,
+                      }}
+                      currentUserId={currentUserId}
+                      showLikeButton={true}
+                      onLikeComment={handleToggleCommentLike}
+                      enableEdit={true}
+                      onSaveEdit={async (commentId, content, files, deleteAttachmentIds, videoUuid) => {
+                        await updateComment(commentId, {
+                          content,
+                          videoUuid: videoUuid ?? undefined,
+                          attachments: files.length > 0 ? files : null,
+                          deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
+                        });
+                      }}
+                      isSavingEdit={isPatching}
+                      onDeleteComment={handleDeleteComment}
+                    />
                   </div>
                 </div>
               )}

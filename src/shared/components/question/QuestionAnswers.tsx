@@ -1,25 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import dayjs from 'dayjs';
 import ReactPlayer from 'react-player';
+
+import Image from 'next/image';
+
+import RichTextEditor from '@/shared/components/editor/RichTextEditor';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import RichTextEditor from '@/shared/components/editor/RichTextEditor';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { getDisplayContent } from '@/shared/lib/tiptap-content';
-import { Star, MoreHorizontal } from 'lucide-react';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
+import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import { VideoType } from '@/shared/services/course/course.type';
+import dayjs from 'dayjs';
+import { MoreHorizontal, Star } from 'lucide-react';
 
 const AnswerVideoPlayer = ({ answerId, videoType }: { answerId: number; videoType: VideoType }) => {
   const { m3u8Url, isLoading } = useVideoPlaylist({
@@ -78,11 +80,11 @@ type QuestionAnswersProps = {
   answers: Answer[];
   acceptedAnswer?: Answer | null;
   totalCount?: number;
-  
+
   // 사용자 정보
   currentUserId?: number;
   questionAuthorId?: number;
-  
+
   // 액션 핸들러
   onAccept?: (answerId: number) => void;
   onEdit?: (answerId: number, content: string) => void;
@@ -94,11 +96,11 @@ type QuestionAnswersProps = {
     videoUuid?: string | null,
   ) => void;
   onDelete?: (answerId: number) => void;
-  
+
   // 로딩 상태
   isAccepting?: boolean;
   isUpdating?: boolean;
-  
+
   // 더보기
   hasMore?: boolean;
   onLoadMore?: () => void;
@@ -246,31 +248,31 @@ export default function QuestionAnswers({
 
       {/* 채택된 답변 */}
       {acceptedAnswer && (
-        <div className="relative rounded-xl border border-primary-green-200 bg-gradient-to-br from-primary-green-50/50 to-primary-green-100/30 p-5 shadow-sm">
+        <div className="border-primary-green-200 from-primary-green-50/50 to-primary-green-100/30 relative rounded-xl border bg-gradient-to-br p-5 shadow-sm">
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 ring-2 ring-primary-green-400 ring-offset-2">
-                  <AvatarFallback className="bg-primary-green-600 text-white font-semibold">
+                <Avatar className="ring-primary-green-400 h-10 w-10 ring-2 ring-offset-2">
+                  <AvatarFallback className="bg-primary-green-600 font-semibold text-white">
                     {acceptedAnswer.user.nickname?.charAt(0)?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-foreground">{acceptedAnswer.user.nickname}</h4>
+                    <h4 className="text-foreground font-semibold">{acceptedAnswer.user.nickname}</h4>
                   </div>
-                  <p className="text-primary-green-700 text-xs font-medium mt-0.5">
+                  <p className="text-primary-green-700 mt-0.5 text-xs font-medium">
                     {dayjs(acceptedAnswer.createdAt).format('MMM D, YYYY h:mm A')}
                   </p>
                 </div>
               </div>
-              
+
               {/* 질문 작성자만 채택 취소 가능 */}
               {questionAuthorId === currentUserId && onAccept && (
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="shrink-0 text-primary-green-700 hover:text-primary-green-800 hover:bg-primary-green-100"
+                  className="text-primary-green-700 hover:text-primary-green-800 hover:bg-primary-green-100 shrink-0"
                   onClick={() => onAccept(acceptedAnswer.answerId)}
                   disabled={isAccepting}
                 >
@@ -284,7 +286,9 @@ export default function QuestionAnswers({
               dangerouslySetInnerHTML={{ __html: getDisplayContent(acceptedAnswer.content) }}
             />
             {renderAttachments(acceptedAnswer.attachments)}
-            {acceptedAnswer.videoInfo?.videoUuid && <AnswerVideoPlayer answerId={acceptedAnswer.answerId} videoType={acceptedAnswer.videoInfo.videoType} />}
+            {acceptedAnswer.videoInfo?.videoUuid && (
+              <AnswerVideoPlayer answerId={acceptedAnswer.answerId} videoType={acceptedAnswer.videoInfo.videoType} />
+            )}
           </div>
         </div>
       )}
@@ -295,10 +299,10 @@ export default function QuestionAnswers({
           {answers.map((answer, index) => (
             <Card
               key={answer.answerId}
-              className={`shadow-none rounded-none ${index < answers.length - 1 ? 'border-b' : ''}`}
+              className={`rounded-none shadow-none ${index < answers.length - 1 ? 'border-b' : ''}`}
             >
               <CardContent className="p-2">
-                <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-primary/10 text-primary font-semibold">
@@ -307,14 +311,14 @@ export default function QuestionAnswers({
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-foreground">{answer.user.nickname}</h4>
+                        <h4 className="text-foreground font-semibold">{answer.user.nickname}</h4>
                       </div>
-                      <p className="text-muted-foreground text-xs mt-0.5">
+                      <p className="text-muted-foreground mt-0.5 text-xs">
                         {dayjs(answer.createdAt).format('MMM D, YYYY h:mm A')}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     {/* 질문 작성자만(그리고 아직 채택 답변이 없을 때만) 답변 채택 가능 */}
                     {questionAuthorId === currentUserId && !acceptedAnswer && onAccept && (
@@ -325,11 +329,11 @@ export default function QuestionAnswers({
                         onClick={() => onAccept(answer.answerId)}
                         disabled={isAccepting}
                       >
-                        <Star className="h-4 w-4 mr-1" />
+                        <Star className="mr-1 h-4 w-4" />
                         {isAccepting ? 'Accepting...' : 'Accept'}
                       </Button>
                     )}
-                    
+
                     {/* 답변 작성자만 수정/삭제 메뉴 표시 */}
                     {answer.user.id === currentUserId && (onUpdate || onEdit || onDelete) && (
                       <DropdownMenu>
@@ -361,10 +365,7 @@ export default function QuestionAnswers({
                             </DropdownMenuItem>
                           )}
                           {onDelete && (
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => onDelete(answer.answerId)}
-                            >
+                            <DropdownMenuItem className="text-destructive" onClick={() => onDelete(answer.answerId)}>
                               Delete
                             </DropdownMenuItem>
                           )}
@@ -381,7 +382,9 @@ export default function QuestionAnswers({
                       dangerouslySetInnerHTML={{ __html: getDisplayContent(answer.content) }}
                     />
                     {renderAttachments(answer.attachments)}
-                    {answer.videoInfo?.videoUuid && <AnswerVideoPlayer answerId={answer.answerId} videoType={answer.videoInfo.videoType} />}
+                    {answer.videoInfo?.videoUuid && (
+                      <AnswerVideoPlayer answerId={answer.answerId} videoType={answer.videoInfo.videoType} />
+                    )}
                   </>
                 )}
 
@@ -430,12 +433,7 @@ export default function QuestionAnswers({
       {/* 더보기 버튼 */}
       {hasMore && onLoadMore && (
         <div className="flex justify-center pt-4">
-          <Button
-            variant="outline"
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
-            className="w-full"
-          >
+          <Button variant="outline" onClick={onLoadMore} disabled={isLoadingMore} className="w-full">
             {isLoadingMore ? 'Loading...' : 'Load More'}
           </Button>
         </div>

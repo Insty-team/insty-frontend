@@ -110,7 +110,7 @@ export type CourseProgressByMeResponse = {
   createdAt: string;
 };
 
-/** 
+/**
  * 강의 QA 및 커뮤니티 관련 Type
  */
 
@@ -154,7 +154,7 @@ export type CourseQuestionBaseResponse = {
     id: number;
     nickname: string;
     userType: UserType;
-  },
+  };
   title: string;
   content: string;
   status: CourseQuestionStatus;
@@ -178,15 +178,15 @@ export type CourseQuestionUpdateRequest = {
   videoUuid?: string | null;
   deleteFileIds?: number[];
   attachments?: File[];
-}
+};
 
 export type MyCourseQuestionResponse = {
   questionId: number;
   user: {
     id: number;
     nickname: string;
-    userType: UserType; 
-  }
+    userType: UserType;
+  };
   courseId: number;
   title: string;
   content: string;
@@ -195,7 +195,7 @@ export type MyCourseQuestionResponse = {
   hasNewAnswer: boolean;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export type CourseQuestionAnswersResponse = {
   answerId: number;
@@ -203,14 +203,14 @@ export type CourseQuestionAnswersResponse = {
     id: number;
     nickname: string;
     userType: UserType;
-  },
+  };
   content: string;
   attachments: Attachment[];
-  videoInfo: VideoInfo | null,
+  videoInfo: VideoInfo | null;
   isAccepted: boolean;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export type CourseQuestionAnswerResponse = CourseQuestionAnswersResponse;
 
@@ -218,11 +218,11 @@ export type CourseQuestionAnswerRequest = {
   content: string;
   videoUuid?: string;
   attachments?: File[];
-}
+};
 
 export type CourseQuestionAnswerUpdateRequest = {
   content: string;
   videoUuid?: string | null;
   deleteFileIds?: number[];
   attachments?: File[];
-}
+};

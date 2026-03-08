@@ -2,17 +2,15 @@
 
 import { useState } from 'react';
 
+import CommunityPostList from '@/shared/components/community/CommunityPostList';
+import ConfirmModal from '@/shared/components/ConfirmModal';
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
-import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import ConfirmModal from '@/shared/components/ConfirmModal';
-import {
-  useGetCourseCommunityPostsInfinite,
-} from '@/shared/services/community/community.hook';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { useGetCourseCommunityPostsInfinite } from '@/shared/services/community/community.hook';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import CommunityPostList from '@/shared/components/community/CommunityPostList';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -38,14 +36,14 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
     isLikingPost,
     isUnlikingPost,
   } = useCommunity({ courseId: courseIdNumber });
-  
+
   const [postContent, setPostContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
   const [editorKey, setEditorKey] = useState(0);
-  
+
   const { uploadVideo } = usePresignedVideoUpload();
-  
+
   const {
     data: postsData,
     isLoading,
@@ -56,7 +54,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
   } = useGetCourseCommunityPostsInfinite(courseIdNumber, 20);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
-  
+
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editPostContent, setEditPostContent] = useState('');
   const [editPostFiles, setEditPostFiles] = useState<File[]>([]);
@@ -166,8 +164,8 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
       const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
       let videoUuid: string | null;
 
-      const editingPost = posts.find(p => p.postId === editingPostId);
-      
+      const editingPost = posts.find((p) => p.postId === editingPostId);
+
       if (videoFile) {
         // 새 비디오 업로드
         videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
@@ -210,7 +208,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
         <Button variant="ghost" size="icon" onClick={onBack} className="size-8">
           <ArrowLeft className="size-4" />
         </Button>
@@ -221,9 +219,9 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
       </div>
 
       {/* 포스트 목록 */}
-      <div className="max-w-3xl mx-auto">
-        <Card className="shadow-none rounded-lg overflow-hidden">
-          <CardContent className="p-4 pt-0 border-b">
+      <div className="mx-auto max-w-3xl">
+        <Card className="overflow-hidden rounded-lg shadow-none">
+          <CardContent className="border-b p-4 pt-0">
             <CommunityTextArea
               key={editorKey}
               value={postContent}

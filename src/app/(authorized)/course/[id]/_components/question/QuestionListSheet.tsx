@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import dayjs from 'dayjs';
-
+import QuestionLabel from '@/shared/components/question/QuestionLabel';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -12,8 +11,8 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import { useGetCourseQuestionsInfinite } from '@/shared/services/course/course.hook';
 import type { CourseQuestionListItemResponse, CourseQuestionStatus } from '@/shared/services/course/course.type';
-import { Search, Calendar } from 'lucide-react';
-import QuestionLabel from '@/shared/components/question/QuestionLabel';
+import dayjs from 'dayjs';
+import { Calendar, Search } from 'lucide-react';
 
 type Props = {
   readonly courseId: string;
@@ -23,13 +22,7 @@ type Props = {
   readonly isActive: boolean;
 };
 
-export default function QuestionListSheet({
-  courseId,
-  onSelectQuestion,
-  onClickWrite,
-  sheetIsOpen,
-  isActive,
-}: Props) {
+export default function QuestionListSheet({ courseId, onSelectQuestion, onClickWrite, sheetIsOpen, isActive }: Props) {
   const [statusFilter, setStatusFilter] = useState<'all' | CourseQuestionStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
@@ -73,9 +66,9 @@ export default function QuestionListSheet({
   }, [sheetIsOpen, isActive, refetchQuestions]);
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex h-full min-h-0 flex-col">
       {/* 필터 버튼 */}
-      <div className="flex items-center justify-between gap-3 flex-shrink-0 mb-4">
+      <div className="mb-4 flex flex-shrink-0 items-center justify-between gap-3">
         <div className="flex gap-2">
           <Button
             variant={statusFilter === 'all' ? 'default' : 'ghost'}
@@ -110,23 +103,18 @@ export default function QuestionListSheet({
             Accepted
           </Button>
         </div>
-        
-        <Button 
-          variant="default" 
-          size="sm" 
-          onClick={onClickWrite}
-          className="h-8 gap-1.5 text-sm"
-        >
+
+        <Button variant="default" size="sm" onClick={onClickWrite} className="h-8 gap-1.5 text-sm">
           <span className="text-lg">+</span> Write
         </Button>
       </div>
 
       {/* 질문 검색 */}
-      <div className="relative flex-shrink-0 mb-4">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
-        <Input 
-          placeholder="Search" 
-          value={inputValue} 
+      <div className="relative mb-4 flex-shrink-0">
+        <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2 transform" />
+        <Input
+          placeholder="Search"
+          value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           className="pl-10"
@@ -134,7 +122,7 @@ export default function QuestionListSheet({
       </div>
 
       {/* 질문 목록 */}
-      <ScrollArea className="flex-1 min-h-0">
+      <ScrollArea className="min-h-0 flex-1">
         {isQuestionsLoading ? (
           <div className="text-muted-foreground flex items-center justify-center py-8 text-sm">Loading...</div>
         ) : isQuestionsError ? (
@@ -145,12 +133,12 @@ export default function QuestionListSheet({
               return (
                 <Card
                   key={item.questionId}
-                  className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50"
+                  className="hover:border-primary/50 cursor-pointer transition-all duration-200 hover:shadow-md"
                   onClick={() => onSelectQuestion(item.questionId)}
                 >
                   <CardContent className="p-4">
                     {/* 헤더: 사용자 정보 + 상태 배지 */}
-                    <div className="flex items-center justify-between gap-3 mb-3">
+                    <div className="mb-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
@@ -159,47 +147,42 @@ export default function QuestionListSheet({
                         </Avatar>
                         <div className="flex flex-col">
                           <span className="text-sm font-medium">{item.user.nickname}</span>
-                          <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                          <div className="text-muted-foreground flex items-center gap-1 text-xs">
                             <Calendar className="h-3 w-3" />
                             {dayjs(item.createdAt).format('MMM DD, YYYY')}
                           </div>
                         </div>
                       </div>
-                      
+
                       <QuestionLabel status={item.status} />
                     </div>
 
                     {/* 제목 */}
-                    <h4 className="text-foreground text-base font-semibold mb-2 line-clamp-1">
-                      Q. {item.title}
-                    </h4>
+                    <h4 className="text-foreground mb-2 line-clamp-1 text-base font-semibold">Q. {item.title}</h4>
 
                     {/* 내용 미리보기 */}
                     <p
-                      className="text-muted-foreground text-sm line-clamp-2 leading-relaxed"
+                      className="text-muted-foreground line-clamp-2 text-sm leading-relaxed"
                       dangerouslySetInnerHTML={{ __html: getDisplayContent(item.content) }}
                     />
                   </CardContent>
                 </Card>
               );
             })}
-              
-              {/* Load More 버튼 */}
-              {hasNextPage && (
-                <div className="flex justify-center py-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isFetchingNextPage}
-                    className="w-full"
-                  >
-                    {isFetchingNextPage ? 'Loading...' : `Load More (${questionsData.pagination?.currentPage || 1} / ${questionsData.pagination?.totalPages || 1})`}
-                  </Button>
-                </div>
-              )}
+
+            {/* Load More 버튼 */}
+            {hasNextPage && (
+              <div className="flex justify-center py-4">
+                <Button variant="outline" onClick={handleLoadMore} disabled={isFetchingNextPage} className="w-full">
+                  {isFetchingNextPage
+                    ? 'Loading...'
+                    : `Load More (${questionsData.pagination?.currentPage || 1} / ${questionsData.pagination?.totalPages || 1})`}
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center text-muted-foreground py-8 text-center text-sm">
+          <div className="text-muted-foreground flex flex-col items-center justify-center py-8 text-center text-sm">
             <p>No questions registered.</p>
           </div>
         )}

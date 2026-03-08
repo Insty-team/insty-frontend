@@ -1,5 +1,8 @@
 'use client';
 
+import CommunityDetail from './_components/CommunityDetail';
+import CommunityFeed from './_components/CommunityFeed';
+
 import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
@@ -10,9 +13,7 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { useGetCoursesProgressByMe } from '@/shared/services/course/course.hook';
 import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import dayjs from 'dayjs';
-import { Calendar, Play, MessageCircle } from 'lucide-react';
-import CommunityFeed from './_components/CommunityFeed';
-import CommunityDetail from './_components/CommunityDetail';
+import { Calendar, MessageCircle, Play } from 'lucide-react';
 
 type CommunityRow = {
   id: string;
@@ -50,23 +51,25 @@ export default function LearnerCommunityPage() {
         thumbnail?: string;
       };
 
-    const extended = post as ExtendedPost;
+      const extended = post as ExtendedPost;
 
-    const rawCreatedDate = extended.createdDate ?? extended.createdAt;
-    const formattedCreatedDate = rawCreatedDate ? dayjs(rawCreatedDate).format('MMM D, YYYY h:mm A') : 'Date info unavailable';
+      const rawCreatedDate = extended.createdDate ?? extended.createdAt;
+      const formattedCreatedDate = rawCreatedDate
+        ? dayjs(rawCreatedDate).format('MMM D, YYYY h:mm A')
+        : 'Date info unavailable';
 
-    const thumbnail = extended.thumbnail ?? extended.thumbnailUrl ?? '';
-    const communityPostCount = (post as any).communityPostCount ?? 0;
+      const thumbnail = extended.thumbnail ?? extended.thumbnailUrl ?? '';
+      const communityPostCount = (post as any).communityPostCount ?? 0;
 
-    return {
-      id: post.courseId,
-      title: post.title ?? 'Untitled Post',
-      createdDate: formattedCreatedDate,
-      thumbnail,
-      communityPostCount,
-    };
-  });
-}, [communityResponse]);
+      return {
+        id: post.courseId,
+        title: post.title ?? 'Untitled Post',
+        createdDate: formattedCreatedDate,
+        thumbnail,
+        communityPostCount,
+      };
+    });
+  }, [communityResponse]);
 
   const columns = useMemo<ColumnDef<CommunityRow>[]>(
     () => [

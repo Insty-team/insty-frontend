@@ -1,20 +1,19 @@
-import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import {
-  GET_course_community_posts_by_id,
-  GET_course_community_post_by_id,
-  GET_course_community_post_comments_by_id,
-  GET_my_course_community_posts,
-  GET_my_course_community_post_comments,
-  POST_course_community_posts_by_id,
-  POST_course_community_post_comment_by_id,
   DELETE_course_community_post_by_id,
   DELETE_course_community_post_comment_by_id,
+  DELETE_course_community_post_comment_like_by_id,
+  DELETE_course_community_post_like_by_id,
+  GET_course_community_post_by_id,
+  GET_course_community_post_comments_by_id,
+  GET_course_community_posts_by_id,
+  GET_my_course_community_post_comments,
+  GET_my_course_community_posts,
   PATCH_course_community_post_by_id,
   PATCH_course_community_post_comment_by_id,
-  POST_course_community_post_like_by_id,
-  DELETE_course_community_post_like_by_id,
+  POST_course_community_post_comment_by_id,
   POST_course_community_post_comment_like_by_id,
-  DELETE_course_community_post_comment_like_by_id,
+  POST_course_community_post_like_by_id,
+  POST_course_community_posts_by_id,
 } from './community.service';
 import {
   CourseCommunityPostCommentRequest,
@@ -22,6 +21,8 @@ import {
   CourseCommunityPostRequest,
   CourseCommunityPostUpdateRequest,
 } from './community.type';
+
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 /** 커뮤니티 글 목록 검색 */
 export const useGetCourseCommunityPosts = (courseId: number, page: number = 1, pageSize: number = 10) => {
@@ -48,7 +49,7 @@ export const useGetCourseCommunityPostsInfinite = (courseId: number, pageSize: n
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,
-      items: data.pages.flatMap(page => page.data?.items || []),
+      items: data.pages.flatMap((page) => page.data?.items || []),
       pagination: data.pages[data.pages.length - 1]?.data?.pagination,
     }),
   });
@@ -113,7 +114,7 @@ export const useDeleteCourseCommunityPostById = (courseId?: number) => {
 
   return useMutation({
     mutationKey: [DELETE_course_community_post_by_id.name],
-    mutationFn: ({ courseId: cId, postId }: { courseId: number; postId: number }) => 
+    mutationFn: ({ courseId: cId, postId }: { courseId: number; postId: number }) =>
       DELETE_course_community_post_by_id(cId, postId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [GET_course_community_posts_by_id.name, variables.courseId] });
@@ -126,7 +127,7 @@ export const useDeleteCourseCommunityPostById = (courseId?: number) => {
 export const usePatchCourseCommunityPost = (courseId: number) => {
   const queryClient = useQueryClient();
 
-  return useMutation({  
+  return useMutation({
     mutationKey: [PATCH_course_community_post_by_id.name],
     mutationFn: ({ postId, data }: { postId: number; data: CourseCommunityPostUpdateRequest }) =>
       PATCH_course_community_post_by_id(courseId, postId, data),
@@ -184,11 +185,7 @@ export const useGetCourseCommunityPostCommentsById = (
 };
 
 /** 커뮤니티 댓글 목록 무한 스크롤 */
-export const useGetCourseCommunityPostCommentsInfinite = (
-  courseId: number,
-  postId: number,
-  pageSize: number = 20,
-) => {
+export const useGetCourseCommunityPostCommentsInfinite = (courseId: number, postId: number, pageSize: number = 20) => {
   return useInfiniteQuery({
     queryKey: [GET_course_community_post_comments_by_id.name, courseId, postId, pageSize],
     queryFn: ({ pageParam = 1 }) => GET_course_community_post_comments_by_id(courseId, postId, pageParam, pageSize),
@@ -203,7 +200,7 @@ export const useGetCourseCommunityPostCommentsInfinite = (
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,
-      items: data.pages.flatMap(page => page.data?.items || []),
+      items: data.pages.flatMap((page) => page.data?.items || []),
       pagination: data.pages[data.pages.length - 1]?.data?.pagination,
     }),
   });

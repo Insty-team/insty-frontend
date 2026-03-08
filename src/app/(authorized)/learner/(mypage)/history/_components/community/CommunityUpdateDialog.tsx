@@ -2,19 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog';
-import { useGetCourseCommunityPostById } from '@/shared/services/community/community.hook';
-import { Attachment } from '@/shared/services/community/community.type';
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { useGetCourseCommunityPostById } from '@/shared/services/community/community.hook';
+import { Attachment } from '@/shared/services/community/community.type';
 import { toast } from 'sonner';
 
 type CommunityUpdateDialogProps = {

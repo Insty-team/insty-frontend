@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import ConfirmModal from '@/shared/components/ConfirmModal';
-import { Button } from '@/shared/components/ui/button';
+import RichTextEditor from '@/shared/components/editor/RichTextEditor';
+import QuestionAnswers from '@/shared/components/question/QuestionAnswers';
+import QuestionDetail from '@/shared/components/question/QuestionDetail';
+import QuestionLabel from '@/shared/components/question/QuestionLabel';
 import { Badge } from '@/shared/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,28 +17,24 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import RichTextEditor from '@/shared/components/editor/RichTextEditor';
+import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
+import { getDisplayContent } from '@/shared/lib/tiptap-content';
+import { usePostCommunityAnswerDraft } from '@/shared/services/ai-community/ai-community.hook';
 import {
+  useDeleteCourseQuestion,
+  useDeleteCourseQuestionAnswer,
   useGetCourseQuestion,
-  useGetCourseQuestionAnswers,
   useGetCourseQuestionAnswerAccepted,
+  useGetCourseQuestionAnswers,
+  usePatchCourseQuestion,
+  usePatchCourseQuestionAnswerById,
   usePostCourseQuestionAnswer,
   usePostCourseQuestionAnswerAccept,
-  useDeleteCourseQuestionAnswer,
-  usePatchCourseQuestionAnswerById,
-  usePatchCourseQuestion,
-  useDeleteCourseQuestion,
 } from '@/shared/services/course/course.hook';
-import { useGetProfile } from '@/shared/services/user/user.hook';
 import type { Attachment } from '@/shared/services/course/course.type';
+import { useGetProfile } from '@/shared/services/user/user.hook';
 import { ChevronLeft, MoreHorizontal, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import QuestionAnswers from '@/shared/components/question/QuestionAnswers';
-import QuestionDetail from '@/shared/components/question/QuestionDetail';
-import { getDisplayContent } from '@/shared/lib/tiptap-content';
-import QuestionLabel from '@/shared/components/question/QuestionLabel';
-import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
-import { usePostCommunityAnswerDraft } from '@/shared/services/ai-community/ai-community.hook';
 
 type Props = {
   readonly courseId: number;
@@ -60,7 +60,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
   const [questionExistingVideo, setQuestionExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [questionDeletedAttachmentIds, setQuestionDeletedAttachmentIds] = useState<number[]>([]);
   const [questionEditorKey, setQuestionEditorKey] = useState(0);
-  
+
   // 답변 관련 state
   const [acceptConfirmOpen, setAcceptConfirmOpen] = useState(false);
   const [cancelAcceptConfirmOpen, setCancelAcceptConfirmOpen] = useState(false);
@@ -78,9 +78,17 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
   const { mutate: postAnswer, isPending: isPosting } = usePostCourseQuestionAnswer(courseId, questionId);
   const { uploadVideo } = usePresignedVideoUpload();
   const { mutateAsync: generateAnswerDraft } = usePostCommunityAnswerDraft();
-  const { data: answersData, isFetching: isAnswersFetching } = useGetCourseQuestionAnswers(courseId, questionId, page, pageSize);
+  const { data: answersData, isFetching: isAnswersFetching } = useGetCourseQuestionAnswers(
+    courseId,
+    questionId,
+    page,
+    pageSize,
+  );
   const { data: acceptedAnswer } = useGetCourseQuestionAnswerAccepted(courseId, questionId);
-  const { mutate: toggleAcceptAnswer, isPending: isAccepting } = usePostCourseQuestionAnswerAccept(courseId, questionId);
+  const { mutate: toggleAcceptAnswer, isPending: isAccepting } = usePostCourseQuestionAnswerAccept(
+    courseId,
+    questionId,
+  );
   const { mutate: deleteAnswer, isPending: isDeletingAnswer } = useDeleteCourseQuestionAnswer(courseId, questionId);
   const { mutate: patchAnswer, isPending: isPatchingAnswer } = usePatchCourseQuestionAnswerById(courseId, questionId);
   const { mutate: patchQuestion, isPending: isPatchingQuestion } = usePatchCourseQuestion();
@@ -94,8 +102,8 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
       if (page === 1) {
         setAnswers(answersData.items);
       } else {
-        setAnswers(prev => {
-          const existingIds = new Set(prev.map(a => a.answerId));
+        setAnswers((prev) => {
+          const existingIds = new Set(prev.map((a) => a.answerId));
           const newAnswers = answersData.items.filter((item: any) => !existingIds.has(item.answerId));
           return [...prev, ...newAnswers];
         });
@@ -120,7 +128,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
     setIsGeneratingDraft(true);
     try {
       const images = uploadedFiles.filter((f) => f.type.startsWith('image/'));
-      
+
       const response = await generateAnswerDraft({
         course_id: courseId,
         query: userInput,
@@ -193,7 +201,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
 
   const handleLoadMore = () => {
     if (!isAnswersFetching && hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -393,7 +401,11 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
     })();
   };
 
-  const { data: questionData, isLoading: isQuestionLoading, isError: isQuestionError } = useGetCourseQuestion(courseId, questionId);
+  const {
+    data: questionData,
+    isLoading: isQuestionLoading,
+    isError: isQuestionError,
+  } = useGetCourseQuestion(courseId, questionId);
 
   return (
     <>
@@ -402,14 +414,14 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
           <Button variant="ghost" size="icon" onClick={onBack} className="size-8" aria-label="Go back">
             <ChevronLeft className="size-6" />
           </Button>
-          <p className="text-lg font-base">Question List</p>
+          <p className="font-base text-lg">Question List</p>
         </div>
 
         <div className="flex items-center gap-2">
           {questionData?.courseName && (
             <div className="flex items-center gap-2">
               <Badge variant="secondary">Content</Badge>
-              <span className="text-sm text-muted-foreground">{questionData.courseName}</span>
+              <span className="text-muted-foreground text-sm">{questionData.courseName}</span>
             </div>
           )}
         </div>
@@ -419,9 +431,13 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
         <div className="space-y-4 px-4">
           <div className="relative">
             {isQuestionEditing ? (
-              <div className="border rounded-sm px-6 py-4 space-y-4">
+              <div className="space-y-4 rounded-sm border px-6 py-4">
                 <div className="space-y-2">
-                  <Input value={questionTitle} onChange={(e) => setQuestionTitle(e.target.value)} disabled={isPatchingQuestion} />
+                  <Input
+                    value={questionTitle}
+                    onChange={(e) => setQuestionTitle(e.target.value)}
+                    disabled={isPatchingQuestion}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -452,7 +468,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
                 </div>
               </div>
             ) : (
-              <div className="border rounded-sm px-6 py-4 space-y-4">
+              <div className="space-y-4 rounded-sm border px-6 py-4">
                 {(questionData?.status || (questionData?.user?.id && currentUserId === questionData.user.id)) && (
                   <div className="flex items-center justify-between">
                     <div>{questionData?.status && <QuestionLabel status={questionData.status} />}</div>
@@ -553,20 +569,20 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
       />
 
       {/* 답변 작성 폼 */}
-      <div className="sticky bottom-0 bg-background py-2 px-4">
+      <div className="bg-background sticky bottom-0 px-4 py-2">
         <div className="space-y-3">
           {draftPreview && (
-            <div className="p-4 rounded-lg bg-white dark:bg-gray-950 border border-[#b2f381]/50 dark:border-[#51a611]/50 relative">
-              <div className="absolute -inset-0.5 bg-[#67d215] rounded-lg opacity-20 blur" />
+            <div className="relative rounded-lg border border-[#b2f381]/50 bg-white p-4 dark:border-[#51a611]/50 dark:bg-gray-950">
+              <div className="absolute -inset-0.5 rounded-lg bg-[#67d215] opacity-20 blur" />
               <div className="relative">
-                <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className="size-4 text-[#67d215] dark:text-[#9bef5b]" />
                     <span className="text-sm font-semibold text-[#51a611] dark:text-[#9bef5b]">AI Draft Ready</span>
                   </div>
                 </div>
-                <div 
-                  className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3 mb-3"
+                <div
+                  className="mb-3 line-clamp-3 text-sm text-gray-700 dark:text-gray-300"
                   dangerouslySetInnerHTML={{ __html: draftPreview }}
                 />
                 <div className="flex items-center gap-2">
@@ -590,7 +606,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
                   <Button
                     size="sm"
                     onClick={handleInsertDraft}
-                    className="bg-[#67d215] hover:bg-[#51a611] text-white shadow-lg shadow-[#67d215]/50"
+                    className="bg-[#67d215] text-white shadow-lg shadow-[#67d215]/50 hover:bg-[#51a611]"
                   >
                     Insert
                   </Button>
@@ -615,7 +631,6 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
           />
         </div>
       </div>
-
     </>
   );
 }

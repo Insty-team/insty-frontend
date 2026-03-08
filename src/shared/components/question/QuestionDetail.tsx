@@ -1,15 +1,16 @@
-import dayjs from 'dayjs';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import ReactPlayer from 'react-player';
 
+import Image from 'next/image';
+
+import QuestionLabel from '@/shared/components/question/QuestionLabel';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Spinner } from '@/shared/components/ui/spinner';
+import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
 import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import { Attachment, CourseQuestionStatus, VideoType } from '@/shared/services/course/course.type';
+import dayjs from 'dayjs';
 import { Calendar } from 'lucide-react';
-import QuestionLabel from '@/shared/components/question/QuestionLabel';
-import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
-import ReactPlayer from 'react-player';
 
 const QuestionVideoPlayer = ({ questionId, videoType }: { questionId: number; videoType: VideoType }) => {
   const { m3u8Url, isLoading: isLoadingVideo } = useVideoPlaylist({
@@ -21,7 +22,7 @@ const QuestionVideoPlayer = ({ questionId, videoType }: { questionId: number; vi
   return (
     <div className="mt-3 overflow-hidden rounded-lg border">
       {isLoadingVideo || !m3u8Url ? (
-        <div className="flex items-center justify-center bg-muted py-20">
+        <div className="bg-muted flex items-center justify-center py-20">
           <Spinner className="size-6" />
         </div>
       ) : (
@@ -34,24 +35,27 @@ const QuestionVideoPlayer = ({ questionId, videoType }: { questionId: number; vi
 };
 
 type QuestionDetailProps = {
-  questionData: {
-    title: string;
-    content: string;
-    status?: CourseQuestionStatus;
-    courseName?: string;
-    user?: {
-      id?: number;
-      nickname?: string;
-    };
-    createdAt?: string;
-    attachments?: Attachment[];
-    videoInfo?: {
-      videoType: VideoType;
-      videoUuid: string;
-      originFileName: string;
-    } | null;
-    questionId?: number;
-  } | null | undefined;
+  questionData:
+    | {
+        title: string;
+        content: string;
+        status?: CourseQuestionStatus;
+        courseName?: string;
+        user?: {
+          id?: number;
+          nickname?: string;
+        };
+        createdAt?: string;
+        attachments?: Attachment[];
+        videoInfo?: {
+          videoType: VideoType;
+          videoUuid: string;
+          originFileName: string;
+        } | null;
+        questionId?: number;
+      }
+    | null
+    | undefined;
   isLoading?: boolean;
   isError?: boolean;
   showStatus?: boolean;
@@ -98,19 +102,11 @@ export default function QuestionDetail({
   }
 
   if (isError) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Failed to load question details.
-      </div>
-    );
+    return <div className="text-muted-foreground py-8 text-center text-sm">Failed to load question details.</div>;
   }
 
   if (!questionData) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Question information not found.
-      </div>
-    );
+    return <div className="text-muted-foreground py-8 text-center text-sm">Question information not found.</div>;
   }
 
   const content = (
@@ -119,7 +115,7 @@ export default function QuestionDetail({
       {showStatus && questionData.status && <QuestionLabel status={questionData.status} />}
 
       {/* 제목 */}
-      <h1 className="text-2xl font-bold text-foreground">Q. {questionData.title}</h1>
+      <h1 className="text-foreground text-2xl font-bold">Q. {questionData.title}</h1>
 
       {/* 사용자 정보 */}
       <div className="flex items-center gap-3">
@@ -130,7 +126,7 @@ export default function QuestionDetail({
         </Avatar>
         <div className="flex flex-col">
           <span className="font-semibold">{questionData.user?.nickname}</span>
-          <div className="flex items-center gap-1 text-muted-foreground text-xs">
+          <div className="text-muted-foreground flex items-center gap-1 text-xs">
             <Calendar className="h-3 w-3" />
             {questionData.createdAt ? dayjs(questionData.createdAt).format('MMM DD, YYYY HH:mm') : ''}
           </div>
@@ -138,9 +134,9 @@ export default function QuestionDetail({
       </div>
 
       {/* 질문 내용 */}
-      <div className="pt-4 border-t">
+      <div className="border-t pt-4">
         <div
-          className="text-sm leading-relaxed text-foreground"
+          className="text-foreground text-sm leading-relaxed"
           dangerouslySetInnerHTML={{ __html: getDisplayContent(questionData.content) }}
         />
         {questionData.attachments && renderAttachments(questionData.attachments)}
@@ -155,5 +151,5 @@ export default function QuestionDetail({
     return <div className="space-y-4">{content}</div>;
   }
 
-  return <div className="border rounded-sm px-6 py-4 space-y-4">{content}</div>;
+  return <div className="space-y-4 rounded-sm border px-6 py-4">{content}</div>;
 }

@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import ReactPlayer from 'react-player';
+
 import Image from 'next/image';
-import dayjs from 'dayjs';
+
+import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -12,12 +15,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
-import { Calendar, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
 import { Spinner } from '@/shared/components/ui/spinner';
-import { VideoType } from '@/shared/services/community/community.type';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
-import ReactPlayer from 'react-player';
+import { VideoType } from '@/shared/services/community/community.type';
+import dayjs from 'dayjs';
+import { Calendar, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
 
 const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; videoType: VideoType }) => {
   const { m3u8Url, isLoading: isLoadingVideo } = useVideoPlaylist({
@@ -29,7 +31,7 @@ const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; video
   return (
     <div className="mt-3 overflow-hidden rounded-lg border">
       {isLoadingVideo || !m3u8Url ? (
-        <div className="flex items-center justify-center bg-muted py-12">
+        <div className="bg-muted flex items-center justify-center py-12">
           <Spinner className="size-6" />
         </div>
       ) : (
@@ -130,19 +132,11 @@ export default function CommunityPostList({
   const totalPages = paging?.totalPages;
 
   if (isLoading) {
-    return (
-      <div className="text-muted-foreground flex items-center justify-center py-8 text-sm">
-        Loading...
-      </div>
-    );
+    return <div className="text-muted-foreground flex items-center justify-center py-8 text-sm">Loading...</div>;
   }
 
   if (isError) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Failed to load community posts.
-      </div>
-    );
+    return <div className="text-muted-foreground py-8 text-center text-sm">Failed to load community posts.</div>;
   }
 
   if (posts.length === 0) {
@@ -160,22 +154,20 @@ export default function CommunityPostList({
       {posts.map((item, index) => (
         <Card
           key={item.postId}
-          className={`shadow-none rounded-none cursor-pointer ${
-            index < posts.length - 1 ? 'border-b' : ''
-          }`}
+          className={`cursor-pointer rounded-none shadow-none ${index < posts.length - 1 ? 'border-b' : ''}`}
           onClick={() => actions?.onPostClick?.(item.postId)}
         >
           <CardContent className="p-4">
             {/* 포스트 헤더 */}
-            <div className="flex items-start gap-3 mb-3">
+            <div className="mb-3 flex items-start gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {item.user?.nickname?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="font-medium">{item.user?.nickname}</div>
-                <div className="flex gap-1 items-center text-muted-foreground text-sm">
+                <div className="text-muted-foreground flex items-center gap-1 text-sm">
                   <Calendar className="h-3 w-3" />
                   {item.createdAt ? dayjs(item.createdAt).format('MMM D, YYYY h:mm A') : ''}
                 </div>
@@ -218,7 +210,7 @@ export default function CommunityPostList({
                   existingVideo={edit.editPostExistingVideo}
                   onRemoveExistingVideo={edit.onRemoveExistingVideo}
                 />
-                <div className="flex gap-2 justify-end">
+                <div className="flex justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={edit.onCancelEdit}>
                     Cancel
                   </Button>
@@ -233,7 +225,7 @@ export default function CommunityPostList({
               </div>
             ) : (
               <>
-                <div className="text-muted-foreground leading-relaxed line-clamp-3 whitespace-pre-wrap">
+                <div className="text-muted-foreground line-clamp-3 leading-relaxed whitespace-pre-wrap">
                   {item.content}
                 </div>
 
@@ -244,15 +236,12 @@ export default function CommunityPostList({
 
                 {/* 이미지 */}
                 {item.attachments && item.attachments.length > 0 && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
                     {item.attachments
                       .filter((file) => file?.url)
                       .slice(0, 2)
                       .map((file) => (
-                        <div
-                          key={file.id}
-                          className="relative aspect-square overflow-hidden rounded-lg border"
-                        >
+                        <div key={file.id} className="relative aspect-square overflow-hidden rounded-lg border">
                           <Image
                             src={file.url}
                             alt={file.name}
@@ -269,23 +258,21 @@ export default function CommunityPostList({
 
             {/* 포스트 푸터 */}
             {edit?.editingPostId !== item.postId && (
-              <div className="flex items-center gap-3 mt-4">
+              <div className="mt-4 flex items-center gap-3">
                 <button
                   className={`flex items-center gap-2 transition-all duration-300 ${
-                    item.likedByMe
-                      ? 'text-red-500 hover:text-red-600'
-                      : 'text-muted-foreground hover:text-foreground'
+                    item.likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={(e) => actions?.onLike?.(item.postId, item.likedByMe || false, e)}
                 >
                   <Heart
                     className={`h-5 w-5 transition-all duration-300 ${
-                      item.likedByMe ? 'fill-current scale-110' : 'scale-100'
+                      item.likedByMe ? 'scale-110 fill-current' : 'scale-100'
                     }`}
                   />
                   <span className="text-sm">{item.likeCount || 0}</span>
                 </button>
-                <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
                   <span className="text-sm">{item.commentCount || 0}</span>
                 </div>
@@ -298,12 +285,7 @@ export default function CommunityPostList({
       {/* 더보기 버튼 */}
       {hasMore && onLoadMore && (
         <div className="flex justify-center p-4">
-          <Button
-            variant="outline"
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
-            className="w-full"
-          >
+          <Button variant="outline" onClick={onLoadMore} disabled={isLoadingMore} className="w-full">
             {isLoadingMore
               ? 'Loading...'
               : `Load More${typeof currentPage === 'number' && typeof totalPages === 'number' ? ` (${currentPage} / ${totalPages})` : ''}`}

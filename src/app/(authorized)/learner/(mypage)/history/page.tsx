@@ -1,24 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import {
-  useDeleteCourseQuestion,
-  useGetMyCourseQuestionsInfinite,
-} from '@/shared/services/course/course.hook';
-import { useGetMyCourseCommunityPostsInfinite, useDeleteCourseCommunityPostById } from '@/shared/services/community/community.hook';
-import { useGetProfile } from '@/shared/services/user/user.hook';
-import dayjs from 'dayjs';
-import { getDisplayContent } from '@/shared/lib/tiptap-content';
-import {QuestionDetailDialog, CommunityDetailDialog, CommunityUpdateDialog} from './_components';
-import QuestionLabel from '@/shared/components/question/QuestionLabel';
-import CommunityPostList from '@/shared/components/community/CommunityPostList';
-import { Clock } from 'lucide-react';
-import { toast } from 'sonner';
+import { CommunityDetailDialog, CommunityUpdateDialog, QuestionDetailDialog } from './_components';
 
+import { useState } from 'react';
+
+import CommunityPostList from '@/shared/components/community/CommunityPostList';
+import QuestionLabel from '@/shared/components/question/QuestionLabel';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,12 +16,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/shared/components/ui/alert-dialog';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { GET_my_course_questions } from '@/shared/services/course/course.service';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { getDisplayContent } from '@/shared/lib/tiptap-content';
 import {
-  POST_course_community_post_like_by_id,
+  useDeleteCourseCommunityPostById,
+  useGetMyCourseCommunityPostsInfinite,
+} from '@/shared/services/community/community.hook';
+import {
   DELETE_course_community_post_like_by_id,
+  POST_course_community_post_like_by_id,
 } from '@/shared/services/community/community.service';
+import { useDeleteCourseQuestion, useGetMyCourseQuestionsInfinite } from '@/shared/services/course/course.hook';
+import { GET_my_course_questions } from '@/shared/services/course/course.service';
+import { useGetProfile } from '@/shared/services/user/user.hook';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import { Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
 const chatbotHistory = [
   {
@@ -173,6 +174,9 @@ export default function LearnerHistoryPage() {
         : undefined,
       attachments: item.attachments ?? [],
       videoInfo: item.videoInfo ?? null,
+      likeCount: likeOverride?.likeCount ?? item.likeCount ?? 0,
+      commentCount: item.commentCount ?? 0,
+      likedByMe: likeOverride?.likedByMe ?? item.likedByMe ?? false,
     };
   });
 
@@ -186,7 +190,10 @@ export default function LearnerHistoryPage() {
     setSelectedPost({ courseId: post.courseId, postId: post.postId });
   };
 
-  const handleMyCommunityPostEdit = (post: { postId: number; courseId?: number; content: string }, e: React.MouseEvent) => {
+  const handleMyCommunityPostEdit = (
+    post: { postId: number; courseId?: number; content: string },
+    e: React.MouseEvent,
+  ) => {
     e.stopPropagation();
     if (!post.courseId) return;
     setEditingPost({
@@ -257,6 +264,7 @@ export default function LearnerHistoryPage() {
       {
         onSuccess: () => {
           setDeletePostTarget(null);
+          toast.success('Post deleted successfully.');
         },
         onError: (error: any) => {
           console.error('커뮤니티 글 삭제 실패:', error);
@@ -298,36 +306,36 @@ export default function LearnerHistoryPage() {
             <ScrollArea className="h-[calc(100vh-20rem)] rounded-lg">
               <div className="space-y-3 pr-4">
                 {myCourseQuestions?.items?.map((item) => (
-              <article
-                key={item.questionId}
-                className="bg-background cursor-pointer rounded-lg border p-4 hover:bg-accent/50 transition-colors"
-                role="button"
-                tabIndex={0}
-                onClick={() => setSelectedQuestion({ courseId: item.courseId, questionId: item.questionId })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setSelectedQuestion({ courseId: item.courseId, questionId: item.questionId });
-                  }
-                }}
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex items-center gap-2">
-                    <QuestionLabel status={item.status} />
-                    <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                      <Clock className="h-3 w-3" />
-                      {dayjs(item.createdAt).format('MMM D, YYYY h:mm A')}
-                    </span>
-                  </div>
-                </div>
-                <h3 className="text-foreground font-semibold line-clamp-2">{item.title}</h3>
-                <p
-                  className="text-muted-foreground mt-2 text-sm leading-relaxed line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: getDisplayContent(item.content) }}
-                />
-              </article>
+                  <article
+                    key={item.questionId}
+                    className="bg-background hover:bg-accent/50 cursor-pointer rounded-lg border p-4 transition-colors"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedQuestion({ courseId: item.courseId, questionId: item.questionId })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedQuestion({ courseId: item.courseId, questionId: item.questionId });
+                      }
+                    }}
+                  >
+                    <div className="mb-3 flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <QuestionLabel status={item.status} />
+                        <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                          <Clock className="h-3 w-3" />
+                          {dayjs(item.createdAt).format('MMM D, YYYY h:mm A')}
+                        </span>
+                      </div>
+                    </div>
+                    <h3 className="text-foreground line-clamp-2 font-semibold">{item.title}</h3>
+                    <p
+                      className="text-muted-foreground mt-2 line-clamp-2 text-sm leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: getDisplayContent(item.content) }}
+                    />
+                  </article>
                 ))}
-                
+
                 {/* 더보기 버튼 */}
                 {hasNextQuestions && (
                   <div className="flex justify-center pt-4">
@@ -435,7 +443,7 @@ export default function LearnerHistoryPage() {
             <AlertDialogTitle>Delete Question?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. Are you sure you want to delete
-              <span className="font-semibold text-foreground">{deleteTarget?.title}</span>?
+              <span className="text-foreground font-semibold">{deleteTarget?.title}</span>?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

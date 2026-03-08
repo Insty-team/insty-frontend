@@ -57,6 +57,9 @@ export type MyCourseCommunityPostsResponse = {
   videoInfo: VideoInfo | null;
   createdAt: string;
   updatedAt: string;
+  likeCount?: number;
+  commentCount?: number;
+  likedByMe?: boolean;
 };
 
 export type CourseCommunityPostCommentResponse = {
@@ -100,4 +103,4 @@ export type MyCourseCommunityPostCommentResponse = {
 export type CommunityLikeResponse = {
   likeCount: number;
   likedByMe: boolean;
-}
+};

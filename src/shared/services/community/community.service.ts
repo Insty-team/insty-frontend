@@ -1,20 +1,25 @@
-import { api } from '@/shared/services/api';
-import { ApiResponse, PaginatedResponse } from '@/shared/types/api.type';
 import {
-  CourseCommunityPostResponse,
-  CourseCommunityPostRequest,
-  CourseCommunityPostDetailResponse,
-  CourseCommunityPostUpdateRequest,
-  MyCourseCommunityPostsResponse,
-  CourseCommunityPostCommentResponse,
+  CommunityLikeResponse,
   CourseCommunityPostCommentRequest,
+  CourseCommunityPostCommentResponse,
   CourseCommunityPostCommentUpdateRequest,
+  CourseCommunityPostDetailResponse,
+  CourseCommunityPostRequest,
+  CourseCommunityPostResponse,
+  CourseCommunityPostUpdateRequest,
   MyCourseCommunityPostCommentResponse,
-  CommunityLikeResponse
+  MyCourseCommunityPostsResponse,
 } from './community.type';
 
+import { api } from '@/shared/services/api';
+import { ApiResponse, PaginatedResponse } from '@/shared/types/api.type';
+
 /** 커뮤니티 글 목록 검색 */
-export const GET_course_community_posts_by_id = async (courseId: number, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<CourseCommunityPostResponse>> => {
+export const GET_course_community_posts_by_id = async (
+  courseId: number,
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<PaginatedResponse<CourseCommunityPostResponse>> => {
   const response = await api.get(`/api/v1/community/courses/${courseId}/posts`, {
     params: {
       page,
@@ -51,19 +56,29 @@ export const POST_course_community_posts_by_id = async (courseId: number, data: 
 };
 
 /** 커뮤니티 글 조회 (상세) */
-export const GET_course_community_post_by_id = async (courseId: number, postId: number): Promise<ApiResponse<CourseCommunityPostDetailResponse>> => {
+export const GET_course_community_post_by_id = async (
+  courseId: number,
+  postId: number,
+): Promise<ApiResponse<CourseCommunityPostDetailResponse>> => {
   const response = await api.get(`/api/v1/community/courses/${courseId}/posts/${postId}`);
   return response.data;
 };
 
 /** 커뮤니티 글 삭제 */
-export const DELETE_course_community_post_by_id = async (courseId: number, postId: number): Promise<ApiResponse<boolean>> => {
+export const DELETE_course_community_post_by_id = async (
+  courseId: number,
+  postId: number,
+): Promise<ApiResponse<boolean>> => {
   const response = await api.delete(`/api/v1/community/courses/${courseId}/posts/${postId}`);
   return response.data;
 };
 
 /** 커뮤니티 글 수정 */
-export const PATCH_course_community_post_by_id = async (courseId: number, postId: number, data: CourseCommunityPostUpdateRequest): Promise<ApiResponse<CourseCommunityPostResponse>> => {
+export const PATCH_course_community_post_by_id = async (
+  courseId: number,
+  postId: number,
+  data: CourseCommunityPostUpdateRequest,
+): Promise<ApiResponse<CourseCommunityPostResponse>> => {
   const formData = new FormData();
 
   const post = {
@@ -88,7 +103,10 @@ export const PATCH_course_community_post_by_id = async (courseId: number, postId
 };
 
 /** 내 커뮤니티 글 조회 */
-export const GET_my_course_community_posts = async (page: number = 1, pageSize: number =10):Promise<PaginatedResponse<MyCourseCommunityPostsResponse>> => {
+export const GET_my_course_community_posts = async (
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<PaginatedResponse<MyCourseCommunityPostsResponse>> => {
   const response = await api.get(`/api/v1/community/me/posts`, {
     params: {
       page,
@@ -101,7 +119,12 @@ export const GET_my_course_community_posts = async (page: number = 1, pageSize: 
 };
 
 /** 커뮤니티 댓글 목록 조회 */
-export const GET_course_community_post_comments_by_id = async (courseId: number, postId: number, page: number = 1, pageSize: number = 10): Promise<PaginatedResponse<CourseCommunityPostCommentResponse>> => {
+export const GET_course_community_post_comments_by_id = async (
+  courseId: number,
+  postId: number,
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<PaginatedResponse<CourseCommunityPostCommentResponse>> => {
   const response = await api.get(`/api/v1/community/courses/${courseId}/posts/${postId}/comments`, {
     params: {
       page,
@@ -114,7 +137,11 @@ export const GET_course_community_post_comments_by_id = async (courseId: number,
 };
 
 /** 커뮤니티 댓글 작성 */
-export const POST_course_community_post_comment_by_id = async (courseId: number, postId: number, data: CourseCommunityPostCommentRequest): Promise<ApiResponse<CourseCommunityPostCommentResponse>> => {
+export const POST_course_community_post_comment_by_id = async (
+  courseId: number,
+  postId: number,
+  data: CourseCommunityPostCommentRequest,
+): Promise<ApiResponse<CourseCommunityPostCommentResponse>> => {
   const formData = new FormData();
 
   const comment = {
@@ -140,7 +167,10 @@ export const DELETE_course_community_post_comment_by_id = async (commentId: numb
 };
 
 /** 커뮤니티 댓글 수정 */
-export const PATCH_course_community_post_comment_by_id = async (commentId: number, data: CourseCommunityPostCommentUpdateRequest): Promise<ApiResponse<CourseCommunityPostCommentResponse>> => {
+export const PATCH_course_community_post_comment_by_id = async (
+  commentId: number,
+  data: CourseCommunityPostCommentUpdateRequest,
+): Promise<ApiResponse<CourseCommunityPostCommentResponse>> => {
   const formData = new FormData();
 
   const comment = {
@@ -165,7 +195,10 @@ export const PATCH_course_community_post_comment_by_id = async (commentId: numbe
 };
 
 /** 내 커뮤니티 댓글 조회 */
-export const GET_my_course_community_post_comments = async (page: number = 1, pageSize: number =10): Promise<PaginatedResponse<MyCourseCommunityPostCommentResponse>> => {
+export const GET_my_course_community_post_comments = async (
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<PaginatedResponse<MyCourseCommunityPostCommentResponse>> => {
   const response = await api.get(`/api/v1/community/me/comments`, {
     params: {
       page,
@@ -177,27 +210,36 @@ export const GET_my_course_community_post_comments = async (page: number = 1, pa
   return response.data;
 };
 
-
 /** 커뮤니티 포스트 좋아요 */
-export const POST_course_community_post_like_by_id = async (courseId: number, postId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+export const POST_course_community_post_like_by_id = async (
+  courseId: number,
+  postId: number,
+): Promise<ApiResponse<CommunityLikeResponse>> => {
   const response = await api.post(`/api/v1/community/courses/${courseId}/posts/${postId}/likes`);
   return response.data;
 };
 
 /** 커뮤니티 포스트 좋아요 취소 */
-export const DELETE_course_community_post_like_by_id = async (courseId: number, postId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+export const DELETE_course_community_post_like_by_id = async (
+  courseId: number,
+  postId: number,
+): Promise<ApiResponse<CommunityLikeResponse>> => {
   const response = await api.delete(`/api/v1/community/courses/${courseId}/posts/${postId}/likes`);
   return response.data;
 };
 
 /** 커뮤니티 댓글 좋아요 */
-export const POST_course_community_post_comment_like_by_id = async (commentId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+export const POST_course_community_post_comment_like_by_id = async (
+  commentId: number,
+): Promise<ApiResponse<CommunityLikeResponse>> => {
   const response = await api.post(`/api/v1/community/comments/${commentId}/likes`);
   return response.data;
 };
 
 /** 커뮤니티 댓글 좋아요 취소 */
-export const DELETE_course_community_post_comment_like_by_id = async (commentId: number): Promise<ApiResponse<CommunityLikeResponse>> => {
+export const DELETE_course_community_post_comment_like_by_id = async (
+  commentId: number,
+): Promise<ApiResponse<CommunityLikeResponse>> => {
   const response = await api.delete(`/api/v1/community/comments/${commentId}/likes`);
   return response.data;
 };

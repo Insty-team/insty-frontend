@@ -4,18 +4,18 @@ import {
   CourseMyResponse,
   CourseProgressByMeResponse,
   CourseProgressResponse,
-  CourseRequest,
-  CoursesResponse,
+  CourseQuestionAnswerRequest,
+  CourseQuestionAnswerResponse,
+  CourseQuestionAnswersResponse,
+  CourseQuestionAnswerUpdateRequest,
   CourseQuestionDetailResponse,
   CourseQuestionListItemResponse,
   CourseQuestionRequest,
   CourseQuestionSearchParams,
   CourseQuestionUpdateRequest,
+  CourseRequest,
+  CoursesResponse,
   MyCourseQuestionResponse,
-  CourseQuestionAnswersResponse,
-  CourseQuestionAnswerResponse,
-  CourseQuestionAnswerRequest,
-  CourseQuestionAnswerUpdateRequest,
 } from './course.type';
 
 import { api } from '@/shared/services/api';
@@ -111,7 +111,7 @@ export const GET_course_progress_exists_by_id = async (courseId: string): Promis
   return response.data;
 };
 
-/** 
+/**
  * 강의 QA 및 커뮤니티 관련 API
  */
 
@@ -132,7 +132,7 @@ export const GET_course_questions_by_id = async (
 };
 
 /** 질문 작성 */
-export const POST_course_question_by_id= async (
+export const POST_course_question_by_id = async (
   courseId: number,
   data: CourseQuestionRequest,
 ): Promise<ApiResponse<CourseQuestionDetailResponse>> => {
@@ -144,10 +144,7 @@ export const POST_course_question_by_id= async (
     videoUuid: data.videoUuid,
   };
 
-  formData.append(
-    'courseQuestionReq',
-    new Blob([JSON.stringify(courseQuestionReq)], { type: 'application/json' }),
-  );
+  formData.append('courseQuestionReq', new Blob([JSON.stringify(courseQuestionReq)], { type: 'application/json' }));
 
   const attachments = data.attachments ?? [];
   if (attachments.length > 2) {
@@ -167,7 +164,10 @@ export const POST_course_question_by_id= async (
 };
 
 /** 질문 상세 조회 - 질문의 본문, 상태, 첨부파일, 비디오 정보와 최신순 답변 요약 조회 */
-export const GET_course_question_by_id = async (courseId: number, questionId: number): Promise<ApiResponse<CourseQuestionDetailResponse>> => {
+export const GET_course_question_by_id = async (
+  courseId: number,
+  questionId: number,
+): Promise<ApiResponse<CourseQuestionDetailResponse>> => {
   const response = await api.get(`/api/v1/courses/${courseId}/questions/${questionId}`);
   return response.data;
 };
@@ -210,18 +210,24 @@ export const PATCH_course_question_by_id = async (
 };
 
 /** 질문 삭제 */
-export const DELETE_course_question_by_id = async (courseId: number, questionId: number): Promise<ApiResponse<boolean>> => {
+export const DELETE_course_question_by_id = async (
+  courseId: number,
+  questionId: number,
+): Promise<ApiResponse<boolean>> => {
   const response = await api.delete(`/api/v1/courses/${courseId}/questions/${questionId}`);
   return response.data;
 };
 
 /** 내 질문 목록 검색 (특정 강의) */
-export const GET_course_questions_my_by_id = async (courseId: number, params: CourseQuestionSearchParams = {
+export const GET_course_questions_my_by_id = async (
+  courseId: number,
+  params: CourseQuestionSearchParams = {
     page: 1,
     pageSize: 20,
     orderBy: 'createdAt',
     order: 'desc',
-  }): Promise<PaginatedResponse<MyCourseQuestionResponse>> => {
+  },
+): Promise<PaginatedResponse<MyCourseQuestionResponse>> => {
   const response = await api.get(`/api/v1/courses/${courseId}/questions/me`, {
     params,
   });
@@ -229,8 +235,12 @@ export const GET_course_questions_my_by_id = async (courseId: number, params: Co
 };
 
 /** 답변 목록 조회 */
-export const GET_course_question_answers_by_id = async (courseId: number, questionId: number, page: number = 1,
-  pageSize: number = 10,): Promise<PaginatedResponse<CourseQuestionAnswersResponse>> => {
+export const GET_course_question_answers_by_id = async (
+  courseId: number,
+  questionId: number,
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<PaginatedResponse<CourseQuestionAnswersResponse>> => {
   const response = await api.get(`/api/v1/courses/${courseId}/questions/${questionId}/answers`, {
     params: {
       page,
@@ -241,7 +251,11 @@ export const GET_course_question_answers_by_id = async (courseId: number, questi
 };
 
 /** 답변 작성 */
-export const POST_course_question_answer_by_id = async (courseId: number, questionId: number, data: CourseQuestionAnswerRequest): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
+export const POST_course_question_answer_by_id = async (
+  courseId: number,
+  questionId: number,
+  data: CourseQuestionAnswerRequest,
+): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
   const formData = new FormData();
 
   const courseAnswerCreateReq = {
@@ -272,18 +286,31 @@ export const POST_course_question_answer_by_id = async (courseId: number, questi
 };
 
 /** 답변 채택 */
-export const POST_course_question_answer_accept_by_id = async (courseId: number, questionId: number, answerId: number): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
+export const POST_course_question_answer_accept_by_id = async (
+  courseId: number,
+  questionId: number,
+  answerId: number,
+): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
   const response = await api.post(`/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}/accept`);
   return response.data;
 };
 /** 답변 삭제 */
-export const DELETE_course_question_answer_by_id = async (courseId: number, questionId: number, answerId: number): Promise<ApiResponse<boolean>> => {
+export const DELETE_course_question_answer_by_id = async (
+  courseId: number,
+  questionId: number,
+  answerId: number,
+): Promise<ApiResponse<boolean>> => {
   const response = await api.delete(`/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}`);
   return response.data;
 };
 
 /** 답변 수정 */
-export const PATCH_course_question_answer_by_id = async (courseId: number, questionId: number, answerId: number, data: CourseQuestionAnswerUpdateRequest): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
+export const PATCH_course_question_answer_by_id = async (
+  courseId: number,
+  questionId: number,
+  answerId: number,
+  data: CourseQuestionAnswerUpdateRequest,
+): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
   const formData = new FormData();
 
   const courseAnswerUpdateReq = {
@@ -306,27 +333,36 @@ export const PATCH_course_question_answer_by_id = async (courseId: number, quest
     formData.append('attachments', file);
   });
 
-  const response = await api.patch(`/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
+  const response = await api.patch(
+    `/api/v1/courses/${courseId}/questions/${questionId}/answers/${answerId}`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     },
-  });
+  );
   return response.data;
 };
 
 /** 채택된 답변 조회 */
-export const GET_course_question_answer_accept_by_id = async (courseId: number, questionId: Number): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
+export const GET_course_question_answer_accept_by_id = async (
+  courseId: number,
+  questionId: number,
+): Promise<ApiResponse<CourseQuestionAnswerResponse>> => {
   const response = await api.get(`/api/v1/courses/${courseId}/questions/${questionId}/answers/accepted`);
   return response.data;
 };
 
 /** 내 QA 질문 조회 */
-export const GET_my_course_questions = async (data: CourseQuestionSearchParams = {
+export const GET_my_course_questions = async (
+  data: CourseQuestionSearchParams = {
     page: 1,
     pageSize: 20,
     orderBy: 'createdAt',
     order: 'desc',
-  }): Promise<PaginatedResponse<MyCourseQuestionResponse>> => {
+  },
+): Promise<PaginatedResponse<MyCourseQuestionResponse>> => {
   const response = await api.get(`/api/v1/questions/me`, { params: data });
   return response.data;
-}
+};
