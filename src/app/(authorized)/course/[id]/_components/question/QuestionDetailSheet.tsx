@@ -47,7 +47,6 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [draftPreview, setDraftPreview] = useState<string | null>(null);
-  const [originalContent, setOriginalContent] = useState<string>('');
 
   const [isQuestionEditing, setIsQuestionEditing] = useState(false);
   const [isQuestionDeleteOpen, setIsQuestionDeleteOpen] = useState(false);
@@ -124,7 +123,6 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
       return;
     }
 
-    setOriginalContent(answerContent);
     setIsGeneratingDraft(true);
     try {
       const images = uploadedFiles.filter((f) => f.type.startsWith('image/'));
@@ -388,6 +386,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
               toast.success('Question updated.');
               cancelQuestionEdit();
             },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onError: (error: any) => {
               console.error('질문 수정 실패:', error);
               toast.error('Failed to update question.');

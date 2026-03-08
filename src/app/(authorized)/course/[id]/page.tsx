@@ -116,7 +116,6 @@ export default function CoursePage() {
   }, [course?.practiceFile]);
 
   const keyPoints = useMemo(() => course?.keyPoints?.filter(Boolean) ?? [], [course?.keyPoints]);
-  const creatorInitial = course?.creatorInfo.nickname?.[0] ?? 'I';
 
   const getVideoPlaylistUrl = useCallback(async () => {
     if (!videoPlaylistResponse?.data?.signedUrl) return;
@@ -320,7 +319,7 @@ export default function CoursePage() {
           {/* 3. 핵심내용 */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">What You'll Learn</CardTitle>
+              <CardTitle className="text-xl">What You&apos;ll Learn</CardTitle>
               <CardDescription>Preview the course results through key points.</CardDescription>
             </CardHeader>
             <CardContent>

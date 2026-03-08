@@ -48,7 +48,6 @@ export default function CommunityListSheet({ courseId, onSelectPost, sheetIsOpen
 
   const { data: profile } = useGetProfile();
   const currentUserId = profile?.id;
-  const isLearner = profile?.userType === 'LEARNER';
   const {
     createPost,
     updatePost,

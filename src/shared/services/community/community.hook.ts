@@ -109,7 +109,7 @@ export const useGetCourseCommunityPostById = (
 };
 
 /** 커뮤니티 글 삭제 */
-export const useDeleteCourseCommunityPostById = (courseId?: number) => {
+export const useDeleteCourseCommunityPostById = () => {
   const queryClient = useQueryClient();
 
   return useMutation({

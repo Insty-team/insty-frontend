@@ -171,7 +171,7 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
           },
         },
       );
-    } catch (error: any) {
+    } catch (error: any /* eslint-disable-next-line @typescript-eslint/no-explicit-any */) {
       console.error('커뮤니티 글 수정 실패:', error);
       toast.error('Failed to update post.');
     }
@@ -253,6 +253,7 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
     (async () => {
       try {
         await toggleCommentLike(commentId, likedByMe);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error('댓글 좋아요 처리 실패:', error);
         toast.error('Failed to update like.');

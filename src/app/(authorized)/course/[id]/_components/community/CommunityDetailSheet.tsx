@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-
-import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 import CommunityComments from '@/shared/components/community/CommunityComments';
 import CommunityPostDetail from '@/shared/components/community/CommunityPostDetail';
@@ -29,7 +27,7 @@ import {
 import { Attachment } from '@/shared/services/community/community.type';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import dayjs from 'dayjs';
-import { Calendar, ChevronLeft, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
+import { Calendar, ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Props = {
@@ -41,20 +39,13 @@ type Props = {
 export default function CommunityDetailSheet({ courseId, postId, onBack }: Props) {
   const [commentContent, setCommentContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [uploadedFilePreviews, setUploadedFilePreviews] = useState<string[]>([]);
   const [uploadErrorMessage, setUploadErrorMessage] = useState('');
   const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
 
   // 댓글 관련 state
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingContent, setEditingContent] = useState('');
-  const [editingFiles, setEditingFiles] = useState<File[]>([]);
-  const [editingExistingAttachments, setEditingExistingAttachments] = useState<Attachment[]>([]);
-  const [editingDeleteIds, setEditingDeleteIds] = useState<number[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<number | null>(null);
-  const [isCancelEditDialogOpen, setIsCancelEditDialogOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [hasMore, setHasMore] = useState(false);
@@ -71,11 +62,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
   const [editPostExistingVideo, setEditPostExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [editPostDeleteIds, setEditPostDeleteIds] = useState<number[]>([]);
 
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
-  const videoInputRef = useRef<HTMLInputElement | null>(null);
-
   const { data: userProfile } = useGetProfile();
-  const isLearner = userProfile?.userType === 'LEARNER';
   const currentUserId = userProfile?.id;
 
   const {
@@ -112,18 +99,13 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
   const pagination = commentsData?.pagination;
 
   useEffect(() => {
-    const previews = uploadedFiles.map((file) => URL.createObjectURL(file));
-    setUploadedFilePreviews(previews);
-    return () => previews.forEach(URL.revokeObjectURL);
-  }, [uploadedFiles]);
-
-  useEffect(() => {
     if (commentsData?.items) {
       if (page === 1) {
         setComments(commentsData.items);
       } else {
         setComments((prev) => {
           const existingIds = new Set(prev.map((c) => c.commentId));
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const newComments = commentsData.items.filter((item: any) => !existingIds.has(item.commentId));
           return [...prev, ...newComments];
         });
@@ -135,41 +117,13 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     }
   }, [commentsData, page]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    setUploadedFiles((prev) => {
-      const merged = [...prev, ...Array.from(files)];
-      const limited = merged.slice(0, 2);
-      setUploadErrorMessage(merged.length > 2 ? 'You can attach up to 2 images.' : '');
-      return limited;
-    });
-
-    e.target.value = '';
-  };
-
-  const handleRemoveFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-    setUploadErrorMessage('');
-  };
-
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadedVideoFile(file);
-    e.target.value = '';
-  };
-
-  const handleRemoveVideo = () => {
-    setUploadedVideoFile(null);
-  };
 
   const handleToggleLike = async () => {
     if (isLikingPost || isUnlikingPost) return;
 
     try {
       await togglePostLike(postId, communityPostData?.likedByMe ?? false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('커뮤니티 글 좋아요 처리 실패:', error);
       toast.error('Failed to update like.');
@@ -181,6 +135,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
     try {
       await toggleCommentLike(commentId, likedByMe);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('댓글 좋아요 처리 실패:', error);
       toast.error('Failed to update like.');
@@ -222,6 +177,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
           },
         },
       );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('댓글 작성 실패:', error);
       toast.error('Failed to post comment.');
@@ -234,88 +190,6 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     }
   };
 
-  const handleEditComment = (commentId: number, content: string, attachments?: Attachment[]) => {
-    setEditingCommentId(commentId);
-    setEditingContent(content);
-    setEditingExistingAttachments(attachments || []);
-    setEditingFiles([]);
-    setEditingDeleteIds([]);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingContent.trim() || !editingCommentId) return;
-
-    // 파일 크기 체크 (10MB 제한)
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const oversizedFiles = editingFiles.filter((file) => file.size > MAX_FILE_SIZE);
-
-    if (oversizedFiles.length > 0) {
-      alert(
-        `File size too large. Maximum file size is 10MB.\nLarge files: ${oversizedFiles.map((f) => f.name).join(', ')}`,
-      );
-      return;
-    }
-
-    try {
-      const images = editingFiles.filter((f) => f.type.startsWith('image/'));
-      const videoFile = editingFiles.find((f) => f.type.startsWith('video/')) ?? null;
-      let videoUuid: string | undefined;
-
-      if (videoFile) {
-        videoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
-      }
-
-      await updateComment(
-        editingCommentId,
-        {
-          content: editingContent,
-          videoUuid,
-          attachments: images.length > 0 ? images : null,
-          deleteFileIds: editingDeleteIds.length > 0 ? editingDeleteIds : null,
-        },
-        {
-          onSuccess: () => {
-            setEditingCommentId(null);
-            setEditingContent('');
-            setEditingFiles([]);
-            setEditingExistingAttachments([]);
-            setEditingDeleteIds([]);
-          },
-        },
-      );
-    } catch (error: any) {
-      console.error('Failed to update comment:', error);
-      if (error?.response?.status === 413) {
-        toast.error('Content too large.');
-      } else {
-        toast.error('Failed to update comment.');
-      }
-    }
-  };
-
-  const handleCancelEdit = () => {
-    const hasChanges = editingContent !== '' || editingFiles.length > 0 || editingDeleteIds.length > 0;
-
-    if (hasChanges) {
-      setIsCancelEditDialogOpen(true);
-    } else {
-      confirmCancelEdit();
-    }
-  };
-
-  const confirmCancelEdit = () => {
-    setEditingCommentId(null);
-    setEditingContent('');
-    setEditingFiles([]);
-    setEditingExistingAttachments([]);
-    setEditingDeleteIds([]);
-    setIsCancelEditDialogOpen(false);
-  };
-
-  const handleRemoveExistingAttachment = (attachmentId: number) => {
-    setEditingDeleteIds((prev) => [...prev, attachmentId]);
-    setEditingExistingAttachments((prev) => prev.filter((att) => att.id !== attachmentId));
-  };
 
   const handleDeleteComment = (commentId: number) => {
     setPendingDeleteCommentId(commentId);
@@ -332,6 +206,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
               setPendingDeleteCommentId(null);
             },
           });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           console.error('댓글 삭제 실패:', error);
           toast.error('Failed to delete comment.');
@@ -431,6 +306,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
             },
           },
         );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error('커뮤니티 글 수정 실패:', error);
         if (error?.response?.status === 413) {
@@ -455,6 +331,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
             onBack();
           },
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error('커뮤니티 글 삭제 실패:', error);
         toast.error('Failed to delete post.');
@@ -468,28 +345,6 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     isError: isCommunityPostError,
   } = useGetCourseCommunityPostById(courseId, postId);
 
-  const sheetDescription = 'Check the post content and leave a comment.';
-
-  const renderAttachments = (attachments: Attachment[]) => {
-    if (!attachments || attachments.length === 0) return null;
-    return (
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        {attachments
-          .filter((file) => file?.url)
-          .map((file) => (
-            <div key={file.id} className="relative aspect-square overflow-hidden rounded-lg border">
-              <Image
-                src={file.url}
-                alt={file.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 50vw, 200px"
-              />
-            </div>
-          ))}
-      </div>
-    );
-  };
 
   return (
     <>
@@ -663,16 +518,6 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
           )}
         </div>
       </ScrollArea>
-
-      <ConfirmModal
-        open={isCancelEditDialogOpen}
-        onOpenChange={setIsCancelEditDialogOpen}
-        title="Cancel Editing"
-        description="Are you sure you want to cancel? All changes will be lost."
-        confirmText="Discard Changes"
-        cancelText="Continue Editing"
-        onConfirm={confirmCancelEdit}
-      />
 
       <ConfirmModal
         open={isDeleteDialogOpen}

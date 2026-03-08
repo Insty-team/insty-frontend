@@ -50,7 +50,6 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
   const [editorKey, setEditorKey] = useState(0);
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [draftPreview, setDraftPreview] = useState<string | null>(null);
-  const [originalContent, setOriginalContent] = useState<string>('');
 
   const [deletingAnswerId, setDeletingAnswerId] = useState<number | null>(null);
   const [alertOpen, setAlertOpen] = useState(false);
@@ -269,6 +268,7 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
             toast.success('Question updated.');
             cancelQuestionEdit();
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onError: (error: any) => {
             console.error('질문 수정 실패:', error);
             toast.error('Failed to update question.');
@@ -288,7 +288,6 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
       return;
     }
 
-    setOriginalContent(answerContent);
     setIsGeneratingDraft(true);
     try {
       const images = uploadedFiles.filter((f) => f.type.startsWith('image/'));

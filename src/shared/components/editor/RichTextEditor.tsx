@@ -47,7 +47,7 @@ const MentionDropdown = forwardRef<
 >((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const selectItem = (index: number, source: 'keyboard' | 'mouse' = 'keyboard') => {
+  const selectItem = (index: number) => {
     const item = props.items[index];
     if (!item) return;
 

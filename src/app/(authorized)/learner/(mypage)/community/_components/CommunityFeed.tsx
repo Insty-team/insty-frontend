@@ -116,6 +116,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
           },
         },
       );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('포스트 작성 실패:', error);
       toast.error('Failed to create post.');
@@ -199,6 +200,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
           },
         },
       );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('커뮤니티 글 수정 실패:', error);
       toast.error('Failed to update post.');

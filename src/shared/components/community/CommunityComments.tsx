@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ReactPlayer from 'react-player';
 
 import Image from 'next/image';
@@ -120,6 +120,7 @@ export default function CommunityComments({
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState('');
   const [editFiles, setEditFiles] = useState<File[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editExistingAttachments, setEditExistingAttachments] = useState<any[]>([]);
   const [editExistingVideo, setEditExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [deleteAttachmentIds, setDeleteAttachmentIds] = useState<number[]>([]);

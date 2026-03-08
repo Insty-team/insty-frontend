@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
-import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
