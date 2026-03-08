@@ -34,6 +34,12 @@ export const POST_notification_read = async (notificationId: number): Promise<Ap
   return response.data;
 };
 
+/** 모든 알림 읽음 처리 */
+export const POST_notification_read_all = async (): Promise<ApiResponse<void>> => {
+  const response = await api.post(`/api/v1/notification/read-all`);
+  return response.data;
+};
+
 /** 사용자 알림 조회 */
 export const GET_notifications_me = async (): Promise<ApiResponse<NotificationMeResponse[]>> => {
   const response = await api.get('/api/v1/notification');

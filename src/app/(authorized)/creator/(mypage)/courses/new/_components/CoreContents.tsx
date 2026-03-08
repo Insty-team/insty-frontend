@@ -26,11 +26,11 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
       return;
     }
     if (contents.length >= 8) {
-      alert('최대 8개까지만 추가할 수 있습니다.');
+      alert('You can add up to 8 items.');
       return;
     }
     if (inputValue.length > 60) {
-      alert('최대 60자까지 입력할 수 있습니다.');
+      alert('You can enter up to 60 characters.');
       return;
     }
 
@@ -52,7 +52,7 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-semibold">핵심 내용</Label>
+      <Label className="text-base font-semibold">Key Points</Label>
 
       <div className="flex gap-2">
         <Input
@@ -64,7 +64,7 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
             }
           }}
           onKeyDown={handleKeyPress}
-          placeholder="예: React 기초, 컴포넌트 설계, 상태 관리, 라우팅 등"
+          placeholder="e.g., React fundamentals, component design, state management, routing"
           maxLength={60}
           className="flex-1"
         />
@@ -98,10 +98,9 @@ export function CoreContents({ contents, onContentsChange }: CoreContentsProps) 
         </div>
       )}
 
-      <div className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-xs">{contents.length}개 추가됨 • Enter 키로 항목을 추가하세요</p>
-        {errorMessage && <p className="text-destructive text-xs">{errorMessage}</p>}
-      </div>
+      <p className="text-muted-foreground text-xs">
+        {contents.length} added • Press Enter to add an item
+      </p>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import {
   GET_notification_settings,
   GET_notifications_me,
   POST_notification_read,
+  POST_notification_read_all,
   PUT_notification_all_settings,
   PUT_notification_settings,
 } from './notification.service';
@@ -9,10 +10,12 @@ import { NotificationSettingsRequest } from './notification.type';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+const NOTIFICATION_SETTINGS_QUERY_KEY = ['notification', 'settings'] as const;
+
 /** 내 알림 설정 조회 */
 export const useGetNotificationSettings = () => {
   return useQuery({
-    queryKey: [GET_notification_settings.name],
+    queryKey: NOTIFICATION_SETTINGS_QUERY_KEY,
     queryFn: () => GET_notification_settings(),
     select: ({ data }) => data,
   });
@@ -42,10 +45,20 @@ export const usePostNotificationRead = () => {
   });
 };
 
+/** 모든 알림 읽음 처리 */
+export const usePostNotificationReadAll = () => {
+  return useMutation({
+    mutationKey: [POST_notification_read_all.name],
+    mutationFn: () => POST_notification_read_all(),
+  });
+};
+
+const NOTIFICATIONS_ME_QUERY_KEY = ['notification', 'me'] as const;
+
 /** 사용자 알림 조회 */
 export const useGetNotificationsMe = () => {
   return useQuery({
-    queryKey: [GET_notifications_me.name],
+    queryKey: NOTIFICATIONS_ME_QUERY_KEY,
     queryFn: () => GET_notifications_me(),
     select: ({ data }) => data,
   });

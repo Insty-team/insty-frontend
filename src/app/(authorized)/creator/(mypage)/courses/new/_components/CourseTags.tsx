@@ -26,11 +26,11 @@ export function CourseTags({ tags, onTagsChange }: CourseTagsProps) {
       return;
     }
     if (tags.length >= 12) {
-      alert('최대 12개까지만 추가할 수 있습니다.');
+      alert('You can add up to 12 tags.');
       return;
     }
     if (inputValue.length > 15) {
-      alert('최대 15자까지 입력할 수 있습니다.');
+      alert('You can enter up to 15 characters.');
       return;
     }
 
@@ -52,7 +52,7 @@ export function CourseTags({ tags, onTagsChange }: CourseTagsProps) {
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-semibold">태그</Label>
+      <Label className="text-base font-semibold">Tags</Label>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -66,7 +66,7 @@ export function CourseTags({ tags, onTagsChange }: CourseTagsProps) {
               }
             }}
             onKeyDown={handleKeyPress}
-            placeholder="예: React, JavaScript, 프론트엔드, 웹개발, 초보자 등"
+            placeholder="e.g., React, JavaScript, frontend, web development, beginner"
             maxLength={15}
             className="pl-10"
           />
@@ -95,10 +95,7 @@ export function CourseTags({ tags, onTagsChange }: CourseTagsProps) {
         </div>
       )}
 
-      <div className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-xs">{tags.length}개 추가됨 • Enter 키로 태그를 추가하세요</p>
-        {errorMessage && <p className="text-destructive text-xs">{errorMessage}</p>}
-      </div>
+      <p className="text-muted-foreground text-xs">{tags.length} added • Press Enter to add a tag</p>
     </div>
   );
 }

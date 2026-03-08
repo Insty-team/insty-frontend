@@ -28,11 +28,11 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
     }
     setErrorMessage(null);
     if (requirements.some((req) => req.name === inputValue.trim())) {
-      alert('이미 추가된 설치 환경입니다.');
+      alert('This prerequisite has already been added.');
       return;
     }
     if (requirements.length >= 10) {
-      alert('최대 10개까지만 추가할 수 있습니다.');
+      alert('You can add up to 10 prerequisites.');
       return;
     }
 
@@ -64,7 +64,7 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
 
   return (
     <div className="space-y-3">
-      <Label>설치 환경 요구사항</Label>
+      <Label>Prerequisites</Label>
 
       <div className="flex gap-2">
         <Input
@@ -76,7 +76,7 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
             }
           }}
           onKeyPress={handleKeyPress}
-          placeholder="예: Node.js, Python, Docker 등"
+          placeholder="e.g., Node.js, Python, Docker"
           maxLength={50}
           className="flex-1"
         />
@@ -96,28 +96,41 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Label>
+                    {/* 체크박스 없이, 배지 클릭(또는 Enter/Space)로 지원/미지원 토글 */}
+                    <div className="flex items-center">
                       <Checkbox
+                        className="sr-only"
                         checked={requirement.isSupported}
                         onCheckedChange={() => handleToggleSupport(requirement.id)}
+                        aria-label={`${requirement.name} support status`}
                       />
                       <Badge
                         variant={requirement.isSupported ? 'default' : 'secondary'}
-                        className="flex items-center gap-1"
+                        className="flex cursor-pointer items-center gap-1 select-none"
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={requirement.isSupported}
+                        onClick={() => handleToggleSupport(requirement.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleToggleSupport(requirement.id);
+                          }
+                        }}
                       >
                         {requirement.isSupported ? (
                           <>
                             <Check className="h-3 w-3" />
-                            지원
+                            Supported
                           </>
                         ) : (
                           <>
                             <XCircle className="h-3 w-3" />
-                            미지원
+                            Not supported
                           </>
                         )}
                       </Badge>
-                    </Label>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -134,10 +147,9 @@ export function InstallationRequirements({ requirements, onRequirementsChange }:
         </div>
       )}
 
-      <div className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-xs">{requirements.length}개 추가됨 • 체크박스로 지원/미지원 여부 선택</p>
-        {errorMessage && <p className="text-destructive text-xs">{errorMessage}</p>}
-      </div>
+      <p className="text-muted-foreground text-xs">
+        {requirements.length} added • Click the badge to toggle support status
+      </p>
     </div>
   );
 }

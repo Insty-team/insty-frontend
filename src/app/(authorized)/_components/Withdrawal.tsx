@@ -21,14 +21,14 @@ export default function Withdrawal() {
   const handleWithdraw = async () => {
     await withdraw().then(() => {
       toast.success('탈퇴가 완료되었습니다.');
-      router.push('/onboarding');
+      router.push('/login');
     });
   };
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild className="flex justify-end">
-        <span className="cursor-pointer text-sm text-gray-500 underline">회원 탈퇴</span>
+      <AlertDialogTrigger asChild>
+        <span className="ml-auto block w-fit cursor-pointer text-sm text-gray-500 underline">회원 탈퇴</span>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
