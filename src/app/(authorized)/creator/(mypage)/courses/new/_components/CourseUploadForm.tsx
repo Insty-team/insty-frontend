@@ -14,18 +14,26 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { CourseRequestRecommendationItem } from '@/shared/services/ai-community/ai-community.type';
 import { usePostVideoMetadataSuggestion } from '@/shared/services/ai-video/ai-video.hook';
 import { usePostCourse } from '@/shared/services/course/course.hook';
 import { GET_courses, GET_courses_my } from '@/shared/services/course/course.service';
 import { useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Edit3, FileVideo, Sparkles } from 'lucide-react';
+import { CheckCircle2, Edit3, FileVideo, Info, Sparkles } from 'lucide-react';
 
-export function CourseUploadForm() {
+export function CourseUploadForm({ recommendation }: { recommendation?: CourseRequestRecommendationItem }) {
   const router = useRouter();
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<UploadStep>('UPLOAD');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -249,10 +257,53 @@ export function CourseUploadForm() {
       {/* 헤더 섹션 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">New Contents Upload</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">New Contents Upload</h2>
+            {recommendation && (
+              <button
+                type="button"
+                onClick={() => setInfoDialogOpen(true)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="View recommendation info"
+              >
+                <Info className="h-5 w-5" />
+              </button>
+            )}
+          </div>
           <p className="text-muted-foreground mt-1">Create your contents step by step</p>
         </div>
       </div>
+
+      {/* Recommendation info dialog */}
+      {recommendation && (
+        <Dialog open={infoDialogOpen} onOpenChange={setInfoDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Recommendation Info</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="font-medium">{recommendation.title}</p>
+                <p className="text-muted-foreground mt-1">{recommendation.description}</p>
+              </div>
+              {recommendation.reason && (
+                <p className="text-muted-foreground border-l-2 pl-3 text-xs italic">{recommendation.reason}</p>
+              )}
+              {recommendation.selected_fields.length > 0 && (
+                <div className="space-y-1">
+                  <p className="font-medium">Learner preferences</p>
+                  {recommendation.selected_fields.map((f) => (
+                    <div key={f.field_key} className="text-muted-foreground flex gap-2 text-xs">
+                      <span className="font-medium">{f.field_key}:</span>
+                      <span>{f.answer_text}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* 단계 표시 */}
       <div className="relative my-8">
