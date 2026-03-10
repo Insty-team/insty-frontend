@@ -64,7 +64,9 @@ export const POST_community_course_request_recommendation_with_base = async (): 
 export const POST_community_course_request_recommendation_without_base = async (data: {
   answers: CourseRequestAnswer[];
 }): Promise<ApiResponse<CourseRequestRecommendationResponse>> => {
-  const response = await api.post('/api/v1/ai/community/course-request-recommendation/without-base', data);
+  const response = await api.post('/api/v1/ai/community/course-request-recommendation/without-base', data, {
+    timeout: 60000,
+  });
   return response.data;
 };
 
