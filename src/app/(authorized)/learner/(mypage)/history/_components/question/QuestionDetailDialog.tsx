@@ -58,6 +58,16 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
   const [cancelAcceptConfirmOpen, setCancelAcceptConfirmOpen] = useState(false);
   const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
 
+  const [submitAnswerConfirmOpen, setSubmitAnswerConfirmOpen] = useState(false);
+  const [updateAnswerConfirmOpen, setUpdateAnswerConfirmOpen] = useState(false);
+  const [pendingAnswerData, setPendingAnswerData] = useState<{
+    answerId?: number;
+    content: string;
+    files: File[];
+    deleteAttachmentIds?: number[];
+    videoUuid?: string | null;
+  } | null>(null);
+
   const [isQuestionEditing, setIsQuestionEditing] = useState(false);
   const [isQuestionDeleteOpen, setIsQuestionDeleteOpen] = useState(false);
 
@@ -112,13 +122,35 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
     deleteAttachmentIds: number[],
     videoUuid?: string | null,
   ) => {
-    patchAnswer({
+    setPendingAnswerData({
       answerId,
+      content,
+      files,
+      deleteAttachmentIds,
+      videoUuid,
+    });
+    setUpdateAnswerConfirmOpen(true);
+  };
+
+  const handleConfirmUpdateAnswer = () => {
+    if (!pendingAnswerData || !pendingAnswerData.answerId) return;
+
+    patchAnswer({
+      answerId: pendingAnswerData.answerId,
       data: {
-        content,
-        attachments: files.length > 0 ? files : undefined,
-        deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : undefined,
-        videoUuid,
+        content: pendingAnswerData.content,
+        attachments: pendingAnswerData.files.length > 0 ? pendingAnswerData.files : undefined,
+        deleteFileIds: pendingAnswerData.deleteAttachmentIds && pendingAnswerData.deleteAttachmentIds.length > 0 ? pendingAnswerData.deleteAttachmentIds : undefined,
+        videoUuid: pendingAnswerData.videoUuid,
+      },
+    }, {
+      onSuccess: () => {
+        toast.success('Answer updated successfully.');
+        setUpdateAnswerConfirmOpen(false);
+        setPendingAnswerData(null);
+      },
+      onError: () => {
+        toast.error('Failed to update answer.');
       },
     });
   };
@@ -171,8 +203,12 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
     if (!deletingAnswerId) return;
     deleteAnswer(deletingAnswerId, {
       onSuccess: () => {
+        toast.success('Answer deleted successfully.');
         setAlertOpen(false);
         setDeletingAnswerId(null);
+      },
+      onError: () => {
+        toast.error('Failed to delete answer.');
       },
     });
   };
@@ -329,6 +365,11 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
 
   const handleSubmitAnswer = async () => {
     if (!answerContent.trim()) return;
+    setSubmitAnswerConfirmOpen(true);
+  };
+
+  const handleConfirmSubmitAnswer = async () => {
+    if (!answerContent.trim()) return;
 
     const images = uploadedFiles.filter((f) => f.type.startsWith('image/'));
     const videoFile = uploadedFiles.find((f) => f.type.startsWith('video/')) ?? null;
@@ -348,9 +389,14 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
         },
         {
           onSuccess: () => {
+            toast.success('Answer submitted successfully.');
             setAnswerContent('');
             setUploadedFiles([]);
             setEditorKey((prev) => prev + 1);
+            setSubmitAnswerConfirmOpen(false);
+          },
+          onError: () => {
+            toast.error('Failed to submit answer.');
           },
         },
       );
@@ -584,6 +630,30 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
         destructive
         isConfirming={isDeletingQuestion}
         onConfirm={handleConfirmDeleteQuestion}
+      />
+
+      {/* 답변 작성 확인 모달 */}
+      <ConfirmModal
+        open={submitAnswerConfirmOpen}
+        onOpenChange={setSubmitAnswerConfirmOpen}
+        title="Submit Answer"
+        description="Are you sure you want to submit this answer?"
+        confirmText="Submit"
+        cancelText="Cancel"
+        isConfirming={isPosting}
+        onConfirm={handleConfirmSubmitAnswer}
+      />
+
+      {/* 답변 수정 확인 모달 */}
+      <ConfirmModal
+        open={updateAnswerConfirmOpen}
+        onOpenChange={setUpdateAnswerConfirmOpen}
+        title="Update Answer"
+        description="Are you sure you want to update this answer?"
+        confirmText="Update"
+        cancelText="Cancel"
+        isConfirming={isPatching}
+        onConfirm={handleConfirmUpdateAnswer}
       />
     </Dialog>
   );
