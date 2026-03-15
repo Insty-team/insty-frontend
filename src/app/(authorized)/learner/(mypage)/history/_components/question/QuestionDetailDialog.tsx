@@ -466,6 +466,7 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
               onUpdate={handleUpdateAnswer}
               onDelete={handleDeleteAnswer}
               isAccepting={isAccepting}
+              acceptingAnswerId={selectedAnswerId}
               isUpdating={isPatching}
               hasMore={hasNextPage}
               onLoadMore={handleLoadMore}

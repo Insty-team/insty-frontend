@@ -512,6 +512,7 @@ export default function QuestionDetailSheet({ courseId, questionId, onBack }: Pr
               onUpdate={handleUpdateAnswer}
               onDelete={handleDeleteAnswer}
               isAccepting={isAccepting}
+              acceptingAnswerId={selectedAnswerId}
               isUpdating={isPatchingAnswer}
               hasMore={hasMore}
               onLoadMore={handleLoadMore}

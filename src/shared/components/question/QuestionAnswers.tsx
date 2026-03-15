@@ -99,6 +99,7 @@ type QuestionAnswersProps = {
 
   // 로딩 상태
   isAccepting?: boolean;
+  acceptingAnswerId?: number | null;
   isUpdating?: boolean;
 
   // 더보기
@@ -118,6 +119,7 @@ export default function QuestionAnswers({
   onUpdate,
   onDelete,
   isAccepting = false,
+  acceptingAnswerId = null,
   isUpdating = false,
   hasMore = false,
   onLoadMore,
@@ -274,9 +276,9 @@ export default function QuestionAnswers({
                   variant="ghost"
                   className="text-primary-green-700 hover:text-primary-green-800 hover:bg-primary-green-100 shrink-0"
                   onClick={() => onAccept(acceptedAnswer.answerId)}
-                  disabled={isAccepting}
+                  disabled={isAccepting && acceptingAnswerId === acceptedAnswer.answerId}
                 >
-                  {isAccepting ? 'Canceling...' : 'Unaccept'}
+                  {isAccepting && acceptingAnswerId === acceptedAnswer.answerId ? 'Canceling...' : 'Unaccept'}
                 </Button>
               )}
             </div>
@@ -327,10 +329,10 @@ export default function QuestionAnswers({
                         size="sm"
                         className="shrink-0"
                         onClick={() => onAccept(answer.answerId)}
-                        disabled={isAccepting}
+                        disabled={isAccepting && acceptingAnswerId === answer.answerId}
                       >
                         <Star className="mr-1 h-4 w-4" />
-                        {isAccepting ? 'Accepting...' : 'Accept'}
+                        {isAccepting && acceptingAnswerId === answer.answerId ? 'Accepting...' : 'Accept'}
                       </Button>
                     )}
 
