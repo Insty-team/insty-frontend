@@ -25,13 +25,21 @@ export function extractTextFromTiptapJsonString(value: string): string {
   }
 }
 
+export function parseMentions(html: string): string {
+  return html.replace(
+    /@\[([^\]]+)\]\((\d+)\)/g,
+    '<span class="mention text-blue-600 font-medium cursor-pointer hover:underline" data-user-id="$2">@$1</span>',
+  );
+}
+
 export function getDisplayContent(content?: string | null): string {
   if (!content) return '';
 
   try {
     const json = JSON.parse(content);
-    return generateHTML(json, [StarterKit]);
+    const html = generateHTML(json, [StarterKit]);
+    return parseMentions(html);
   } catch {
-    return content;
+    return parseMentions(content);
   }
 }

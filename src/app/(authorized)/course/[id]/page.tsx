@@ -28,7 +28,7 @@ import {
 } from '@/shared/services/course/course.hook';
 import { usePostVideoPlaylist } from '@/shared/services/video/video.hook';
 import { GET_video_playlist_by_signed_url } from '@/shared/services/video/video.service';
-import { MessageCircle,Check, Download, FileText, GraduationCap, Hash, PlayCircle, Users, X } from 'lucide-react';
+import { MessageCircle, Check, Download, FileText, GraduationCap, Hash, PlayCircle, Users, X } from 'lucide-react';
 
 function formatFileSize(bytes: number) {
   if (!bytes) return '0 B';
@@ -412,17 +412,21 @@ export default function CoursePage() {
                     )
                   ) : selectedQuestionId ? (
                     activeSheetTab === 'qa' ? (
-                      <QuestionDetailSheet
-                        courseId={Number(courseId)}
-                        questionId={selectedQuestionId}
-                        onBack={handleBackToList}
-                      />
+                      <div className="h-[calc(100vh-140px)] overflow-hidden">
+                        <QuestionDetailSheet
+                          courseId={Number(courseId)}
+                          questionId={selectedQuestionId}
+                          onBack={handleBackToList}
+                        />
+                      </div>
                     ) : (
-                      <CommunityDetailSheet
-                        courseId={Number(courseId)}
-                        postId={selectedQuestionId}
-                        onBack={handleBackToList}
-                      />
+                      <div className="h-[calc(100vh-140px)] overflow-hidden">
+                        <CommunityDetailSheet
+                          courseId={Number(courseId)}
+                          postId={selectedQuestionId}
+                          onBack={handleBackToList}
+                        />
+                      </div>
                     )
                   ) : (
                     <div className="text-muted-foreground py-8 text-center text-sm">Please select a question.</div>

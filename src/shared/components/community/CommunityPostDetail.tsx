@@ -1,7 +1,6 @@
 import ReactPlayer from 'react-player';
 
 import Image from 'next/image';
-
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Spinner } from '@/shared/components/ui/spinner';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
@@ -33,26 +32,26 @@ const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; video
 
 type CommunityPostDetailProps = {
   postData:
-    | {
-        postId?: number;
-        user?: {
-          id?: number;
-          nickname?: string;
-        };
-        content: string;
-        createdAt?: string;
-        attachments?: Attachment[];
-        videoInfo?: {
-          videoType: VideoType;
-          videoUuid: string;
-          originFileName: string;
-        } | null;
-        likeCount?: number;
-        commentCount?: number;
-        likedByMe?: boolean;
-      }
-    | null
-    | undefined;
+  | {
+    postId?: number;
+    user?: {
+      id?: number;
+      nickname?: string;
+    };
+    content: string;
+    createdAt?: string;
+    attachments?: Attachment[];
+    videoInfo?: {
+      videoType: VideoType;
+      videoUuid: string;
+      originFileName: string;
+    } | null;
+    likeCount?: number;
+    commentCount?: number;
+    likedByMe?: boolean;
+  }
+  | null
+  | undefined;
   isLoading?: boolean;
   isError?: boolean;
   onToggleLike?: () => void;
@@ -70,14 +69,19 @@ export default function CommunityPostDetail({
   isLiking = false,
   isUnliking = false,
 }: CommunityPostDetailProps) {
+
   const renderAttachments = (attachments: Attachment[]) => {
     if (!attachments || attachments.length === 0) return null;
+
     return (
       <div className="mb-6 flex flex-wrap gap-2">
         {attachments
           .filter((file) => file?.url)
           .map((file) => (
-            <div key={file.id} className="relative inline-block">
+            <div
+              key={file.id}
+              className="relative inline-block"
+            >
               <Image
                 src={file.url}
                 alt={file.name}
@@ -144,16 +148,14 @@ export default function CommunityPostDetail({
       <div className="mt-6 flex items-center gap-3 pt-4">
         {onToggleLike && (
           <button
-            className={`flex items-center gap-2 transition-all duration-300 ${
-              postData.likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={`flex items-center gap-2 transition-all duration-300 ${postData.likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
+              }`}
             onClick={onToggleLike}
             disabled={isLiking || isUnliking}
           >
             <Heart
-              className={`h-5 w-5 transition-all duration-300 ${
-                postData.likedByMe ? 'scale-110 fill-current' : 'scale-100'
-              }`}
+              className={`h-5 w-5 transition-all duration-300 ${postData.likedByMe ? 'scale-110 fill-current' : 'scale-100'
+                }`}
             />
             <span className="text-sm">{postData.likeCount ?? 0}</span>
           </button>

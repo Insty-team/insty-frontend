@@ -4,7 +4,6 @@ import { useState } from 'react';
 import ReactPlayer from 'react-player';
 
 import Image from 'next/image';
-
 import RichTextEditor from '@/shared/components/editor/RichTextEditor';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -184,7 +183,6 @@ export default function QuestionAnswers({
       .trim();
     if (!textOnly) return;
 
-    // RichTextEditor에서 넘어오는 파일은 이미지/비디오가 섞여 있을 수 있습니다.
     // - 이미지는 attachments로 전달
     // - 비디오는 presigned 업로드 후 videoUuid로만 전달
     const images = editingFiles.filter((f) => f.type.startsWith('image/'));
@@ -221,12 +219,16 @@ export default function QuestionAnswers({
   // 답변(및 채택 답변) 첨부 이미지 렌더링
   const renderAttachments = (attachments?: Attachment[]) => {
     if (!attachments || attachments.length === 0) return null;
+
     return (
       <div className="mt-3 grid grid-cols-2 gap-2">
         {attachments
           .filter((file) => file?.url)
           .map((file) => (
-            <div key={file.id} className="relative aspect-square overflow-hidden rounded-lg border">
+            <div
+              key={file.id}
+              className="relative aspect-square overflow-hidden rounded-lg border"
+            >
               <Image
                 src={file.url}
                 alt={file.name ?? 'Attachment'}

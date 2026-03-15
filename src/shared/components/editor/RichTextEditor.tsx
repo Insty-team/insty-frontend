@@ -73,7 +73,7 @@ const MentionDropdown = forwardRef<
       }
 
       if (event.key === 'Enter') {
-        selectItem(selectedIndex, 'keyboard');
+        selectItem(selectedIndex);
         return true;
       }
 
@@ -81,29 +81,31 @@ const MentionDropdown = forwardRef<
     },
   }));
 
+  if (!props.items.length) return null;
+
   return (
-    <div className="max-h-60 overflow-hidden overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
-      {props.items.length ? (
-        props.items.map((item, index) => (
-          <button
-            key={item.id}
-            type="button"
-            className={cn(
-              'w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800',
-              index === selectedIndex && 'bg-gray-100 dark:bg-gray-800',
-            )}
-            onMouseDownCapture={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              selectItem(index, 'mouse');
-            }}
-          >
-            {item.nickname}
-          </button>
-        ))
-      ) : (
-        <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No results</div>
-      )}
+    <div
+      className="max-h-60 overflow-hidden overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
+      style={{ pointerEvents: 'auto', position: 'relative', zIndex: 9999 }}
+    >
+      {props.items.map((item, index) => (
+        <button
+          key={item.id}
+          type="button"
+          className={cn(
+            'w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800',
+            index === selectedIndex && 'bg-gray-100 dark:bg-gray-800',
+          )}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            selectItem(index);
+          }}
+          onMouseEnter={() => setSelectedIndex(index)}
+        >
+          {item.nickname}
+        </button>
+      ))}
     </div>
   );
 });
@@ -292,93 +294,97 @@ export default function RichTextEditor({
       Placeholder.configure({ placeholder }),
       ...(enableMention
         ? [
-            Mention.extend({
-              addAttributes() {
-                return {
-                  id: {
-                    default: null,
-                    parseHTML: (element) => element.getAttribute('data-id'),
-                    renderHTML: (attributes) => {
-                      if (!attributes.id) return {};
-                      return { 'data-id': attributes.id };
-                    },
+          Mention.extend({
+            addAttributes() {
+              return {
+                id: {
+                  default: null,
+                  parseHTML: (element) => element.getAttribute('data-id'),
+                  renderHTML: (attributes) => {
+                    if (!attributes.id) return {};
+                    return { 'data-id': attributes.id };
                   },
-                  label: {
-                    default: null,
-                    parseHTML: (element) => element.getAttribute('data-label'),
-                    renderHTML: (attributes) => {
-                      if (!attributes.label) return {};
-                      return { 'data-label': attributes.label };
-                    },
+                },
+                label: {
+                  default: null,
+                  parseHTML: (element) => element.getAttribute('data-label'),
+                  renderHTML: (attributes) => {
+                    if (!attributes.label) return {};
+                    return { 'data-label': attributes.label };
+                  },
+                },
+              };
+            },
+          }).configure({
+            HTMLAttributes: {
+              class: 'mention',
+              'data-type': 'mention',
+            },
+            renderLabel({ node }) {
+              return `@${node.attrs.label}`;
+            },
+            suggestion: {
+              char: '@',
+              items: async ({ query }: { query: string }) => {
+                if (!query || query.length < 1) return [];
+
+                try {
+                  const response = await GET_mention_search(query, 10);
+                  return response.data || [];
+                } catch (error) {
+                  console.error('Failed to fetch mention users:', error);
+                  return [];
+                }
+              },
+              allowSpaces: false,
+              render: () => {
+                let component: ReactRenderer;
+                let popup: any;
+
+                return {
+                  onStart: (props: any) => {
+                    component = new ReactRenderer(MentionDropdown, {
+                      props,
+                      editor: props.editor,
+                    });
+
+                    popup = tippy('body', {
+                      getReferenceClientRect: props.clientRect,
+                      appendTo: () => document.body,
+                      content: component.element,
+                      showOnCreate: true,
+                      interactive: true,
+                      trigger: 'manual',
+                      placement: 'bottom-start',
+                      zIndex: 9999,
+                      interactiveBorder: 30,
+                      moveTransition: 'transform 0.2s ease-out',
+                    });
+                  },
+                  onUpdate(props: any) {
+                    component.updateProps(props);
+                    popup[0].setProps({ getReferenceClientRect: props.clientRect });
+                  },
+                  onKeyDown(props: any) {
+                    if (props.event.key === 'Escape') {
+                      popup[0].hide();
+                      return true;
+                    }
+                    return (
+                      (
+                        component.ref as { onKeyDown?: (keyProps: { event: KeyboardEvent }) => boolean } | null
+                      )?.onKeyDown?.(props) ?? false
+                    );
+                  },
+                  onExit() {
+                    popup[0].destroy();
+                    component.destroy();
                   },
                 };
               },
-            }).configure({
-              HTMLAttributes: {
-                class: 'mention',
-                'data-type': 'mention',
-              },
-              renderLabel({ node }) {
-                return `@${node.attrs.label}`;
-              },
-              suggestion: {
-                char: '@',
-                items: async ({ query }: { query: string }) => {
-                  if (query.length < 1) return [];
-
-                  try {
-                    const response = await GET_mention_search(query, 10);
-                    return response.data || [];
-                  } catch (error) {
-                    console.error('Failed to fetch mention users:', error);
-                    return [];
-                  }
-                },
-                render: () => {
-                  let component: ReactRenderer;
-                  let popup: any;
-
-                  return {
-                    onStart: (props: any) => {
-                      component = new ReactRenderer(MentionDropdown, {
-                        props,
-                        editor: props.editor,
-                      });
-
-                      popup = tippy('body', {
-                        getReferenceClientRect: props.clientRect,
-                        appendTo: () => document.body,
-                        content: component.element,
-                        showOnCreate: true,
-                        interactive: true,
-                        trigger: 'manual',
-                        placement: 'bottom-start',
-                      });
-                    },
-                    onUpdate(props: any) {
-                      component.updateProps(props);
-                      popup[0].setProps({ getReferenceClientRect: props.clientRect });
-                    },
-                    onKeyDown(props: any) {
-                      if (props.event.key === 'Escape') {
-                        popup[0].hide();
-                        return true;
-                      }
-                      return (
-                        (
-                          component.ref as { onKeyDown?: (keyProps: { event: KeyboardEvent }) => boolean } | null
-                        )?.onKeyDown?.(props) ?? false
-                      );
-                    },
-                    onExit() {
-                      popup[0].destroy();
-                      component.destroy();
-                    },
-                  };
-                },
-              },
-            }),
-          ]
+            },
+          }),
+        ]
         : []),
     ],
     content: valueFormat === 'json' ? (jsonContent ?? normalizeToHtml(value)) : normalizedHtml,
