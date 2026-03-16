@@ -42,7 +42,7 @@ import {
   CreatorRecommendationFormField,
 } from '@/shared/services/ai-community/ai-community.type';
 import { useGetCoursesMy } from '@/shared/services/course/course.hook';
-import { CheckCircle2, FileText, Loader2, Sparkles, XCircle } from 'lucide-react';
+import { CheckCircle2, FileText, Loader2, RefreshCw, Sparkles, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 type FormData = {
@@ -105,6 +105,7 @@ function RecommendationList({ recommendations }: { recommendations: CourseReques
   };
 
   const handleAccept = (_requestId: number, item: CourseRequestRecommendationItem) => {
+    resetFinalResult();
     setAcceptModalItem(item);
   };
 
@@ -601,6 +602,7 @@ export default function CreatorCourseRequestsPage() {
   const [recommendations, setRecommendations] = useState<CourseRequestRecommendationItem[]>([]);
   const [hasTriggered, setHasTriggered] = useState(false);
   const [hasTriggeredFromLast, setHasTriggeredFromLast] = useState(false);
+  const [lastAnswers, setLastAnswers] = useState<CourseRequestAnswer[] | null>(null);
 
   const { mutate: fetchWithBase, isPending: isLoadingWithBase } =
     usePostCommunityCourseRequestRecommendationWithBase();
@@ -632,8 +634,14 @@ export default function CreatorCourseRequestsPage() {
       recommendations.length === 0
     ) {
       setHasTriggeredFromLast(true);
+      const answers: CourseRequestAnswer[] = formLastData.form.answers.map((a) => ({
+        field_id: a.field_id,
+        answer_text: a.answer_text,
+        answer_option_ids: a.answer_option_ids,
+      }));
+      setLastAnswers(answers);
       fetchWithoutBase(
-        { answers: formLastData.form.answers as CourseRequestAnswer[] },
+        { answers },
         {
           onSuccess: (res) => setRecommendations(res.data.recommendations),
           onError: () => toast.error('Failed to fetch recommendations. Please try again.'),
@@ -643,8 +651,20 @@ export default function CreatorCourseRequestsPage() {
   }, [isLoadingCourses, hasUploads, isLoadingFormLast, formLastData, hasTriggeredFromLast, fetchWithoutBase, recommendations.length]);
 
   const handleFormSubmit = (answers: CourseRequestAnswer[]) => {
+    setLastAnswers(answers);
     fetchWithoutBase(
       { answers },
+      {
+        onSuccess: (res) => setRecommendations(res.data.recommendations),
+        onError: () => toast.error('Failed to fetch recommendations. Please try again.'),
+      },
+    );
+  };
+
+  const handleRefresh = () => {
+    if (!lastAnswers) return;
+    fetchWithoutBase(
+      { answers: lastAnswers },
       {
         onSuccess: (res) => setRecommendations(res.data.recommendations),
         onError: () => toast.error('Failed to fetch recommendations. Please try again.'),
@@ -687,7 +707,38 @@ export default function CreatorCourseRequestsPage() {
               </CardContent>
             </Card>
           )}
-          {recommendations.length > 0 && <RecommendationList recommendations={recommendations} />}
+          {recommendations.length > 0 && (
+            <>
+              <Card className="bg-muted/40">
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-muted-foreground text-sm">
+                      Recommendations based on your content. Accept the ones you'd like to create content for.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        fetchWithBase(undefined, {
+                          onSuccess: (res) => setRecommendations(res.data.recommendations),
+                          onError: () => toast.error('Failed to fetch recommendations. Please try again.'),
+                        })
+                      }
+                      disabled={isLoadingWithBase}
+                      className="shrink-0"
+                    >
+                      {isLoadingWithBase ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              <RecommendationList recommendations={recommendations} />
+            </>
+          )}
         </>
       )}
 
@@ -703,9 +754,24 @@ export default function CreatorCourseRequestsPage() {
             <>
               <Card className="bg-muted/40">
                 <CardContent className="py-4">
-                  <p className="text-muted-foreground text-sm">
-                    Recommendations based on your answers. Accept the ones you'd like to create content for.
-                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-muted-foreground text-sm">
+                      Recommendations based on your answers. Accept the ones you'd like to create content for.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefresh}
+                      disabled={isLoadingWithoutBase}
+                      className="shrink-0"
+                    >
+                      {isLoadingWithoutBase ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
               <RecommendationList recommendations={recommendations} />
