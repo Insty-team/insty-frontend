@@ -24,6 +24,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { PATCH_community_course_request_recommendation_status } from '@/shared/services/ai-community/ai-community.service';
 import { CourseRequestRecommendationItem } from '@/shared/services/ai-community/ai-community.type';
 import { usePostVideoMetadataSuggestion } from '@/shared/services/ai-video/ai-video.hook';
 import { usePostCourse } from '@/shared/services/course/course.hook';
@@ -199,6 +200,17 @@ export function CourseUploadForm({ recommendation }: { recommendation?: CourseRe
       };
 
       await postCourseMutation.mutateAsync(courseData);
+
+      // 추천 기반 업로드인 경우 요청 상태를 COMPLETED로 업데이트
+      if (recommendation) {
+        try {
+          await PATCH_community_course_request_recommendation_status(recommendation.request_id, {
+            action_status: 'COMPLETED',
+          });
+        } catch (e) {
+          console.error('Failed to update recommendation status:', e);
+        }
+      }
 
       // 강의 목록 캐시 갱신
       await Promise.all([

@@ -56,7 +56,7 @@ export const GET_community_creator_recommendation_form = async (): Promise<
 export const POST_community_course_request_recommendation_with_base = async (): Promise<
   ApiResponse<CourseRequestRecommendationResponse>
 > => {
-  const response = await api.post('/api/v1/ai/community/course-request-recommendation/with-base');
+  const response = await api.post('/api/v1/ai/community/course-request-recommendation/with-base', undefined, { timeout: 60000 });
   return response.data;
 };
 
@@ -89,7 +89,7 @@ export const GET_community_course_request_availability = async (
 
 /** 강의 요청 최종 결과 조회 */
 export const GET_community_course_request_final_result = async (requestId: number): Promise<ApiResponse<any>> => {
-  const response = await api.get(`/api/v1/ai/community/course-requests/${requestId}/final-result`);
+  const response = await api.get(`/api/v1/ai/community/course-requests/${requestId}/final-result`, { timeout: 60000 });
   return response.data;
 };
 

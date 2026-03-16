@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C /c/insty-frontend branch:*)"
+      "Bash(git -C /c/insty-frontend branch:*)",
+      "Bash(find \"c:/insty-frontend/src/app/\\(authorized\\)/learner\" -type f)"
     ]
   }
 }
