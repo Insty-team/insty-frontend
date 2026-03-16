@@ -16,7 +16,9 @@ import {
   useGetCommunityCourseRequestForm,
   usePostCommunityCourseRequest,
 } from '@/shared/services/ai-community/ai-community.hook';
+import { GET_community_course_requests } from '@/shared/services/ai-community/ai-community.service';
 import { CourseFormField, CourseRequest, CourseRequestAnswer } from '@/shared/services/ai-community/ai-community.type';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // 동적으로 생성될 폼 데이터 타입
@@ -30,6 +32,7 @@ export default function LearnerCourseRequestNewPage() {
   const router = useRouter();
   const { data: formData, isLoading, error } = useGetCommunityCourseRequestForm();
   const { mutate: submitCourseRequest, isPending } = usePostCommunityCourseRequest();
+  const queryClient = useQueryClient();
 
   // 폼 필드를 order_no 순서로 정렬
   const sortedFields = useMemo(() => {
@@ -121,6 +124,7 @@ export default function LearnerCourseRequestNewPage() {
 
     submitCourseRequest(courseRequest, {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [GET_community_course_requests.name] });
         toast.success('Content request submitted successfully!');
         router.push('/learner/course-request');
       },
