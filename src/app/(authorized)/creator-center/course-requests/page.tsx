@@ -703,7 +703,21 @@ export default function CreatorCourseRequestsPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <FileText className="text-muted-foreground mb-4 h-12 w-12" />
-                <p className="text-muted-foreground">No matching content requests found.</p>
+                <p className="text-muted-foreground mb-4">No matching content requests found.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    fetchWithBase(undefined, {
+                      onSuccess: (res) => setRecommendations(res.data.recommendations),
+                      onError: () => toast.error('Failed to fetch recommendations. Please try again.'),
+                    })
+                  }
+                  disabled={isLoadingWithBase}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Try again
+                </Button>
               </CardContent>
             </Card>
           )}

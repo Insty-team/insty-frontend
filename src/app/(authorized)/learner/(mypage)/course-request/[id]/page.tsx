@@ -27,16 +27,16 @@ const getStatusBadgeVariant = (status: string | null) => {
 };
 
 const getStatusLabel = (status: string | null) => {
-  if (!status) return '대기중';
+  if (!status) return 'Pending';
   switch (status.toUpperCase()) {
     case 'ACCEPTED':
-      return '수락됨';
+      return 'Accepted';
     case 'COMPLETED':
-      return '완료됨';
+      return 'Completed';
     case 'DECLINED':
-      return '거절됨';
+      return 'Declined';
     case 'IGNORED':
-      return '무시됨';
+      return 'Ignored';
     default:
       return status;
   }
@@ -54,7 +54,7 @@ export default function LearnerCourseRequestDetailPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center py-16">
-          <p className="text-muted-foreground">강의 요청 정보를 불러오는 중입니다...</p>
+          <p className="text-muted-foreground">Loading content request...</p>
         </div>
       </div>
     );
@@ -65,10 +65,10 @@ export default function LearnerCourseRequestDetailPage() {
       <div className="space-y-6">
         <div className="flex flex-col items-center justify-center py-16">
           <FileText className="text-muted-foreground mb-4 h-12 w-12" />
-          <p className="mb-2 text-lg font-semibold">강의 요청을 찾을 수 없습니다</p>
-          <p className="text-muted-foreground mb-4">요청하신 강의 요청이 존재하지 않거나 삭제되었을 수 있습니다.</p>
+          <p className="mb-2 text-lg font-semibold">Content request not found</p>
+          <p className="text-muted-foreground mb-4">The requested content request does not exist or has been deleted.</p>
           <Button variant="outline" onClick={() => router.push('/learner/course-request')}>
-            목록으로 돌아가기
+            Back to list
           </Button>
         </div>
       </div>
@@ -80,13 +80,13 @@ export default function LearnerCourseRequestDetailPage() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          뒤로가기
+          Back
         </Button>
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold">강의 요청 상세</h2>
-        <p className="text-muted-foreground mt-1">요청한 강의의 상세 정보를 확인하세요</p>
+        <h2 className="text-2xl font-bold">Content Request Detail</h2>
+        <p className="text-muted-foreground mt-1">View the details of your content request</p>
       </div>
 
       <Card>
@@ -106,35 +106,35 @@ export default function LearnerCourseRequestDetailPage() {
 
           <div className="space-y-4">
             <div>
-              <h3 className="mb-2 text-sm font-semibold">요청 정보</h3>
+              <h3 className="mb-2 text-sm font-semibold">Request Info</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">요청 ID:</span>
+                  <span className="text-muted-foreground">Request ID:</span>
                   <span className="font-medium">#{courseRequest.request_id}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="text-muted-foreground h-4 w-4" />
-                  <span className="text-muted-foreground">요청일:</span>
+                  <span className="text-muted-foreground">Requested:</span>
                   <span className="font-medium">
-                    {dayjs(courseRequest.created_at).format('YYYY년 MM월 DD일 HH:mm')}
+                    {dayjs(courseRequest.created_at).format('YYYY.MM.DD HH:mm')}
                   </span>
                 </div>
                 {courseRequest.action_at && (
                   <div className="flex items-center gap-2">
                     <Calendar className="text-muted-foreground h-4 w-4" />
-                    <span className="text-muted-foreground">처리일:</span>
+                    <span className="text-muted-foreground">Processed:</span>
                     <span className="font-medium">
-                      {dayjs(courseRequest.action_at).format('YYYY년 MM월 DD일 HH:mm')}
+                      {dayjs(courseRequest.action_at).format('YYYY.MM.DD HH:mm')}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">요청 상태:</span>
+                  <span className="text-muted-foreground">Status:</span>
                   <span className="font-medium">{courseRequest.requests_status}</span>
                 </div>
                 {courseRequest.action_status && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">처리 상태:</span>
+                    <span className="text-muted-foreground">Action:</span>
                     <Badge variant={getStatusBadgeVariant(courseRequest.action_status)} className="text-xs">
                       {getStatusLabel(courseRequest.action_status)}
                     </Badge>
@@ -146,14 +146,14 @@ export default function LearnerCourseRequestDetailPage() {
             <Separator />
 
             <div>
-              <h3 className="mb-2 text-sm font-semibold">요청 내용</h3>
+              <h3 className="mb-2 text-sm font-semibold">Request Content</h3>
               <div className="space-y-2">
                 <div>
-                  <p className="text-muted-foreground mb-1 text-sm">제목</p>
+                  <p className="text-muted-foreground mb-1 text-sm">Title</p>
                   <p className="text-base">{courseRequest.title}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground mb-1 text-sm">상세 설명</p>
+                  <p className="text-muted-foreground mb-1 text-sm">Description</p>
                   <p className="text-base whitespace-pre-wrap">{courseRequest.description}</p>
                 </div>
               </div>
@@ -164,7 +164,7 @@ export default function LearnerCourseRequestDetailPage() {
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => router.push('/learner/course-request')}>
-              목록으로 돌아가기
+              Back to list
             </Button>
           </div>
         </CardContent>
