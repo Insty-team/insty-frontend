@@ -1,4 +1,4 @@
-export type VideoType = 'COURSE' | 'ANSWER' | 'QUESTION';
+export type VideoType = 'COURSE' | 'ANSWER' | 'QUESTION' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT';
 
 export type CourseDetailResponse = {
   courseId: string;
@@ -127,7 +127,7 @@ export type CourseProgressByMeResponse = {
   createdAt: string;
 };
 
-/** 
+/**
  * 강의 QA 및 커뮤니티 관련 Type
  */
 
@@ -158,6 +158,12 @@ export type Attachment = {
   url: string;
 };
 
+export type VideoInfo = {
+  videoType: VideoType;
+  videoUuid: string;
+  originFileName: string;
+};
+
 export type CourseQuestionBaseResponse = {
   questionId: number;
   courseId: string;
@@ -165,7 +171,7 @@ export type CourseQuestionBaseResponse = {
     id: number;
     nickname: string;
     userType: UserType;
-  },
+  };
   title: string;
   content: string;
   status: CourseQuestionStatus;
@@ -176,12 +182,9 @@ export type CourseQuestionBaseResponse = {
 export type CourseQuestionListItemResponse = CourseQuestionBaseResponse;
 
 export type CourseQuestionDetailResponse = CourseQuestionBaseResponse & {
+  courseName: string;
   attachments: Attachment[];
-  videoInfo: {
-    videoType: VideoType;
-    videoUuid: string;
-    originFileName: string;
-  };
+  videoInfo: VideoInfo | null;
 };
 
 export type CourseQuestionResponse = CourseQuestionDetailResponse;
@@ -189,18 +192,18 @@ export type CourseQuestionResponse = CourseQuestionDetailResponse;
 export type CourseQuestionUpdateRequest = {
   title: string;
   content: string;
-  videoUuid?: string;
+  videoUuid?: string | null;
   deleteFileIds?: number[];
   attachments?: File[];
-}
+};
 
 export type MyCourseQuestionResponse = {
   questionId: number;
   user: {
     id: number;
     nickname: string;
-    userType: UserType; 
-  }
+    userType: UserType;
+  };
   courseId: number;
   title: string;
   content: string;
@@ -209,7 +212,7 @@ export type MyCourseQuestionResponse = {
   hasNewAnswer: boolean;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export type CourseQuestionAnswersResponse = {
   answerId: number;
@@ -217,18 +220,14 @@ export type CourseQuestionAnswersResponse = {
     id: number;
     nickname: string;
     userType: UserType;
-  },
+  };
   content: string;
   attachments: Attachment[];
-  videoInfo: {
-    videoType: VideoType;
-    videoUuid: string;
-    originFileName: string;
-  },
+  videoInfo: VideoInfo | null;
   isAccepted: boolean;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export type CourseQuestionAnswerResponse = CourseQuestionAnswersResponse;
 
@@ -236,11 +235,11 @@ export type CourseQuestionAnswerRequest = {
   content: string;
   videoUuid?: string;
   attachments?: File[];
-}
+};
 
 export type CourseQuestionAnswerUpdateRequest = {
   content: string;
-  videoUuid?: string;
+  videoUuid?: string | null;
   deleteFileIds?: number[];
   attachments?: File[];
-}
+};

@@ -33,6 +33,29 @@ export type AnswerVideoUploadResponse = {
   expiredAt: string;
 };
 
+
+export type CommunityPostVideoUploadRequest = {
+  fileName: string;
+  contentType: string;
+};
+
+export type CommunityPostVideoUploadResponse = {
+  uuid: string;
+  uploadUrl: string;
+  expiredAt: string;
+};
+
+export type CommunityCommentVideoUploadRequest = {
+  fileName: string;
+  contentType: string;
+};
+
+export type CommunityCommentVideoUploadResponse = {
+  uuid: string;
+  uploadUrl: string;
+  expiredAt: string;
+};
+
 export type VideoPreviewRequest = {
   type: VideoType;
   id: string;

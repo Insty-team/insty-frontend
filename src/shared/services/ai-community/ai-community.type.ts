@@ -171,3 +171,18 @@ export type AnswerDraftResponse = {
   answer_content: string;
   has_attachment: boolean;
 };
+
+// 커뮤니티 초안 생성 요청
+export type CommunityThoughtDraftRequest = {
+  course_id: number;
+  query: string;
+  has_attachment?: boolean;
+  files?: File[];
+};
+
+// 커뮤니티 초안 생성 응답
+export type CommunityThoughtDraftResponse = {
+  post_title: string;
+  post_content: string;
+  has_attachment: boolean;
+};
