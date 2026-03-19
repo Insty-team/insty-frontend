@@ -16,7 +16,7 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { Spinner } from '@/shared/components/ui/spinner';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
-import { VideoType } from '@/shared/services/community/community.type';
+import { Attachment, CourseCommunityPostResponse, VideoType } from '@/shared/services/community/community.type';
 import dayjs from 'dayjs';
 import { Calendar, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
 
@@ -42,38 +42,10 @@ const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; video
   );
 };
 
-type Attachment = {
-  id: number;
-  name: string;
-  url: string;
-};
-
-type VideoInfo = {
-  videoType: VideoType;
-  videoUuid: string;
-  originFileName: string;
-};
-
-type Post = {
-  postId: number;
-  courseId?: number;
-  user?: {
-    id: number;
-    nickname: string;
-  };
-  content: string;
-  createdAt: string;
-  attachments?: Attachment[];
-  videoInfo?: VideoInfo | null;
-  likeCount?: number;
-  commentCount?: number;
-  likedByMe?: boolean;
-};
-
 type CommunityPostListActions = {
   onPostClick?: (postId: number) => void;
   onLike?: (postId: number, isLiked: boolean, e: React.MouseEvent) => void;
-  onEdit?: (post: Post, e: React.MouseEvent) => void;
+  onEdit?: (post: CourseCommunityPostResponse, e: React.MouseEvent) => void;
   onDelete?: (postId: number, e: React.MouseEvent) => void;
 };
 
@@ -81,7 +53,7 @@ type CommunityPostListEdit = {
   editingPostId: number | null;
   editPostContent: string;
   editPostFiles: File[];
-  editPostExistingAttachments: any[];
+  editPostExistingAttachments: Attachment[];
   editPostExistingVideo?: { originFileName?: string } | null;
   onEditContentChange: (content: string) => void;
   onEditFilesChange: (files: File[]) => void;
@@ -106,7 +78,7 @@ type CommunityPostListStatus = {
 };
 
 type CommunityPostListProps = {
-  posts: Post[];
+  posts: CourseCommunityPostResponse[];
   currentUserId?: number;
   actions?: CommunityPostListActions;
   edit?: CommunityPostListEdit;
@@ -259,15 +231,13 @@ export default function CommunityPostList({
             {edit?.editingPostId !== item.postId && (
               <div className="mt-4 flex items-center gap-3">
                 <button
-                  className={`flex items-center gap-2 transition-all duration-300 ${
-                    item.likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                  className={`flex items-center gap-2 transition-all duration-300 ${item.likedByMe ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   onClick={(e) => actions?.onLike?.(item.postId, item.likedByMe || false, e)}
                 >
                   <Heart
-                    className={`h-5 w-5 transition-all duration-300 ${
-                      item.likedByMe ? 'scale-110 fill-current' : 'scale-100'
-                    }`}
+                    className={`h-5 w-5 transition-all duration-300 ${item.likedByMe ? 'scale-110 fill-current' : 'scale-100'
+                      }`}
                   />
                   <span className="text-sm">{item.likeCount || 0}</span>
                 </button>

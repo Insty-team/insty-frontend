@@ -261,7 +261,7 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
     })();
   };
 
-  const handleSaveEditComment = (
+  const handleSaveEditComment = async (
     commentId: number,
     content: string,
     files: File[],
@@ -270,31 +270,29 @@ export default function CommunityDetailDialog({ courseId, postId, open, onOpenCh
   ) => {
     if (!content.trim()) return;
 
-    (async () => {
-      try {
-        const images = files.filter((f) => f.type.startsWith('image/'));
-        const videoFile = files.find((f) => f.type.startsWith('video/')) ?? null;
-        let finalVideoUuid: string | null;
+    try {
+      const images = files.filter((f) => f.type.startsWith('image/'));
+      const videoFile = files.find((f) => f.type.startsWith('video/')) ?? null;
+      let finalVideoUuid: string | null;
 
-        if (videoFile) {
-          finalVideoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
-        } else if (videoUuid !== undefined) {
-          finalVideoUuid = videoUuid;
-        } else {
-          finalVideoUuid = null;
-        }
-
-        await updateComment(commentId, {
-          content,
-          videoUuid: finalVideoUuid,
-          attachments: images.length > 0 ? images : null,
-          deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
-        });
-      } catch (error: any) {
-        console.error('댓글 수정 실패:', error);
-        toast.error('Failed to update comment.');
+      if (videoFile) {
+        finalVideoUuid = await uploadVideo({ kind: 'COMMUNITY_COMMENT', file: videoFile });
+      } else if (videoUuid !== undefined) {
+        finalVideoUuid = videoUuid;
+      } else {
+        finalVideoUuid = null;
       }
-    })();
+
+      await updateComment(commentId, {
+        content,
+        videoUuid: finalVideoUuid,
+        attachments: images.length > 0 ? images : null,
+        deleteFileIds: deleteAttachmentIds.length > 0 ? deleteAttachmentIds : null,
+      });
+    } catch (error: any) {
+      console.error('댓글 수정 실패:', error);
+      toast.error('Failed to update comment.');
+    }
   };
 
   return (

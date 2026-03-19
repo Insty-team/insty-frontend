@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import { useGetCourseCommunityPostsInfinite } from '@/shared/services/community/community.hook';
+import { Attachment, CourseCommunityPostResponse } from '@/shared/services/community/community.type';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -58,7 +59,7 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editPostContent, setEditPostContent] = useState('');
   const [editPostFiles, setEditPostFiles] = useState<File[]>([]);
-  const [editPostExistingAttachments, setEditPostExistingAttachments] = useState<any[]>([]);
+  const [editPostExistingAttachments, setEditPostExistingAttachments] = useState<Attachment[]>([]);
   const [editPostExistingVideo, setEditPostExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [editPostDeleteIds, setEditPostDeleteIds] = useState<number[]>([]);
   const [isSaveEditDialogOpen, setIsSaveEditDialogOpen] = useState(false);
@@ -132,11 +133,11 @@ export default function CommunityFeed({ courseId, courseName, onBack, onPostClic
     togglePostLike(postId, isLiked);
   };
 
-  const handleEditPost = (post: any, e: React.MouseEvent) => {
+  const handleEditPost = (post: CourseCommunityPostResponse, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingPostId(post.postId);
     setEditPostContent(post.content);
-    setEditPostExistingAttachments(post.attachments || []);
+    setEditPostExistingAttachments(post.attachments ?? []);
     setEditPostExistingVideo(post.videoInfo ? { originFileName: post.videoInfo.originFileName } : null);
     setEditPostFiles([]);
     setEditPostDeleteIds([]);

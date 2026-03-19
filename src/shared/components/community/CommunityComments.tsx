@@ -20,6 +20,7 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Spinner } from '@/shared/components/ui/spinner';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
+import { Attachment, VideoType } from '@/shared/services/community/community.type';
 import dayjs from 'dayjs';
 import { Calendar, Heart, MoreHorizontal } from 'lucide-react';
 
@@ -28,7 +29,7 @@ const CommentVideoPlayer = ({
   videoType,
 }: {
   commentId: number;
-  videoType: 'COURSE' | 'ANSWER' | 'QUESTION' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT';
+  videoType: VideoType;
 }) => {
   const { m3u8Url, isLoading } = useVideoPlaylist({
     type: videoType,
@@ -63,7 +64,7 @@ type Comment = {
     size?: number;
   }>;
   videoInfo?: {
-    videoType: 'COURSE' | 'ANSWER' | 'QUESTION' | 'COMMUNITY_POST' | 'COMMUNITY_COMMENT';
+    videoType: VideoType;
     videoUuid: string;
     originFileName?: string;
   } | null;
@@ -91,7 +92,7 @@ type CommunityCommentsProps = {
     files: File[],
     deleteAttachmentIds: number[],
     videoUuid?: string | null,
-  ) => void;
+  ) => Promise<void>;
   isSavingEdit?: boolean;
   onEditStart?: (commentId: number) => void;
   isLoading?: boolean;
@@ -120,8 +121,7 @@ export default function CommunityComments({
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState('');
   const [editFiles, setEditFiles] = useState<File[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [editExistingAttachments, setEditExistingAttachments] = useState<any[]>([]);
+  const [editExistingAttachments, setEditExistingAttachments] = useState<Attachment[]>([]);
   const [editExistingVideo, setEditExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [deleteAttachmentIds, setDeleteAttachmentIds] = useState<number[]>([]);
   const [isSaveEditDialogOpen, setIsSaveEditDialogOpen] = useState(false);
@@ -130,7 +130,7 @@ export default function CommunityComments({
     setEditingCommentId(comment.commentId);
     setEditContent(comment.content);
     setEditFiles([]);
-    setEditExistingAttachments(comment.attachments || []);
+    setEditExistingAttachments((comment.attachments as Attachment[]) || []);
     setEditExistingVideo(comment.videoInfo ? { originFileName: comment.videoInfo.originFileName } : null);
     setDeleteAttachmentIds([]);
     onEditStart?.(comment.commentId);
@@ -181,8 +181,8 @@ export default function CommunityComments({
           videoUuid = null;
         }
 
-        onSaveEdit(editingCommentId, editContent, images, deleteAttachmentIds, videoUuid);
-        // 저장 후 상태 초기화는 부모 컴포넌트에서 처리
+        // 저장 성공 후에만 편집 상태 초기화
+        await onSaveEdit(editingCommentId, editContent, images, deleteAttachmentIds, videoUuid);
         handleCancelEdit();
       } catch (e) {
         console.error('댓글 비디오 업로드/수정 실패:', e);

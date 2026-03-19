@@ -9,6 +9,7 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import { useGetCourseCommunityPostsInfinite } from '@/shared/services/community/community.hook';
+import { Attachment, CourseCommunityPostResponse } from '@/shared/services/community/community.type';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import { toast } from 'sonner';
 
@@ -30,7 +31,7 @@ export default function CommunityListSheet({ courseId, onSelectPost, sheetIsOpen
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editPostContent, setEditPostContent] = useState('');
   const [editPostFiles, setEditPostFiles] = useState<File[]>([]);
-  const [editPostExistingAttachments, setEditPostExistingAttachments] = useState<any[]>([]);
+  const [editPostExistingAttachments, setEditPostExistingAttachments] = useState<Attachment[]>([]);
   const [editPostExistingVideo, setEditPostExistingVideo] = useState<{ originFileName?: string } | null>(null);
   const [editPostDeleteIds, setEditPostDeleteIds] = useState<number[]>([]);
   const [isCancelEditDialogOpen, setIsCancelEditDialogOpen] = useState(false);
@@ -124,11 +125,11 @@ export default function CommunityListSheet({ courseId, onSelectPost, sheetIsOpen
     })();
   };
 
-  const handleEditPost = (post: any, e: React.MouseEvent) => {
+  const handleEditPost = (post: CourseCommunityPostResponse, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingPostId(post.postId);
     setEditPostContent(post.content);
-    setEditPostExistingAttachments(post.attachments || []);
+    setEditPostExistingAttachments(post.attachments ?? []);
     setEditPostExistingVideo(post.videoInfo ? { originFileName: post.videoInfo.originFileName } : null);
     setEditPostFiles([]);
     setEditPostDeleteIds([]);

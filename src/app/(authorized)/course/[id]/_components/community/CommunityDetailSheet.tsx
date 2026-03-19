@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import CommunityComments from '@/shared/components/community/CommunityComments';
 import CommunityPostDetail from '@/shared/components/community/CommunityPostDetail';
@@ -22,7 +22,7 @@ import { useCommunityComments } from '@/shared/hooks/community/useCommunityComme
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import {
   useGetCourseCommunityPostById,
-  useGetCourseCommunityPostCommentsById,
+  useGetCourseCommunityPostCommentsInfinite,
 } from '@/shared/services/community/community.hook';
 import { Attachment } from '@/shared/services/community/community.type';
 import { useGetProfile } from '@/shared/services/user/user.hook';
@@ -39,17 +39,12 @@ type Props = {
 export default function CommunityDetailSheet({ courseId, postId, onBack }: Props) {
   const [commentContent, setCommentContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [uploadErrorMessage, setUploadErrorMessage] = useState('');
   const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
 
-  // 댓글 관련 state
+  // 댓글 삭제 관련 state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<number | null>(null);
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
-  const [hasMore, setHasMore] = useState(false);
-  const [comments, setComments] = useState<any[]>([]);
 
   // 포스트 수정/삭제 관련 state
   const [isPostDeleteDialogOpen, setIsPostDeleteDialogOpen] = useState(false);
@@ -64,6 +59,26 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
   const { data: userProfile } = useGetProfile();
   const currentUserId = userProfile?.id;
+
+  // 포스트 상세 조회 — 핸들러들이 참조하므로 상단에 선언
+  const {
+    data: communityPostData,
+    isLoading: isCommunityPostLoading,
+    isError: isCommunityPostError,
+  } = useGetCourseCommunityPostById(courseId, postId);
+
+  // 댓글 목록 무한 스크롤
+  const {
+    data: commentsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+  } = useGetCourseCommunityPostCommentsInfinite(courseId, postId, 10);
+
+  const comments = commentsData?.items ?? [];
+  const pagination = commentsData?.pagination;
 
   const {
     updatePost: updatePostAsync,
@@ -89,42 +104,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
   const { uploadVideo } = usePresignedVideoUpload();
 
-  const {
-    data: commentsData,
-    isLoading: isCommentsLoading,
-    isError: isCommentsError,
-    isFetching: isCommentsFetching,
-  } = useGetCourseCommunityPostCommentsById(courseId, postId, page, pageSize);
-
-  const pagination = commentsData?.pagination;
-
-  useEffect(() => {
-    if (commentsData?.items) {
-      if (page === 1) {
-        setComments(commentsData.items);
-      } else {
-        setComments((prev) => {
-          const existingIds = new Set(prev.map((c) => c.commentId));
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const newComments = commentsData.items.filter((item: any) => !existingIds.has(item.commentId));
-          return [...prev, ...newComments];
-        });
-      }
-
-      if (commentsData.pagination) {
-        setHasMore(page < commentsData.pagination.totalPages);
-      }
-    }
-  }, [commentsData, page]);
-
-
   const handleToggleLike = async () => {
     if (isLikingPost || isUnlikingPost) return;
 
     try {
       await togglePostLike(postId, communityPostData?.likedByMe ?? false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('커뮤니티 글 좋아요 처리 실패:', error);
       toast.error('Failed to update like.');
     }
@@ -135,8 +120,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
 
     try {
       await toggleCommentLike(commentId, likedByMe);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('댓글 좋아요 처리 실패:', error);
       toast.error('Failed to update like.');
     }
@@ -170,48 +154,40 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
             setCommentContent('');
             setUploadedFiles([]);
             setUploadedVideoFile(null);
-            setUploadErrorMessage('');
             setIsComposerOpen(false);
-            setPage(1);
-            setComments([]);
           },
         },
       );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('댓글 작성 실패:', error);
       toast.error('Failed to post comment.');
     }
   };
 
   const handleLoadMore = () => {
-    if (!isCommentsFetching && hasMore) {
-      setPage((prev) => prev + 1);
+    if (!isFetchingNextPage && hasNextPage) {
+      fetchNextPage();
     }
   };
-
 
   const handleDeleteComment = (commentId: number) => {
     setPendingDeleteCommentId(commentId);
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDeleteComment = () => {
-    if (pendingDeleteCommentId) {
-      (async () => {
-        try {
-          await deleteComment(pendingDeleteCommentId, {
-            onSuccess: () => {
-              setIsDeleteDialogOpen(false);
-              setPendingDeleteCommentId(null);
-            },
-          });
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-          console.error('댓글 삭제 실패:', error);
-          toast.error('Failed to delete comment.');
-        }
-      })();
+  const confirmDeleteComment = async () => {
+    if (!pendingDeleteCommentId) return;
+
+    try {
+      await deleteComment(pendingDeleteCommentId, {
+        onSuccess: () => {
+          setIsDeleteDialogOpen(false);
+          setPendingDeleteCommentId(null);
+        },
+      });
+    } catch (error: unknown) {
+      console.error('댓글 삭제 실패:', error);
+      toast.error('Failed to delete comment.');
     }
   };
 
@@ -219,7 +195,7 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     if (communityPostData) {
       setIsEditingPost(true);
       setEditPostContent(communityPostData.content);
-      setEditPostExistingAttachments(communityPostData.attachments || []);
+      setEditPostExistingAttachments(communityPostData.attachments ?? []);
       setEditPostExistingVideo(
         communityPostData.videoInfo ? { originFileName: communityPostData.videoInfo.originFileName } : null,
       );
@@ -252,12 +228,12 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
     setIsSavePostEditDialogOpen(true);
   };
 
-  const confirmSavePost = () => {
+  const confirmSavePost = async () => {
     if (!editPostContent.trim()) return;
     setIsSavePostEditDialogOpen(false);
 
     // 파일 크기 체크 (10MB 제한)
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
     const oversizedFiles = editPostFiles.filter((file) => file.size > MAX_FILE_SIZE);
 
     if (oversizedFiles.length > 0) {
@@ -267,84 +243,72 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
       return;
     }
 
-    (async () => {
-      try {
-        const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
-        const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
-        let videoUuid: string | null;
+    try {
+      const images = editPostFiles.filter((f) => f.type.startsWith('image/'));
+      const videoFile = editPostFiles.find((f) => f.type.startsWith('video/')) ?? null;
+      let videoUuid: string | null;
 
-        if (videoFile) {
-          // 새 비디오 업로드
-          videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
-        } else if (communityPostData?.videoInfo && !editPostExistingVideo) {
-          // 기존 비디오 삭제
-          videoUuid = null;
-        } else if (communityPostData?.videoInfo) {
-          // 기존 비디오 유지
-          videoUuid = communityPostData.videoInfo.videoUuid;
-        } else {
-          // 비디오 없음
-          videoUuid = null;
-        }
-
-        await updatePostAsync(
-          postId,
-          {
-            content: editPostContent,
-            videoUuid: videoUuid ?? null,
-            attachments: images.length > 0 ? images : null,
-            deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : null,
-          },
-          {
-            onSuccess: () => {
-              setIsEditingPost(false);
-              setEditPostContent('');
-              setEditPostFiles([]);
-              setEditPostExistingAttachments([]);
-              setEditPostExistingVideo(null);
-              setEditPostDeleteIds([]);
-            },
-          },
-        );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        console.error('커뮤니티 글 수정 실패:', error);
-        if (error?.response?.status === 413) {
-          toast.error('Content too large.');
-        } else {
-          toast.error('Failed to update post.');
-        }
+      if (videoFile) {
+        // 새 비디오 업로드
+        videoUuid = await uploadVideo({ kind: 'COMMUNITY_POST', file: videoFile });
+      } else if (communityPostData?.videoInfo && !editPostExistingVideo) {
+        // 기존 비디오 삭제
+        videoUuid = null;
+      } else if (communityPostData?.videoInfo) {
+        // 기존 비디오 유지
+        videoUuid = communityPostData.videoInfo.videoUuid;
+      } else {
+        // 비디오 없음
+        videoUuid = null;
       }
-    })();
+
+      await updatePostAsync(
+        postId,
+        {
+          content: editPostContent,
+          videoUuid: videoUuid ?? null,
+          attachments: images.length > 0 ? images : null,
+          deleteFileIds: editPostDeleteIds.length > 0 ? editPostDeleteIds : null,
+        },
+        {
+          onSuccess: () => {
+            setIsEditingPost(false);
+            setEditPostContent('');
+            setEditPostFiles([]);
+            setEditPostExistingAttachments([]);
+            setEditPostExistingVideo(null);
+            setEditPostDeleteIds([]);
+          },
+        },
+      );
+    } catch (error: unknown) {
+      console.error('커뮤니티 글 수정 실패:', error);
+      const err = error as { response?: { status?: number } };
+      if (err?.response?.status === 413) {
+        toast.error('Content too large.');
+      } else {
+        toast.error('Failed to update post.');
+      }
+    }
   };
 
   const handleDeletePost = () => {
     setIsPostDeleteDialogOpen(true);
   };
 
-  const confirmDeletePost = () => {
-    (async () => {
-      try {
-        await deletePostAsync(postId, {
-          onSuccess: () => {
-            setIsPostDeleteDialogOpen(false);
-            onBack();
-          },
-        });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        console.error('커뮤니티 글 삭제 실패:', error);
-        toast.error('Failed to delete post.');
-      }
-    })();
+  const confirmDeletePost = async () => {
+    try {
+      await deletePostAsync(postId, {
+        onSuccess: () => {
+          setIsPostDeleteDialogOpen(false);
+          onBack();
+        },
+      });
+    } catch (error: unknown) {
+      console.error('커뮤니티 글 삭제 실패:', error);
+      toast.error('Failed to delete post.');
+    }
   };
-
-  const {
-    data: communityPostData,
-    isLoading: isCommunityPostLoading,
-    isError: isCommunityPostError,
-  } = useGetCourseCommunityPostById(courseId, postId);
-
 
   return (
     <>
@@ -476,9 +440,6 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                               isSending={isPosting}
                               className="min-h-[20px]"
                             />
-                            {uploadErrorMessage && (
-                              <p className="text-destructive mt-2 text-xs">{uploadErrorMessage}</p>
-                            )}
                           </CardContent>
                         </Card>
                       )}
@@ -487,9 +448,9 @@ export default function CommunityDetailSheet({ courseId, postId, onBack }: Props
                     {/* 댓글 목록 */}
                     <CommunityComments
                       comments={comments}
-                      hasNextPage={hasMore}
+                      hasNextPage={hasNextPage}
                       onLoadMore={handleLoadMore}
-                      isLoadingMore={isCommentsFetching}
+                      isLoadingMore={isFetchingNextPage}
                       isLoading={isCommentsLoading}
                       isError={isCommentsError}
                       pagination={{
