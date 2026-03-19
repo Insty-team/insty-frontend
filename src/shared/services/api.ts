@@ -4,7 +4,7 @@ import { POST_logout, POST_reissue } from './auth/auth.service';
 import axios, { InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACK_BASE_URL || '',
+  // baseURL: process.env.NEXT_PUBLIC_BACK_BASE_URL || '',
   withCredentials: true,
   timeout: 10000, // 10초 타임아웃 설정
 });
@@ -59,6 +59,11 @@ api.interceptors.response.use(
 
     // 401 에러가 아니거나 config가 없으면 그대로 에러 반환
     if (error.response?.status !== 401 || !originalRequest) {
+      return Promise.reject(error);
+    }
+
+    // 로그인 요청(`/auth/login`)에서는 토큰 재발급/로그아웃 로직을 태우지 않고 바로 에러 반환
+    if (typeof originalRequest.url === 'string' && originalRequest.url.includes('/auth/login')) {
       return Promise.reject(error);
     }
 

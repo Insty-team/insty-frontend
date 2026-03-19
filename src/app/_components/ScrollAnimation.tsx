@@ -23,14 +23,17 @@ export default function ScrollAnimation() {
     const ctaObserver = new IntersectionObserver(
       (entries) => {
         const loginButton = document.querySelector('.fixed-login-button') as HTMLElement;
+        const guestButton = document.querySelector('.fixed-guest-button') as HTMLElement;
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             if (loginButton) {
               loginButton.classList.add('opacity-0', 'pointer-events-none');
+              guestButton.classList.add('opacity-0', 'pointer-events-none');
             }
           } else {
             if (loginButton) {
               loginButton.classList.remove('opacity-0', 'pointer-events-none');
+              guestButton.classList.remove('opacity-0', 'pointer-events-none');
             }
           }
         });

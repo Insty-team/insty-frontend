@@ -2,7 +2,6 @@
 
 import { CourseCard } from './_components/CourseCard';
 import { CourseFilters, SortOption, StatusFilter } from './_components/CourseFilters';
-import { CourseStats } from './_components/CourseStats';
 import { DeleteCourseDialog } from './_components/DeleteCourseDialog';
 import { ToggleVisibilityDialog } from './_components/ToggleVisibilityDialog';
 
@@ -12,7 +11,6 @@ import Link from 'next/link';
 
 import { TanstackTablePagination } from '@/shared/components/TanstackTablePagination';
 import { Button } from '@/shared/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { useGetCoursesMy } from '@/shared/services/course/course.hook';
 import { CourseMyResponse } from '@/shared/services/course/course.type';
 import {
@@ -24,10 +22,11 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { Plus, Video } from 'lucide-react';
+import { Tabs } from '@/shared/components/ui/tabs';
 
 export default function CreatorCoursesPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [sortBy, setSortBy] = useState<SortOption>('LATEST');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(3);
@@ -62,11 +61,12 @@ export default function CreatorCoursesPage() {
     isLoading,
     error,
     refetch,
-  } = useGetCoursesMy(
-    pageIndex + 1,
+  } = useGetCoursesMy({
+    page: pageIndex + 1,
     pageSize,
-    statusFilter === 'published' ? true : statusFilter === 'draft' ? false : undefined,
-  );
+    isShow: statusFilter === 'public' ? true : statusFilter === 'private' ? false : undefined,
+    sortType: sortBy,
+  });
   const courses = coursesData?.items || [];
   const pagination = coursesData?.pagination;
 
@@ -114,42 +114,18 @@ export default function CreatorCoursesPage() {
       );
     }
 
-    // // 상태 필터
-    // if (statusFilter === 'published') {
-    //   filtered = filtered.filter((course: CourseMyResponse) => course.isShow);
-    // } else if (statusFilter === 'draft') {
-    //   filtered = filtered.filter((course: CourseMyResponse) => !course.isShow);
-    // }
-
-    // 정렬
-    filtered.sort((a: CourseMyResponse, b: CourseMyResponse) => {
-      switch (sortBy) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        case 'views':
-          return b.viewCount - a.viewCount;
-        case 'comments':
-          return b.commentCount - a.commentCount;
-        case 'title':
-          return a.title.localeCompare(b.title);
-        default:
-          return 0;
-      }
-    });
-
     return filtered;
-  }, [courses, searchQuery, sortBy, statusFilter]);
+  }, [courses, searchQuery]);
 
   // 테이블 인스턴스 생성
   const table = useReactTable({
-    data: filteredAndSortedCourses,
+    data: courses,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     manualPagination: true,
+    manualFiltering: true,
     rowCount: pagination?.totalItems ?? 0,
     pageCount: pagination?.totalPages ?? 0,
     state: {
@@ -173,38 +149,17 @@ export default function CreatorCoursesPage() {
     setColumnFilters((prev) => {
       const filtersWithoutIsShow = prev.filter((filter) => filter.id !== 'isShow');
 
-      if (statusFilter === 'published') {
+      if (statusFilter === 'public') {
         return [...filtersWithoutIsShow, { id: 'isShow', value: true }];
       }
 
-      if (statusFilter === 'draft') {
+      if (statusFilter === 'private') {
         return [...filtersWithoutIsShow, { id: 'isShow', value: false }];
       }
 
       return filtersWithoutIsShow;
     });
   }, [statusFilter]);
-
-  // 공개/비공개 강의 분리
-  const publishedCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => course.isShow);
-  const draftCourses = filteredAndSortedCourses.filter((course: CourseMyResponse) => !course.isShow);
-  const currentCourses = table.getRowModel().rows.map((row) => row.original);
-
-  const getCoursesByTab = (tab: StatusFilter) => {
-    if (tab === statusFilter) {
-      return currentCourses;
-    }
-
-    if (tab === 'published') {
-      return publishedCourses;
-    }
-
-    if (tab === 'draft') {
-      return draftCourses;
-    }
-
-    return filteredAndSortedCourses;
-  };
 
   // 이벤트 핸들러들
   const handleEdit = (courseId: string) => {
@@ -254,12 +209,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">내 강의 관리</h2>
-            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+            <h2 className="text-2xl font-bold">My Lectures</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-muted-foreground">강의 목록을 불러오는 중...</div>
+          <div className="text-muted-foreground">Loading lectures...</div>
         </div>
       </div>
     );
@@ -270,12 +225,12 @@ export default function CreatorCoursesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">내 강의 관리</h2>
-            <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+            <h2 className="text-2xl font-bold">My Lectures</h2>
+            <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-destructive">강의 목록을 불러오는데 실패했습니다.</div>
+          <div className="text-destructive">Failed to load lectures.</div>
         </div>
       </div>
     );
@@ -286,21 +241,19 @@ export default function CreatorCoursesPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">내 강의 관리</h2>
-          <p className="text-muted-foreground mt-1">강의를 생성하고 관리하세요</p>
+          <h2 className="text-2xl font-bold">My Lectures</h2>
+          <p className="text-muted-foreground mt-1">Create and manage your lectures</p>
         </div>
         <Button asChild>
           <Link href="/creator/courses/new">
-            <Plus className="mr-2 h-4 w-4" />새 강의 만들기
+            New Lecture <Plus className="h-4 w-4" />
           </Link>
         </Button>
       </div>
 
-      {/* 통계 요약 */}
-      {courses.length > 0 && <CourseStats courses={courses} />}
-
       {/* 필터 및 검색 */}
       <CourseFilters
+        table={table}
         searchQuery={searchQuery}
         onSearchChange={(query) => {
           setSearchQuery(query);
@@ -318,80 +271,30 @@ export default function CreatorCoursesPage() {
       />
 
       {/* 강의 목록 */}
-      {filteredAndSortedCourses.length === 0 ? (
+      {table.getRowModel().rows.length > 0 ? (
+        table.getRowModel().rows.map((row) => {
+          return (
+            <CourseCard
+              key={row.original.courseId}
+              course={row.original}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onViewStats={handleViewStats}
+              onToggleVisibility={handleToggleVisibility}
+            />
+          );
+        })
+      ) : (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Video className="text-muted-foreground mb-4 h-12 w-12" />
-          <h3 className="mb-2 text-lg font-semibold">
-            {searchQuery || statusFilter !== 'all' ? '검색 결과가 없습니다' : '아직 강의가 없습니다'}
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            {searchQuery || statusFilter !== 'all'
-              ? '다른 검색어나 필터를 시도해보세요.'
-              : '첫 번째 강의를 만들어보세요!'}
-          </p>
-          {!searchQuery && statusFilter === 'all' && (
-            <Button asChild>
-              <Link href="/creator/courses/new">
-                <Plus className="mr-2 h-4 w-4" />새 강의 만들기
-              </Link>
-            </Button>
-          )}
+          <h3 className="mb-2 text-lg font-semibold">아직 강의가 없습니다</h3>
+          <p className="text-muted-foreground mb-4">첫 번째 강의를 만들어보세요!</p>
+          <Button asChild>
+            <Link href="/creator/courses/new">
+              <Plus className="mr-2 h-4 w-4" />새 강의 만들기
+            </Link>
+          </Button>
         </div>
-      ) : (
-        <Tabs
-          value={statusFilter}
-          onValueChange={(value) => {
-            const nextValue = value as StatusFilter;
-            setStatusFilter(nextValue);
-            setPageIndex(0);
-          }}
-          className="w-full"
-        >
-          <TabsList>
-            <TabsTrigger value="all">전체 ({filteredAndSortedCourses.length})</TabsTrigger>
-            <TabsTrigger value="published">공개 ({publishedCourses.length})</TabsTrigger>
-            <TabsTrigger value="draft">비공개 ({draftCourses.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="mt-6 space-y-4">
-            {getCoursesByTab('all').map((course: CourseMyResponse) => (
-              <CourseCard
-                key={course.courseId}
-                course={course}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onViewStats={handleViewStats}
-                onToggleVisibility={handleToggleVisibility}
-              />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="published" className="mt-6 space-y-4">
-            {getCoursesByTab('published').map((course: CourseMyResponse) => (
-              <CourseCard
-                key={course.courseId}
-                course={course}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onViewStats={handleViewStats}
-                onToggleVisibility={handleToggleVisibility}
-              />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="draft" className="mt-6 space-y-4">
-            {getCoursesByTab('draft').map((course: CourseMyResponse) => (
-              <CourseCard
-                key={course.courseId}
-                course={course}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onViewStats={handleViewStats}
-                onToggleVisibility={handleToggleVisibility}
-              />
-            ))}
-          </TabsContent>
-        </Tabs>
       )}
       {pagination && pagination.totalPages > 1 && <TanstackTablePagination table={table} />}
 

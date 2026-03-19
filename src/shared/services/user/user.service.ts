@@ -1,18 +1,24 @@
-import { UserRequest, UserResponse } from './user.type';
+import { EmailSignupRequest, EmailSignupResponse, UserRequest, UserResponse } from './user.type';
 
 import { api } from '@/shared/services/api';
 import { ApiResponse } from '@/shared/types/api.type';
 
 /** 내 사용자 정보 수정 */
 export const PUT_profile = async (formData: UserRequest) => {
-  const response = await api.put('/api/v1/users/profile', formData, {
+  const response = await api.put('/api/v1/users/profile/me', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
   return response.data;
 };
+
 /** 이메일 회원 가입 */
+export const POST_email_signup = async (data: EmailSignupRequest): Promise<ApiResponse<EmailSignupResponse>> => {
+  const response = await api.post('/api/v1/users', data);
+  return response.data;
+};
+
 /** 사용자 타입 변경 */
 /** 내 비밀번호 수정 수정 */
 /** 사용자 이메일 수신 동의 상태 값 변경 */
@@ -24,13 +30,13 @@ export const GET_profile = async (): Promise<ApiResponse<UserResponse>> => {
 };
 
 /** 닉네임 중복 체크 */
-export const GET_nickname_check = async (nickname: string): Promise<ApiResponse<boolean>> => {
+export const GET_nickname_check = async (nickname: string): Promise<ApiResponse<{ available: boolean }>> => {
   const response = await api.get(`/api/v1/users/nickname/check?nickname=${nickname}`);
   return response.data;
 };
 
 /** 이메일 중복 체크 */
-export const GET_email_check = async (email: string): Promise<ApiResponse<boolean>> => {
+export const GET_email_check = async (email: string): Promise<ApiResponse<{ available: boolean }>> => {
   const response = await api.get(`/api/v1/users/email/check?email=${email}`);
   return response.data;
 };

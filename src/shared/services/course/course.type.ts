@@ -36,7 +36,24 @@ export type CourseDetailResponse = {
   };
 };
 
-export type CourseRequest = {};
+export type CourseRequest = {
+  keyPoints: string[];
+  isShow: boolean;
+  price: number;
+  installEnvChecklist: {
+    content: string;
+    isSupported: boolean;
+  }[];
+  targetAudience: string;
+  videoUuid: string;
+  title: string;
+  tags: string[];
+  description: string;
+  /** 사용자가 직접 업로드한 경우에만 전송. 서버 생성 썸네일을 쓰면 null */
+  thumbnail?: File | null;
+  /** 실습 파일(없으면 null) */
+  practiceFile?: File[] | null;
+};
 
 export type CoursesResponse = {
   courseId: string;

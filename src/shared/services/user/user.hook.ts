@@ -1,7 +1,16 @@
-import { DELETE_withdraw, GET_email_check, GET_nickname_check, GET_profile, PUT_profile } from './user.service';
-import { UserRequest } from './user.type';
+import {
+  DELETE_withdraw,
+  GET_email_check,
+  GET_nickname_check,
+  GET_profile,
+  POST_email_signup,
+  PUT_profile,
+} from './user.service';
+import { EmailSignupRequest, EmailSignupResponse, UserRequest, UserResponse } from './user.type';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/shared/stores/auth';
+import { ApiResponse } from '@/shared/types/api.type';
+import { useMutation, UseMutationOptions, useQuery } from '@tanstack/react-query';
 
 /** 내 사용자 정보 수정 */
 export const usePutProfile = () => {
@@ -12,16 +21,29 @@ export const usePutProfile = () => {
 };
 
 /** 이메일 회원 가입 */
+export const usePostEmailSignup = (
+  options: UseMutationOptions<ApiResponse<EmailSignupResponse>, Error, EmailSignupRequest> = {},
+) => {
+  return useMutation({
+    mutationKey: [POST_email_signup.name],
+    mutationFn: (data: EmailSignupRequest) => POST_email_signup(data),
+    ...options,
+  });
+};
 /** 사용자 타입 변경 */
 /** 내 비밀번호 수정 수정 */
 /** 사용자 이메일 수신 동의 상태 값 변경 */
 
+export const PROFILE_QUERY_KEY = ['user', 'profile'] as const;
+
 /** 내 사용자 정보 조회 */
 export const useGetProfile = () => {
+  const { accessToken } = useAuthStore((state) => state);
   return useQuery({
-    queryKey: [GET_profile.name],
+    queryKey: PROFILE_QUERY_KEY,
     queryFn: () => GET_profile(),
     select: ({ data }) => data,
+    enabled: !!accessToken,
   });
 };
 

@@ -1,11 +1,10 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import ReactPlayer from 'react-player';
 
-import Image from 'next/image';
 import { useParams } from 'next/navigation';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -21,6 +20,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/shared/components/ui/sheet';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Textarea } from '@/shared/components/ui/textarea';
@@ -30,8 +30,9 @@ import {
   useGetCourseProgressExistsById,
   usePostCourseProgressById,
 } from '@/shared/services/course/course.hook';
-import dayjs from 'dayjs';
-import { Check, Download, FileText, Hash, PlayCircle, Users, X } from 'lucide-react';
+import { usePostVideoPlaylist } from '@/shared/services/video/video.hook';
+import { GET_video_playlist_by_signed_url } from '@/shared/services/video/video.service';
+import { Check, Download, FileText, GraduationCap, Hash, PlayCircle, Users, X } from 'lucide-react';
 
 function formatFileSize(bytes: number) {
   if (!bytes) return '0 B';
@@ -110,10 +111,17 @@ export default function CoursePage() {
   const params = useParams();
   const courseId = params.id as string;
 
+  const [videoPlaylistUrl, setVideoPlaylistUrl] = useState<string | null>(null);
+  const [isFetchingVideoUrl, setIsFetchingVideoUrl] = useState(false);
   const { data: course, isLoading, isError } = useGetCourseById(courseId);
   const { mutate: enrollCourse, isPending: isEnrolling } = usePostCourseProgressById(courseId);
   const { data: isCourseProgressExists, isError: isCourseProgressExistsError } =
     useGetCourseProgressExistsById(courseId);
+  const {
+    mutate: postVideoPlaylist,
+    data: videoPlaylistResponse,
+    isPending: isVideoPlaylistLoading,
+  } = usePostVideoPlaylist();
 
   const installEnvChecklist = useMemo(() => {
     if (!course?.installEnvChecklist) return [];
@@ -144,6 +152,39 @@ export default function CoursePage() {
     enrollCourse();
   };
 
+  const getVideoPlaylistUrl = useCallback(async () => {
+    if (!videoPlaylistResponse?.data?.signedUrl) return;
+    // 개발 환경에서는 비디오 플레이리스트 요청 안함 -> 비용 문제로 로컬에서는 재생 안되도록 조치
+    if (process.env.NODE_ENV === 'development') {
+      return;
+    }
+    try {
+      setIsFetchingVideoUrl(true);
+      const signedUrl = videoPlaylistResponse.data.signedUrl;
+      const m3u8Url = await GET_video_playlist_by_signed_url(signedUrl);
+      setVideoPlaylistUrl(m3u8Url);
+    } catch (error) {
+      console.error('비디오 플레이리스트 URL을 가져오는 중 오류가 발생했습니다:', error);
+      setVideoPlaylistUrl(null);
+    } finally {
+      setIsFetchingVideoUrl(false);
+    }
+  }, [videoPlaylistResponse]);
+
+  // 비디오 플레이리스트 요청
+  useEffect(() => {
+    if (!course?.videoInfo?.videoType || !courseId) return;
+    postVideoPlaylist({
+      type: course.videoInfo.videoType,
+      id: courseId,
+    });
+  }, [course?.videoInfo?.videoType, courseId, postVideoPlaylist]);
+
+  // 비디오 플레이리스트 URL 가져오기
+  useEffect(() => {
+    getVideoPlaylistUrl();
+  }, [getVideoPlaylistUrl]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -166,31 +207,37 @@ export default function CoursePage() {
     );
   }
 
-  const creatorInitial = course.creatorInfo.nickname?.[0] ?? 'I';
-
   return (
-    <div className="container mx-auto flex flex-col gap-8 px-4 py-8">
+    <div className="container mx-auto flex flex-col gap-12 px-4 py-16">
       <div className="flex items-end justify-between gap-5">
         <div>
           <div className="mb-6">
-            <h1 className="text-xl leading-tight font-bold">{course.title}</h1>
+            <h1 className="text-2xl leading-tight font-bold">{course.title}</h1>
             {course.description && (
-              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{course.description}</p>
+              <p className="text-muted-foreground mt-2 text-base leading-relaxed">{course.description}</p>
             )}
           </div>
-
-          <div className="flex items-center gap-12">
-            <div>
-              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">등록일</p>
-              <p className="text-base font-semibold">{dayjs(course.createdAt).format('YYYY.MM.DD')}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">가격</p>
-              <p className="text-primary text-base font-semibold">
-                {Intl.NumberFormat('ko-KR').format(course.price)}원
-              </p>
-            </div>
+          {/* 강사 정보 */}
+          <div className="flex items-center gap-2">
+            <GraduationCap className="text-muted-foreground size-6" />
+            <span className="text-base font-medium">{course.creatorInfo.nickname}</span>
           </div>
+
+          {/* 관련 태그 */}
+          {course.tags && course.tags.length > 0 && (
+            <div className="mt-3 flex gap-2">
+              <Hash className="text-muted-foreground size-6 stroke-[2.5]" />
+              {course.tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="bg-primary-green-100 text-primary-green-800 border-primary-green-300"
+                >
+                  #{tag}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -198,11 +245,6 @@ export default function CoursePage() {
             {isEnrolling ? <Spinner className="size-5" /> : <PlayCircle className="size-5" />}
             {isCourseProgressExists ? '수강 중인 강의입니다' : '지금 수강 시작하기'}
           </Button>
-          {practiceFiles.length > 0 && (
-            <Button size="lg" variant="outline" className="gap-2" asChild>
-              <a href="#practice-files">실습 자료 보기</a>
-            </Button>
-          )}
         </div>
 
         {isCourseProgressExistsError && (
@@ -214,14 +256,61 @@ export default function CoursePage() {
 
       <div className="grid items-start gap-12 lg:grid-cols-[7fr_3fr]">
         {/* 좌측: 썸네일 */}
-        <div className="bg-muted relative min-h-[500px] w-full overflow-hidden rounded-lg border">
-          {course.thumbnailUrl ? (
-            <Image src={course.thumbnailUrl} alt={course.title} fill priority className="object-contain" />
-          ) : (
-            <div className="text-muted-foreground flex h-full min-h-[500px] items-center justify-center">
-              <PlayCircle className="size-16" />
-            </div>
-          )}
+        <div className="flex flex-col gap-6">
+          <div className="bg-muted relative aspect-video w-full overflow-hidden rounded-lg border">
+            {isVideoPlaylistLoading || isFetchingVideoUrl || !videoPlaylistUrl ? (
+              <Skeleton className="h-full w-full" />
+            ) : (
+              <ReactPlayer
+                src={videoPlaylistUrl}
+                controls
+                width="100%"
+                height="100%"
+                config={{
+                  hls: {
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                  },
+                }}
+              />
+            )}
+          </div>
+
+          {/* 실습 자료 */}
+          <Card id="practice-files">
+            <CardHeader>
+              <CardTitle className="text-xl">실습 자료</CardTitle>
+              <CardDescription>강의와 함께 제공되는 참고 자료를 확인하세요.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {practiceFiles.length > 0 ? (
+                practiceFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="text-muted-foreground size-5" />
+                      <div>
+                        <p className="leading-tight font-medium">{file.name}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {file.contentType} · {formatFileSize(file.size)}
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="gap-2" asChild>
+                      <a href={file.url} target="_blank" rel="noopener noreferrer" download>
+                        <Download className="size-4" />
+                        다운로드
+                      </a>
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-muted-foreground text-sm">제공된 실습 자료가 없습니다.</div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* 우측: 강의 정보들 */}
@@ -239,26 +328,6 @@ export default function CoursePage() {
                   추천 대상
                 </h3>
                 <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{course.targetAudience}</p>
-              </div>
-
-              <div>
-                <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
-                  <Hash className="text-primary size-4" />
-                  관련 태그
-                </h3>
-                {course.tags && course.tags.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {course.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="bg-primary-green-100 text-primary-green-800 border-primary-green-300"
-                      >
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <Separator />
@@ -306,62 +375,6 @@ export default function CoursePage() {
                   <div className="text-muted-foreground text-sm">등록된 핵심 포인트가 없습니다.</div>
                 )}
               </ul>
-            </CardContent>
-          </Card>
-
-          {/* 4. 강사정보 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">강사 정보</CardTitle>
-              <CardDescription>강의를 만든 크리에이터를 소개합니다.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 p-4">
-                <Avatar className="size-16">
-                  <AvatarImage alt={course.creatorInfo.nickname} />
-                  <AvatarFallback className="text-lg font-semibold">{creatorInitial}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">크리에이터</p>
-                  <p className="text-lg font-semibold">{course.creatorInfo.nickname}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 실습 자료 */}
-          <Card id="practice-files">
-            <CardHeader>
-              <CardTitle className="text-xl">실습 자료</CardTitle>
-              <CardDescription>강의와 함께 제공되는 참고 자료를 확인하세요.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {practiceFiles.length > 0 ? (
-                practiceFiles.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="text-muted-foreground size-5" />
-                      <div>
-                        <p className="leading-tight font-medium">{file.name}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {file.contentType} · {formatFileSize(file.size)}
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="gap-2" asChild>
-                      <a href={file.url} target="_blank" rel="noopener noreferrer" download>
-                        <Download className="size-4" />
-                        다운로드
-                      </a>
-                    </Button>
-                  </div>
-                ))
-              ) : (
-                <div className="text-muted-foreground text-sm">제공된 실습 자료가 없습니다.</div>
-              )}
             </CardContent>
           </Card>
 

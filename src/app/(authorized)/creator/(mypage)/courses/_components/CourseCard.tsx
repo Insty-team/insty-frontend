@@ -52,7 +52,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                   course.isShow ? 'bg-primary-green-100 text-primary-green-800' : 'bg-orange-100 text-orange-800',
                 )}
               >
-                {course.isShow ? '공개' : '비공개'}
+                {course.isShow ? 'Public' : 'Private'}
               </Badge>
             </div>
           </div>
@@ -98,7 +98,8 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                 {/* 가격 */}
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">판매가:</span>
-                  <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(course.price)}원</span>
+                  {/* <span className="text-lg font-semibold">{Intl.NumberFormat('ko-KR').format(course.price)}원</span> */}
+                  <span className="text-lg font-semibold">무료</span>
                 </div>
               </div>
 
@@ -124,7 +125,7 @@ export function CourseCard({ course, onEdit, onDelete, onViewStats, onToggleVisi
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onToggleVisibility?.(course.courseId)}>
                     {course.isShow ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-                    {course.isShow ? '비공개 전환' : '공개 전환'}
+                    Toggle Visibility
                   </DropdownMenuItem>
                   <Separator />
                   <DropdownMenuItem

@@ -34,6 +34,8 @@ import {
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { SortOption } from '@/app/(authorized)/creator/(mypage)/courses/_components/CourseFilters';
+
 /** 강의 상세조회 */
 export const useGetCourseById = (courseId: string) => {
   return useQuery({
@@ -99,10 +101,20 @@ export const usePostCourseProgressById = (courseId: string) => {
 };
 
 /** 내가 업로드한 강의 목록조회 */
-export const useGetCoursesMy = (page: number = 1, pageSize: number = 10, isShow?: boolean) => {
+export const useGetCoursesMy = ({
+  page,
+  pageSize,
+  isShow,
+  sortType,
+}: {
+  page: number;
+  pageSize: number;
+  isShow?: boolean;
+  sortType?: SortOption;
+}) => {
   return useQuery({
-    queryKey: [GET_courses_my.name, page, pageSize, isShow],
-    queryFn: () => GET_courses_my(page, pageSize, isShow),
+    queryKey: [GET_courses_my.name, page, pageSize, isShow, sortType],
+    queryFn: () => GET_courses_my(page, pageSize, isShow, sortType),
     select: ({ data }) => data,
   });
 };

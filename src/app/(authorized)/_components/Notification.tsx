@@ -2,8 +2,6 @@
 
 import { Fragment } from 'react';
 
-import Link from 'next/link';
-
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -26,30 +24,34 @@ export default function Notification() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className="size-5" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs"
+              className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full p-0 text-xs"
             >
               {unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel>알림</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="max-h-96 w-80">
+        <DropdownMenuLabel>알림 ({unreadCount})</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {notifications && notifications.length > 0 ? (
-          notifications?.map((Notification) => {
+          notifications?.map((notification) => {
             return (
-              <Fragment key={Notification.id}>
+              <Fragment key={notification.id}>
                 <div className="max-h-96">
                   <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                    <p className="font-medium">{Notification.title}</p>
-                    <p className="text-muted-foreground text-xs">{Notification.message}</p>
+                    <p className="flex items-center gap-2 font-medium">
+                      {!notification.isRead && <span className="bg-primary-green-600 size-2 rounded-full" />}
+                      {notification.title}
+                    </p>
+
+                    <p className="text-sm text-gray-800">{notification.message}</p>
                     <span className="text-muted-foreground text-xs">
-                      {dayjs(Notification.createdAt).format('YYYY.MM.DD HH:mm:ss')}
+                      {dayjs(notification.createdAt).format('YYYY.MM.DD HH:mm:ss')}
                     </span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

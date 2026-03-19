@@ -19,8 +19,9 @@ export default function Footer() {
               <Image src={LogoImage} alt="Insty" width={120} height={40} className="h-8 w-auto" />
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md text-sm">
-              Insty는 누구나 쉽게 배우고 가르칠 수 있는 온라인 강의 플랫폼입니다. 당신의 지식과 경험을 공유하고, 새로운
-              것을 배워보세요.
+              <b>Insty is a learning platform for people building products on their own.</b>
+              <br />
+              Learn how to solve real-world problems using AI, and turn ideas into execution.
             </p>
             <div className="flex gap-4">
               <Link
@@ -42,7 +43,7 @@ export default function Footer() {
                 <span className="sr-only">Twitter</span>
               </Link>
               <Link
-                href="https://instagram.com"
+                href="https://www.instagram.com/insty.english?igsh=eDkyeHZ1d3prZzZt"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
@@ -69,18 +70,18 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 서비스 */}
+          {/* Services */}
           <div>
-            <h3 className="mb-4 font-semibold">서비스</h3>
+            <h3 className="mb-4 font-semibold">Services</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/about" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  서비스 소개
+                  About Us
                 </Link>
               </li>
               <li>
                 <Link href="/courses" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  강의 둘러보기
+                  Browse Courses
                 </Link>
               </li>
               <li>
@@ -88,66 +89,69 @@ export default function Footer() {
                   href="/creator/apply"
                   className="text-muted-foreground hover:text-primary text-sm transition-colors"
                 >
-                  크리에이터 신청
+                  Become a Creator
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  요금 안내
+                  Pricing
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  블로그
+                  Blog
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* 지원 */}
+          {/* Support */}
           <div>
-            <h3 className="mb-4 font-semibold">지원</h3>
+            <h3 className="mb-4 font-semibold">Support</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/help" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  고객센터
+                <Link
+                  href="mailto:support@insty.com"
+                  className="text-muted-foreground hover:text-primary text-sm transition-colors"
+                >
+                  Customer Support
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  자주 묻는 질문
+                  FAQ
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  문의하기
+                  Contact Us
                 </Link>
               </li>
               <li>
                 <Link href="/sitemap" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  사이트맵
+                  Sitemap
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* 정책 */}
+          {/* Legal */}
           <div>
-            <h3 className="mb-4 font-semibold">정책</h3>
+            <h3 className="mb-4 font-semibold">Legal</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/terms" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  이용약관
+                  Terms of Service
                 </Link>
               </li>
               <li>
                 <Link href="/privacy" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  개인정보처리방침
+                  Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link href="/refund" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  환불정책
+                  Refund Policy
                 </Link>
               </li>
               <li>
@@ -155,7 +159,7 @@ export default function Footer() {
                   href="/community-guidelines"
                   className="text-muted-foreground hover:text-primary text-sm transition-colors"
                 >
-                  커뮤니티 가이드
+                  Community Guidelines
                 </Link>
               </li>
             </ul>
@@ -169,11 +173,11 @@ export default function Footer() {
               <p>© {currentYear} Insty. All rights reserved.</p>
             </div>
             <div className="text-muted-foreground flex flex-wrap gap-4 text-sm">
-              <span>사업자등록번호: 123-45-67890</span>
+              <span>Business ID: 123-45-67890</span>
               <span className="hidden md:inline">|</span>
-              <span>대표이사: 홍길동</span>
+              <span>CEO: John Doe</span>
               <span className="hidden md:inline">|</span>
-              <span>서울특별시 강남구 테헤란로 123</span>
+              <span>123 Main Street, San Francisco, CA 94105</span>
             </div>
           </div>
         </div>

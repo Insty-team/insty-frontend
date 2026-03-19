@@ -1,4 +1,4 @@
-import { SocialLoginType, UserType } from '@/shared/types/auth.enum';
+import { SocialLoginType } from '@/shared/types/auth.enum';
 
 export type UserRequest = {
   userUpdateReq: {
@@ -19,6 +19,17 @@ export type UserResponse = {
   thumbnailUrl: string;
   introduce: string;
   socialType: SocialLoginType;
-  userType: UserType;
   createdAt: string;
+};
+
+export type EmailSignupRequest = {
+  nickname: string;
+  email: string;
+  password: string;
+};
+
+export type EmailSignupResponse = {
+  id: number;
+  email: string;
+  nickname: string;
 };
