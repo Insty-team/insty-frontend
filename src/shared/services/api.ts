@@ -62,6 +62,11 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // 로그인 요청(`/auth/login`)에서는 토큰 재발급/로그아웃 로직을 태우지 않고 바로 에러 반환
+    if (typeof originalRequest.url === 'string' && originalRequest.url.includes('/auth/login')) {
+      return Promise.reject(error);
+    }
+
     // 이미 재시도한 요청이면 에러 반환 (무한 루프 방지)
     if (originalRequest._retry) {
       return Promise.reject(error);

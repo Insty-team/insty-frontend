@@ -15,13 +15,14 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { Label } from '@/shared/components/ui/label';
 import { Separator } from '@/shared/components/ui/separator';
 import { emailReg, passwordReg } from '@/shared/lib/regex';
-import { PasswordResetDialog } from '@/app/login/_components/PasswordResetDialog';
 import { usePostLogin, useSocialLogin } from '@/shared/services/auth/auth.hook';
 import { LoginRequest } from '@/shared/services/auth/auth.type';
 import { useAuthStore, useUserStore } from '@/shared/stores/auth';
 import { SocialLoginType } from '@/shared/types/auth.enum';
 import { BookOpen, Eye, EyeOff, Play, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+import { PasswordResetDialog } from '@/app/login/_components/PasswordResetDialog';
 
 import googleSvg from '@/assets/google.svg';
 import kakaoSvg from '@/assets/kakao.svg';
@@ -90,7 +91,7 @@ function LoginContent() {
   const userStore = useUserStore((state) => state);
 
   // 소셜 로그인 훅 (책임분리: 비즈니스 로직은 훅에서 처리)
-  const { startLogin: startSocialLogin, isLoading: isSocialLoading, isError: isSocialError } = useSocialLogin();
+  const { startLogin: startSocialLogin, isLoading: isSocialLoading } = useSocialLogin();
 
   const onSubmit = async (data: LoginRequest) => {
     if (isLoadingRef.current) return;
@@ -98,12 +99,17 @@ function LoginContent() {
 
     await postLogin(data)
       .then((response) => {
-        console.log('onSubmit success', response);
         authStore.setAccessToken(response.data.token.accessToken);
         authStore.setRefreshToken(response.data.token.refreshToken);
 
         userStore.setNickname(response.data.nickname);
         router.push(redirectTo);
+      })
+      .catch((error) => {
+        if (error.response.data.error.code === 'USER_002') {
+          alert('비밀번호가 일치하지 않습니다.');
+          return;
+        }
       })
       .finally(() => {
         isLoadingRef.current = false;
