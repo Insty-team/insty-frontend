@@ -69,7 +69,7 @@ export default function Header() {
                 </>
               }
             >
-              크리에이터 센터
+              Creator Center
             </LoginRequiredLink>
 
             {/* 알림 */}
@@ -166,7 +166,7 @@ export default function Header() {
                       onClick={closeMobileMenu}
                       className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-gray-100"
                     >
-                      크리에이터 센터
+                      Creator Center
                     </Link>
 
                     {!isGuest && (

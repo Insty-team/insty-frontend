@@ -13,9 +13,11 @@ import {
   POST_community_course_request_recommendation_without_base,
   POST_community_course_request_suggestion,
   POST_community_question_draft,
+  POST_community_thought_draft,
 } from './ai-community.service';
 import {
   AnswerDraftRequest,
+  CommunityThoughtDraftRequest,
   CourseRequest,
   CourseRequestAnswer,
   CourseRequestStatusUpdateRequest,
@@ -144,5 +146,13 @@ export const usePostCommunityAnswerDraft = () => {
   return useMutation({
     mutationKey: [POST_community_answer_draft.name],
     mutationFn: (data: AnswerDraftRequest) => POST_community_answer_draft(data),
+  });
+};
+
+/** 커뮤니티 포스트 초안 생성 */
+export const usePostCommunityThoughtDraft = () => {
+  return useMutation({
+    mutationKey: [POST_community_thought_draft.name],
+    mutationFn: (data: CommunityThoughtDraftRequest) => POST_community_thought_draft(data),
   });
 };

@@ -1,6 +1,6 @@
 
 export type MentionSearchResponse = {
-  id: string;
+  id: number;
   nickname: string;
   profileImageUrl: string;
 };

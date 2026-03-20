@@ -5,6 +5,8 @@ import {
   POST_question_video_upload,
   POST_video_playlist,
   POST_video_preview,
+  POST_community_comment_video_upload,
+  POST_community_post_video_upload,
 } from './video.service';
 import {
   AnswerVideoUploadRequest,
@@ -13,6 +15,8 @@ import {
   VideoPlaylistRequest,
   VideoPreviewRequest,
   VideoThumbnailResponse,
+  CommunityCommentVideoUploadRequest,
+  CommunityPostVideoUploadRequest,
 } from './video.type';
 
 import { ApiResponse } from '@/shared/types/api.type';
@@ -39,6 +43,22 @@ export const usePostAnswerVideoUpload = () => {
   return useMutation({
     mutationKey: [POST_answer_video_upload.name],
     mutationFn: (data: AnswerVideoUploadRequest) => POST_answer_video_upload(data),
+  });
+};
+
+/** 커뮤니티 포스트 영상 업로드 */
+export const usePostCommunityPostVideoUpload = () => {
+  return useMutation({
+    mutationKey: [POST_community_post_video_upload.name],
+    mutationFn: (data: CommunityPostVideoUploadRequest) => POST_community_post_video_upload(data),
+  });
+};
+
+/** 커뮤니티 코멘트 영상 업로드 */
+export const usePostCommunityCommentVideoUpload = () => {
+  return useMutation({
+    mutationKey: [POST_community_comment_video_upload.name],
+    mutationFn: (data: CommunityCommentVideoUploadRequest) => POST_community_comment_video_upload(data),
   });
 };
 
