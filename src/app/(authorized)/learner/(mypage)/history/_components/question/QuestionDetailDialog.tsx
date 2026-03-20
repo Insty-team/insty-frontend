@@ -577,6 +577,7 @@ export default function QuestionDetailDialog({ open, onOpenChange, courseId, que
             isGeneratingDraft={isGeneratingDraft}
             onFilesChange={setUploadedFiles}
             isSending={isPosting}
+            enableMention={true}
           />
         </div>
       </DialogContent>

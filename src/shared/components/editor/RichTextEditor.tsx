@@ -207,6 +207,8 @@ export default function RichTextEditor({
 }: Props) {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
+  // 에디터 내부 변경(타이핑/멘션 등)과 외부 value prop 변경을 구분하는 플래그
+  const isInternalChange = useRef(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>(() =>
     initialFiles.filter((f) => f.type.startsWith('image/')).slice(0, maxImages),
   );
@@ -399,6 +401,8 @@ export default function RichTextEditor({
         });
       }
 
+      // 내부 변경 플래그를 설정해 value useEffect에서 에디터 재설정을 방지
+      isInternalChange.current = true;
       onChange(valueFormat === 'json' ? JSON.stringify(editor.getJSON()) : html);
       onTextLengthChange?.(editor.getText().length);
       setIsEmpty(editor.getText().trim().length === 0);
@@ -406,8 +410,16 @@ export default function RichTextEditor({
   });
 
   // 외부 value 변경을 에디터에 반영(valueFormat에 따라 HTML/JSON 처리)
+  // 에디터 내부 변경(isInternalChange)인 경우 재설정 생략 — 멘션 노드 파괴 방지
   useEffect(() => {
     if (!editor) return;
+
+    if (isInternalChange.current) {
+      isInternalChange.current = false;
+      setIsEmpty(editor.getText().trim().length === 0);
+      return;
+    }
+
     setIsEmpty(editor.getText().trim().length === 0);
 
     if (valueFormat === 'json') {
