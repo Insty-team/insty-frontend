@@ -16,9 +16,23 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { Spinner } from '@/shared/components/ui/spinner';
 import useVideoPlaylist from '@/shared/hooks/video/useVideoPlaylist';
-import { Attachment, CourseCommunityPostResponse, VideoType } from '@/shared/services/community/community.type';
+import { Attachment, VideoInfo, VideoType } from '@/shared/services/community/community.type';
 import dayjs from 'dayjs';
 import { Calendar, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
+
+export type CommunityPostItem = {
+  postId: number;
+  courseId?: number;
+  user?: { id: number; nickname: string; userType?: string };
+  content: string;
+  createdAt: string;
+  updatedAt?: string;
+  attachments?: Attachment[];
+  videoInfo?: VideoInfo | null;
+  likeCount?: number;
+  commentCount?: number;
+  likedByMe?: boolean;
+};
 
 const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; videoType: VideoType }) => {
   const { m3u8Url, isLoading: isLoadingVideo } = useVideoPlaylist({
@@ -45,7 +59,7 @@ const CommunityPostVideoPlayer = ({ postId, videoType }: { postId: number; video
 type CommunityPostListActions = {
   onPostClick?: (postId: number) => void;
   onLike?: (postId: number, isLiked: boolean, e: React.MouseEvent) => void;
-  onEdit?: (post: CourseCommunityPostResponse, e: React.MouseEvent) => void;
+  onEdit?: (post: CommunityPostItem, e: React.MouseEvent) => void;
   onDelete?: (postId: number, e: React.MouseEvent) => void;
 };
 
@@ -78,7 +92,7 @@ type CommunityPostListStatus = {
 };
 
 type CommunityPostListProps = {
-  posts: CourseCommunityPostResponse[];
+  posts: CommunityPostItem[];
   currentUserId?: number;
   actions?: CommunityPostListActions;
   edit?: CommunityPostListEdit;

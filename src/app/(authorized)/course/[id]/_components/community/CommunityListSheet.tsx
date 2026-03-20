@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 
-import CommunityPostList from '@/shared/components/community/CommunityPostList';
+import CommunityPostList, { CommunityPostItem } from '@/shared/components/community/CommunityPostList';
 import ConfirmModal from '@/shared/components/ConfirmModal';
 import CommunityTextArea from '@/shared/components/editor/CommunityTextArea';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useCommunity } from '@/shared/hooks/community/useCommunity';
 import usePresignedVideoUpload from '@/shared/hooks/video/usePresignedVideoUpload';
 import { useGetCourseCommunityPostsInfinite } from '@/shared/services/community/community.hook';
-import { Attachment, CourseCommunityPostResponse } from '@/shared/services/community/community.type';
+import { Attachment } from '@/shared/services/community/community.type';
 import { useGetProfile } from '@/shared/services/user/user.hook';
 import { toast } from 'sonner';
 
@@ -125,7 +125,7 @@ export default function CommunityListSheet({ courseId, onSelectPost, sheetIsOpen
     })();
   };
 
-  const handleEditPost = (post: CourseCommunityPostResponse, e: React.MouseEvent) => {
+  const handleEditPost = (post: CommunityPostItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingPostId(post.postId);
     setEditPostContent(post.content);

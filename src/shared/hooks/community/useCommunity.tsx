@@ -35,7 +35,7 @@ type ToggleLikeOptions = {
 export const useCommunity = ({ courseId }: UseCommunityOptions) => {
   const { mutateAsync: createPostAsync, isPending: isCreatingPost } = usePostCourseCommunityPostById(courseId);
   const { mutateAsync: updatePostAsync, isPending: isUpdatingPost } = usePatchCourseCommunityPost(courseId);
-  const { mutateAsync: deletePostAsync, isPending: isDeletingPost } = useDeleteCourseCommunityPostById(courseId);
+  const { mutateAsync: deletePostAsync, isPending: isDeletingPost } = useDeleteCourseCommunityPostById();
 
   const { mutateAsync: likePostAsync, isPending: isLikingPost } = usePostCourseCommunityPostLikeForList(courseId);
   const { mutateAsync: unlikePostAsync, isPending: isUnlikingPost } = useDeleteCourseCommunityPostLikeForList(courseId);

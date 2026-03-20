@@ -30,8 +30,7 @@ import {
 } from '@/shared/services/course/course.hook';
 import type { Attachment } from '@/shared/services/course/course.type';
 import { useGetProfile } from '@/shared/services/user/user.hook';
-import { MoreHorizontal } from 'lucide-react';
-import { Sparkles } from 'lucide-react';
+import { MoreHorizontal, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 type QuestionDetailDialogProps = {
