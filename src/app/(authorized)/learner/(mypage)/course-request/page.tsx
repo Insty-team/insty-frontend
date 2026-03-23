@@ -29,6 +29,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { type ColumnDef, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import dayjs from 'dayjs';
 import { Calendar, FileText, Loader2, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const getStatusBadgeVariant = (status: string | null) => {
   if (!status) return 'outline';
@@ -146,9 +147,15 @@ export default function LearnerCourseRequestPage() {
         queryClient.invalidateQueries({ queryKey: [GET_community_course_requests.name] });
         setDeleteDialog({ isOpen: false, requestId: null, title: '' });
       },
-      onError: (error) => {
-        console.error('Failed to delete content request:', error);
-        alert('Failed to delete content request. Please try again.');
+      onError: (error: unknown) => {
+        const axiosError = error as { response?: { status?: number; data?: { error?: { details?: string[] } } } };
+        if (axiosError?.response?.status === 403) {
+          const detail = axiosError.response.data?.error?.details?.[0];
+          toast.error(detail ?? '현재 크리에이터가 강의를 작성 중인 요청은 삭제할 수 없습니다.');
+          setDeleteDialog({ isOpen: false, requestId: null, title: '' });
+        } else {
+          toast.error('Failed to delete content request. Please try again.');
+        }
       },
     });
   };
@@ -221,6 +228,14 @@ export default function LearnerCourseRequestPage() {
                         </Badge>
                       </div>
                       <div className="flex justify-end gap-2">
+                        {courseRequest.action_status?.toUpperCase() === 'COMPLETED' && courseRequest.created_course_id && (
+                          <Button
+                            size="sm"
+                            onClick={() => router.push(`/learner/courses/${courseRequest.created_course_id}`)}
+                          >
+                            View Course
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"

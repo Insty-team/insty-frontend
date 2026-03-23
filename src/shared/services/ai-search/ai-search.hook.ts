@@ -1,4 +1,4 @@
-import { GET_search_recommend_history, POST_search_recommend } from './ai-search.service';
+import { GET_search_recommend_history, POST_search_recommend, POST_search_recommend_services } from './ai-search.service';
 import { CourseRecommendationRequest } from './ai-search.type';
 
 import { useAuthStore } from '@/shared/stores/auth';
@@ -20,5 +20,13 @@ export const usePostSearchRecommend = () => {
   return useMutation({
     mutationKey: [POST_search_recommend.name],
     mutationFn: (data: CourseRecommendationRequest) => POST_search_recommend(data),
+  });
+};
+
+/** AI 서비스 추천 수행 */
+export const usePostSearchRecommendServices = () => {
+  return useMutation({
+    mutationKey: [POST_search_recommend_services.name],
+    mutationFn: (data: CourseRecommendationRequest) => POST_search_recommend_services(data),
   });
 };

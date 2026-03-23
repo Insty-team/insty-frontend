@@ -166,6 +166,11 @@ export default function LearnerCourseRequestDetailPage() {
             <Button variant="outline" onClick={() => router.push('/learner/course-request')}>
               Back to list
             </Button>
+            {courseRequest.action_status?.toUpperCase() === 'COMPLETED' && courseRequest.created_course_id && (
+              <Button onClick={() => router.push(`/learner/courses/${courseRequest.created_course_id}`)}>
+                View Course
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

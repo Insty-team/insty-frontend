@@ -69,6 +69,7 @@ export type CourseResponse = {
   requests_status: string;
   action_status: string | null;
   action_at: string | null;
+  created_course_id: number | null;
   created_at: string;
 };
 
@@ -107,7 +108,7 @@ export type CourseRequestStatusUpdateResponse = {
 // 강의 요청 업로드 가능 여부 응답
 export type CourseRequestAvailabilityResponse = {
   available: boolean;
-  status: 'IGNORED' | 'DECLINED' | 'ACCEPTED' | 'COMPLETED' | 'NOT_RECOMMENDED' | 'UNKNOWN';
+  status: 'IGNORED' | 'DECLINED' | 'ACCEPTED' | 'ACCEPTED_BY_ME' | 'COMPLETED' | 'NOT_RECOMMENDED' | 'UNKNOWN';
 };
 
 // 크리에이터 관심 답변

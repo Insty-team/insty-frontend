@@ -59,6 +59,7 @@ function RecommendationList({ recommendations }: { recommendations: CourseReques
   const [acceptModalItem, setAcceptModalItem] = useState<CourseRequestRecommendationItem | null>(null);
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [availabilityAlert, setAvailabilityAlert] = useState<string | null>(null);
+  const [resumeModalItem, setResumeModalItem] = useState<CourseRequestRecommendationItem | null>(null);
 
   const { mutate: updateStatus } = useMutation({
     mutationFn: ({ requestId, data }: { requestId: number; data: CourseRequestStatusUpdateRequest }) =>
@@ -129,7 +130,11 @@ function RecommendationList({ recommendations }: { recommendations: CourseReques
     checkAvailability(acceptModalItem.request_id, {
       onSuccess: (res) => {
         const { available, status } = res.data;
-        if (status === 'ACCEPTED') {
+        if (status === 'ACCEPTED_BY_ME') {
+          const item = acceptModalItem;
+          setAcceptModalItem(null);
+          setResumeModalItem(item);
+        } else if (status === 'ACCEPTED') {
           setAvailabilityAlert('Someone is already creating this content.');
         } else if (status === 'COMPLETED') {
           setAvailabilityAlert('This content has already been completed by someone.');
@@ -358,6 +363,8 @@ function RecommendationList({ recommendations }: { recommendations: CourseReques
             <p className="text-muted-foreground py-2 text-sm">No results available.</p>
           )}
 
+          <p className="text-muted-foreground text-xs">* 24시간 이내로 업로드 하지 않을 시, 강의 요청 수락이 자동으로 취소됩니다.</p>
+
           {availabilityAlert && (
             <div className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm">{availabilityAlert}</div>
           )}
@@ -369,6 +376,31 @@ function RecommendationList({ recommendations }: { recommendations: CourseReques
             <Button onClick={handleUpload} disabled={!allChecked || isCheckingAvailability}>
               {isCheckingAvailability && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Resume modal: ACCEPTED_BY_ME */}
+      <Dialog open={!!resumeModalItem} onOpenChange={(open) => { if (!open) setResumeModalItem(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>이전에 수락한 콘텐츠입니다.</DialogTitle>
+            <DialogDescription>이어서 작성할까요?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResumeModalItem(null)}>
+              취소
+            </Button>
+            <Button
+              onClick={() => {
+                const item = resumeModalItem;
+                if (!item) return;
+                setResumeModalItem(null);
+                router.push(`/creator/courses/new?rec=${encodeURIComponent(JSON.stringify(item))}`);
+              }}
+            >
+              이어서 작성하기
             </Button>
           </DialogFooter>
         </DialogContent>

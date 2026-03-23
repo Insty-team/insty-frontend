@@ -13,13 +13,14 @@ import { Markdown } from '@/shared/components/ui/markdown';
 import { Separator } from '@/shared/components/ui/separator';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { useGetSearchRecommendHistory, usePostSearchRecommend } from '@/shared/services/ai-search/ai-search.hook';
+import { useGetSearchRecommendHistory, usePostSearchRecommend, usePostSearchRecommendServices } from '@/shared/services/ai-search/ai-search.hook';
 import {
   CourseRecommendationResponse,
   RecommendationHistoryResponse,
   RecommendedCourse,
+  RecommendedService,
 } from '@/shared/services/ai-search/ai-search.type';
-import { Send, Sparkles } from 'lucide-react';
+import { ExternalLink, Send, Sparkles } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -27,6 +28,7 @@ interface Message {
   content: string;
   timestamp: Date;
   courses?: RecommendedCourse[];
+  services?: RecommendedService[];
 }
 
 const createWelcomeMessage = (): Message => ({
@@ -45,6 +47,7 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { mutateAsync: postSearchRecommend } = usePostSearchRecommend();
+  const { mutateAsync: postSearchRecommendServices } = usePostSearchRecommendServices();
   const { data: searchRecommendHistory } = useGetSearchRecommendHistory();
 
   // 자동 스크롤 (전체 페이지)
@@ -116,12 +119,15 @@ export default function Home() {
       setErrorMessage(null);
 
       try {
-        const response = await postSearchRecommend({
-          query: text,
-        });
-        const assistantPayload: CourseRecommendationResponse | undefined = response?.data;
+        const [servicesResponse, coursesResponse] = await Promise.all([
+          postSearchRecommendServices({ query: text }),
+          postSearchRecommend({ query: text }),
+        ]);
 
-        if (!assistantPayload) {
+        const servicesPayload = servicesResponse?.data;
+        const coursesPayload: CourseRecommendationResponse | undefined = coursesResponse?.data;
+
+        if (!servicesPayload && !coursesPayload) {
           appendAssistantErrorMessage('AI 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
           return;
         }
@@ -129,8 +135,9 @@ export default function Home() {
         const assistantMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: assistantPayload.message,
-          courses: assistantPayload.courses,
+          content: servicesPayload?.message ?? coursesPayload?.message ?? '',
+          services: servicesPayload?.services ?? [],
+          courses: coursesPayload?.courses ?? [],
           timestamp: new Date(),
         };
 
@@ -203,42 +210,113 @@ export default function Home() {
                         <Markdown>{message.content}</Markdown>
                       </div>
                     </div>
-                    {/* 강의 추천 카드 */}
-                    {message.courses && message.courses.length > 0 && (
-                      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-                        {message.courses.map((course) => (
-                          <Card
-                            key={course.course_id}
-                            className="w-full justify-between overflow-hidden transition-all hover:shadow-md"
-                          >
-                            <CardHeader className="p-3 sm:p-4 lg:p-6">
-                              <CardTitle className="line-clamp-2 h-10 text-sm font-semibold sm:h-12 sm:text-base">
-                                {course.course_title}
-                              </CardTitle>
+                    {/* AI 서비스 추천 카드 */}
+                    {message.services && message.services.length > 0 && (
+                      <div className="w-full space-y-3">
+                        <p className="text-xs font-semibold text-slate-500 sm:text-sm">추천 AI 서비스</p>
+                        {message.services.map((service) => (
+                          <Card key={service.title} className="w-full overflow-hidden">
+                            <CardHeader className="p-3 pb-2 sm:p-4 sm:pb-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <CardTitle className="text-sm font-semibold sm:text-base">{service.title}</CardTitle>
+                                <a
+                                  href={service.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex shrink-0 items-center gap-1 text-xs text-blue-500 hover:underline"
+                                >
+                                  바로가기 <ExternalLink className="h-3 w-3" />
+                                </a>
+                              </div>
+                              <p className="text-xs text-slate-500 sm:text-sm">{service.description}</p>
                             </CardHeader>
-                            <CardContent className="bg-muted relative h-32 w-full flex-shrink-0 sm:h-40 lg:h-48">
-                              {course.thumbnail_url && (
-                                <Image
-                                  src={course.thumbnail_url}
-                                  alt={course.course_title}
-                                  className="object-contain transition-transform duration-200"
-                                  fill
-                                />
-                              )}
-                            </CardContent>
-                            <Separator />
-                            <CardFooter className="flex items-center justify-between p-3 sm:p-4 lg:p-6">
-                              <span className="text-xs font-medium text-slate-500 sm:text-sm">무료</span>
-                              <LoginRequiredLink
-                                href={`/course/${course.course_id}`}
-                                className="text-xs font-medium underline-offset-4 hover:underline sm:text-sm"
-                                dialogDescription="강의를 수강하려면 먼저 로그인해 주세요."
-                              >
-                                수강하기
-                              </LoginRequiredLink>
-                            </CardFooter>
+                            {service.courses && service.courses.length > 0 && (
+                              <>
+                                <Separator />
+                                <CardContent className="p-3 sm:p-4">
+                                  <p className="mb-2 text-xs font-medium text-slate-400">관련 강의</p>
+                                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                    {service.courses.map((course) => (
+                                      <Card
+                                        key={course.course_id}
+                                        className="w-full justify-between overflow-hidden transition-all hover:shadow-md"
+                                      >
+                                        <CardHeader className="p-3 sm:p-4">
+                                          <CardTitle className="line-clamp-2 h-10 text-xs font-semibold sm:h-12 sm:text-sm">
+                                            {course.course_title}
+                                          </CardTitle>
+                                        </CardHeader>
+                                        {course.thumbnail_url && (
+                                          <CardContent className="bg-muted relative h-24 w-full flex-shrink-0 sm:h-32">
+                                            <Image
+                                              src={course.thumbnail_url}
+                                              alt={course.course_title}
+                                              className="object-contain transition-transform duration-200"
+                                              fill
+                                            />
+                                          </CardContent>
+                                        )}
+                                        <Separator />
+                                        <CardFooter className="flex items-center justify-between p-3 sm:p-4">
+                                          <span className="text-xs font-medium text-slate-500">무료</span>
+                                          <LoginRequiredLink
+                                            href={`/course/${course.course_id}`}
+                                            className="text-xs font-medium underline-offset-4 hover:underline"
+                                            dialogDescription="강의를 수강하려면 먼저 로그인해 주세요."
+                                          >
+                                            수강하기
+                                          </LoginRequiredLink>
+                                        </CardFooter>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                </CardContent>
+                              </>
+                            )}
                           </Card>
                         ))}
+                      </div>
+                    )}
+
+                    {/* 강의 추천 카드 */}
+                    {message.courses && message.courses.length > 0 && (
+                      <div className="w-full space-y-2">
+                        <p className="text-xs font-semibold text-slate-500 sm:text-sm">추천 강의</p>
+                        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+                          {message.courses.map((course) => (
+                            <Card
+                              key={course.course_id}
+                              className="w-full justify-between overflow-hidden transition-all hover:shadow-md"
+                            >
+                              <CardHeader className="p-3 sm:p-4 lg:p-6">
+                                <CardTitle className="line-clamp-2 h-10 text-sm font-semibold sm:h-12 sm:text-base">
+                                  {course.course_title}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="bg-muted relative h-32 w-full flex-shrink-0 sm:h-40 lg:h-48">
+                                {course.thumbnail_url && (
+                                  <Image
+                                    src={course.thumbnail_url}
+                                    alt={course.course_title}
+                                    className="object-contain transition-transform duration-200"
+                                    fill
+                                  />
+                                )}
+                              </CardContent>
+                              <Separator />
+                              <CardFooter className="flex items-center justify-between p-3 sm:p-4 lg:p-6">
+                                <span className="text-xs font-medium text-slate-500 sm:text-sm">무료</span>
+                                <LoginRequiredLink
+                                  href={`/course/${course.course_id}`}
+                                  className="text-xs font-medium underline-offset-4 hover:underline sm:text-sm"
+                                  dialogDescription="강의를 수강하려면 먼저 로그인해 주세요."
+                                >
+                                  수강하기
+                                </LoginRequiredLink>
+                              </CardFooter>
+                            </Card>
+                          ))}
+                        </div>
                       </div>
                     )}
 

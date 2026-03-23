@@ -37,3 +37,18 @@ export type CourseRecommendationResponse = {
   message: string;
   courses: RecommendedCourse[];
 };
+
+// 추천된 외부 AI 서비스 정보
+export type RecommendedService = {
+  title: string;
+  url: string;
+  description: string;
+  type: string;
+  courses: RecommendedCourse[];
+};
+
+// AI 서비스 추천 응답
+export type ServiceRecommendationResponse = {
+  message: string;
+  services: RecommendedService[];
+};
